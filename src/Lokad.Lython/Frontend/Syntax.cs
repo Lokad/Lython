@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
@@ -457,7 +458,7 @@ internal sealed record StringLiteralExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record BytesLiteralExpressionSyntax(
-    byte[] Value,
+    PyBytes Value,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record IntegerLiteralExpressionSyntax(

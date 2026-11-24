@@ -12,11 +12,11 @@ public sealed class AbstractValueTests
         var left = AbstractValue.Dict(
         [
             Pair(AbstractValue.String("alpha", Span), AbstractValue.Integer(1, Span)),
-            Pair(AbstractValue.Bytes([1, 2, 3], Span), AbstractValue.String("left", Span)),
+            Pair(AbstractValue.Bytes(new byte[] { 1, 2, 3 }, Span), AbstractValue.String("left", Span)),
         ], Span);
         var right = AbstractValue.Dict(
         [
-            Pair(AbstractValue.Bytes([1, 2, 3], Span), AbstractValue.String("right", Span)),
+            Pair(AbstractValue.Bytes(new byte[] { 1, 2, 3 }, Span), AbstractValue.String("right", Span)),
             Pair(AbstractValue.String("alpha", Span), AbstractValue.Integer(1, Span)),
         ], Span);
 

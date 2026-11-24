@@ -60,7 +60,7 @@ internal static class StaticDictionaryFacts
                 equal = left.RequireFloat() == right.RequireFloat();
                 return true;
             case AbstractValueKind.Bytes:
-                equal = left.RequireBytes().AsSpan().SequenceEqual(right.RequireBytes());
+                equal = left.RequireBytes().SequenceEqual(right.RequireBytes());
                 return true;
             case AbstractValueKind.None:
                 equal = true;

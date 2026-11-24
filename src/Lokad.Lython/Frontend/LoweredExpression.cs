@@ -39,7 +39,7 @@ internal sealed record LoweredBytesLiteralExpression(
     BytesLiteralExpressionSyntax Literal) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Literal;
-    public PyBytes Value { get; } = new(Literal.Value.ToArray());
+    public PyBytes Value => Literal.Value;
 }
 
 internal sealed record LoweredIntegerLiteralExpression(

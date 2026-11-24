@@ -85,6 +85,24 @@ public sealed class AdjacentBytesLiteralTests
     }
 
     [Theory]
+    [InlineData("'\\x 4'")]
+    [InlineData("b'\\x4 '")]
+    [InlineData("f'\\x 4{1}'")]
+    public async Task HexEscapesRequireTwoDigitsBeforeAnyEffects(string expression)
+    {
+        using var compiled = new LythonEngine().Compile("print('effects')\nvalue = " + expression + "\n");
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA1007" &&
+            diagnostic.Message.Contains("expected two hexadecimal digits", StringComparison.Ordinal));
+        using var sync = compiled.Run(new MockLythonHost());
+        using var asynchronous = await compiled.RunAsync(new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.False(asynchronous.Success);
+        Assert.Empty(sync.StandardOutput);
+        Assert.Empty(asynchronous.StandardOutput);
+    }
+
+    [Theory]
     [InlineData("b'a' 'b'")]
     [InlineData("'a' b'b'")]
     [InlineData("b'a' u'b'")]

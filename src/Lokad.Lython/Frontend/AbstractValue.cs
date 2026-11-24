@@ -224,7 +224,8 @@ internal readonly record struct AbstractValue
     public string RequireText() => _payload is TextPayload payload ? payload.Value : ThrowPayloadMismatch<string>();
     public BigInteger RequireInteger() => _payload is IntegerPayload payload ? payload.Value : ThrowPayloadMismatch<BigInteger>();
     public double RequireFloat() => _payload is FloatPayload payload ? payload.Value : ThrowPayloadMismatch<double>();
-    public byte[] RequireBytes() => _payload is BytesPayload payload ? payload.Value : ThrowPayloadMismatch<byte[]>();
+    public ReadOnlySpan<byte> RequireBytes()
+        => (_payload is BytesPayload payload ? payload.Value : ThrowPayloadMismatch<ReadOnlyMemory<byte>>()).Span;
     public bool RequireBoolean() => _payload is BooleanPayload payload ? payload.Value : ThrowPayloadMismatch<bool>();
     public AbstractValue RequireNestedValue() => _payload is NestedValuePayload payload ? payload.Value : ThrowPayloadMismatch<AbstractValue>();
     public IReadOnlyList<AbstractValue> RequireSequenceItems() => _payload is SequencePayload payload ? payload.Items : ThrowPayloadMismatch<IReadOnlyList<AbstractValue>>();
@@ -272,7 +273,7 @@ internal readonly record struct AbstractValue
     public static AbstractValue Never(LythonSourceSpan span) => Marker(AbstractValueKind.Never, span);
     public static AbstractValue String(string value, LythonSourceSpan span) => new(AbstractValueKind.String, new TextPayload(value), span);
     public static AbstractValue StringType(LythonSourceSpan span) => Marker(AbstractValueKind.StringType, span);
-    public static AbstractValue Bytes(byte[] value, LythonSourceSpan span) => new(AbstractValueKind.Bytes, new BytesPayload(value), span);
+    public static AbstractValue Bytes(ReadOnlyMemory<byte> value, LythonSourceSpan span) => new(AbstractValueKind.Bytes, new BytesPayload(value), span);
     public static AbstractValue BytesType(LythonSourceSpan span) => Marker(AbstractValueKind.BytesType, span);
     public static AbstractValue Integer(BigInteger value, LythonSourceSpan span)
         => new(AbstractValueKind.Integer, new IntegerPayload(value, null, true, false), span);
@@ -489,7 +490,7 @@ internal readonly record struct AbstractValue
             AbstractValueKind.Integer or
             AbstractValueKind.Float or
             AbstractValueKind.Boolean => left.HasSamePayload(right),
-            AbstractValueKind.Bytes => left.RequireBytes().AsSpan().SequenceEqual(right.RequireBytes()),
+            AbstractValueKind.Bytes => left.RequireBytes().SequenceEqual(right.RequireBytes()),
             AbstractValueKind.None => true,
             _ => false
         };
@@ -531,7 +532,7 @@ internal readonly record struct AbstractValue
     private sealed record TextPayload(string Value) : AbstractPayload;
     private sealed record IntegerPayload(BigInteger Value, string? NoncanonicalSpelling, bool IsDecimal, bool HasSeparators) : AbstractPayload;
     private sealed record FloatPayload(double Value, string Spelling) : AbstractPayload;
-    private sealed record BytesPayload(byte[] Value) : AbstractPayload;
+    private sealed record BytesPayload(ReadOnlyMemory<byte> Value) : AbstractPayload;
     private sealed record BooleanPayload(bool Value) : AbstractPayload;
     private sealed record NestedValuePayload(AbstractValue Value) : AbstractPayload;
     private sealed record SequencePayload(IReadOnlyList<AbstractValue> Items) : AbstractPayload;

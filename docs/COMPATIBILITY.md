@@ -182,8 +182,9 @@ actual refused storage admission terminate the command after cleanup.
 Strings contain valid Unicode scalars stored as UTF-8. Indexes, lengths, slices
 and regex offsets use characters rather than bytes. Named Unicode escapes
 (`\N{...}`) in non-raw text/f-string literal text and surrogate scalar escapes
-are rejected; literal Unicode and numeric escapes are supported. Raw/bytes
-literals retain their Python escape behavior. Unicode identifier normalization, string methods, f-strings,
+are rejected. Literal Unicode and numeric escapes are supported. A `\x`
+escape requires two hexadecimal digits in text, bytes and f-string text.
+Raw literals preserve the escape spelling. Unicode identifier normalization, string methods, f-strings,
 `str.format` and text `%` formatting are available within the subset.
 `str.format_map` resolves fields lazily through the mapping's item protocol,
 including custom mappings and defaultdict; unused keys are not inspected.

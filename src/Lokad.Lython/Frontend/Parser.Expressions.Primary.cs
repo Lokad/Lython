@@ -1,4 +1,5 @@
 using System.Text;
+using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
@@ -137,7 +138,8 @@ internal sealed partial class Parser
     {
         var firstToken = _position;
         var lastToken = firstToken;
-        var pieces = new List<byte[]>();
+        byte[]? first = null;
+        List<byte[]>? rest = null;
         var length = 0;
         while (IsNameToken(CurrentToken) && PeekToken(1) == Token.String &&
             IsBytesStringPrefix(_tokens.GetString(_position)))
@@ -150,13 +152,14 @@ internal sealed partial class Parser
                 AddDiagnostic("LA1007", "String prefix must be adjacent to its literal.", prefixToken);
                 return null;
             }
-            if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes, out var message,
+            if (!TryDecodeBytesLiteral(_tokens.GetSpan(stringToken), out var bytes, out var message,
                 isRaw: prefix.Contains('r') || prefix.Contains('R')))
             {
                 AddDiagnostic("LA1007", message, prefixToken);
                 return null;
             }
-            pieces.Add(bytes);
+            if (first is null) first = bytes;
+            else (rest ??= []).Add(bytes);
             length = checked(length + bytes.Length);
             lastToken = stringToken;
         }
@@ -169,19 +172,21 @@ internal sealed partial class Parser
         }
 
         // Copy once, keeping implicit concatenation linear in literal size.
-        var combined = pieces[0];
-        if (pieces.Count > 1)
+        var firstPiece = first.RequireNotNull();
+        var combined = firstPiece;
+        if (rest is not null)
         {
             combined = new byte[length];
-            var offset = 0;
-            foreach (var piece in pieces)
+            CopyLiteralBytes(firstPiece, combined);
+            var offset = firstPiece.Length;
+            foreach (var piece in rest)
             {
                 CheckCancellation();
-                piece.CopyTo(combined, offset);
+                CopyLiteralBytes(piece, combined.AsSpan(offset));
                 offset += piece.Length;
             }
         }
-        return new BytesLiteralExpressionSyntax(combined, Merge(firstToken, lastToken));
+        return new BytesLiteralExpressionSyntax(new PyBytes(combined), Merge(firstToken, lastToken));
     }
 
     // Adjacent literal pieces fold left-to-right exactly like CPython implicit

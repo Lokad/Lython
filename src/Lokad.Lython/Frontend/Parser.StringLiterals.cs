@@ -13,72 +13,25 @@ internal sealed partial class Parser
             : "LA1007";
 
     private bool TryDecodeStringLiteral(ReadOnlySpan<char> literal, [MaybeNullWhen(false)] out string value, out string message)
-        => TryDecodeStringLiteral(literal, out value, out message, true);
-
-    private bool TryDecodeStringLiteral(
-        ReadOnlySpan<char> literal,
-        [MaybeNullWhen(false)] out string value,
-        out string message,
-        bool decodeUnicodeEscapes)
     {
         CheckCancellation();
-        value = string.Empty;
-        message = "Invalid string literal. Malformed literal body.";
-
-        if (literal.Length < 2)
+        var isRaw = !literal.IsEmpty && literal[0] is 'r' or 'R';
+        if (isRaw) literal = literal[1..];
+        if (!TryGetLiteralBody(literal, out var body))
         {
+            value = string.Empty;
+            message = "Invalid string literal. Malformed literal body.";
             return false;
         }
-
-        var index = 0;
-        var isRaw = false;
-        if (literal[0] is 'r' or 'R')
-        {
-            isRaw = true;
-            index = 1;
-        }
-
-        if (index >= literal.Length)
-        {
-            return false;
-        }
-
-        var quote = literal[index];
-        var isTriple = index + 2 < literal.Length &&
-            literal[index + 1] == quote &&
-            literal[index + 2] == quote;
-        var prefixLength = isTriple ? 3 : 1;
-        var start = index + prefixLength;
-        var end = literal.Length - prefixLength;
-
-        if ((quote != '"' && quote != '\'') || end < start)
-        {
-            return false;
-        }
-
-        if (!isTriple && literal[^1] != quote)
-        {
-            return false;
-        }
-
-        if (isTriple &&
-            (literal[^1] != quote || literal[^2] != quote || literal[^3] != quote))
-        {
-            return false;
-        }
-
-        return TryDecodeStringBody(literal[start..end], isRaw, out value, out message, decodeUnicodeEscapes);
+        return TryDecodeStringBody(body, isRaw, out value, out message);
     }
 
     private bool TryDecodeStringBody(ReadOnlySpan<char> literal, bool isRaw,
-        [MaybeNullWhen(false)] out string value, out string message, bool decodeUnicodeEscapes = true)
+        [MaybeNullWhen(false)] out string value, out string message)
     {
         CheckCancellation();
         value = string.Empty;
-        var start = 0;
-        var end = literal.Length;
-        // Borrow the token body until its one AST value is materialized. Only
-        // actual escape decoding needs mutable output storage.
+        // Borrow the token body until its one AST value is materialized.
         if (isRaw || literal.IndexOf('\\') < 0)
         {
             if (!ValidateScalarString(literal, out message)) return false;
@@ -86,140 +39,100 @@ internal sealed partial class Parser
             return true;
         }
 
-        message = "Invalid string literal. Malformed literal body.";
-        var builder = new System.Text.StringBuilder(end - start);
-        for (var i = start; i < end; i++)
+        var builder = new System.Text.StringBuilder(literal.Length);
+        for (var i = 0; i < literal.Length; i++)
         {
-            CheckCancellation(i - start);
-            var c = literal[i];
-            if (c != '\\')
+            CheckCancellation(i);
+            var character = literal[i];
+            if (character != '\\')
             {
-                builder.Append(c);
+                builder.Append(character);
                 continue;
             }
 
-            if (i + 1 >= end)
-            {
-                message = "Invalid string literal. Unfinished escape sequence.";
-                return false;
-            }
-
-            i++;
-            switch (literal[i])
-            {
-                case '\n':
-                    // An escaped physical newline contributes no character.
-                    break;
-                case '\\':
-                    builder.Append('\\');
-                    break;
-                case '\'':
-                    builder.Append('\'');
-                    break;
-                case '"':
-                    builder.Append('"');
-                    break;
-                case 'n':
-                    builder.Append('\n');
-                    break;
-                case 'a':
-                    builder.Append('\a');
-                    break;
-                case 'b':
-                    builder.Append('\b');
-                    break;
-                case 'f':
-                    builder.Append('\f');
-                    break;
-                case 'r':
-                    builder.Append('\r');
-                    break;
-                case 't':
-                    builder.Append('\t');
-                    break;
-                case 'v':
-                    builder.Append('\v');
-                    break;
-                case 'x':
-                    if (i + 2 >= end ||
-                        !byte.TryParse(literal.Slice(i + 1, 2), System.Globalization.NumberStyles.HexNumber, null, out var hex))
-                    {
-                        message = "Invalid string literal. Malformed \\x escape; expected two hexadecimal digits.";
-                        return false;
-                    }
-
-                    builder.Append((char)hex);
-                    i += 2;
-                    break;
-                case 'N' when decodeUnicodeEscapes:
-                    message = UnsupportedNamedUnicodeEscapeMessage;
-                    return false;
-                case 'u' when decodeUnicodeEscapes:
-                    if (!TryReadHexCodePoint(literal, i + 1, 4, end, out var shortCodePoint))
-                    {
-                        message = "Invalid string literal. Malformed \\u escape; expected four hexadecimal digits.";
-                        return false;
-                    }
-
-                    if (shortCodePoint is >= 0xD800 and <= 0xDFFF)
-                    {
-                        message = UnsupportedSurrogateStringMessage;
-                        return false;
-                    }
-                    builder.Append((char)shortCodePoint);
-                    i += 4;
-                    break;
-                case 'U' when decodeUnicodeEscapes:
-                    if (!TryReadHexCodePoint(literal, i + 1, 8, end, out var longCodePoint) ||
-                        (uint)longCodePoint > 0x10FFFF)
-                    {
-                        message = "Invalid string literal. Malformed \\U escape; expected eight hexadecimal digits naming a Unicode code point.";
-                        return false;
-                    }
-
-                    if (longCodePoint is >= 0xD800 and <= 0xDFFF)
-                    {
-                        message = UnsupportedSurrogateStringMessage;
-                        return false;
-                    }
-                    if (longCodePoint <= char.MaxValue)
-                    {
-                        builder.Append((char)longCodePoint);
-                    }
-                    else
-                    {
-                        builder.Append(char.ConvertFromUtf32(longCodePoint));
-                    }
-
-                    i += 8;
-                    break;
-                default:
-                    if (literal[i] is >= '0' and <= '7')
-                    {
-                        var octal = literal[i] - '0';
-                        var digits = 1;
-                        while (digits < 3 && i + 1 < end && literal[i + 1] is >= '0' and <= '7')
-                        {
-                            i++;
-                            digits++;
-                            octal = (octal * 8) + literal[i] - '0';
-                        }
-
-                        builder.Append((char)octal);
-                    }
-                    else
-                    {
-                        // Python preserves unknown escape sequences rather than silently
-                        // dropping the backslash; diagnostics for those escapes are not fatal.
-                        builder.Append('\\');
-                        builder.Append(literal[i]);
-                    }
-                    break;
-            }
+            var count = ReadLiteralEscape(literal, ref i, unicode: true, out var first, out var second, out message);
+            if (count < 0) return false;
+            if (count >= 1) builder.Append(first);
+            if (count == 2) builder.Append(second);
         }
-
         value = builder.ToString();
         return ValidateScalarString(value, out message);
+    }
+
+    // Advance from a backslash to the final source character of its escape.
+    // Return the number of UTF-16 units, or -1 for an invalid escape.
+    private static int ReadLiteralEscape(ReadOnlySpan<char> literal, ref int index, bool unicode,
+        out char first, out char second, out string message)
+    {
+        first = second = default;
+        message = string.Empty;
+        if (++index == literal.Length)
+        {
+            message = "Invalid string literal. Unfinished escape sequence.";
+            return -1;
+        }
+
+        var escape = literal[index];
+        switch (escape)
+        {
+            case '\n': return 0;
+            case '\\' or '\'' or '"': first = escape; return 1;
+            case 'n': first = '\n'; return 1;
+            case 'a': first = '\a'; return 1;
+            case 'b': first = '\b'; return 1;
+            case 'f': first = '\f'; return 1;
+            case 'r': first = '\r'; return 1;
+            case 't': first = '\t'; return 1;
+            case 'v': first = '\v'; return 1;
+            case 'x':
+                if (!TryReadHexCodePoint(literal, index + 1, 2, out var hex))
+                {
+                    message = "Invalid string literal. Malformed \\x escape; expected two hexadecimal digits.";
+                    return -1;
+                }
+                first = (char)hex;
+                index += 2;
+                return 1;
+            case 'N' when unicode:
+                message = UnsupportedNamedUnicodeEscapeMessage;
+                return -1;
+            case 'u' or 'U' when unicode:
+                var digits = escape == 'u' ? 4 : 8;
+                if (!TryReadHexCodePoint(literal, index + 1, digits, out var codePoint) || (uint)codePoint > 0x10FFFF)
+                {
+                    message = escape == 'u'
+                        ? "Invalid string literal. Malformed \\u escape; expected four hexadecimal digits."
+                        : "Invalid string literal. Malformed \\U escape; expected eight hexadecimal digits naming a Unicode code point.";
+                    return -1;
+                }
+                if (codePoint is >= 0xD800 and <= 0xDFFF)
+                {
+                    message = UnsupportedSurrogateStringMessage;
+                    return -1;
+                }
+                index += digits;
+                if (codePoint <= char.MaxValue)
+                {
+                    first = (char)codePoint;
+                    return 1;
+                }
+                codePoint -= 0x10000;
+                first = (char)(0xD800 + (codePoint >> 10));
+                second = (char)(0xDC00 + (codePoint & 0x3FF));
+                return 2;
+            case >= '0' and <= '7':
+                var octal = escape - '0';
+                for (var i = 1; i < 3 && index + 1 < literal.Length && literal[index + 1] is >= '0' and <= '7'; i++)
+                    octal = (octal * 8) + literal[++index] - '0';
+                first = (char)octal;
+                return 1;
+            default:
+                // Unknown escapes preserve the backslash, including Unicode
+                // escape spelling in bytes.
+                first = '\\';
+                second = escape;
+                return 2;
+        }
     }
 
     private bool ValidateScalarString(ReadOnlySpan<char> text, out string message)
@@ -244,11 +157,10 @@ internal sealed partial class Parser
         ReadOnlySpan<char> literal,
         int start,
         int length,
-        int end,
         out int codePoint)
     {
         codePoint = 0;
-        if (start + length > end)
+        if (length > literal.Length - start)
         {
             return false;
         }
@@ -305,65 +217,80 @@ internal sealed partial class Parser
         return text is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
     }
 
-    private bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message, bool isRaw = false)
+    private bool TryDecodeBytesLiteral(ReadOnlySpan<char> literal, out byte[] value, out string message, bool isRaw)
     {
         CheckCancellation();
-        value = Array.Empty<byte>();
-        if (!TryExtractStringContent(literal, out var content))
+        value = [];
+        if (!TryGetLiteralBody(literal, out var body))
         {
             message = "Invalid string literal. Malformed bytes literal body.";
             return false;
         }
 
-        for (var i = 0; i < content.Length; i++)
+        // Reject non-ASCII source before interpreting any escape. The decoder
+        // can shorten the output and cannot exceed the token body's capacity.
+        for (var offset = 0; offset < body.Length;)
         {
-            CheckCancellation(i);
-            if (content[i] > 0x7F)
+            CheckCancellation();
+            var count = Math.Min(4096, body.Length - offset);
+            if (!System.Text.Ascii.IsValid(body.Slice(offset, count)))
             {
                 message = "Invalid string literal. Bytes literals can only contain ASCII source characters.";
                 return false;
             }
+            offset += count;
         }
 
-        var decoded = content;
-        message = string.Empty;
-        if (!isRaw && !TryDecodeStringLiteral(literal, out decoded, out message, decodeUnicodeEscapes: false))
-        {
-            return false;
-        }
-
-        value = new byte[decoded.Length];
-        for (var i = 0; i < decoded.Length; i++)
+        var bytes = body.IsEmpty ? Array.Empty<byte>() : new byte[body.Length];
+        var written = 0;
+        for (var i = 0; i < body.Length; i++)
         {
             CheckCancellation(i);
-            value[i] = (byte)decoded[i];
+            var character = body[i];
+            if (isRaw || character != '\\')
+            {
+                bytes[written++] = (byte)character;
+                continue;
+            }
+            var count = ReadLiteralEscape(body, ref i, unicode: false, out var first, out var second, out message);
+            if (count < 0) return false;
+            if (count >= 1) bytes[written++] = (byte)first;
+            if (count == 2) bytes[written++] = (byte)second;
         }
 
+        if (written == bytes.Length) value = bytes;
+        else if (written != 0)
+        {
+            value = new byte[written];
+            CopyLiteralBytes(bytes.AsSpan(0, written), value);
+        }
+        message = string.Empty;
         return true;
     }
 
-    private static bool TryExtractStringContent(string literal, out string content)
+    private void CopyLiteralBytes(ReadOnlySpan<byte> source, Span<byte> destination)
     {
-        content = string.Empty;
-        if (literal.Length < 2)
+        for (var offset = 0; offset < source.Length;)
         {
-            return false;
+            CheckCancellation();
+            var count = Math.Min(4096, source.Length - offset);
+            source.Slice(offset, count).CopyTo(destination.Slice(offset, count));
+            offset += count;
         }
+    }
 
-        if ((literal.StartsWith("\"\"\"", StringComparison.Ordinal) && literal.EndsWith("\"\"\"", StringComparison.Ordinal)) ||
-            (literal.StartsWith("'''", StringComparison.Ordinal) && literal.EndsWith("'''", StringComparison.Ordinal)))
-        {
-            content = literal[3..^3];
-            return true;
-        }
+    private static bool TryGetLiteralBody(ReadOnlySpan<char> literal, out ReadOnlySpan<char> body)
+    {
+        body = default;
+        if (literal.Length < 2 || literal[0] is not ('"' or '\'')) return false;
 
-        if ((literal[0] == '"' && literal[^1] == '"') || (literal[0] == '\'' && literal[^1] == '\''))
-        {
-            content = literal[1..^1];
-            return true;
-        }
-
-        return false;
+        var quote = literal[0];
+        var triple = literal.Length >= 3 && literal[1] == quote && literal[2] == quote;
+        var width = triple ? 3 : 1;
+        if (literal.Length < 2 * width || literal[^1] != quote ||
+            triple && (literal[^2] != quote || literal[^3] != quote)) return false;
+        body = literal[width..^width];
+        return true;
     }
 
     private bool TryDecodeEscapedText(string text, bool isRaw, [MaybeNullWhen(false)] out string value, out string message)

@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
                 DictComprehensionExpressionSyntax dictComprehension => EvaluateDictComprehension(dictComprehension, context),
                 TupleLiteralExpressionSyntax tuple => CreateTupleLiteral(tuple, context),
                 ParenthesizedExpressionSyntax parenthesized => EvaluateExpression(parenthesized.Inner, context),
-                BytesLiteralExpressionSyntax bytes => CreateBytes(bytes.Value.ToArray(), context, bytes.Span),
+                BytesLiteralExpressionSyntax bytes => CreateBytes(bytes.Value.Bytes.ToArray(), context, bytes.Span),
                 MemberExpressionSyntax member => ResolveMember(member, context),
                 CallExpressionSyntax call => InvokeCall(call, context),
                 SubscriptExpressionSyntax subscript => EvaluateSubscript(subscript, context),

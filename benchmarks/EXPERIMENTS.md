@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1638–B1639](results/2026-11-24-shared-literal-decoding/README.md)
+share escape decoding and remove the intermediate CLR string and extra
+compiled byte payload. The binary table allocates 72.92% less to compile.
+The initial scalar ASCII validation trial takes longer. Bounded ASCII
+validation improves binary compilation elapsed 8.62–9.87% and time to
+result 6.63–7.70%, with lower CPU. The manifest and short report timing
+remain inconclusive. Preserve the initial adverse results.
+
 [B1637](results/2026-11-24-current-record-text-cpu/README.md) profiles
 the current CSV meters and short Unicode report. Executable dispatch
 and literal CSV parsing account for more nearest samples than final

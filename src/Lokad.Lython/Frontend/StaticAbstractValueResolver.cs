@@ -120,7 +120,7 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.String(text.Value, text.Span);
                 return true;
             case BytesLiteralExpressionSyntax bytes:
-                value = AbstractValue.Bytes(bytes.Value, bytes.Span);
+                value = AbstractValue.Bytes(bytes.Value.Memory, bytes.Span);
                 return true;
             case IntegerLiteralExpressionSyntax integer:
                 value = AbstractValue.Integer(integer);

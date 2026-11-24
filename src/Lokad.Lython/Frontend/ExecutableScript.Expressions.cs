@@ -35,7 +35,7 @@ internal sealed partial class ExecutableScript
         private static object ScalarLiteral(ExpressionSyntax expression) => expression switch
         {
             StringLiteralExpressionSyntax text => PyString.FromString(text.Value),
-            BytesLiteralExpressionSyntax bytes => new PyBytes(bytes.Value.ToArray()),
+            BytesLiteralExpressionSyntax bytes => bytes.Value,
             IntegerLiteralExpressionSyntax integer => integer.Value,
             ImaginaryLiteralExpressionSyntax imaginary => new PyComplex(0, imaginary.Value),
             FloatLiteralExpressionSyntax floating => floating.Value,

@@ -29,8 +29,8 @@ internal static partial class StaticAbstractValueResolver
                     StaticAbstractFacts.AppendTextItems(items, resolved.RequireText(), expressions[i].Span, bindings.AnalysisContext);
                     break;
                 case AbstractValueKind.Bytes:
-                    items.AddRange((resolved.RequireBytes()).Select(value =>
-                        AbstractValue.Integer(value, expressions[i].Span)));
+                    foreach (var value in resolved.RequireBytes())
+                        items.Add(AbstractValue.Integer(value, expressions[i].Span));
                     break;
                 case AbstractValueKind.Dict:
                     items.AddRange((resolved.RequireDictionaryItems()).Select(pair => pair.Key));

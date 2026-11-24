@@ -136,7 +136,12 @@ internal static partial class StaticAbstractValueResolver
 
         if (left.Kind == AbstractValueKind.Bytes && right.Kind == AbstractValueKind.Bytes)
         {
-            value = AbstractValue.Bytes(left.RequireBytes().Concat(right.RequireBytes()).ToArray(), binary.Span);
+            var first = left.RequireBytes();
+            var second = right.RequireBytes();
+            var bytes = new byte[checked(first.Length + second.Length)];
+            first.CopyTo(bytes);
+            second.CopyTo(bytes.AsSpan(first.Length));
+            value = AbstractValue.Bytes(bytes, binary.Span);
             return true;
         }
 

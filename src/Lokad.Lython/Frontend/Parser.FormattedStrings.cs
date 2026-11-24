@@ -10,13 +10,13 @@ internal sealed partial class Parser
     {
         parts = Array.Empty<FormattedStringPartSyntax>();
         message = MalformedFormattedStringMessage;
-        if (!TryExtractStringContent(literal, out var content))
+        if (!TryGetLiteralBody(literal, out var content))
         {
             return false;
         }
 
         var quoteWidth = literal.Length >= 3 && literal[0] == literal[1] && literal[0] == literal[2] ? 3 : 1;
-        return TryParseFormattedStringContent(prefix, content, literalStart + quoteWidth, inFormatSpecifier: false, allowNestedFormatFields: true, out parts, out message);
+        return TryParseFormattedStringContent(prefix, content.ToString(), literalStart + quoteWidth, inFormatSpecifier: false, allowNestedFormatFields: true, out parts, out message);
     }
 
     private bool TryParseFormattedStringContent(

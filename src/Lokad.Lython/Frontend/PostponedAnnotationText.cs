@@ -124,7 +124,7 @@ internal static class PostponedAnnotationText
             {
                 case IdentifierExpressionSyntax identifier: Queue(T(OriginalName(identifier.Span))); break;
                 case StringLiteralExpressionSyntax text: Queue(T(Quote(text.Value))); break;
-                case BytesLiteralExpressionSyntax bytes: Queue(T(Bytes(bytes.Value))); break;
+                case BytesLiteralExpressionSyntax bytes: Queue(T(Bytes(bytes.Value.Bytes))); break;
                 case IntegerLiteralExpressionSyntax integer: Queue(T(integer.Value.ToString(CultureInfo.InvariantCulture))); break;
                 case FloatLiteralExpressionSyntax number: Queue(T(Float(number.Value))); break;
                 case ImaginaryLiteralExpressionSyntax imaginary: Queue(T(Imaginary(imaginary.Value))); break;
@@ -414,7 +414,7 @@ internal static class PostponedAnnotationText
             var text = Float(value);
             return (text.EndsWith(".0", StringComparison.Ordinal) ? text[..^2] : text) + "j";
         }
-        private string Bytes(byte[] bytes)
+        private string Bytes(ReadOnlySpan<byte> bytes)
         {
             using var storage = governor?.ReserveTemporary(128L + 8L * (4L * bytes.Length + 3), _span);
             var text = new StringBuilder();

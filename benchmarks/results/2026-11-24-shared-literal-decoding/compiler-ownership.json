@@ -1,0 +1,48 @@
+{
+  "order": [
+    "reference",
+    "initial",
+    "refinement"
+  ],
+  "rows": [
+    {
+      "case": "diagnostic.generated-binary-table",
+      "compileAllocatedBytes": [
+        528112,
+        143032,
+        143032
+      ],
+      "retainedAdmittedBytes": [
+        6384320,
+        6384320,
+        6384320
+      ]
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "compileAllocatedBytes": [
+        81064,
+        81064,
+        81064
+      ],
+      "retainedAdmittedBytes": [
+        92127,
+        92127,
+        92127
+      ]
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "compileAllocatedBytes": [
+        217768,
+        217648,
+        217648
+      ],
+      "retainedAdmittedBytes": [
+        212960,
+        212960,
+        212960
+      ]
+    }
+  ]
+}
