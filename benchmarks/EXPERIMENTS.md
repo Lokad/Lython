@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1633](results/2026-11-24-forwarded-integers-cpython/README.md) refreshes
+three rule scripts against CPython 3.13.16. Defaulted rules take
+1.305–1.333× warm and 1.257–1.278× through result. Captured rules take
+1.104–1.115× through result and eager annotated rules 1.114–1.124×.
+
 [B1631](results/2026-11-24-borrow-forwarded-integers/README.md) keeps
 forwarded integers in their original slots through the shared native call
 entry. Defaulted and captured factories each allocate 43,680 B less and
