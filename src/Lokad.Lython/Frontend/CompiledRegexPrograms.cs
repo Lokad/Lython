@@ -16,12 +16,12 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
     internal ILythonMemoryBudget StorageOwner => _owner ??=
         (governor?.Budget ?? new LythonMemoryBudget()).CreateScope();
 
-    internal void Reserve(long bytes, LythonSourceSpan span)
+    internal ILythonMemoryReservation Reserve(long bytes, LythonSourceSpan span)
     {
-        if (!StorageOwner.TryReserve(bytes, out _))
-            throw governor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, span)
-                ?? RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", span,
-                    LythonFailureReason.SharedMemoryAllowance, requested: bytes);
+        if (StorageOwner.TryReserve(bytes, out var storage)) return storage;
+        throw governor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, span)
+            ?? RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", span,
+                LythonFailureReason.SharedMemoryAllowance, requested: bytes);
     }
 
     internal void Add(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program, int captureSlotCount,

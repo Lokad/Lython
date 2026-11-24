@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
         // acquisition needs no per-call closure or delegate allocation.
         internal static T ProviderCall<TState, T>(TState state, Func<TState, T> operation, MemoryGovernor? governor,
             CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null,
-            string operationName = "Regex provider")
+            string operationName = "Regex provider", bool materializePatternError = true)
         {
             governor?.ThrowIfAdmissionFailed();
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
                 }
             }
             catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
-            { throw ProviderFailure(error, governor, cancellationToken, span, pattern, operationName); }
+            { throw ProviderFailure(error, governor, cancellationToken, span, pattern, operationName, materializePatternError); }
         }
 
         internal static bool TryMatch(ILythonRegexSubject subject, LythonRegexMatchMode mode,
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
 
         private static LythonRuntimeException ProviderFailure(Exception error, MemoryGovernor? governor,
             CancellationToken token, LythonSourceSpan? span, PyString? pattern,
-            string operationName = "Regex provider")
+            string operationName = "Regex provider", bool materializePatternError = true)
         {
             if (error is OperationCanceledException)
             {
@@ -211,6 +211,10 @@ internal sealed partial class LythonRuntime
                 LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission($"{operationName}: {providerError.Message}", providerError.RequestedBytes, span, providerError)
                     ?? RuntimeErrors.Attributed("MemoryError", $"{operationName}: {providerError.Message}", span,
                         LythonFailureReason.SharedMemoryAllowance, requested: providerError.RequestedBytes),
+                // Speculative frontend analysis leaves this error for the
+                // runtime call. Only that call exposes Python error fields.
+                LythonRegexFailure.Pattern when !materializePatternError =>
+                    new LythonRuntimeException("PatternError", providerError.Message, span),
                 _ => CreatePatternErrorFailure(providerError.Message, pattern, providerError.Position, governor, token, span),
             };
         }

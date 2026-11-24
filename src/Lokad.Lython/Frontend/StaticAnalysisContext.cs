@@ -28,7 +28,7 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal CancellationToken CancellationToken { get; }
     internal ILythonMemoryBudget RegexMemoryOwner => _regexPrograms.StorageOwner;
 
-    internal void ReserveRegexStorage(long bytes, LythonSourceSpan span)
+    internal ILythonMemoryReservation ReserveRegexStorage(long bytes, LythonSourceSpan span)
         => _regexPrograms.Reserve(bytes, span);
 
     public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics;

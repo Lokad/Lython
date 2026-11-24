@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Refund frontend regex storage when a constant pattern is rejected. A
+  reached runtime call still supplies the normal Python error fields.
 - Add an optional staged regex provider contract so parser-dependent guest
   flag operations can run at the corresponding parsing or compilation phase.
 - Pass integer matching flags from guest flag operators independently of

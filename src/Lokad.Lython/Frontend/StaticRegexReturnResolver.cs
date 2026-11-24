@@ -257,15 +257,16 @@ internal static class StaticRegexReturnResolver
             ?? throw RuntimeErrors.Capability("Python regex analysis requires a host-supplied Lython regex provider.", null);
         var governor = analysis.MemoryGovernor;
         var token = analysis.CancellationToken;
+        ILythonMemoryReservation? storage = null;
         try
         {
             // Encoded input plus cache/owned-handle capacity and growth overlap.
             var bytes = 512L + 3L * pattern.Length;
-            analysis.ReserveRegexStorage(bytes, span);
+            storage = analysis.ReserveRegexStorage(bytes, span);
             var encoded = Encoding.UTF8.GetBytes(pattern);
             var program = LythonRuntime.RegexCompiler.ProviderCall((provider, encoded, options, analysis, token),
                 static state => state.provider.Compile(state.encoded, state.options, state.analysis.RegexMemoryOwner, state.token),
-                governor, token, span, operationName: "Regex pattern compilation");
+                governor, token, span, operationName: "Regex pattern compilation", materializePatternError: false);
             try
             {
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
@@ -275,7 +276,9 @@ internal static class StaticRegexReturnResolver
             }
             catch { program.Dispose(); throw; }
             // The compiled lookup now owns the program, even if analysis
-            // exits before publishing the new fact.
+            // exits before publishing the new fact. Its scope keeps the
+            // reservation for the encoded key and table.
+            storage = null;
             analysis.RegexPatterns[(pattern, options)] = regex;
             return true;
         }
@@ -284,6 +287,7 @@ internal static class StaticRegexReturnResolver
             regex = default;
             return false;
         }
+        finally { storage?.Dispose(); }
     }
 
     private static bool TryGetBounds(ConcreteCallArguments arguments, int posPosition, AbstractState bindings,

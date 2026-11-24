@@ -408,6 +408,56 @@ public sealed class RegexProviderContractTests
     }
 
     [Fact]
+    public async Task RejectedConstantAnalysisRefundsScratchWhileKeepingValidProgram()
+    {
+        const string source = """
+            import re
+            p = re.compile('x')
+            try:
+                rejected_pattern = re.compile('[')
+            except re.error as error:
+                print(type(error).__name__, error.pattern, error.pos)
+            return p.fullmatch(text).group()
+            """;
+        using var provider = new CooperatingProvider();
+        var rejected = 0;
+        provider.OnCompile = (pattern, _) =>
+        {
+            if (!pattern.Span.SequenceEqual("["u8)) return;
+            rejected++;
+            throw new LythonRegexException(LythonRegexFailure.Pattern, "unterminated character set", 0);
+        };
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        long validStorage;
+        using (var control = new LythonEngine(provider).Compile(source.Replace("'['", "'x'"), budget))
+        {
+            Assert.True(control.IsValid);
+            validStorage = budget.ReservedBytes;
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        using var script = new LythonEngine(provider).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(item => item.Message)));
+        Assert.True(rejected > 0);
+        Assert.Equal(validStorage, budget.ReservedBytes);
+
+        var beforeRun = rejected;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = "x" } };
+        using (var run = await script.RunAsync(new MockLythonHost(), options))
+        {
+            Assert.True(run.Success, run.Failure?.Message);
+            Assert.Equal("PatternError [ 0\n", run.StandardOutput);
+            Assert.Equal("x", run.ReturnValue);
+        }
+        Assert.Equal(beforeRun + 1, rejected);
+        Assert.Equal(validStorage, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(2, provider.Compilations);
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task ActualAdapterSharesValidatedProgramsAcrossConcurrentRunsAndRetainedResults()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
