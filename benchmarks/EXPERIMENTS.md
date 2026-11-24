@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1608](results/2026-11-24-closed-line-helper/README.md)
+completes cased text helpers before workspace setup. The short report
+takes 24.78–27.37% less warm elapsed and 19.01–25.68% less time through
+result. Mixed-width elapsed and CPU improve. The inline control has
+wide worker spread. Allocation and admission match on the targets.
+
 [B1607](results/2026-11-24-prepared-closed-defaults/refined/README.md)
 restores the shared call frame and reduces generated constructor code.
 Defaulted warm elapsed spans zero and first use takes 0.38–3.41% longer.

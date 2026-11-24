@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 
@@ -17,6 +18,44 @@ internal sealed record ExecutableTrimmedSplit(
 
 internal sealed partial class ExecutableCodeObject
 {
+    private int PrepareDirectCasedReturn(CancellationToken cancellationToken)
+    {
+        var split = Instructions.Length - 5;
+        if (split < 0 || EntryIndex != 0 || ExceptionRegions.Count != 0 || !UsesOnlyLexicalSlots ||
+            CapturedLocalSlots.Count != 0 || Instructions[split] is not { OpCode: ExecutableOpCode.LoadCasedSplit, InputStart: 0 } ||
+            Instructions[^2] is not { OpCode: ExecutableOpCode.Call } call ||
+            !CallSites[call.CallSiteIndex].ReturnedDirectly ||
+            Instructions[^1] is not { OpCode: ExecutableOpCode.Return } returned ||
+            returned.InputStart != call.ResultSlot) return -1;
+        if (split == 0) return split;
+
+        // An optional prefix writes a closed integer chain seeded by len(text)
+        // into an existing cell. The live length callable is checked at entry.
+        var storeIndex = split - 1;
+        if (storeIndex < 2 || Instructions[storeIndex] is not { OpCode: ExecutableOpCode.StoreClosure } store ||
+            Instructions[0] is not { OpCode: ExecutableOpCode.Call, HasForwardedCallOperands: true, InputStart: < 0, SecondInput: 0 } length ||
+            CallSites[length.CallSiteIndex] is not { ArgumentCount: 1, HasReceiver: false, IsPositionalOnly: true }) return -1;
+        var name = ~length.InputStart - Constants.Length;
+        if ((uint)name >= (uint)Names.Length || Names[name] != "len") return -1;
+
+        var prior = length.ResultSlot;
+        for (var index = 1; index < storeIndex; index++)
+        {
+            PythonTokenization.CheckCancellation(cancellationToken, index);
+            ref readonly var binary = ref Instructions[index];
+            if (binary.OpCode != ExecutableOpCode.Binary ||
+                binary.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
+                    BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo) ||
+                !ReadsExactValue(binary.InputStart, prior) || !ReadsExactValue(binary.SecondInput, prior) ||
+                binary.ResultSlot < FirstTemporarySlot || binary.HasResultConsumer != (index == storeIndex - 1)) return -1;
+            prior = binary.ResultSlot;
+        }
+        return store.InputStart == prior ? split : -1;
+
+        bool ReadsExactValue(int source, int prior) => source >= 0 ? source == prior :
+            (uint)~source < (uint)Constants.Length && Constants[~source] is BigInteger;
+    }
+
     internal ExecutableInstruction PrepareCallSite(List<ExecutableInstruction> instructions, int index,
         ExecutableInstruction instruction, ExecutableCallSite[] sites)
     {

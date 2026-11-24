@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Complete eligible exact-string cased-split helpers directly for
+  immediate iteration. Preserve ordered nonlocal updates, cancellation
+  and admitted cursor ownership.
 - Complete eligible captured callable pairs before creating the outer
   workspace. Retain ordinary lexical cells and ordered admission.
 - Check the hash of an invalid regex pattern before calling guest flag

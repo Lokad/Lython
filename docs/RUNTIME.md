@@ -2323,9 +2323,13 @@ amounts and spans. Custom protocols keep awaited execution.
 
 Immediate iteration of an exact cased-split chain, an eligible closed helper or
 a directly returned chain through ordinary executable helpers uses a private
-native cursor in the existing engine. Direct returns inherit the caller's use
-through ordinary call frames and suspension; a result stored in a guest local
-keeps its normal Python representation. This replaces the
+native cursor in the existing engine. Eligible exact-string helpers can return
+the cursor before setting up a native workspace. When the helper computes a
+closed integer update from `len(text)`, the runtime checks the live builtin
+and commits the nonlocal write before split admission. The function and builtin
+stack checks still apply. Direct returns inherit the caller's use through
+ordinary call frames and suspension. A result stored in a guest local
+keeps its normal Python representation. The private cursor replaces the
 transient list and value array, sharing the forward scanner and casing writer.
 All future word capacities and cursor storage are admitted before any loop-body
 effects. The reusable buffer supplies cursor metadata and normalized bytes.

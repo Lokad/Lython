@@ -6,6 +6,77 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal static bool TryFinishDirectCasedReturn(PyExecutableFunction function, ExecutableSlot argument,
+        LythonSourceSpan callSpan, out ExecutableSlot result)
+    {
+        result = default;
+        if (!argument.HasMaterializedValue || argument.Reference is not PyString text) return false;
+        var scope = function.DefinitionContext;
+        var code = function.CodeObject;
+        var split = code.DirectCasedReturnIndex;
+        var instructions = code.Instructions;
+        ExecutableCell? width = null;
+        if (split != 0)
+        {
+            var name = ~instructions[0].InputStart - code.Constants.Length;
+            width = function.Captures.GetCell(instructions[split - 1].ClosureSlot);
+            if (width is not { CanStoreDirectly: true } ||
+                !TryResolveExecutableGlobal(code, name, scope, out var length) ||
+                !ExecutionContext.IsLengthBuiltin(length)) return false;
+        }
+
+        try
+        {
+            scope.EnterFunctionCall(callSpan);
+            var previous = scope.State.CurrentException;
+            try
+            {
+                if (width is not null)
+                {
+                    scope.CheckExecution(instructions[0].Span);
+                    var lengthCall = code.CallSites[instructions[0].CallSiteIndex];
+                    var value = InvokeSingleInput<object>(text, LengthOperation, lengthCall.CallSpan, scope);
+                    if (!value.TryGetInteger(out var count))
+                        throw new InvalidOperationException("Exact text length did not produce a machine integer.");
+                    var index = 1;
+                    var computed = EvaluateClosedIntegerSequence<FactoryBindingIntegerSource>(code, count, scope, ref index);
+                    scope.CheckExecution(instructions[index].Span);
+                    width.StoreSlot(computed);
+                }
+                scope.CheckExecution(instructions[split].Span);
+                var words = ExecuteCasedSplit(code, split, text, scope, returnConsumedByIteration: true);
+                try
+                {
+                    scope.CheckExecution(instructions[^1].Span);
+                    result = ExecutableSlot.FromObject(words);
+                }
+                catch
+                {
+                    if (words is ExecutableTemporaryValue owned) owned.Dispose();
+                    throw;
+                }
+                return true;
+            }
+            catch (LythonRuntimeException error)
+            {
+                if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
+                    error.PythonContext ??= previous;
+                throw;
+            }
+            finally
+            {
+                scope.State.SetCurrentException(previous);
+                scope.LeaveFunctionCall();
+            }
+        }
+        catch (LythonRuntimeException error)
+        {
+            PyFunctionBinding.AnnotateException(error, scope, function.Name, callSpan);
+            throw;
+        }
+    }
+
     private static object ExecuteCasedSplit(ExecutableCodeObject code, int index, PyString receiver,
         ExecutionContext context, bool returnConsumedByIteration)
     {

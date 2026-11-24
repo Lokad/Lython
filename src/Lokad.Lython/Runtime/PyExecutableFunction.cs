@@ -114,6 +114,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             frame = null;
             return;
         }
+        if (consumedByIteration && CodeObject.DirectCasedReturnIndex >= 0 && completePositional &&
+            receiver is null && arguments.Length == 1 && unpackedReturn.IsEmpty &&
+            LythonRuntime.TryFinishDirectCasedReturn(this, arguments[0], span, out result))
+        {
+            unpacked = false;
+            frame = null;
+            return;
+        }
         StartNativeWorkspace(call, arguments, receiver, context, span, consumedByIteration, completePositional,
             unpackedReturn, out unpacked, out result, out frame);
     }

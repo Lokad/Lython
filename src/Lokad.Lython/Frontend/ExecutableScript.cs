@@ -651,6 +651,7 @@ internal sealed partial class ExecutableCodeObject
             PrepareImmediatelyCalledDefinition(cancellationToken);
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out var definitionPair);
             DefinitionPair = definitionPair;
+            DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
         }
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
@@ -677,6 +678,7 @@ internal sealed partial class ExecutableCodeObject
     internal ExecutableCreateFunction? DirectDefinitionReturn { get; }
     internal DirectDefinitionPair DefinitionPair { get; }
     internal bool HasDirectDefinitionPair => DefinitionPair != DirectDefinitionPair.None;
+    internal int DirectCasedReturnIndex { get; } = -1;
     internal bool ForwardsCaptures { get; init; }
     internal int FirstSnapshotCell { get; init; }
     internal int[]? SnapshotTailOrder { get; init; }

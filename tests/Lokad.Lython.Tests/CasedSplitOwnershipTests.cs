@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -7,6 +8,68 @@ namespace Lokad.Lython.Tests;
 
 public sealed class CasedSplitOwnershipTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task CompletedHelperCommitsNonlocalBeforeSplitAdmission(bool asynchronous, bool cancel)
+    {
+        var line = new string('A', 137) + " β";
+        var source = $$"""
+            def run():
+                global read_width, loop_ran
+                width = 0
+                read_width = lambda: width
+                def words(line):
+                    nonlocal width
+                    width = len(line) * 2 + 1
+                    return line.lower().split()
+                loop_ran = False
+                for word in words('{{line}}'):
+                    loop_ran = True
+            run()
+            """.ReplaceLineEndings("\n");
+        var syntax = LythonFrontend.Compile(source).Script!;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            // The first packed lower-case word buffer includes its prefix
+            // and the full conservative UTF-8 expansion allowance.
+            var bufferBytes = 32L + sizeof(int) + 4L * System.Text.Encoding.UTF8.GetByteCount(line);
+            if (cancel)
+                hook.AfterGrowth = bytes => { if (bytes == bufferBytes) cancellation.Cancel(); };
+            else hook.RefuseGrowth = bytes => bytes == bufferBytes;
+            try
+            {
+                var failure = asynchronous
+                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context))
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+                Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    failure.Attribution?.Reason);
+                if (!cancel)
+                {
+                    Assert.Equal(source.IndexOf("line.lower().split()", StringComparison.Ordinal), failure.Span?.Start);
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                }
+                var getter = Assert.IsType<PyExecutableFunction>(context.Variables["read_width"]);
+                Assert.True(getter.Captures.TryRead(0, out var observed));
+                Assert.Equal(new BigInteger(line.Length * 2 + 1), Assert.IsType<BigInteger>(observed));
+                Assert.False(Assert.IsType<bool>(context.Variables["loop_ran"]));
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false), InlineData(true)]
     public void ForeignSourceCleanupKeepsCursorAndRetainedWordsFunded(bool upper)
