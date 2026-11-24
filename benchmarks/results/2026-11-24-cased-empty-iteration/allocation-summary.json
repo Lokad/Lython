@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      380488,
+      380488
+    ],
+    "peakAdmission": [
+      735891,
+      735891
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.no-blank-lines",
+    "allocatedBytes": [
+      438968,
+      438968
+    ],
+    "peakAdmission": [
+      869586,
+      869586
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "allocatedBytes": [
+      454288,
+      454288
+    ],
+    "peakAdmission": [
+      806570,
+      806570
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3281558,
+      3281502
+    ],
+    "peakAdmission": [
+      9433482,
+      9433482
+    ]
+  }
+]

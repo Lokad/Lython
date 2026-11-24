@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1557](results/2026-11-24-cased-empty-iteration/README.md) keeps
+early empty cased iteration private. The short report with blank
+lines takes 3.74–9.00% longer warm, with adverse CPU and unchanged
+text allocation and admitted peaks.
+
 [B1556](results/2026-11-24-short-text-helper-cpu/README.md) attributes
 the current report's helper entry, dispatch and word preparation
 across three equivalent script shapes.
