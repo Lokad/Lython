@@ -260,9 +260,11 @@ internal static partial class PyStringOps
     }
 
     public static bool IsIdentifier(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        => IsIdentifier(value.Utf8Span, context, span);
+
+    internal static bool IsIdentifier(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         var first = true;
-        var source = value.Utf8Span;
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
         for (var offset = 0; offset < source.Length;)

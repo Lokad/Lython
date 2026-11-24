@@ -121,7 +121,6 @@ internal sealed partial class LythonRuntime
                 byte[]? escapedBytes = null;
                 var escapeLength = 0;
                 var escapeRunStart = 0;
-                long nameScratch = 0;
                 void FlushLiterals(int end)
                 {
                     if (escapeLength != escapeRunStart)
@@ -200,7 +199,7 @@ internal sealed partial class LythonRuntime
                         if (offset == nameStart)
                             throw ReplacementError("missing group name", template, nameStart, context, span);
                         var name = source[nameStart..offset++];
-                        var group = ResolveReplacementGroup(pattern, name, template, nameStart, storage, ref nameScratch, context, span);
+                        var group = ResolveReplacementGroup(pattern, name, template, nameStart, context, span);
                         AddGroup(group, escapeStart, offset);
                     }
                     else if (escaped == '0')
@@ -254,8 +253,6 @@ internal sealed partial class LythonRuntime
 
                 context.CheckExecution(span);
                 FlushLiterals(source.Length);
-                storage.Shrink(nameScratch);
-                context.CheckExecution(span);
                 var plan = new RegexReplacementPlan(parts, escapedBytes ?? [], count, storage);
                 storage = null; // the operation owns this private reservation
                 return plan;
@@ -276,8 +273,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static int ResolveReplacementGroup(RePatternObject pattern, ReadOnlySpan<byte> name,
-            PyString template, int nameStart, MemoryGovernor.TemporaryMemoryReservation storage, ref long nameScratch,
-            ExecutionContext context, LythonSourceSpan span)
+            PyString template, int nameStart, ExecutionContext context, LythonSourceSpan span)
         {
             var numeric = true;
             var index = 0;
@@ -292,31 +288,29 @@ internal sealed partial class LythonRuntime
                 if (index < pattern.CaptureSlotCount) return index;
                 // Only diagnostics cross into CLR text. Normal names and values
                 // remain native, including supplementary/combining characters.
-                FundReplacementName(name.Length, storage, ref nameScratch, context, span);
+                using var scratch = ReserveReplacementNameDiagnostic(name.Length, context, span);
+                context.CheckExecution(span);
                 var reference = Encoding.UTF8.GetString(name).TrimStart('0');
                 throw ReplacementError($"invalid group reference {reference}", template, nameStart, context, span);
             }
 
-            FundReplacementName(name.Length, storage, ref nameScratch, context, span);
-            var key = PyString.CopyFromUtf8(name, null, span, context);
-            if (!PyStringOps.IsIdentifier(key, context, span))
+            var valid = PyStringOps.IsIdentifier(name, context, span);
+            if (valid && pattern.NamedGroups.TryReadNativeStringInteger(name, context, span, out index)) return index;
+
+            using var diagnostic = ReserveReplacementNameDiagnostic(name.Length, context, span);
+            context.CheckExecution(span);
+            if (!valid)
+            {
+                var key = PyString.CopyFromUtf8(name, null, span, context);
                 throw ReplacementError($"bad character in group name {PyRendering.ToReprPyString(key, new(context)).AsString()}",
                     template, nameStart, context, span);
-            if (pattern.TryGetNamedGroup(key, context, span, out index)) return index;
-            throw new LythonRuntimeException("IndexError", $"unknown group name '{key.AsString()}'", span);
+            }
+            throw new LythonRuntimeException("IndexError", $"unknown group name '{Encoding.UTF8.GetString(name)}'", span);
         }
 
-        private static void FundReplacementName(int length, MemoryGovernor.TemporaryMemoryReservation storage,
-            ref long scratch, ExecutionContext context, LythonSourceSpan span)
-        {
-            // One name is read at a time. Keep enough temporary funding
-            // for the largest lookup and refund it before replay.
-            var required = checked(192L + 4L * length);
-            if (required <= scratch) return;
-            storage.Grow(required - scratch, span);
-            scratch = required;
-            context.CheckExecution(span);
-        }
+        private static MemoryGovernor.TemporaryMemoryReservation ReserveReplacementNameDiagnostic(
+            int length, ExecutionContext context, LythonSourceSpan span)
+            => context.MemoryGovernor.ReserveTemporary(checked(192L + 4L * length), span);
 
         private static LythonRuntimeException ReplacementError(string message, PyString template, int byteOffset,
             ExecutionContext context, LythonSourceSpan span)

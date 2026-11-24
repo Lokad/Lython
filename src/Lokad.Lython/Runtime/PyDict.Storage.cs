@@ -495,6 +495,16 @@ internal sealed partial class PyDict
         return index >= 0;
     }
 
+    internal bool TryReadNativeStringInteger(ReadOnlySpan<byte> key, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, out int value)
+    {
+        System.Diagnostics.Debug.Assert(_recordKeys is null && !HasProtocolKeys);
+        context.CheckExecution(span);
+        var index = _nativeCount == 0 ? -1 : FindNativeTextIndex(_nativeItems!, _nativeCount, key, context, span, out _);
+        value = index >= 0 ? (int)_nativeItems![index].Integer : -1;
+        return index >= 0;
+    }
+
     // Copying publishes aliases, while shared record metadata must remain
     // immutable. Materialize before either boundary. The existing value-slot
     // allowance already funds these boxes; no callback/admission is required.

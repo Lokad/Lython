@@ -18,13 +18,17 @@ public sealed class RegexAdapterSemanticsTests
                     match.expand(prefix + suffix)
                 except re.PatternError as error:
                     print(error.msg[:27], error.msg[-8:], error.pos)
+            try:
+                match.expand(r'\g<尾>')
+            except IndexError as error:
+                print(str(error))
             """);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("x\nbad character in group name \\\\>tail' 3\nbad escape (end of pattern) pattern) 1023\n",
+            Assert.Equal("x\nbad character in group name \\\\>tail' 3\nbad escape (end of pattern) pattern) 1023\nunknown group name '尾'\n",
                 result.StandardOutput);
         }
     }
