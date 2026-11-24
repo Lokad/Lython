@@ -14,6 +14,7 @@ public sealed class JsonOptionUnwindTests
         { "override", "class E(json.JSONEncoder):\n def iterencode(self,value,_one_shot=False):read();return iter(['custom'])\nE().encode([1])" },
         { "decoder-truth", "class Flag:\n def __bool__(self):read();return False\njson.JSONDecoder(parse_int=Flag()).decode('1')" },
         { "sorted-default", "class Value:pass\nlist(json.JSONEncoder(sort_keys=True,default=lambda x:read()).iterencode({'a':Value(),'z':1}))" },
+        { "expanded-default", "class Value:pass\noptions={'ensure_ascii':False,'sort_keys':True,'default':lambda value:read()}\njson.dumps({'z':1,'é':Value()},**options)" },
     };
 
     private const string Read = """

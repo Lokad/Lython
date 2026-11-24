@@ -46,9 +46,9 @@ internal sealed partial class LythonRuntime
         object SortKeys)
     {
         // Immutable builtin metadata; no guest values, receiver or execution owner.
-        internal static readonly JsonDumpOptions Default = new(false, true, true, true,
+        internal static readonly JsonDumpOptions Default = new(RuntimeValue(false), true, true, RuntimeValue(true),
             null, PyString.FromString(", "), PyString.FromString(": "), BoundCallable.Create(JsonEncoderObject.Default,
-                LythonKnownCallableSignatures.Json.EncoderDefault), false);
+                LythonKnownCallableSignatures.Json.EncoderDefault), RuntimeValue(false));
     }
 
     internal readonly record struct JsonSeparators(object ItemSeparator, object KeySeparator);

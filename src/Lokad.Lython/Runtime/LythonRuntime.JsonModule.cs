@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static object EncodingFlag(BoundBuiltinArguments bound, int index, bool fallback)
-            => bound.Assigned[index] ? bound.Values[index] : fallback;
+            => bound.Assigned[index] ? bound.Values[index] : RuntimeValue(fallback);
 
         private static async ValueTask<object> InvokeBoundEncoderAsync(BoundBuiltinArguments bound, int offset,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
@@ -408,9 +408,9 @@ internal sealed partial class LythonRuntime
                 var allowNan = EncodingFlag(bound, offset + 4, true);
                 if (oneShot)
                 {
-                    sort = await JsonOptionTruthAsync(sort, context, span, asynchronous).ConfigureAwait(false);
-                    skip = await JsonOptionTruthAsync(skip, context, span, asynchronous).ConfigureAwait(false);
-                    allowNan = await JsonOptionTruthAsync(allowNan, context, span, asynchronous).ConfigureAwait(false);
+                    sort = RuntimeValue(await JsonOptionTruthAsync(sort, context, span, asynchronous).ConfigureAwait(false));
+                    skip = RuntimeValue(await JsonOptionTruthAsync(skip, context, span, asynchronous).ConfigureAwait(false));
+                    allowNan = RuntimeValue(await JsonOptionTruthAsync(allowNan, context, span, asynchronous).ConfigureAwait(false));
                 }
 
                 var options = new JsonDumpOptions(skip, ensureAscii, circular, allowNan, indentText, item, key,
@@ -429,16 +429,15 @@ internal sealed partial class LythonRuntime
             IReadOnlyList<KeyValuePair<string, object>> extras, int offset, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            object Flag(int index, bool fallback) => bound.Assigned[offset + index] ? bound.Values[offset + index] : fallback;
-            return !await JsonOptionTruthAsync(Flag(1, false), context, span, asynchronous).ConfigureAwait(false)
-                && await JsonOptionTruthAsync(Flag(2, true), context, span, asynchronous).ConfigureAwait(false)
-                && await JsonOptionTruthAsync(Flag(3, true), context, span, asynchronous).ConfigureAwait(false)
-                && await JsonOptionTruthAsync(Flag(4, true), context, span, asynchronous).ConfigureAwait(false)
+            return !await JsonOptionTruthAsync(EncodingFlag(bound, offset + 1, false), context, span, asynchronous).ConfigureAwait(false)
+                && await JsonOptionTruthAsync(EncodingFlag(bound, offset + 2, true), context, span, asynchronous).ConfigureAwait(false)
+                && await JsonOptionTruthAsync(EncodingFlag(bound, offset + 3, true), context, span, asynchronous).ConfigureAwait(false)
+                && await JsonOptionTruthAsync(EncodingFlag(bound, offset + 4, true), context, span, asynchronous).ConfigureAwait(false)
                 && GetOptional(bound.Values, offset + 5) is PyNone
                 && GetOptional(bound.Values, offset + 6) is PyNone
                 && GetOptional(bound.Values, offset + 7) is PyNone
                 && GetOptional(bound.Values, offset + 8) is PyNone
-                && !await JsonOptionTruthAsync(Flag(9, false), context, span, asynchronous).ConfigureAwait(false)
+                && !await JsonOptionTruthAsync(EncodingFlag(bound, offset + 9, false), context, span, asynchronous).ConfigureAwait(false)
                 && extras.Count == 0;
         }
 

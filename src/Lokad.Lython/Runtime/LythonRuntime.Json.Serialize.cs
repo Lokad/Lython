@@ -103,18 +103,13 @@ internal sealed partial class LythonRuntime
         internal static bool IsSupportedJsonObjectKey(object key)
             => key is PyString or PyNone or double || PyNumberOps.IsInteger(key);
 
-        internal static void AppendJsonValuePrefix(GovernedByteBuilder builder, JsonDumpOptions options, int depth, int index, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonIndent(GovernedByteBuilder builder, PyString? indentUnit, int depth,
+            ExecutionContext context, LythonSourceSpan span)
         {
-            _ = index;
-            AppendJsonContainerSuffix(builder, options, depth, context, span);
-        }
-
-        internal static void AppendJsonContainerSuffix(GovernedByteBuilder builder, JsonDumpOptions options, int depth, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (options.IndentUnit is null) return;
+            if (indentUnit is null) return;
             builder.Append((byte)'\n');
             for (var i = 0; i < depth; i++)
-                AppendSeparator(builder, options.IndentUnit, context, span);
+                AppendSeparator(builder, indentUnit, context, span);
         }
 
         // Copy existing native text in bounded windows; no UTF-16 staging or
@@ -243,7 +238,8 @@ internal sealed partial class LythonRuntime
         internal static ValueTask AppendJsonDoubleAsync(GovernedByteBuilder builder, double value, JsonDumpOptions options,
             ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool quoted = false)
         {
-            if (!double.IsFinite(value)) return AppendNonFiniteJsonDoubleAsync(builder, value, options, context, span, asynchronous, quoted);
+            if (!double.IsFinite(value))
+                return AppendNonFiniteJsonDoubleAsync(builder, value, options.AllowNan, context, span, asynchronous, quoted);
             Span<byte> bytes = stackalloc byte[PyNumberOps.FloatRenderCapacity];
             var length = PyNumberOps.WriteFloatUtf8(value, bytes);
             AppendJsonDoubleBytes(builder, bytes[..length], context, span, quoted);
@@ -251,9 +247,9 @@ internal sealed partial class LythonRuntime
         }
 
         private static async ValueTask AppendNonFiniteJsonDoubleAsync(GovernedByteBuilder builder, double value,
-            JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool quoted)
+            object allowNan, ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool quoted)
         {
-            if (!await JsonOptionTruthAsync(options.AllowNan, context, span, asynchronous).ConfigureAwait(false))
+            if (!await JsonOptionTruthAsync(allowNan, context, span, asynchronous).ConfigureAwait(false))
                 throw new LythonRuntimeException("ValueError", "Out of range float values are not JSON compliant.", span);
             AppendJsonDoubleBytes(builder, double.IsNaN(value) ? "NaN"u8 : value > 0 ? "Infinity"u8 : "-Infinity"u8,
                 context, span, quoted);
