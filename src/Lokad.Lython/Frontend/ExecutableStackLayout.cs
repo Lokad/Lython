@@ -227,9 +227,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 (next.InputStart == resultSlot && next.SecondInput < firstTemporarySlot ||
                  next.SecondInput == resultSlot && next.InputStart < firstTemporarySlot);
 
-        static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 ||
-            block[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
-                ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
+        static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 || !block[^1].TerminatesBlock;
     }
 
     private static void PrepareTupleReturn(ExecutableCodeObject code, ExecutableInstruction[] tape,

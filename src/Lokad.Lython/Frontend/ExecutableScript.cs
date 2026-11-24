@@ -133,6 +133,10 @@ internal readonly record struct ExecutableInstruction
 
     public LythonSourceSpan Span { get; }
 
+    internal bool TerminatesBlock => OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
+        ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or
+        ExecutableOpCode.Raise or ExecutableOpCode.ReraiseException or ExecutableOpCode.FailAssertion;
+
     // Compiler-owned storage positions. They share the existing instruction;
     // no input-plan table or runtime shape calculation is needed.
     public int InputStart => _inputStart;

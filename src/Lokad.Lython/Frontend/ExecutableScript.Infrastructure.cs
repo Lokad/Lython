@@ -36,12 +36,7 @@ internal sealed partial class ExecutableScript
         private bool IsTerminated(int blockIndex)
         {
             var instructions = _buffers.Blocks[blockIndex];
-            if (instructions.Count == 0)
-            {
-                return false;
-            }
-
-            return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
+            return instructions.Count != 0 && instructions[^1].TerminatesBlock;
         }
 
         private int InternLocal(string name)

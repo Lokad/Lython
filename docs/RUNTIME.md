@@ -569,6 +569,9 @@ mirrored locals keep their ordinary lookup. Missing direct locals retain their
 original read spans in cold metadata. One shape pass after forwarding prepares
 physical positions, live temporary extents, maximum workspace and exception-entry
 depths. Calls can still determine the workspace capacity.
+The builder ends a suite at an unconditional raise. An assertion's failure
+block ends at the assertion error. Lexical analysis still visits the whole
+source, including locals and generator yields in unreachable suites.
 An adjacent global target and uncaptured local can also feed a single positional
 call. The runtime reads the live target first. Eligible unary builtins use the
 argument directly. Other callees keep the evaluated pair in the call workspace

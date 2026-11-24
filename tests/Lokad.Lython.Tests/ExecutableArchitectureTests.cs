@@ -8,6 +8,61 @@ namespace Lokad.Lython.Tests;
 public sealed class ExecutableArchitectureTests
 {
     [Fact]
+    public async Task UnconditionalRaiseKeepsLexicalFactsAndGeneratorCleanup()
+    {
+        const string source = """
+            def run(valid):
+                try:
+                    assert valid, 'invalid'
+                    raise ValueError('expected')
+                    dead_local = valid + 100
+                    yield dead_local
+                except AssertionError:
+                    print('assertion')
+                finally:
+                    print('cleanup')
+
+            for valid in (False, True):
+                pending = run(valid)
+                print('created')
+                try:
+                    next(pending)
+                except (StopIteration, ValueError) as error:
+                    print(type(error).__name__)
+            """;
+        var frontend = LythonFrontend.Compile(source);
+        var module = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
+        var function = Assert.Single(module.FunctionBindings());
+        var code = function.CodeObject;
+        Assert.True(function.IsGenerator);
+        Assert.Contains("dead_local", code.LocalNames);
+        Assert.DoesNotContain(code.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Yield);
+        var assertion = Assert.Single(code.Instructions, instruction => instruction.OpCode == ExecutableOpCode.FailAssertion);
+        Assert.Single(code.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Jump && instruction.Span == assertion.Span);
+
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            const string expected = "created\nassertion\ncleanup\nStopIteration\ncreated\ncleanup\nValueError\n";
+            using (var result = script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            using (var result = await script.RunAsync(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void ClosedScalarReturnReadsCapturedOperandFromItsLiveCell()
     {
         const string source = """

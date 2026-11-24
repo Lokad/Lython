@@ -13,12 +13,10 @@ internal sealed partial class ExecutableScript
             AddInstruction(block, ExecutableInstruction.Jump(after, statement.Span));
             if (statement.Message is not null) failure = CompileExpression(statement.Message, failure);
             AddInstruction(failure, ExecutableInstruction.FailAssertion(statement.Message is not null, statement.Span));
-            // The operation throws. A structural jump also terminates this block.
-            AddInstruction(failure, ExecutableInstruction.Jump(after, statement.Span));
             return after;
         }
 
-        private int CompileRaise(RaiseStatementSyntax statement, int block)
+        private int? CompileRaise(RaiseStatementSyntax statement, int block)
         {
             if (statement.Expression is null)
                 AddInstruction(block, ExecutableInstruction.ReraiseException(statement.Span));
@@ -28,7 +26,7 @@ internal sealed partial class ExecutableScript
                 if (statement.CauseExpression is not null) block = CompileExpression(statement.CauseExpression, block);
                 AddInstruction(block, ExecutableInstruction.Raise(statement.CauseExpression is not null, statement.Span));
             }
-            return block;
+            return null;
         }
 
         private int CompileDelete(ExpressionSyntax expression, int block)
