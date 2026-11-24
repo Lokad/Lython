@@ -422,11 +422,79 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<RePatternObject> CompileProtocolRequest(RegexPatternCache cache, RegexPatternCache.Key key,
             object flags, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var options = await ParseFlags(flags, span, context, asynchronous).ConfigureAwait(false);
+            var state = new GuestRegexFlags(flags, span, context, asynchronous);
+            if (flags is PyInstance && context.State.RegexProvider is ILythonRegexStagedProvider staged)
+                return await CompileStagedPattern(staged, cache, key, state, span, context, asynchronous).ConfigureAwait(false);
+
+            var verboseValue = await state.ReadVerboseAsync().ConfigureAwait(false);
+            var verbose = await verboseValue.IsEnabledAsync().ConfigureAwait(false);
+            await state.FinishAsync().ConfigureAwait(false);
+            var programFlags = await state.ReadProgramFlagsAsync().ConfigureAwait(false);
+            var reportedFlags = await state.ReadReportedFlagsAsync().ConfigureAwait(false);
+            // Identical explicit modes use the same request as exact flags.
+            if (programFlags == (reportedFlags & GuestRegexFlags.ProgramMask)
+                && (reportedFlags & (PythonUnicodeFlag | PythonAsciiFlag)) != 0)
+                programFlags = null;
+            var options = new LythonRegexOptions(reportedFlags, verbose) { ProgramFlags = programFlags };
             return await CompilePattern(cache, key, options, span, context, asynchronous).ConfigureAwait(false);
         }
 
-        private static async ValueTask<RePatternObject> CompilePattern(RegexPatternCache cache, RegexPatternCache.Key key,
+        private static async ValueTask<RePatternObject> CompileStagedPattern(ILythonRegexStagedProvider provider,
+            RegexPatternCache cache, RegexPatternCache.Key key, GuestRegexFlags flags, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
+        {
+            var token = context.State.CancellationToken;
+            var governor = context.MemoryGovernor;
+            var pattern = key.Pattern;
+            ILythonRegexPattern? unpublished = null;
+            try
+            {
+                using (var parsed = await ParseStagedPattern(provider, flags, pattern, context, span, token).ConfigureAwait(false))
+                {
+                    var programFlags = await flags.ReadProgramFlagsAsync().ConfigureAwait(false)
+                        ?? throw RuntimeErrors.Capability("Staged regex compilation requires integer matching flags.", span);
+                    unpublished = ProviderCall((parsed, programFlags, governor, token),
+                        static state => state.parsed.Compile(state.programFlags, state.governor.Budget, state.token),
+                        governor, token, span, pattern);
+                }
+
+                var reported = await flags.ReadReportedFlagsAsync().ConfigureAwait(false);
+                var compiled = unpublished.RequireNotNull();
+                unpublished = null;
+                // An integer option key cannot describe parser decisions made
+                // by guest callbacks. Compare actual compiled programs.
+                return await PublishPattern(cache, key, compiled, artifact: null, options: null, reported,
+                    span, context, asynchronous).ConfigureAwait(false);
+            }
+            finally { unpublished?.Dispose(); }
+        }
+
+        private static async ValueTask<ILythonRegexParsedPattern> ParseStagedPattern(ILythonRegexStagedProvider provider,
+            GuestRegexFlags flags, PyString pattern, ExecutionContext context, LythonSourceSpan span, CancellationToken token)
+        {
+            context.CheckExecution(span);
+            ILythonRegexParsedPattern? parsed = null;
+            try
+            {
+                parsed = await provider.ParseAsync(pattern.Utf8Bytes, flags, context.MemoryGovernor.Budget, token)
+                    .ConfigureAwait(false);
+                context.CheckExecution(span);
+                if (parsed is null || !flags.ParsingComplete)
+                    throw RuntimeErrors.Capability("Regex provider returned without completing staged parsing.", span);
+                var complete = parsed;
+                parsed = null;
+                return complete;
+            }
+            catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
+            { throw ProviderFailure(error, context.MemoryGovernor, token, span, pattern); }
+            finally
+            {
+                flags.CloseParsing();
+                parsed?.Dispose();
+            }
+        }
+
+        private static ValueTask<RePatternObject> CompilePattern(RegexPatternCache cache, RegexPatternCache.Key key,
             LythonRegexOptions options, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
@@ -439,13 +507,22 @@ internal sealed partial class LythonRuntime
             var compiled = artifact?.Program ?? ProviderCall((provider, pattern, options, context, token),
                 static state => state.provider.Compile(state.pattern.Utf8Bytes, state.options,
                     state.context.MemoryGovernor.Budget, state.token), context.MemoryGovernor, token, span, pattern);
+            return PublishPattern(cache, key, compiled, artifact, options, reported: null, span, context, asynchronous);
+        }
+
+        private static async ValueTask<RePatternObject> PublishPattern(RegexPatternCache cache, RegexPatternCache.Key key,
+            ILythonRegexPattern compiled, CompiledRegexPrograms.Entry? artifact, LythonRegexOptions? options,
+            int? reported, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var token = context.State.CancellationToken;
+            var pattern = key.Pattern;
             PyDict? names = null;
             var published = false;
             try
             {
                 var captureSlotCount = artifact?.CaptureSlotCount
                     ?? ReadCaptureSlotCount(compiled, context.MemoryGovernor, token, span);
-                var flags = ProviderCall(compiled, static p => p.Flags, context.MemoryGovernor, token, span, pattern);
+                var flags = reported ?? ProviderCall(compiled, static p => p.Flags, context.MemoryGovernor, token, span, pattern);
                 var wrapperBytes = checked(256L + 64L * captureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
                 // Guest-visible name strings can acquire caches and produce new
@@ -709,77 +786,122 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        // Flags flow through operator dispatch like CPython (sre fix_flags plus
-        // the _code/_sre combines): verbose/locale/ascii checks, the unicode
-        // combine, debug checks, then the state combines; the converted C int
-        // carries unknown bits through to the echo.
-        private static async ValueTask<LythonRegexOptions> ParseFlags(object value, LythonSourceSpan span,
-            ExecutionContext context, bool asynchronous)
+        // The provider sees only integer modes and truth values. Guest
+        // semantics and the evolving parser operand stay with the execution.
+        private sealed class GuestRegexFlags(object requested, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous) : ILythonRegexParserFlags
         {
-            var verbose = await TestFlag(PythonVerboseFlag).ConfigureAwait(false);
-            if (await TestFlag(PythonLocaleFlag).ConfigureAwait(false))
-                throw RuntimeErrors.Value("cannot use LOCALE flag with a str pattern", span);
-
-            var stateFlags = value;
-            if (!await TestFlag(PythonAsciiFlag).ConfigureAwait(false))
-            {
-                var unicode = new BigInteger(PythonUnicodeFlag);
-                if (value is PyInstance)
-                {
-                    stateFlags = asynchronous
-                        ? await EvaluateAugmentedAssignmentAsync(value, unicode, AugmentedAssignmentOperatorSyntax.BitwiseOr, context, span).ConfigureAwait(false)
-                        : EvaluateAugmentedAssignment(value, unicode, AugmentedAssignmentOperatorSyntax.BitwiseOr, context, span);
-                }
-                else stateFlags = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, unicode).ConfigureAwait(false);
-            }
-            else if (await TestFlag(PythonUnicodeFlag).ConfigureAwait(false))
-                throw RuntimeErrors.Value("ASCII and UNICODE flags are incompatible", span);
-
-            // CPython uses the parser state in both unions. The left operand
-            // changes, so guest dispatch can produce different integers.
-            var debug = new BigInteger(RegexDebugFlag);
-            _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
-            var program = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, stateFlags, value).ConfigureAwait(false);
-            _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
-            var converted = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, stateFlags).ConfigureAwait(false);
-            if (converted is PyInstance)
-                converted = (await CoerceTypeIndexAsync(converted, context, span, asynchronous).ConfigureAwait(false))!;
-            var flagBits = ToRegexCInt(converted, span, context);
-            _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
-
-            if ((flagBits & RegexDebugFlag) != 0)
-                throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
-
-            // Extract the compiler's integer modes through the managed numeric
-            // path. Wide integers can carry arbitrary unused bits.
-            const int programMask = PythonIgnoreCaseFlag | PythonLocaleFlag | PythonMultilineFlag |
+            internal const int ProgramMask = PythonIgnoreCaseFlag | PythonLocaleFlag | PythonMultilineFlag |
                 PythonDotAllFlag | PythonUnicodeFlag | PythonAsciiFlag;
-            int? programBits = program switch
-            {
-                bool => 0,
-                int bits => bits & programMask,
-                BigInteger bits when bits >= int.MinValue && bits <= int.MaxValue => (int)bits & programMask,
-                BigInteger => ToRegexCInt(await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd,
-                    program, new BigInteger(programMask)).ConfigureAwait(false), span, context),
-                _ => null,
-            };
-            // Identical explicit modes are the same request used by exact
-            // flags. Preserve frontend reuse and known program equality.
-            if (programBits == (flagBits & programMask)
-                && (flagBits & (PythonUnicodeFlag | PythonAsciiFlag)) != 0)
-                programBits = null;
-            return new(flagBits, verbose) { ProgramFlags = programBits };
 
-            ValueTask<object> EvaluateFlagOperation(BinaryOperatorSyntax operation, object left, object right)
+            private readonly object _requested = requested;
+            private object _parserFlags = requested;
+            private bool _parsingClosed;
+            internal bool ParsingComplete { get; private set; }
+            internal void CloseParsing() => _parsingClosed = true;
+
+            public async ValueTask<LythonRegexVerboseFlag> ReadVerboseAsync()
+            {
+                CheckParsing();
+                var operand = await EvaluateParserFlag(PythonVerboseFlag).ConfigureAwait(false);
+                return operand switch
+                {
+                    bool boolean => new(boolean),
+                    int number => new(number != 0),
+                    BigInteger number => new(!number.IsZero),
+                    _ => new(() =>
+                    {
+                        CheckParsing();
+                        return ReadTruthAsync(operand);
+                    }),
+                };
+            }
+
+            public ValueTask AddGlobalAsync(int flagBits)
+            {
+                CheckParsing();
+                return AddParserFlags(flagBits);
+            }
+
+            private async ValueTask AddParserFlags(int flagBits)
+            {
+                var flags = new BigInteger(flagBits);
+                if (_parserFlags is PyInstance)
+                {
+                    _parserFlags = asynchronous
+                        ? await EvaluateAugmentedAssignmentAsync(_parserFlags, flags, AugmentedAssignmentOperatorSyntax.BitwiseOr,
+                            context, span).ConfigureAwait(false)
+                        : EvaluateAugmentedAssignment(_parserFlags, flags, AugmentedAssignmentOperatorSyntax.BitwiseOr, context, span);
+                }
+                else _parserFlags = await Evaluate(BinaryOperatorSyntax.BitwiseOr, _parserFlags, flags).ConfigureAwait(false);
+            }
+
+            public async ValueTask FinishAsync()
+            {
+                CheckParsing();
+                if (await TestParserFlag(PythonLocaleFlag).ConfigureAwait(false))
+                    throw RuntimeErrors.Value("cannot use LOCALE flag with a str pattern", span);
+                if (!await TestParserFlag(PythonAsciiFlag).ConfigureAwait(false))
+                    await AddParserFlags(PythonUnicodeFlag).ConfigureAwait(false);
+                else if (await TestParserFlag(PythonUnicodeFlag).ConfigureAwait(false))
+                    throw RuntimeErrors.Value("ASCII and UNICODE flags are incompatible", span);
+                ParsingComplete = true;
+            }
+
+            internal async ValueTask<int?> ReadProgramFlagsAsync()
+            {
+                context.CheckExecution(span);
+                await ProbeDebugAsync().ConfigureAwait(false);
+                var program = await Evaluate(BinaryOperatorSyntax.BitwiseOr, _parserFlags, _requested).ConfigureAwait(false);
+                // Wide integers can carry arbitrary unused bits. Mask through
+                // the managed numeric path with its allocation admission.
+                return program switch
+                {
+                    bool => 0,
+                    int bits => bits & ProgramMask,
+                    BigInteger bits when bits >= int.MinValue && bits <= int.MaxValue => (int)bits & ProgramMask,
+                    BigInteger => ToRegexCInt(await Evaluate(BinaryOperatorSyntax.BitwiseAnd,
+                        program, new BigInteger(ProgramMask)).ConfigureAwait(false), span, context),
+                    _ => null,
+                };
+            }
+
+            internal async ValueTask<int> ReadReportedFlagsAsync()
+            {
+                context.CheckExecution(span);
+                await ProbeDebugAsync().ConfigureAwait(false);
+                var reported = await Evaluate(BinaryOperatorSyntax.BitwiseOr, _requested, _parserFlags).ConfigureAwait(false);
+                if (reported is PyInstance)
+                    reported = (await CoerceTypeIndexAsync(reported, context, span, asynchronous).ConfigureAwait(false))!;
+                var bits = ToRegexCInt(reported, span, context);
+                await ProbeDebugAsync().ConfigureAwait(false);
+                if ((bits & RegexDebugFlag) != 0)
+                    throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
+                return bits;
+            }
+
+            private void CheckParsing()
+            {
+                if (ParsingComplete || _parsingClosed)
+                    throw RuntimeErrors.Capability("Regex provider used flag callbacks after staged parsing finished.", span);
+                context.CheckExecution(span);
+            }
+
+            private ValueTask<object> ProbeDebugAsync()
+                => Evaluate(BinaryOperatorSyntax.BitwiseAnd, _requested, new BigInteger(RegexDebugFlag));
+
+            private ValueTask<object> Evaluate(BinaryOperatorSyntax operation, object left, object right)
                 => asynchronous ? EvaluateBinaryOperatorAsync(operation, left, right, context, span)
                     : new(EvaluateBinaryOperator(operation, left, right, context, span));
 
-            async ValueTask<bool> TestFlag(int flag)
-            {
-                var result = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(flag)).ConfigureAwait(false);
-                return asynchronous ? await IsTruthyAsync(result, context, span).ConfigureAwait(false)
-                    : IsTruthy(result, context, span);
-            }
+            private async ValueTask<bool> TestParserFlag(int flag)
+                => await ReadTruthAsync(await EvaluateParserFlag(flag).ConfigureAwait(false)).ConfigureAwait(false);
+
+            private ValueTask<object> EvaluateParserFlag(int flag)
+                => Evaluate(BinaryOperatorSyntax.BitwiseAnd, _parserFlags, new BigInteger(flag));
+
+            private ValueTask<bool> ReadTruthAsync(object value)
+                => asynchronous ? IsTruthyAsync(value, context, span) : new(IsTruthy(value, context, span));
         }
 
         // The converted C int carries unknown bits through; out-of-range

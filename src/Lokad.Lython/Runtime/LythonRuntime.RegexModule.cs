@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
 
     internal sealed class RePatternObject(
         PyString pattern, int flags, ILythonRegexPattern regex, int captureSlotCount, PyDict namedGroups,
-        LythonRegexOptions options)
+        LythonRegexOptions? options)
         : IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue
     {
         public PyString Pattern { get; } = pattern;
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
         public ILythonRegexPattern Regex { get; } = regex;
         public int CaptureSlotCount { get; } = captureSlotCount;
         public PyDict NamedGroups { get; } = namedGroups;
-        private LythonRegexOptions Options { get; } = options;
+        private LythonRegexOptions? Options { get; } = options;
 
         // Pattern creation already hashed the text under the active token.
         public int GetPyHashCode() => HashCode.Combine(Pattern.GetHashCode(), Flags);
@@ -114,9 +114,9 @@ internal sealed partial class LythonRuntime
             if (Flags != other.Flags || !Pattern.Equals(other.Pattern, context, span)) return false;
             // Unicode provenance only affects validation. Both handles already
             // represent successful compilations of the same original pattern.
-            if (Options.Flags == other.Options.Flags && Options.Verbose == other.Options.Verbose &&
-                Options.ProgramFlags == other.Options.ProgramFlags ||
-                ReferenceEquals(Regex, other.Regex)) return true;
+            if (ReferenceEquals(Regex, other.Regex)) return true;
+            if (Options is { } left && other.Options is { } right && left.Flags == right.Flags &&
+                left.Verbose == right.Verbose && left.ProgramFlags == right.ProgramFlags) return true;
             return RegexCompiler.ProviderCall((Pattern: this, other, context, span),
                 static state => state.Pattern.CompareProgramKeys(state.other, state.context, state.span),
                 context?.MemoryGovernor, context?.State.CancellationToken ?? default, span, Pattern);
