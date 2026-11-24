@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1600](results/2026-11-24-private-calls-cpython/README.md)
+puts delivered captured rules at 1.714–1.778× CPython warm and
+1.626–1.634× through result. The quoted invoice is near external parity.
+Both B1599 regressions remain visible in that within-Lython comparison.
+
 [B1599](results/2026-11-24-private-definition-call/isolation/README.md)
 restores the existing closed parameter evaluator's generated-code size.
 Captured rules take 17.56–18.41% less warm elapsed at 208 KiB less

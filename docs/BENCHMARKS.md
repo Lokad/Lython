@@ -5,21 +5,23 @@
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
 | Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.25140–1.30890 ms | 0.93864–0.94297 ms | 1.327–1.394× | Diagnostic. [B1597]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.2153–6.3328 ms | 6.2519–6.3261 ms | 0.982–1.013× | Diagnostic. Spans parity. [B1587]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.21401–6.25986 ms | 6.32403–6.34140 ms | 0.980–0.990× | Diagnostic. Near parity. [B1600]. |
 | Eager annotated rules | 2,048 rule groups | 0.43634–0.47390 ms | 0.41110–0.41435 ms | 1.053–1.153× | Diagnostic. Worker spread up to 8.61%. [B1593]. |
-| Postponed nested annotated rules | 2,048 rule groups | 0.59811–0.61674 ms | 0.53988–0.54404 ms | 1.099–1.142× | Diagnostic. [B1593]. |
-| Generated rules with captured locals | 2,048 rule groups | 1.56112–1.57848 ms | 0.76697–0.77192 ms | 2.022–2.058× | Diagnostic. [B1597]. |
+| Postponed nested annotated rules | 2,048 rule groups | 0.58887–0.62014 ms | 0.54503–0.54605 ms | 1.078–1.138× | Diagnostic. Lython worker spread 5.31%. [B1600]. |
+| Generated rules with captured locals | 2,048 rule groups | 1.33308–1.37931 ms | 0.77580–0.77780 ms | 1.714–1.778× | Diagnostic. [B1600]. |
 | Generated rules with defaults | 2,048 rule groups | 0.97193–0.97791 ms | 0.68186–0.68939 ms | 1.410–1.434× | Diagnostic. [B1597]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.1299–5.2194 ms | 6.5146–6.7011 ms | 0.766–0.801× | Diagnostic. [B1587]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The captured and defaulted rules and the warm short
-report use frozen `67be15bd0`, matching `70b04c0af`. The annotated rules
-use `4eb8c9559`, matching `5313f9e71`. The invoice, JSON export and
-short-report compilation lanes use `ccdf43a59`, matching `2cf721f73`.
+two workers per engine. Captured rules, warm postponed rules and warm
+quoted invoice use frozen `642c8f957`, matching `c40540135`. Defaulted
+rules and the warm short report use `67be15bd0`, matching `70b04c0af`.
+Eager annotated rules and the postponed compilation lanes use `4eb8c9559`,
+matching `5313f9e71`. JSON export and the short-report compilation
+lanes use `ccdf43a59`, matching `2cf721f73`.
 The two CSV meters use `95aa40601`, matching `8aef89b09`. These
-collections ran on November 24, 2026 UTC. [B1597] · [B1593] · [B1587] · [B1568].
+collections ran on November 24, 2026 UTC. [B1600] · [B1597] · [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -44,8 +46,8 @@ measurements cover the wider request.
 | Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
 | Generated rules with defaults, 427 B | Compilation only | 0.02384–0.02414 ms | 0.04129–0.04160 ms | 0.573–0.585× | Diagnostic. [B1597]. |
 | Generated rules with defaults | Compile-to-result | 0.97730–0.97877 ms | 0.72738–0.73606 ms | 1.328–1.346× | Diagnostic. [B1597]. |
-| Generated rules with captured locals | Compilation only | 0.02616–0.02673 ms | 0.04681–0.04689 ms | 0.558–0.571× | Diagnostic. [B1597]. |
-| Generated rules with captured locals | Compile-to-result | 1.65077–1.66925 ms | 0.82070–0.82885 ms | 1.992–2.034× | Diagnostic. [B1597]. |
+| Generated rules with captured locals | Compilation only | 0.02666–0.02686 ms | 0.04730–0.04741 ms | 0.562–0.568× | Diagnostic. [B1600]. |
+| Generated rules with captured locals | Compile-to-result | 1.33545–1.33750 ms | 0.81862–0.82110 ms | 1.626–1.634× | Diagnostic. [B1600]. |
 | Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.05936–0.06033 ms | 0.09800–0.09855 ms | 0.602–0.616× | Diagnostic. [B1534]. |
 | Quote-heavy CSV policy invoice | Compile-to-result | 6.539–6.644 ms | 6.799–6.825 ms | 0.958–0.977× | Diagnostic. [B1534]. |
 | Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
@@ -107,3 +109,4 @@ document reproduction.
 [B1587]: ../benchmarks/results/2026-11-24-shared-traversal-cpython/README.md
 [B1593]: ../benchmarks/results/2026-11-24-annotated-factories-cpython/README.md
 [B1597]: ../benchmarks/results/2026-11-24-closed-pairs-cpython/README.md
+[B1600]: ../benchmarks/results/2026-11-24-private-calls-cpython/README.md
