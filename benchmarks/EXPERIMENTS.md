@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1559](results/2026-11-24-meter-tuple-cpu/README.md) attributes
+20–30 nearest runtime samples to tuple construction and 235 to float
+parsing and Unicode digit lookup in the typed meter. The profile
+selects shorter decimal processing for the next CPU comparison.
+
 [B1558](results/2026-11-24-direct-match-expand/README.md) replaces
 the growable output with one admitted expansion. The wide script
 allocates 69.81% less and takes 29.40–31.48% less warm time.
