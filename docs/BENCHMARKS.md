@@ -4,7 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.626–2.645 ms | 2.484–2.539 ms | 1.034–1.065× | Earlier diagnostic. [B1518]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.930–2.954 ms | 2.813–2.827 ms | 1.037–1.050× | Diagnostic. [B1549]. |
-| Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.705–3.785 ms | 3.102–3.168 ms | 1.170–1.220× | Diagnostic. [B1549]. |
+| Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.361–3.370 ms | 3.094–3.097 ms | 1.085–1.089× | Diagnostic. [B1551]. |
 | Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3133–1.3488 ms | 0.9373–0.9415 ms | 1.395–1.439× | Diagnostic. [B1539]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.226–6.314 ms | 6.297–6.394 ms | 0.974–1.003× | Diagnostic. Spans parity. [B1549]. |
 | Eager nested factories | 2,048 iterations | 0.6624–0.6812 ms | 0.5759–0.5804 ms | 1.141–1.183× | Diagnostic. [B1530]. |
@@ -16,14 +16,14 @@
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The November 24, 2026 UTC explicit-float and
-typed Unicode meters and quoted invoice measure `583d0e80b`. The typed ASCII meter
-measures `fb3894153`.
+two workers per engine. The November 24, 2026 UTC explicit meter and
+quoted invoice measure `583d0e80b`. The typed Unicode meter measures
+`b3c447420`. The typed ASCII meter measures `fb3894153`.
 The supplied helper measures `faf86299e` at module scope and `be20f34fc`
 inside a function. Factories measure `b04e371c0`, and the earlier invoice phase
 measurements use `0112138c1`. Both word reports measure `43688c753`, and the JSON export measures
 `7bc247f1a`. The matched Lython comparisons below attribute changes to
-specific source pairs. [B1549] · [B1539] · [B1534] · [B1530] · [B1525] · [B1527] · [B1518] · [B1458].
+specific source pairs. [B1551] · [B1549] · [B1539] · [B1534] · [B1530] · [B1525] · [B1527] · [B1518] · [B1458].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -63,6 +63,7 @@ measurements cover the wider request.
 | Configuration edit | Compile-to-result | 0.1077–0.1090 ms | 0.1236–0.1253 ms | 0.859–0.882× | Historical diagnostic. [B1438]. |
 | CSV meter with explicit `float()`, 761 B | Compilation only | 0.04463–0.04508 ms | 0.07185–0.07191 ms | 0.621–0.627× | Diagnostic. [B1549]. |
 | CSV meter with explicit `float()` | Compile-to-result | 2.96892–3.05676 ms | 3.03241–3.05258 ms | 0.973–1.008× | Diagnostic. Spans parity. [B1549]. |
+| Typed Unicode CSV meter | Compile-to-result | 3.42689–3.47493 ms | 3.30146–3.34740 ms | 1.024–1.053× | Diagnostic. [B1551]. |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
 | Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
 | Typed Unicode CSV meter report | Compilation only | 0.04218–0.04232 ms | 0.06772–0.06784 ms | 0.622–0.625× | Diagnostic. Lython worker spread 0.34%. [B1388]. |
@@ -103,6 +104,7 @@ Lython inside an already-running application. [B1451].
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.705–3.785 ms | 3.102–3.168 ms | 1.170–1.220× | Earlier diagnostic. [B1549]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.203–3.248 ms | 2.847–2.878 ms | 1.113–1.141× | Earlier diagnostic. [B1543]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.683–3.757 ms | 3.148–3.149 ms | 1.170–1.193× | Earlier diagnostic. [B1543]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.567–6.628 ms | 6.582–6.623 ms | 0.991–1.007× | Earlier diagnostic. Spans parity. [B1534]. |
@@ -136,6 +138,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1551] | `b3c447420` | 2026-11-24 UTC |
 | [B1549] | `583d0e80b` | 2026-11-24 UTC |
 | [B1543] | `43688c753` | 2026-11-23 UTC |
 | [B1539] | `43688c753` | 2026-11-23 UTC |
@@ -267,6 +270,7 @@ Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1503]: ../benchmarks/results/2026-11-23-computed-factory-cpython/README.md
+[B1551]: ../benchmarks/results/2026-11-24-typed-csv-cpython/README.md
 [B1549]: ../benchmarks/results/2026-11-24-combined-csv-cpython/README.md
 [B1543]: ../benchmarks/results/2026-11-24-current-csv-cpython/README.md
 [B1539]: ../benchmarks/results/2026-11-23-combined-cased-split-cpython/README.md

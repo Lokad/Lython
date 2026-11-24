@@ -6,6 +6,10 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1551](results/2026-11-24-typed-csv-cpython/README.md) measures the
+retained typed meter against CPython. It is 8.5–8.9% behind warm and
+2.4–5.3% behind through result.
+
 [B1550](results/2026-11-24-typed-csv-text/README.md) shares the same short
 text slots across typed and ordinary CSV. The typed Unicode meter uses
 less allocation, elapsed and CPU. The observing and unchanged controls
