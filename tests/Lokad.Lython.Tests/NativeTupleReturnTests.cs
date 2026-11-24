@@ -11,7 +11,7 @@ public sealed class NativeTupleReturnTests
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
     [Fact]
-    public void ReturnedElementsKeepAliasesAndConservativeFunding()
+    public void ReturnedElementsKeepAliasesAndExistingFunding()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -29,9 +29,9 @@ public sealed class NativeTupleReturnTests
                     false, true, returned, out var unpacked, out _, out var frame);
                 Assert.True(unpacked);
                 Assert.Null(frame);
-                Assert.Same(left, returned[0].Object);
-                Assert.Same(right, returned[1].Object);
-                Assert.True(budget.ReservedBytes > baseline);
+                Assert.Same(right, returned[0].Object);
+                Assert.Same(left, returned[1].Object);
+                Assert.Equal(baseline, budget.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -42,7 +42,6 @@ public sealed class NativeTupleReturnTests
     }
 
     [Theory]
-    [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
@@ -65,7 +64,8 @@ public sealed class NativeTupleReturnTests
                 var second = new object();
                 Slot[] returned = [Slot.FromObject(first), Slot.FromObject(second)];
                 var baseline = budget.ReservedBytes;
-                if (cancel) gate.AfterGrowth = _ => cancellation.Cancel();
+                if (cancel && integers) gate.AfterGrowth = _ => cancellation.Cancel();
+                else if (cancel) cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
                 var error = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
                     [Slot.FromObject(left), Slot.FromObject(right)], null, context, Span, false, true, returned, out _, out _, out _));

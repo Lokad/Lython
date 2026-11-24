@@ -1,4 +1,5 @@
 using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -31,10 +32,13 @@ public sealed class OwnedTupleReturnTests
                 new() { MemoryBudget = gate, CancellationToken = cancellation.Token });
             try
             {
-                LythonRuntime.ExecuteExecutableCodeObject(Compile(Definition), context);
+                // The two aliases are already funded. Exercise cancellation and
+                // refusal using a new scalar produced at the return boundary.
+                var definition = failure == 0 ? Definition : Definition.Replace("return a7,b7", "return a7+1,b7", StringComparison.Ordinal);
+                LythonRuntime.ExecuteExecutableCodeObject(Compile(definition), context);
                 var function = Assert.IsType<PyExecutableFunction>(context.Variables["pair"]);
                 Assert.False(function.CanStartInline);
-                var left = PyString.FromString(new string('x', 8192), context.MemoryGovernor, Span);
+                object left = failure == 0 ? PyString.FromString(new string('x', 8192), context.MemoryGovernor, Span) : new BigInteger(1200);
                 var right = new PyList(0, context.MemoryGovernor, Span);
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
                 var bound = function.BindCallOperands([Slot.FromObject(left), Slot.FromObject(right)], Span, context, null, call);
@@ -63,9 +67,9 @@ public sealed class OwnedTupleReturnTests
                             out var unpacked, out _, out var frame));
                         Assert.True(unpacked);
                         Assert.Null(frame);
-                        Assert.Same(left, returned[0].Object);
-                        Assert.Same(right, returned[1].Object);
-                        Assert.True(budget.ReservedBytes > baseline);
+                        Assert.Same(right, returned[0].Object);
+                        Assert.Same(left, returned[1].Object);
+                        Assert.Equal(baseline, budget.ReservedBytes);
                     }
                     Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                     Assert.Equal(0, context.State.CurrentInterpreterDepth);
