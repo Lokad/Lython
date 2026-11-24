@@ -119,6 +119,7 @@ internal sealed partial class LythonRuntime
                             continue;
                         }
                         goto case ExecutableOpCode.LoadLocal;
+                    case ExecutableOpCode.LoadDictionaryGetKey:
                     case ExecutableOpCode.LoadLocal:
                         Publish(instruction, Read(instruction.LocalSlot, 0));
                         break;

@@ -125,10 +125,27 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             var position = positions[i];
             if (!position.IsReachable) continue;
             var source = blocks[i];
+            var unpackedStart = 0;
+            var unpackedWidth = 0;
             for (var j = 0; j < source.Count; j++)
             {
                 PythonTokenization.CheckCancellation(token, j);
                 var instruction = source[j];
+                if (instruction.OpCode == ExecutableOpCode.ForNext && j + 1 < source.Count &&
+                    CanUnpackIteration(instruction, source[j + 1]))
+                    (unpackedStart, unpackedWidth) = GetUnpackedLocals(code, source, j + 1);
+                else if (unpackedWidth != 0)
+                {
+                    if (instruction.OpCode == ExecutableOpCode.LoadLocal &&
+                        (uint)(instruction.LocalSlot - unpackedStart) < (uint)unpackedWidth)
+                    {
+                        var call = GetDictionaryCallOffset(code, source, j);
+                        if (call != 0) instruction = instruction.WithDictionaryGetKey(call);
+                    }
+                    else if (instruction.OpCode == ExecutableOpCode.StoreSubscript &&
+                        (uint)(instruction.ThirdInput - unpackedStart) < (uint)unpackedWidth)
+                        instruction = instruction.WithBorrowableTextStore();
+                }
                 instructions[position.Offset + j] = instruction.OpCode switch
                 {
                     ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(positions[instruction.TargetIndex].Offset),
@@ -168,6 +185,42 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             => !iteration.HasResultConsumer && next.OpCode == ExecutableOpCode.UnpackValues
                 && next.InputStart == iteration.ResultSlot && next.ResultSlot == iteration.ResultSlot
                 && next.UnpackLayout is { HasStarredTarget: false, TargetCount: > 0 };
+
+        // Only the fixed local targets in this block can receive the parser's
+        // deferred text slots. Other blocks retain their ordinary instructions.
+        static (int Start, int Width) GetUnpackedLocals(ExecutableCodeObject code,
+            List<ExecutableInstruction> block, int unpackIndex)
+        {
+            var width = block[unpackIndex].UnpackLayout.TargetCount;
+            if (code.RequiresLocalVariableMirroring || width > LythonRuntime.NativeValueCapacity ||
+                block.Count - unpackIndex <= width || block[unpackIndex + 1].OpCode != ExecutableOpCode.StoreLocal)
+                return default;
+            var start = block[unpackIndex + 1].LocalSlot;
+            for (var i = 0; i < width; i++)
+            {
+                var store = block[unpackIndex + 1 + i];
+                if (store.OpCode != ExecutableOpCode.StoreLocal || store.StoresCapturedLocal ||
+                    store.LocalSlot != start + i)
+                    return default;
+            }
+            return (start, width);
+        }
+
+        static int GetDictionaryCallOffset(ExecutableCodeObject code, List<ExecutableInstruction> block, int key)
+        {
+            if (key == 0 || key + 2 >= block.Count ||
+                block[key - 1] is not { OpCode: ExecutableOpCode.LoadCallMember } member ||
+                code.Names[member.NameIndex] != "get")
+                return 0;
+            var offset = block[key + 1].OpCode == ExecutableOpCode.LoadConst ? 2 : 1;
+            if (key + offset + 1 >= block.Count ||
+                block[key + offset] is not { OpCode: ExecutableOpCode.Call, HasResultConsumer: true } call ||
+                block[key + offset + 1].OpCode != ExecutableOpCode.StoreLocal ||
+                code.CallSites[call.CallSiteIndex] is not { HasReceiver: true, IsPositionalOnly: true } site ||
+                site.ArgumentCount != offset)
+                return 0;
+            return offset;
+        }
 
         static bool CanContinueInteger(in ExecutableInstruction next, int resultSlot, int firstTemporarySlot)
             => next.OpCode == ExecutableOpCode.Binary && next.ResultSlot == resultSlot &&

@@ -358,6 +358,27 @@ internal sealed partial class PyDict
 
     internal bool SupportsNativeStringReads => _nativeItems is not null && !HasProtocolKeys;
 
+    internal bool SupportsBorrowedTextKeys => _recordKeys is null && _nativeValues is not null && SupportsNativeStringReads;
+
+    internal object ReadBorrowedTextKey(ReadOnlySpan<byte> key, object fallback,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        var index = FindNativeTextIndex(_nativeItems!, _nativeCount, key, context, span, out _);
+        return index < 0 ? fallback : ReadNativeValue(index);
+    }
+
+    internal bool TryReplaceBorrowedTextKey(ReadOnlySpan<byte> key, object value,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!SupportsBorrowedTextKeys || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor)) return false;
+        context.CheckExecution(span);
+        var index = FindNativeTextIndex(_nativeItems!, _nativeCount, key, context, span, out _);
+        if (index < 0) return false;
+        StoreNativeValue(index, value);
+        return true;
+    }
+
     // Native-format proofs cannot enter bridges, decode text or dispatch protocols.
     internal bool TryReadNativeStringValue(Text.PyString key, LythonRuntime.ExecutionContext context,
         LythonSourceSpan span, [MaybeNullWhen(false)] out object value)

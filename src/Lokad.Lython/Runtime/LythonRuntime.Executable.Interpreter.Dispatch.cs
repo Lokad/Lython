@@ -55,6 +55,9 @@ internal sealed partial class LythonRuntime
                                 continue;
                             }
                             goto case ExecutableOpCode.LoadLocal;
+                        case ExecutableOpCode.LoadDictionaryGetKey:
+                            if (TryExecuteBorrowedDictionaryGet(ref execution, scope, invocation, instruction)) break;
+                            goto case ExecutableOpCode.LoadLocal;
                         case ExecutableOpCode.LoadLocal:
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));

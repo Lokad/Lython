@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -8,6 +9,49 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool TryExecuteBorrowedDictionaryGet(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction key)
+        {
+            if (!execution.Locals[key.LocalSlot].TryGetShortUtf8(out var packed)) return false;
+            var callIndex = execution.InstructionIndex + key.DictionaryGetCallOffset;
+            var instructions = execution.Code.Instructions;
+            ref readonly var instruction = ref instructions[callIndex];
+            var call = execution.Code.CallSites[instruction.CallSiteIndex];
+            var start = instruction.ResultSlot;
+            if (execution.Stack.Values[start].Reference is not PyDict { SupportsBorrowedTextKeys: true } dictionary ||
+                !ReferenceEquals(execution.Stack.Values[start + call.TargetOffset].Reference, ReceiverMethods.DictionaryGet))
+                return false;
+
+            object fallback = PyNone.Instance;
+            if (call.ArgumentCount == 2)
+            {
+                ref readonly var load = ref instructions[callIndex - 1];
+                scope.State.CheckExecution(load.Span);
+                fallback = RuntimeValue(execution.Code.Constants[load.ConstantIndex]);
+            }
+            execution.InstructionIndex = callIndex;
+            scope.State.CheckExecution(instruction.Span);
+            var context = invocation ?? scope;
+            try
+            {
+                context.EnterInterpreterFrame(call.CallSpan);
+                object result;
+                try
+                {
+                    Span<byte> buffer = stackalloc byte[8];
+                    result = dictionary.ReadBorrowedTextKey(ExecutableSlot.UnpackShortUtf8(packed, buffer),
+                        fallback, context, call.CallSpan);
+                }
+                catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+                { throw translated; }
+                finally { context.LeaveInterpreterFrame(); }
+                PublishInstructionResult(ref execution, invocation, instruction, result);
+                return true;
+            }
+            catch { execution.Stack.RetireTo(start); throw; }
+        }
+
         private static bool TryExecuteSequenceIndex(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction)
         {
@@ -38,6 +82,8 @@ internal sealed partial class LythonRuntime
             pending = default;
             pendingSpan = null;
             nextCall = default;
+            if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
+                return ExecuteSubscriptStore(ref execution, scope, invocation, instruction, asynchronous, out pending, out pendingSpan);
             // A failed leaf read precedes operation cleanup/routing, just as the
             // separate load did. No protocol or admission has run at this point.
             // Descriptor resumption uses the original receiver/key retained in
@@ -48,41 +94,8 @@ internal sealed partial class LythonRuntime
             var second = instruction.OpCode == ExecutableOpCode.Unary ? null
                 : retained ? execution.Stack[instruction.ResultSlot + 1]
                 : ReadOperand(ref execution, instruction.SecondInput, scope, 1);
-            var third = instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
-                ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null;
             try
             {
-                if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
-                {
-                    var receiver = instruction.ValueLast ? first : second!;
-                    var key = instruction.ValueLast ? second! : third!;
-                    var value = instruction.ValueLast ? third! : first;
-                    var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
-                    if (invocation is null)
-                    {
-                        if (receiver is not PyDict table || !table.TryWriteKeyWithoutAdmission(key, value, scope, span))
-                        {
-                            return InstructionPause.ContextRequired;
-                        }
-                        try { scope.CheckExecution(span); }
-                        finally { execution.Stack.RetireTo(instruction.LiveExtent); }
-                        return InstructionPause.Continue;
-                    }
-                    if (!asynchronous)
-                    {
-                        try { SetSubscriptValue(receiver, key, value, span, invocation); }
-                        finally { execution.Stack.RetireTo(instruction.LiveExtent); }
-                    }
-                    else
-                    {
-                        pending = WithoutJump(invocation.CompleteTargetMutation(
-                            SetHeaderSubscriptAsync(receiver, key, value, span, invocation), instruction.LiveExtent));
-                        if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
-                        _ = ConsumeOperation(ref pending);
-                    }
-                    return InstructionPause.Continue;
-                }
-
                 if (instruction.OpCode == ExecutableOpCode.Subscript && instruction.LookupCacheIndex >= 0 &&
                     first is PyDict { HasSharedRecordKeys: true } record && second is PyString field)
                 {
@@ -145,6 +158,63 @@ internal sealed partial class LythonRuntime
                 execution.Stack.RetireTo(instruction.ResultSlot);
                 throw;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static InstructionPause ExecuteSubscriptStore(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
+            out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
+        {
+            pending = default;
+            pendingSpan = null;
+            var first = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            var second = ReadOperand(ref execution, instruction.SecondInput, scope, 1);
+            var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
+            if (instruction.StoresBorrowableTextKey && second is PyDict dictionary &&
+                execution.Locals[instruction.ThirdInput].TryGetShortUtf8(out var packed))
+            {
+                try
+                {
+                    Span<byte> buffer = stackalloc byte[8];
+                    if (dictionary.TryReplaceBorrowedTextKey(ExecutableSlot.UnpackShortUtf8(packed, buffer),
+                        first, invocation ?? scope, span))
+                    {
+                        try { scope.CheckExecution(span); }
+                        finally { execution.Stack.RetireTo(instruction.LiveExtent); }
+                        return InstructionPause.Continue;
+                    }
+                }
+                catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
+            }
+
+            var third = ReadOperand(ref execution, instruction.ThirdInput, scope, 2);
+            var receiver = instruction.ValueLast ? first : second;
+            var key = instruction.ValueLast ? second : third;
+            var value = instruction.ValueLast ? third : first;
+            try
+            {
+                if (invocation is null)
+                {
+                    if (receiver is not PyDict table || !table.TryWriteKeyWithoutAdmission(key, value, scope, span))
+                        return InstructionPause.ContextRequired;
+                    try { scope.CheckExecution(span); }
+                    finally { execution.Stack.RetireTo(instruction.LiveExtent); }
+                }
+                else if (!asynchronous)
+                {
+                    try { SetSubscriptValue(receiver, key, value, span, invocation); }
+                    finally { execution.Stack.RetireTo(instruction.LiveExtent); }
+                }
+                else
+                {
+                    pending = WithoutJump(invocation.CompleteTargetMutation(
+                        SetHeaderSubscriptAsync(receiver, key, value, span, invocation), instruction.LiveExtent));
+                    if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                    _ = ConsumeOperation(ref pending);
+                }
+                return InstructionPause.Continue;
+            }
+            catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
         }
 
         private async ValueTask ExecuteCapturedValueOperationAsync(ExecutableInstruction instruction, object first, object? second)

@@ -133,6 +133,27 @@ public sealed class CsvNativeInputTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ShortCsvDictionaryKeysKeepTheFirstInsertedIdentity(bool asynchronous)
+    {
+        await AssertFile(asynchronous, "é1,1\né1,2\na,3\nb,4\nc,5\nd,6\né1,7\n", """
+            import csv
+            counts = {}
+            previous_keys = []
+            with open('/input.csv', encoding='utf-8', newline='') as source:
+                for key, amount in csv.reader(source):
+                    previous = counts.get(key, 0)
+                    counts[key] = previous + int(amount)
+                    previous_keys.append(key)
+            first = next(iter(counts))
+            print(counts[first], len(counts))
+            print(first is previous_keys[0], first is previous_keys[1], first is previous_keys[-1])
+            return list(counts)
+            """, "10 5\nTrue False False\n", expectedReturn: ["é1", "a", "b", "c", "d"]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task FloatConversionOfShortFieldsRetainsCanonicalAliasesAfterFailure(bool asynchronous)
     {
         await AssertFile(asynchronous, "١.٥,bad\n٢.٥,-0.0\n", """

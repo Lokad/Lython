@@ -85,6 +85,7 @@ internal enum ExecutableOpCode
     IntegerCallUpdate,
     IntegerTupleReturn,
     LoadCasedSplit,
+    LoadDictionaryGetKey,
 }
 
 internal enum ExecutableUnaryOperator
@@ -184,7 +185,8 @@ internal readonly record struct ExecutableInstruction
     internal bool StartsKeywordDefaultsOnly => _secondaryOperand != 0;
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
-    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal or ExecutableOpCode.CheckLocal
+    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadDictionaryGetKey or
+            ExecutableOpCode.StoreLocal or ExecutableOpCode.CheckLocal
             or ExecutableOpCode.IntegerCallUpdate or ExecutableOpCode.IntegerTupleReturn
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     // Before layout assigns a result slot, a LoadLocal can name its
@@ -194,6 +196,10 @@ internal readonly record struct ExecutableInstruction
         => new(ExecutableOpCode.LoadLocal, Span, _primaryOperand, resultSlot: index);
     internal ExecutableInstruction AsCheckLocal()
         => new(ExecutableOpCode.CheckLocal, Span, _primaryOperand);
+    internal int DictionaryGetCallOffset => _secondaryOperand;
+    internal ExecutableInstruction WithDictionaryGetKey(int offset)
+        => new(ExecutableOpCode.LoadDictionaryGetKey, Span, _primaryOperand, offset,
+            _inputStart, _resultSlot, _liveExtent);
     internal int IntegerUpdateCallIndex => _secondaryOperand;
     internal bool IntegerUpdateChecksLocal => LiveExtent == ResultSlot;
     internal ExecutableInstruction WithIntegerUpdateCall(int callIndex)
@@ -258,7 +264,10 @@ internal readonly record struct ExecutableInstruction
     public int TargetSpanIndex => OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
         ? _secondaryOperand : OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
             or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
-            ? _primaryOperand : throw InvalidOperand(nameof(TargetSpanIndex));
+            ? _primaryOperand & int.MaxValue : throw InvalidOperand(nameof(TargetSpanIndex));
+    internal bool StoresBorrowableTextKey => _primaryOperand < 0;
+    internal ExecutableInstruction WithBorrowableTextStore()
+        => new(OpCode, Span, _primaryOperand | int.MinValue, _secondaryOperand, _inputStart, _resultSlot, _liveExtent);
     public bool ValueLast => OpCode is ExecutableOpCode.StoreMemberLast or ExecutableOpCode.StoreSubscriptLast or ExecutableOpCode.StoreSliceLast;
     public UnpackingLayout UnpackLayout => OpCode == ExecutableOpCode.UnpackValues
         ? new(_primaryOperand, _secondaryOperand) : throw InvalidOperand(nameof(UnpackLayout));
