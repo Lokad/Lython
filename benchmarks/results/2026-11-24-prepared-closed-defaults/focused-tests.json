@@ -1,0 +1,10 @@
+{
+  "windows": {
+    "white": 47,
+    "public": 199
+  },
+  "ubuntu": {
+    "white": 47,
+    "public": 199
+  }
+}

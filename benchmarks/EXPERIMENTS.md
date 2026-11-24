@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1606](results/2026-11-24-prepared-closed-defaults/README.md)
+shares the direct default constructor. Defaulted rules take 3.53–6.00%
+less warm elapsed with lower CPU. First use spans zero. Postponed CPU
+rises with wide worker spreads. The first variant stays private.
+
 [B1605](results/2026-11-24-defaulted-report-cpu/README.md)
 locates 496 of 1,179 defaulted-rule runtime samples under definition
 construction and 514 of 1,130 report samples under the line helper's
