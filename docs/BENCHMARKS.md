@@ -5,14 +5,14 @@
 | Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.626–2.645 ms | 2.484–2.539 ms | 1.034–1.065× | Earlier diagnostic. [B1518]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.930–2.954 ms | 2.813–2.827 ms | 1.037–1.050× | Diagnostic. [B1549]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.361–3.370 ms | 3.094–3.097 ms | 1.085–1.089× | Diagnostic. [B1551]. |
-| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3133–1.3488 ms | 0.9373–0.9415 ms | 1.395–1.439× | Diagnostic. [B1539]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.257–1.301 ms | 0.9370–0.9375 ms | 1.341–1.389× | Diagnostic. [B1555]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.226–6.314 ms | 6.297–6.394 ms | 0.974–1.003× | Diagnostic. Spans parity. [B1549]. |
 | Eager nested factories | 2,048 iterations | 0.6624–0.6812 ms | 0.5759–0.5804 ms | 1.141–1.183× | Diagnostic. [B1530]. |
 | Postponed nested factories | 2,048 iterations | 0.5701–0.6160 ms | 0.5444–0.5463 ms | 1.044–1.131× | Uncertain magnitude. Lython worker spread 8.04%. [B1530]. |
 | Fully supplied arithmetic helper, module scope | 2,048 calls | 0.1892–0.1900 ms | 0.2077–0.2119 ms | 0.893–0.915× | Diagnostic. [B1525]. |
 | Fully supplied arithmetic helper, function scope | 2,048 calls | 0.1658–0.1666 ms | 0.1304–0.1312 ms | 1.264–1.278× | Diagnostic. [B1527]. |
 | Mixed-width word histogram | 3,072 lines / 107,520 B | 1.5676–1.6514 ms | 1.7181–1.7210 ms | 0.911–0.961× | Diagnostic. Lython worker spread 5.34%. [B1539]. |
-| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.355–5.366 ms | 6.508–6.509 ms | 0.823–0.825× | Historical diagnostic. [B1458]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.177–5.331 ms | 6.718–6.789 ms | 0.762–0.794× | Diagnostic. [B1555]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
@@ -21,9 +21,11 @@ quoted invoice measure `583d0e80b`. The typed Unicode meter measures
 `b3c447420`. The typed ASCII meter measures `fb3894153`.
 The supplied helper measures `faf86299e` at module scope and `be20f34fc`
 inside a function. Factories measure `b04e371c0`, and the earlier invoice phase
-measurements use `0112138c1`. Both word reports measure `43688c753`, and the JSON export measures
-`7bc247f1a`. The matched Lython comparisons below attribute changes to
-specific source pairs. [B1551] · [B1549] · [B1539] · [B1534] · [B1530] · [B1525] · [B1527] · [B1518] · [B1458].
+measurements use `0112138c1`. The mixed report measures `43688c753`.
+The short report and expanded JSON export measure `eabbf02ed`, with the
+same runtime source as `000ab0632`. The matched Lython comparisons below
+attribute changes to specific source pairs.
+[B1555] · [B1551] · [B1549] · [B1539] · [B1534] · [B1530] · [B1525] · [B1527] · [B1518].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -42,8 +44,8 @@ measurements cover the wider request.
 | Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.05936–0.06033 ms | 0.09800–0.09855 ms | 0.602–0.616× | Diagnostic. [B1534]. |
 | Quote-heavy CSV policy invoice | Compile-to-result | 6.539–6.644 ms | 6.799–6.825 ms | 0.958–0.977× | Diagnostic. [B1534]. |
 | Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
-| Short nonlocal word report, 615 B | Compilation only | 0.02957–0.02994 ms | 0.05780–0.05816 ms | 0.509–0.518× | Diagnostic. [B1539]. |
-| Short nonlocal word report | Compile-to-result | 1.3371–1.4027 ms | 1.0808–1.0944 ms | 1.222–1.298× | Diagnostic. Lython worker spread 4.91%. [B1539]. |
+| Short nonlocal word report, 615 B | Compilation only | 0.02846–0.02850 ms | 0.05509–0.05557 ms | 0.512–0.517× | Diagnostic. [B1555]. |
+| Short nonlocal word report | Compile-to-result | 1.3563–1.3914 ms | 1.0891–1.0926 ms | 1.241–1.278× | Diagnostic. [B1555]. |
 | Configuration edit, 181 B | Compile-to-result | 0.1070–0.1073 ms | 0.1232–0.1246 ms | 0.859–0.871× | Diagnostic. [B1478]. |
 | Eager nested factories, 430 B | Compile-to-result | 0.7566–0.7898 ms | 0.6070–0.6196 ms | 1.221–1.301× | Earlier diagnostic. [B1516]. |
 | Postponed nested factories, 465 B | Compile-to-result | 0.6112–0.6321 ms | 0.5743–0.5782 ms | 1.057–1.101× | Diagnostic. [B1530]. |
@@ -104,6 +106,8 @@ Lython inside an already-running application. [B1451].
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3133–1.3488 ms | 0.9373–0.9415 ms | 1.395–1.439× | Earlier diagnostic. [B1539]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.355–5.366 ms | 6.508–6.509 ms | 0.823–0.825× | Earlier diagnostic. [B1458]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.705–3.785 ms | 3.102–3.168 ms | 1.170–1.220× | Earlier diagnostic. [B1549]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.203–3.248 ms | 2.847–2.878 ms | 1.113–1.141× | Earlier diagnostic. [B1543]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 3.683–3.757 ms | 3.148–3.149 ms | 1.170–1.193× | Earlier diagnostic. [B1543]. |
@@ -138,6 +142,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1555] | `eabbf02ed`, source of `000ab0632` | 2026-11-24 UTC |
 | [B1551] | `b3c447420` | 2026-11-24 UTC |
 | [B1549] | `583d0e80b` | 2026-11-24 UTC |
 | [B1543] | `43688c753` | 2026-11-23 UTC |
@@ -271,6 +276,7 @@ Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1503]: ../benchmarks/results/2026-11-23-computed-factory-cpython/README.md
+[B1555]: ../benchmarks/results/2026-11-24-json-text-cpython/README.md
 [B1551]: ../benchmarks/results/2026-11-24-typed-csv-cpython/README.md
 [B1549]: ../benchmarks/results/2026-11-24-combined-csv-cpython/README.md
 [B1543]: ../benchmarks/results/2026-11-24-current-csv-cpython/README.md

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1555](results/2026-11-24-json-text-cpython/README.md) refreshes
+expanded JSON and the short nonlocal report against CPython. The
+expanded export takes 0.762–0.794× warm elapsed. The short report takes
+1.341–1.389× warm, 1.241–1.278× through result and 0.512–0.517× to compile.
+
 [B1553](results/2026-11-24-json-encoding-flags/README.md) retains the
 compact JSON iterator and reuses Boolean boxes. Expanded export
 allocates 9.65% less and takes 3.21–3.53% less warm elapsed. Its CPU
