@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1583](results/2026-11-24-prepared-tuple-exit/README.md) removes the
+second fixed-return dispatch and scalar estimate pass. Defaulted rules
+use the prepared return for their callable pair. Allocation and admitted
+peaks match. All elapsed and CPU ranges cross zero. Keep the hot dispatch
+growth and adverse text pairing visible during refinement.
+
 [B1582](results/2026-11-24-native-completed-call-workspace/README.md)
 completes existing closed factory and defaulted scalar calls before native
 workspace setup. Defaulted warm elapsed and CPU fall with uncertain

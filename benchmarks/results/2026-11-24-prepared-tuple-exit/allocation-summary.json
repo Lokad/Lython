@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.captured-rule-closures",
+    "allocatedBytes": [
+      1338712,
+      1338712
+    ],
+    "peakAdmission": [
+      2016607,
+      2016607
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocatedBytes": [
+      978264,
+      978264
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocatedBytes": [
+      488840,
+      488840
+    ],
+    "peakAdmission": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      323024,
+      323024
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3281438,
+      3281438
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]
