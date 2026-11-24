@@ -1,0 +1,68 @@
+{
+  "coreSHA256": "2800af458fbb0c468299c74e7be39d178e1645575452ca7a2deb3bbcadfd8623",
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "caller": "<module>",
+      "callee": "for_policy",
+      "line": 11,
+      "existingOperandWindow": 2,
+      "calleeSlots": 6,
+      "capacityDelta": 4
+    },
+    {
+      "case": "scripts.captured-rule-closures",
+      "caller": "<module>",
+      "callee": "make_rules",
+      "line": 14,
+      "existingOperandWindow": 3,
+      "calleeSlots": 10,
+      "capacityDelta": 7
+    },
+    {
+      "case": "scripts.captured-rule-closures",
+      "caller": "make_rules",
+      "callee": "alternate",
+      "line": 10,
+      "existingOperandWindow": 2,
+      "calleeSlots": 5,
+      "capacityDelta": 3
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "caller": "<module>",
+      "callee": "make_rules",
+      "line": 9,
+      "existingOperandWindow": 3,
+      "calleeSlots": 7,
+      "capacityDelta": 4
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "caller": "main",
+      "callee": "words_from_line",
+      "line": 12,
+      "existingOperandWindow": 7,
+      "calleeSlots": 5,
+      "capacityDelta": 0
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "caller": "<module>",
+      "callee": "price_line",
+      "line": 27,
+      "existingOperandWindow": 6,
+      "calleeSlots": 12,
+      "capacityDelta": 6
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "caller": "<module>",
+      "callee": "compile_rule",
+      "line": 8,
+      "existingOperandWindow": 2,
+      "calleeSlots": 6,
+      "capacityDelta": 4
+    }
+  ]
+}
