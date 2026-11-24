@@ -393,7 +393,10 @@ and suspension.
 An eligible call with all positional arguments supplied can evaluate an
 exact integer return from the caller's slots before preparing a callee
 activation or tuple-unpack destination. The same function-call and stack
-admission apply. Wide arithmetic and protocols use the ordinary activation.
+admission apply. Eligible helpers can read live captures and exact Boolean
+defaults. A conditional return can use the selected arm directly and
+preserve an existing integer alias. Wide arithmetic and protocols use
+the ordinary activation.
 An adjacent addition to a private local can carry early reads through an
 exact call. The existing operand window holds only provisional integers until
 the selected helper and its arguments are known to finish without callbacks.
@@ -441,8 +444,8 @@ names. Generator definitions use that same enclosing compilation; they do not
 first build a separate code object without its capture facts. Independently
 compiled class methods and namespace-backed class/type-scope lambdas
 retain general lexical resolution. No global value is frozen or cached by this choice.
-Adjacent operands can read immutable constants or live global names directly,
-without temporary producer slots. Reads crossing calls or other effects keep
+Adjacent operands can read immutable constants, live global names or lexical
+cells directly, without temporary producer slots. Reads crossing calls or other effects keep
 their evaluated values. Missing-name diagnostics retain their original spans;
 the compiled program owns its immutable constant and name arrays.
 Lambda and generator-expression code is prepared once during compilation, including
