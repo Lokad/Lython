@@ -38,7 +38,7 @@ public sealed class RegexCompilationAccountingTests
     }
 
     [Fact]
-    public void CacheSlotDenialIsAResourceFailureWithoutCachePublication()
+    public async Task CacheSlotDenialIsAResourceFailureWithoutCachePublication()
     {
         // Coverage item: denial rollback in regex compilation caching. A denied
         // slot charge fails before publication; a separate funded owner
@@ -50,13 +50,16 @@ public sealed class RegexCompilationAccountingTests
         var pattern = Assert.IsType<LythonRuntime.RePatternObject>(CreatePattern(PyString.FromString("a"), funded, span));
         using var compiled = pattern.Regex;
         var cache = new RegexPatternCache();
-        Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() =>
-            cache.GetOrAdd(new(PyString.FromString("a"), new(32, false), 0), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
+        var key = RegexPatternCache.Key.Exact(PyString.FromString("a"), null, 0, default, span);
+        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+        {
+            _ = await cache.GetOrAdd(key, pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span);
+        });
+        Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, cache.Count);
-        cache.GetOrAdd(new(PyString.FromString("a"), new(32, false), 0), pattern, funded.MemoryGovernor, span);
+        Assert.Same(pattern, await cache.GetOrAdd(key, pattern, funded.MemoryGovernor, span));
         Assert.Equal(1, cache.Count);
-        Assert.True(cache.TryGet(new(PyString.FromString("a"), new(32, false), 0), out var cached));
-        Assert.Same(pattern, cached);
+        Assert.Same(pattern, await cache.Find(key, default, span));
     }
 
     [Theory]

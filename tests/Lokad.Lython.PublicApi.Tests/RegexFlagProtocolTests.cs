@@ -156,4 +156,192 @@ public sealed class RegexFlagProtocolTests
         Assert.True(asyncHost.CompletedAsynchronously > 0);
         Assert.Equal(baseline, allowance.ReservedBytes);
     }
+
+    [Fact]
+    public async Task WrapperCacheUsesRequestedFlagIdentityAndSuspendingEquality()
+    {
+        const string source = """
+            import re
+            operations = []
+            class Flags:
+                def __init__(self, label):
+                    self.label = label
+                def __hash__(self):
+                    operations.append('hash')
+                    with open('/flags.txt') as stream:
+                        return int(stream.read())
+                def __eq__(self, other):
+                    operations.append('equal')
+                    with open('/flags.txt') as stream:
+                        zero = int(stream.read())
+                    if isinstance(other, int):
+                        return self.label == 'zero' and other == zero
+                    return self.label == other.label
+                def __and__(self, other): return 0
+                def __ior__(self, other):
+                    operations.append('normalize')
+                    return other
+                def __or__(self, other): return other
+                def __ror__(self, other): return other
+
+            flags = Flags('zero')
+            original = re.compile('x', flags)
+            operations.clear()
+            print(re.compile('x', flags) is original, 'hash' in operations, 'normalize' in operations)
+            operations.clear()
+            print(re.compile('x', Flags('zero')) is original, 'equal' in operations, 'normalize' in operations)
+            operations.clear()
+            print(re.compile('x', 0) is original, 'equal' in operations, 'normalize' in operations)
+            other = re.compile('x', Flags('other'))
+            print(other is original, other == original)
+            """;
+        const string expected = "True True False\nTrue True False\nTrue True False\nFalse True\n";
+        var allowance = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, allowance);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = allowance.ReservedBytes;
+
+        var sync = new MockLythonHost();
+        sync.SeedFile("/flags.txt", "0");
+        using (var result = script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(baseline, allowance.ReservedBytes);
+
+        var host = new DelayedLythonHost();
+        host.SeedFile("/flags.txt", "0");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(sync.ClosedFileCount, host.ClosedFileCount);
+        Assert.Equal(baseline, allowance.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("purge", "False True\nx\n")]
+    [InlineData("insert", "True True\nx\n")]
+    public async Task SuspendedEqualityResolvesAgainstTheLiveCache(string operation, string expected)
+    {
+        const string source = """
+            import re
+            comparisons = []
+            class Flags:
+                def __hash__(self): return 0
+                def __eq__(self, other):
+                    with open('/flags.txt') as stream:
+                        operation = stream.read()
+                    if operation == 'purge':
+                        re.purge()
+                    else:
+                        comparisons.append(other)
+                        if len(comparisons) <= 2:
+                            re.compile('other' + str(len(comparisons)))
+                    return other == 0
+                def __and__(self, other): return 0
+                def __ior__(self, other): return other
+                def __or__(self, other): return other
+                def __ror__(self, other): return other
+
+            before = re.compile('x', Flags())
+            after = re.compile('x', 0)
+            print(before is after, before == after)
+            print(before.fullmatch('x').group())
+            """;
+        var allowance = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, allowance);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = allowance.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/flags.txt", operation);
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, allowance.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("raise")]
+    [InlineData("refuse")]
+    [InlineData("cancel")]
+    public async Task GuestFlagHashFailurePrecedesProviderWork(string mode)
+    {
+        const string source = """
+            import re
+            class Flags:
+                def __hash__(self):
+                    with open('/flags.txt') as stream:
+                        if stream.read() == 'refuse':
+                            return len('x' * 4000000)
+                        raise RuntimeError('flag hash')
+                def __and__(self, other):
+                    print('unexpected normalization')
+                    return 0
+            try:
+                re.search('x', 'x', Flags())
+            except RuntimeError as error:
+                print(str(error))
+            """;
+        var provider = new CountingProvider();
+        var allowance = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(provider).Compile(source, allowance);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = allowance.ReservedBytes;
+        var compiled = provider.CompileCalls;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/flags.txt", mode);
+        using var cancellation = new CancellationTokenSource();
+        var readStarted = mode == "cancel" ? host.PauseReadUntilCancellation("/flags.txt") : null;
+        var pending = script.RunAsync(host, cancellation.Token);
+        if (readStarted is not null)
+        {
+            try { await readStarted.WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch
+            {
+                cancellation.Cancel();
+                using var failed = await pending;
+                throw;
+            }
+            cancellation.Cancel();
+        }
+        using (var result = await pending)
+        {
+            if (mode == "raise")
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("flag hash\n", result.StandardOutput);
+            }
+            else
+            {
+                Assert.False(result.Success);
+                Assert.Equal(mode == "refuse" ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled,
+                    result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+            }
+        }
+        Assert.Equal(compiled, provider.CompileCalls);
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, allowance.ReservedBytes);
+    }
+
+    private sealed class CountingProvider : ILythonRegexProvider
+    {
+        internal int CompileCalls { get; private set; }
+
+        public ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
+            ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
+        {
+            CompileCalls++;
+            return Utf8RegexProvider.Instance.Compile(pattern, options, memoryOwner, cancellationToken);
+        }
+    }
 }

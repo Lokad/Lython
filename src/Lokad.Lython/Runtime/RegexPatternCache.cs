@@ -1,92 +1,147 @@
+using System.Numerics;
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Runtime;
 
-// Bounded per-execution regex compilation cache (N19): module-level calls with the
-// same immutable UTF-8 pattern, requested flags and compile options share a wrapper,
-// mirroring CPython's 512-entry re cache without going global (per-run isolation).
-// Cached patterns keep their existing execution ownership: the cache holds
-// references without additional pattern charges, so eviction and
-// purge never disturb retained patterns/matches, which keep independent lifetimes.
-// Keys borrow the pattern's existing text ownership; no decoded key copy is needed.
-// Cache slots charge a flat per-entry rate once: eviction retains its capacity
-// charge while explicit purge relinquishes the backing and refunds capacity.
-// Structures die with the run governor. Single-threaded like the runtime.
+// The wrapper cache keys on the requested flags. Compiled frontend artifacts
+// separately key on normalized provider options. Keys borrow execution-owned
+// values, so removing a slot never refunds a retained pattern or flag.
 internal sealed class RegexPatternCache
 {
-
-    // CPython parity bound: at most this many compiled patterns stay shared.
     internal const int MaxEntries = 512;
 
-    // Hash-table capacity/replacement overlap, entry record and LRU node.
-    // This is conservative capacity funding, not an exact object-size claim.
+    // Funds the entry, hash-table capacity and replacement overlap.
     internal const long SlotBytesPerEntry = 256L;
 
-    private Dictionary<RegexPatternKey, LinkedListNode<CacheEntry>> _entries = new(RegexPatternKey.Comparer.Instance);
-    private readonly LinkedList<CacheEntry> _recent = new();
-    private long _committedSlotBytes;
+    private static readonly object OmittedFlags = BigInteger.Zero;
 
-    private readonly record struct CacheEntry(RegexPatternKey Key, LythonRuntime.RePatternObject Pattern);
-
-    public int Count => _entries.Count;
-
-    public bool TryGet(RegexPatternKey key, [NotNullWhen(true)] out LythonRuntime.RePatternObject? pattern,
-        CancellationToken token = default, LythonSourceSpan? span = null)
+    internal readonly record struct Key(PyString Pattern, object Flags, int? ExactBits, bool Protocol, int Hash)
     {
-        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-        var found = token.CanBeCanceled
-            ? _entries.GetAlternateLookup<RegexPatternKey.Lookup>().TryGetValue(new(key, token, span), out var node)
-            : _entries.TryGetValue(key, out node);
-        if (found)
-        {
-            var entry = node.RequireNotNull();
-            _recent.Remove(entry);
-            _recent.AddFirst(entry);
-            pattern = entry.Value.Pattern;
-            return true;
-        }
+        internal static Key Exact(PyString pattern, object? flags, int bits,
+            CancellationToken token, LythonSourceSpan? span)
+            => new(pattern, flags ?? OmittedFlags, bits, false,
+                HashCode.Combine(pattern.GetHashCode(token, span), PyValueComparer.NormalizeHash(new BigInteger(bits).GetHashCode())));
 
-        pattern = null;
-        return false;
+        internal static Key Prepared(PyString pattern, object flags, int hash, bool protocol,
+            CancellationToken token, LythonSourceSpan? span)
+            => new(pattern, flags, null, protocol, HashCode.Combine(pattern.GetHashCode(token, span), hash));
     }
 
-    // Caches a freshly compiled pattern under its exact key. Slot refusal is a
-    // command failure, never a reason to fall back to uncached execution.
-    public LythonRuntime.RePatternObject GetOrAdd(
-        RegexPatternKey key,
-        LythonRuntime.RePatternObject pattern,
-        MemoryGovernor governor,
-        LythonSourceSpan? span,
-        CancellationToken cancellationToken = default)
+    private sealed class Entry(Key key, LythonRuntime.RePatternObject pattern)
+    {
+        internal Key Key = key;
+        internal LythonRuntime.RePatternObject Pattern = pattern;
+        internal Entry? Collision, Older, Newer;
+        internal long Sequence;
+    }
+
+    // The same entry is in one hash bucket and one recency list. Guest
+    // comparisons never run inside a Dictionary comparer.
+    private Dictionary<int, Entry> _buckets = new();
+    private Entry? _oldest, _newest;
+    private long _version;
+    private long _committedSlotBytes;
+    internal int Count { get; private set; }
+
+    private readonly record struct Probe(LythonRuntime.RePatternObject? Match, object? CompareFlags, long Sequence);
+
+    internal ValueTask<LythonRuntime.RePatternObject?> Find(Key key, CancellationToken token, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null, bool asynchronous = false)
+    {
+        var probe = ProbeBucket(key, 0, token, span);
+        return probe.CompareFlags is null ? new(probe.Match)
+            : CompareFlagsAsync(key, probe, token, span.RequireNotNull(), context.RequireNotNull(), asynchronous);
+    }
+
+    private Probe ProbeBucket(Key key, long after, CancellationToken token, LythonSourceSpan? span)
+    {
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        _buckets.TryGetValue(key.Hash, out var first);
+        for (var entry = first; entry is not null; entry = entry.Collision)
+        {
+            if (entry.Sequence <= after) continue;
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            var stored = entry.Key;
+            if (!RegexPatternKey.TextEquals(stored.Pattern, key.Pattern, token, span)) continue;
+
+            if (stored.ExactBits is { } left && key.ExactBits is { } right)
+            {
+                if (left == right) return new(Touch(entry), null, 0);
+                continue;
+            }
+            if (ReferenceEquals(stored.Flags, key.Flags)) return new(Touch(entry), null, 0);
+            if (stored.Protocol || key.Protocol) return new(null, stored.Flags, entry.Sequence);
+            if (PyValueComparer.Instance.Equals(stored.Flags, key.Flags)) return new(Touch(entry), null, 0);
+        }
+        return default;
+    }
+
+    private async ValueTask<LythonRuntime.RePatternObject?> CompareFlagsAsync(Key key, Probe probe,
+        CancellationToken token, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        while (probe.CompareFlags is { } flags)
+        {
+            // Only execution-owned flag values cross the callback. A purge may
+            // have already released the old bucket when the comparison resumes.
+            var equal = asynchronous
+                ? await LythonRuntime.MembershipEqualsAsync(flags, key.Flags, context, span).ConfigureAwait(false)
+                : LythonRuntime.MembershipEquals(flags, key.Flags, context, span);
+            context.CheckExecution(span);
+            probe = ResumeProbe(key, probe.Sequence, equal, token, span);
+        }
+        return probe.Match;
+    }
+
+    private Probe ResumeProbe(Key key, long sequence, bool equal, CancellationToken token, LythonSourceSpan span)
+    {
+        var entry = FindEntry(key.Hash, sequence);
+        // An unrelated insertion does not invalidate the compared key.
+        // Eviction or purge requires probing the live bucket from its head.
+        return entry is not null && equal
+            ? new(Touch(entry), null, 0)
+            : ProbeBucket(key, entry?.Sequence ?? 0, token, span);
+    }
+
+    private Entry? FindEntry(int hash, long sequence)
+    {
+        _buckets.TryGetValue(hash, out var entry);
+        while (entry is not null && entry.Sequence < sequence) entry = entry.Collision;
+        return entry is not null && entry.Sequence == sequence ? entry : null;
+    }
+
+    private LythonRuntime.RePatternObject Touch(Entry entry)
+    {
+        if (entry != _newest)
+        {
+            UnlinkRecency(entry);
+            AppendRecent(entry);
+        }
+        return entry.Pattern;
+    }
+
+    internal async ValueTask<LythonRuntime.RePatternObject> GetOrAdd(Key key, LythonRuntime.RePatternObject pattern,
+        MemoryGovernor governor, LythonSourceSpan span, CancellationToken token = default,
+        LythonRuntime.ExecutionContext? context = null, bool asynchronous = false)
     {
         governor.ThrowIfAdmissionFailed();
-        if (TryGet(key, out var existing, cancellationToken, span)) return existing;
-        // Eviction replaces an already-funded slot. Only growing the cache
-        // needs new capacity funding; charging every miss strands slot charges
-        // and can prevent a full cache from replacing its least-recent entry.
-        var bytes = _entries.Count < MaxEntries ? SlotBytesPerEntry : 0;
+        var existing = await Find(key, token, span, context, asynchronous).ConfigureAwait(false);
+        if (existing is not null) return existing;
+
+        // A filled cache replaces an already-funded slot. An admission
+        // callback may publish or purge entries before the reservation returns.
+        var bytes = Count < MaxEntries ? SlotBytesPerEntry : 0;
+        var version = _version;
         governor.Reserve(bytes, span);
         try
         {
-            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-            // The admission callback can publish the canonical wrapper.
-            if (bytes != 0 && TryGet(key, out existing, cancellationToken, span)) return existing;
-
-            var entry = new CacheEntry(key, pattern);
-            LinkedListNode<CacheEntry> node;
-            if (_entries.Count >= MaxEntries)
+            governor.ThrowIfAdmissionFailed();
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            if (_version != version)
             {
-                // Replace only the cache's reference. Any live pattern or
-                // match keeps its existing owner.
-                node = _recent.Last.RequireNotNull();
-                _entries.Remove(node.Value.Key);
-                _recent.Remove(node);
-                node.Value = entry;
+                existing = await Find(key, token, span, context, asynchronous).ConfigureAwait(false);
+                if (existing is not null) return existing;
             }
-            else node = new(entry);
-
-            _entries.Add(key, node);
-            _recent.AddFirst(node);
-            // If a callback filled the last slot, keep the extra admission
-            // until purge so publication needs no intervening refund callback.
+            Insert(key, pattern);
             governor.Commit(bytes);
             _committedSlotBytes += bytes;
             bytes = 0;
@@ -95,21 +150,75 @@ internal sealed class RegexPatternCache
         finally { if (bytes != 0) governor.ReleaseReserved(bytes); }
     }
 
-    // Explicit clear (re.purge): drops every reference and releases slot charges.
-    // Retained patterns and matches keep working on their own ownership.
-    public void Clear(MemoryGovernor? governor)
+    private void Insert(Key key, LythonRuntime.RePatternObject pattern)
     {
-        // Clear alone keeps the table's backing. Relinquish it before refunding
-        // capacity; callers cannot borrow the cache's private slots.
-        _entries = new(RegexPatternKey.Comparer.Instance);
-        _recent.Clear();
-        if (governor is not null && _committedSlotBytes > 0)
+        Entry entry;
+        if (Count == MaxEntries)
         {
-            // A host refund can reenter and grow the empty cache. Retire
-            // the previous balance before that new capacity is admitted.
-            var bytes = _committedSlotBytes;
-            _committedSlotBytes = 0;
-            governor.Release(bytes);
+            entry = _oldest.RequireNotNull();
+            RemoveFromBucket(entry);
+            UnlinkRecency(entry);
+            entry.Key = key;
+            entry.Pattern = pattern;
+            entry.Collision = null;
         }
+        else
+        {
+            entry = new(key, pattern);
+            Count++;
+        }
+        // Preserve insertion order within a bucket independently of recency.
+        entry.Sequence = ++_version;
+        if (!_buckets.TryGetValue(key.Hash, out var tail)) _buckets.Add(key.Hash, entry);
+        else
+        {
+            while (tail.Collision is { } next) tail = next;
+            tail.Collision = entry;
+        }
+        AppendRecent(entry);
+    }
+
+    private void RemoveFromBucket(Entry entry)
+    {
+        var hash = entry.Key.Hash;
+        var head = _buckets[hash];
+        if (head == entry)
+        {
+            if (entry.Collision is { } next) _buckets[hash] = next;
+            else _buckets.Remove(hash);
+            return;
+        }
+        var previous = head;
+        while (previous.Collision != entry) previous = previous.Collision.RequireNotNull();
+        previous.Collision = entry.Collision;
+    }
+
+    private void UnlinkRecency(Entry entry)
+    {
+        if (entry.Older is { } older) older.Newer = entry.Newer;
+        else _oldest = entry.Newer;
+        if (entry.Newer is { } newer) newer.Older = entry.Older;
+        else _newest = entry.Older;
+    }
+
+    private void AppendRecent(Entry entry)
+    {
+        entry.Older = _newest;
+        entry.Newer = null;
+        if (_newest is { } recent) recent.Newer = entry;
+        else _oldest = entry;
+        _newest = entry;
+    }
+
+    internal void Clear(MemoryGovernor? governor)
+    {
+        _buckets = new();
+        _oldest = _newest = null;
+        Count = 0;
+        _version++;
+        // Retire the previous balance before the refund callback reenters.
+        var bytes = _committedSlotBytes;
+        _committedSlotBytes = 0;
+        if (bytes > 0) governor?.Release(bytes);
     }
 }

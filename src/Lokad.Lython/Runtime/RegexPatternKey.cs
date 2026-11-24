@@ -2,8 +2,27 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal readonly record struct RegexPatternKey(PyString Pattern, LythonRegexOptions Options, int? RequestedFlags = null)
+internal readonly record struct RegexPatternKey(PyString Pattern, LythonRegexOptions Options)
 {
+    internal static bool TextEquals(PyString left, PyString right, CancellationToken token, LythonSourceSpan? span)
+    {
+        if (ReferenceEquals(left, right)) return true;
+        if (!token.CanBeCanceled) return left.Equals(right);
+        if (left.ByteLength != right.ByteLength) return false;
+
+        // Cached hashes do not cover comparisons of separately allocated text.
+        var a = left.Utf8Span;
+        var b = right.Utf8Span;
+        for (var offset = 0; offset < a.Length;)
+        {
+            var count = Math.Min(4096, a.Length - offset);
+            if (!a.Slice(offset, count).SequenceEqual(b.Slice(offset, count))) return false;
+            offset += count;
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        }
+        return true;
+    }
+
     // Only a lookup carries cancellation state. Published keys and compiled
     // programs can be shared by concurrent operations with different tokens.
     internal readonly record struct Lookup(RegexPatternKey Key, CancellationToken Token, LythonSourceSpan? Span);
@@ -30,22 +49,7 @@ internal readonly record struct RegexPatternKey(PyString Pattern, LythonRegexOpt
             if (!token.CanBeCanceled) return Equals(lookup.Key, stored);
             if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(lookup.Span);
             var key = lookup.Key;
-            if (key.Options != stored.Options || key.RequestedFlags != stored.RequestedFlags) return false;
-            if (ReferenceEquals(key.Pattern, stored.Pattern)) return true;
-            if (key.Pattern.ByteLength != stored.Pattern.ByteLength) return false;
-
-            // A cache hit on equal, separately allocated UTF-8 patterns can
-            // compare the whole borrowed input even when its hash is cached.
-            var left = key.Pattern.Utf8Span;
-            var right = stored.Pattern.Utf8Span;
-            for (var offset = 0; offset < left.Length;)
-            {
-                var count = Math.Min(4096, left.Length - offset);
-                if (!left.Slice(offset, count).SequenceEqual(right.Slice(offset, count))) return false;
-                offset += count;
-                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(lookup.Span);
-            }
-            return true;
+            return key.Options == stored.Options && TextEquals(key.Pattern, stored.Pattern, token, lookup.Span);
         }
     }
 }
