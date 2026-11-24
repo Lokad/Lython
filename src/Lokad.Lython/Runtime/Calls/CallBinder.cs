@@ -89,7 +89,8 @@ internal static class CallBinder
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
-        PythonCallableKind callableKind)
+        PythonCallableKind callableKind,
+        bool useNullForOmittedArguments = false)
     {
         return BindNamedArgumentsCore(
             new PacketInputs(arguments),
@@ -97,7 +98,8 @@ internal static class CallBinder
             signature.Name,
             callableKind,
             signature.Parameters,
-            out _).Values;
+            out _,
+            useNullForOmittedArguments: useNullForOmittedArguments).Values;
     }
 
     public static BoundBuiltinArguments BindNamedArgumentsWithPresence(
@@ -117,9 +119,10 @@ internal static class CallBinder
 
     internal static BoundBuiltinArguments BindExecutableArguments(Span<LythonRuntime.ExecutableSlot> operands,
         ExecutableCallSite call, LythonCallableSignature signature, PythonCallableKind callableKind,
-        LythonRuntime.ExecutionContext context, bool preservePresence)
+        LythonRuntime.ExecutionContext context, bool preservePresence, bool useNullForOmittedArguments)
         => BindNamedArgumentsCore(new OperandInputs(operands, call.Arguments, context), call.CallSpan,
-            signature.Name, callableKind, signature.Parameters, out _, preservePresence);
+            signature.Name, callableKind, signature.Parameters, out _, preservePresence,
+            useNullForOmittedArguments: useNullForOmittedArguments);
 
     // These entry points have fixed named slots and allow extra keywords for
     // their user-supplied constructors. The cursor is gone before a constructor
@@ -258,7 +261,8 @@ internal static class CallBinder
         CallableParameterLayout parameters,
         out KeyValuePair<string, object>[] extras,
         bool preservePresence = false,
-        bool collectExtras = false)
+        bool collectExtras = false,
+        bool useNullForOmittedArguments = false)
         where T : IBindingInputs, allows ref struct
     {
         extras = [];
@@ -368,7 +372,9 @@ internal static class CallBinder
             ? parameterNames.Length : count + extraPositionalCount;
         var result = length == 0 ? Array.Empty<object>() : new object[length];
         if (extraKeywordCount != 0) extras = new KeyValuePair<string, object>[extraKeywordCount];
-        Array.Fill(result, PyNone.Instance);
+        // Receiver windows use null for unbound slots. A supplied Python
+        // None must remain distinguishable, including across sparse keywords.
+        if (!useNullForOmittedArguments) Array.Fill(result, PyNone.Instance);
         positionalIndex = 0;
         var extraIndex = count;
         var extraKeywordIndex = 0;

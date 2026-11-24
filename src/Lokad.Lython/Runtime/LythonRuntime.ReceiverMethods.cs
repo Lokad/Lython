@@ -14,6 +14,7 @@ internal sealed partial class LythonRuntime
             CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
             PyString => StringMembers.GetMethod(name),
             ReMatchObject => ReMatchMembers.GetMethod(name),
+            RePatternObject => RePatternMembers.GetMethod(name),
             _ => null,
         };
 

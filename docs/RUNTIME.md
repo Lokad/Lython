@@ -2518,6 +2518,11 @@ types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
 `re.Pattern[str]` and `re.Match[str]` are runtime generic aliases and can
 be evaluated in annotations without a provider.
+Direct positional calls on a compiled pattern use the existing receiver
+and evaluated arguments. Reading a method as a value binds that pattern
+as its `__self__`. Keyword calls distinguish omitted parameters from an
+explicit `None`, including when a later parameter such as `endpos` is supplied
+by name.
 Module regex calls distinguish omitted flags from an explicit `None`.
 Text patterns raise `TypeError` for `flags=None`, and compiled patterns
 accept it as a false flag value.

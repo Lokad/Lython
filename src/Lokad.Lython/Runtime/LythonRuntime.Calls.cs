@@ -609,7 +609,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             return PreservePresence
                 ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
-                : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
+                : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, UsesMissingArgumentSlots), span, context);
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -620,7 +620,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             return PreservePresence
                 ? InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
-                : InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
+                : InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, UsesMissingArgumentSlots), span, context);
         }
 
         LythonCallableSignature IOperandBoundCallable.BindingSignature => Signature;
@@ -631,7 +631,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(call.CallSpan);
             var preservePresence = PreservePresence;
             var bound = CallBinder.BindExecutableArguments(operands, call, Signature, _callableKind,
-                context, preservePresence);
+                context, preservePresence, UsesMissingArgumentSlots);
             if (asynchronous)
                 return preservePresence ? InvokeBoundWithPresenceAsync(bound, call.CallSpan, context)
                     : InvokeBoundAsync(bound.Values, call.CallSpan, context);
@@ -641,6 +641,8 @@ internal sealed partial class LythonRuntime
 
         /// <summary>Whether calls bind with assignment tracking so omitted arguments stay distinguishable from explicit values.</summary>
         protected virtual bool PreservePresence => false;
+
+        protected virtual bool UsesMissingArgumentSlots => false;
 
         /// <summary>Invokes the callable after named arguments have been bound into positional slots.</summary>
         protected abstract object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context);
@@ -3148,6 +3150,7 @@ internal sealed partial class LythonRuntime
         }
 
         protected override bool PreservePresence => _presenceImplementation is not null;
+        protected override bool UsesMissingArgumentSlots => _implementation is ReceiverMethod;
 
         protected override object InvokeBoundWithPresence(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
             => _presenceImplementation!(bound, span, context);

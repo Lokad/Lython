@@ -105,9 +105,9 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             PyString? separator = null;
-            if (arguments.Length != 0 && arguments[0] is not PyNone &&
-                !PyStringOps.TryAsString(arguments[0]!, out separator))
-                throw RuntimeErrors.Type("must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]!), span);
+            var suppliedSeparator = arguments.Optional(0);
+            if (suppliedSeparator is not (null or PyNone) && !PyStringOps.TryAsString(suppliedSeparator, out separator))
+                throw RuntimeErrors.Type("must be str or None, not " + RuntimeErrors.OperandTypeName(suppliedSeparator), span);
             if (arguments.Length == 2 && arguments[1] is PyInstance)
                 return RSplitWithGuestCountAsync(text, separator, arguments[1]!, span, context, asynchronous);
             var count = arguments.Length == 2 ? NormalizeSplitCount(arguments[1]!, context, span) : -1;

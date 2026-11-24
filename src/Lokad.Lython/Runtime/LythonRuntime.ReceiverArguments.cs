@@ -46,6 +46,8 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        internal object? Optional(int index) => index < Length ? this[index] : null;
+
         internal ReceiverArguments Slice(int start, int count)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(start);

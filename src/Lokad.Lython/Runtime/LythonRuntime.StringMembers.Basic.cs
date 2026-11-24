@@ -98,10 +98,12 @@ internal sealed partial class LythonRuntime
 
         private static object Encode(PyString text, ReceiverArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length >= 1) RequireCodecNameType(arguments[0]!, "str.encode()", "encoding", span);
-            if (arguments.Length == 2) RequireCodecNameType(arguments[1]!, "str.encode()", "errors", span);
-            var encoding = arguments.Length >= 1 ? ParseTextEncoding(arguments[0]!, "str.encode()", span) : TextEncodingMode.Utf8;
-            var errors = arguments.Length == 2 ? ParseTextErrors(arguments[1]!, "str.encode()", span) : TextErrorMode.Strict;
+            var encodingName = arguments.Optional(0);
+            var errorName = arguments.Optional(1);
+            if (encodingName is not null) RequireCodecNameType(encodingName, "str.encode()", "encoding", span);
+            if (errorName is not null) RequireCodecNameType(errorName, "str.encode()", "errors", span);
+            var encoding = encodingName is null ? TextEncodingMode.Utf8 : ParseTextEncoding(encodingName, "str.encode()", span);
+            var errors = errorName is null ? TextErrorMode.Strict : ParseTextErrors(errorName, "str.encode()", span);
             return EncodeGuestBytes(text, encoding, errors, context, span);
         }
     }

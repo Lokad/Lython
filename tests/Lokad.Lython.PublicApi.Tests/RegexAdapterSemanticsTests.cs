@@ -121,6 +121,42 @@ public sealed class RegexAdapterSemanticsTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task SavedPatternMethodKeepsItsReceiverAndSparseArguments()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            p=re.compile('(😀)')
+            saved=p.search
+            re.purge()
+            text='é😀尾'
+            print(saved.__self__ is p, saved.__name__, saved(text, endpos=2).span())
+            print(p.match(text,1,2).group(1), p.fullmatch(text,pos=1,endpos=2).group(1))
+            print(p.findall(text,endpos=2), [m.group(1) for m in p.finditer(text,1,2)])
+            for values in ({'pos':None}, {'endpos':None}, {'unknown':1}, {'string':text}):
+                try:
+                    saved(text, **values)
+                except TypeError:
+                    print('TypeError')
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("True search (1, 2)\n😀 😀\n['😀'] ['😀']\nTypeError\nTypeError\nTypeError\nTypeError\n",
+                        result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     // Independent frozen CPython 3.13.2 output, not backend-derived expectations.
     public static IEnumerable<object[]> Cases()
     {
