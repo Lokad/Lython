@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1616](results/2026-11-24-file-script-attribution/README.md) samples
+the delivered manifest and JSON summary on WSL. Host methods account
+for most of their file-open stacks. The manifest encoder remains an
+identifiable runtime cost. Inclusive native-workspace time on the
+summary includes the helper body and cannot isolate construction.
+
 [B1615](results/2026-11-24-builtin-shadowing/README.md) corrects static
 builtin resolution and singleton unpacking. Both modes match CPython on
 22 probes, including 21 failures in the reference. The short WSL
