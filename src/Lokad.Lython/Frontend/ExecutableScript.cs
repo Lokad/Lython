@@ -544,10 +544,10 @@ internal sealed record ExecutableMatchCaseBinding(
 // incoming cell in the defining code's capture array.
 internal sealed record ExecutableCaptureSources(IReadOnlyDictionary<string, int> ParentLocalSlots, int[] Slots, bool CanCaptureByValue);
 
-internal enum DirectDefinitionPair : byte { None, Defaults, Captures }
-
 internal sealed partial class ExecutableCodeObject
 {
+    private const int CapturedDefinitionPair = -1;
+    private readonly int _definitionPairFirstCreation;
     internal const int ClosedCaptureCapacity = 4;
     internal PyDict.RecordKeys? DefinitionAnnotationKeys { get; set; }
 
@@ -649,8 +649,7 @@ internal sealed partial class ExecutableCodeObject
         if (CanRunNativeInstructions)
         {
             PrepareImmediatelyCalledDefinition(cancellationToken);
-            DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out var definitionPair);
-            DefinitionPair = definitionPair;
+            DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out _definitionPairFirstCreation);
             DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
         }
 
@@ -676,8 +675,11 @@ internal sealed partial class ExecutableCodeObject
     internal int[] ModuleGlobalSlots { get; private set; } = [];
     internal ExecutableCaptureSources? CaptureSources { get; private set; }
     internal ExecutableCreateFunction? DirectDefinitionReturn { get; }
-    internal DirectDefinitionPair DefinitionPair { get; }
-    internal bool HasDirectDefinitionPair => DefinitionPair != DirectDefinitionPair.None;
+    // A positive index describes a defaulted pair. Captured pairs use the
+    // same compiler-proved entry and need no creation index.
+    internal int FirstPairedDefaultCreationIndex => _definitionPairFirstCreation;
+    internal bool HasDirectDefinitionPair => _definitionPairFirstCreation != 0;
+    internal bool HasDirectCapturedDefinitionPair => _definitionPairFirstCreation == CapturedDefinitionPair;
     internal int DirectCasedReturnIndex { get; } = -1;
     internal bool ForwardsCaptures { get; init; }
     internal int FirstSnapshotCell { get; init; }

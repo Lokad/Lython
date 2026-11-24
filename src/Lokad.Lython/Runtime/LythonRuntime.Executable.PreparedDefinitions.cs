@@ -149,16 +149,19 @@ internal sealed partial class LythonRuntime
     internal static void CompleteClosedDefinitionPair(ExecutableCodeObject factory, ExecutionContext scope,
         long argument, Span<ExecutableSlot> destination)
     {
-        var index = 0;
-        var first = CreateClosedPairMember(factory, scope, argument, ref index, out var firstDefaults);
+        var instructions = factory.Instructions;
+        var firstCreation = factory.FirstPairedDefaultCreationIndex;
+        var first = CreateClosedPairMember(factory, 0, firstCreation, scope, argument, out var firstDefaults);
         PyFunctionBase? second = null;
         FunctionDefaults secondDefaults = default;
         try
         {
-            var instructions = factory.Instructions;
-            scope.CheckExecution(instructions[index++].Span); // First private store.
-            second = CreateClosedPairMember(factory, scope, argument, ref index, out secondDefaults);
-            for (; index < instructions.Length; index++) scope.CheckExecution(instructions[index].Span);
+            scope.CheckExecution(instructions[firstCreation + 1].Span); // First private store.
+            // The compiler proved the store and pair return after this creation.
+            var secondCreation = instructions.Length - 6;
+            second = CreateClosedPairMember(factory, firstCreation + 2, secondCreation, scope, argument, out secondDefaults);
+            for (var index = secondCreation + 1; index < instructions.Length; index++)
+                scope.CheckExecution(instructions[index].Span);
         }
         catch
         {
@@ -186,15 +189,17 @@ internal sealed partial class LythonRuntime
         finally { governor.Release(bytes); }
     }
 
-    private static PyFunctionBase CreateClosedPairMember(ExecutableCodeObject factory,
-        ExecutionContext scope, long argument, ref int index, out FunctionDefaults privateDefaults)
+    private static PyFunctionBase CreateClosedPairMember(ExecutableCodeObject factory, int start, int creation,
+        ExecutionContext scope, long argument, out FunctionDefaults privateDefaults)
     {
         var instructions = factory.Instructions;
-        ref readonly var start = ref instructions[index++];
-        var layout = (FunctionParameterLayout)factory.Constants[start.ConstantIndex]!;
-        var defaults = AllocateFunctionDefaults(layout, false, scope, start.Span);
+        ref readonly var create = ref instructions[creation];
+        var definition = (ExecutableCreateFunction)factory.Constants[create.ConstantIndex]!;
+        var layout = definition.ParameterLayout;
+        var defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span);
         try
         {
+            var index = start + 1;
             for (var i = 0; i < layout.Defaults.Length; i++)
             {
                 ExecutableSlot value;
@@ -211,9 +216,8 @@ internal sealed partial class LythonRuntime
                     value, scope.State, store.Span);
             }
 
-            ref readonly var create = ref instructions[index++];
+            System.Diagnostics.Debug.Assert(index == creation);
             scope.CheckExecution(create.Span);
-            var definition = (ExecutableCreateFunction)factory.Constants[create.ConstantIndex]!;
             var result = definition.EagerAnnotationReads is { } reads
                 ? CreateClosedEagerDefinition(definition, factory, reads, scope, create.Span, defaults)
                 : CreateFunctionValue(layout, definition.CodeObject, GetGlobalContext(scope),

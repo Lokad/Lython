@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      65800,
+      65832
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      46008,
+      46032
+    ],
+    "retainedAdmission": [
+      63610,
+      63610
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      60760,
+      60792
+    ],
+    "retainedAdmission": [
+      78622,
+      78622
+    ]
+  },
+  {
+    "case": "scripts.captured-rule-closures",
+    "allocationBytes": [
+      72976,
+      73016
+    ],
+    "retainedAdmission": [
+      76567,
+      76567
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      135248,
+      135280
+    ],
+    "retainedAdmission": [
+      157114,
+      157114
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      81064,
+      81088
+    ],
+    "retainedAdmission": [
+      92127,
+      92127
+    ]
+  }
+]

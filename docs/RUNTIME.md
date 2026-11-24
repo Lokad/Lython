@@ -440,7 +440,10 @@ publishes a fresh callable.
 An eligible lexical factory can return a definition directly when checked
 integer arithmetic and a read-only capture supply its defaults. It uses the
 same admission and definition constructor, carrying the funded defaults directly
-into the callable. Other executable definitions keep unfinished defaults in
+into the callable. For a proved pair of defaulted definitions, the compiler
+records the first creation boundary. Each member reads its own existing
+descriptor, evaluates defaults and admits its callable in that order.
+Other executable definitions keep unfinished defaults in
 frame operands through evaluation and suspension. Prepared eager
 annotations read their live bindings after defaults and use the same admitted
 annotation storage as general definitions. General arithmetic and annotation

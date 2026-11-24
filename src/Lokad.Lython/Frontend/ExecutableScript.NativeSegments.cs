@@ -6,9 +6,9 @@ namespace Lokad.Lython.Frontend;
 internal sealed partial class ExecutableCodeObject
 {
     private ExecutableCreateFunction? PrepareDirectDefinitionReturn(CancellationToken cancellationToken,
-        out DirectDefinitionPair definitionPair)
+        out int definitionPairFirstCreation)
     {
-        definitionPair = DirectDefinitionPair.None;
+        definitionPairFirstCreation = 0;
         var createIndex = Instructions.Length - 2;
         if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
             createIndex < 0 || Instructions[^1].OpCode != ExecutableOpCode.Return ||
@@ -16,8 +16,9 @@ internal sealed partial class ExecutableCodeObject
 
         if (Instructions[createIndex].OpCode == ExecutableOpCode.MakeTuple)
         {
-            if (HasClosedDefinitionPair(createIndex, cancellationToken)) definitionPair = DirectDefinitionPair.Defaults;
-            else if (HasClosedCapturedDefinitionPair(cancellationToken)) definitionPair = DirectDefinitionPair.Captures;
+            definitionPairFirstCreation = FindClosedDefinitionPair(createIndex, cancellationToken);
+            if (definitionPairFirstCreation == 0 && HasClosedCapturedDefinitionPair(cancellationToken))
+                definitionPairFirstCreation = CapturedDefinitionPair;
             return null;
         }
 
@@ -44,7 +45,7 @@ internal sealed partial class ExecutableCodeObject
             ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
     }
 
-    private bool HasClosedDefinitionPair(int tupleIndex, CancellationToken token)
+    private int FindClosedDefinitionPair(int tupleIndex, CancellationToken token)
     {
         if (ClosureNames.Count != 0 || CapturedLocalSlots.Count != 0 ||
             Instructions[tupleIndex] is not { ItemCount: 2, HasResultConsumer: false } tuple ||
@@ -53,14 +54,14 @@ internal sealed partial class ExecutableCodeObject
             !TryReadDefinitionStore(first, out var left) ||
             !TryReadClosedDefinition(first + 2, false, pair: true, token, out var second) ||
             second + 4 != tupleIndex || !TryReadDefinitionStore(second, out var right) || left == right)
-            return false;
+            return 0;
 
         ref readonly var leftRead = ref Instructions[tupleIndex - 2];
         ref readonly var rightRead = ref Instructions[tupleIndex - 1];
         return leftRead is { OpCode: ExecutableOpCode.PreparedTupleReturn } &&
             leftRead.PreparedTupleIndex == tupleIndex && leftRead.LocalSlot == left && leftRead.ResultSlot == tuple.InputStart &&
             rightRead is { OpCode: ExecutableOpCode.LoadLocal } &&
-            rightRead.LocalSlot == right && rightRead.ResultSlot == tuple.InputStart + 1;
+            rightRead.LocalSlot == right && rightRead.ResultSlot == tuple.InputStart + 1 ? first : 0;
     }
 
     private bool TryReadDefinitionStore(int index, out int local)

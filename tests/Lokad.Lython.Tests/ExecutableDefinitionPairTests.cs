@@ -23,7 +23,8 @@ public sealed class ExecutableDefinitionPairTests
         var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
         Assert.Equal(prepared, factory.Instructions.Any(instruction =>
             instruction.OpCode == ExecutableOpCode.ApplyOperation && instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue));
-        Assert.Equal(prepared ? DirectDefinitionPair.Captures : DirectDefinitionPair.None, factory.DefinitionPair);
+        Assert.Equal(prepared, factory.HasDirectCapturedDefinitionPair);
+        Assert.Equal(prepared, factory.HasDirectDefinitionPair);
     }
 
     [Theory]
@@ -62,7 +63,8 @@ public sealed class ExecutableDefinitionPairTests
         var syntax = LythonFrontend.Compile(source).Script!;
         var module = ExecutableScript.Compile(syntax).EntryPoint;
         var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
-        Assert.Equal(capturedPair ? DirectDefinitionPair.Captures : DirectDefinitionPair.None, factory.DefinitionPair);
+        Assert.Equal(capturedPair, factory.HasDirectCapturedDefinitionPair);
+        Assert.Equal(capturedPair, factory.HasDirectDefinitionPair);
         Assert.Contains(factory.Instructions,
             instruction => instruction.OpCode == ExecutableOpCode.ApplyOperation &&
                 instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue);

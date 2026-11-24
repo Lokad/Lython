@@ -179,7 +179,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             {
                 if (definition is null)
                 {
-                    if (CodeObject.DefinitionPair == DirectDefinitionPair.Captures)
+                    if (CodeObject.HasDirectCapturedDefinitionPair)
                         LythonRuntime.CompleteClosedCapturedPair(CodeObject, Closure, integerArgument, destination);
                     else LythonRuntime.CompleteClosedDefinitionPair(CodeObject, Closure, integerArgument, destination);
                 }
