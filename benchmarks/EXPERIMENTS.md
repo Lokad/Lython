@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1579](results/2026-11-24-native-callable-definition/confirmation/README.md)
+confirms 3.95–7.09% higher defaulted warm elapsed on the shared
+definition prototype with supporting CPU. First use and the size of
+the annotated effect remain uncertain. Keep the patch private.
+
 [B1578](results/2026-11-24-native-callable-definition/README.md) shares
 compiled definition preparation across native and borrowed `def` and
 lambda. Captured rules improve, defaulted rules slow, and unstable

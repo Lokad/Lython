@@ -52,3 +52,6 @@ VM duplicates under the lease.
 [JIT sizes](jit-summary.json) · [JIT output](jit-observations.tar.xz) ·
 [Image identity](identity.json) · [Raw observations](observations.tar.xz) ·
 [Procedures and exact patch](procedures.tar.xz) · [Terminal status](terminal-status.json).
+
+The unchanged-image confirmation reproduces the defaulted warm
+regression. Shared definition preparation remains private. [B1579](confirmation/README.md).
