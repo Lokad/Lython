@@ -38,7 +38,7 @@ public sealed class FormattedStringExecutableTests
             for (var pass = 0; pass < 2; pass++)
             {
                 function.StartNativeCall(call, [Slot.FromObject(record)], null, context, span, false,
-                    completePositional: false, default, out _, out var value, out var frame);
+                    completePositional: false, borrowedArgument: false, default, out _, out var value, out var frame);
                 Assert.Null(frame);
                 var text = Assert.IsType<PyString>(value.Object);
                 Assert.Equal(expected, text.AsString());

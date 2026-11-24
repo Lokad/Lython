@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1631](results/2026-11-24-borrow-forwarded-integers/README.md) keeps
+forwarded integers in their original slots through the shared native call
+entry. Defaulted and captured factories each allocate 43,680 B less and
+use less CPU warm. Defaulted time to result and the other elapsed ranges
+cross zero.
+
 [B1629–B1630](results/2026-11-24-shared-function-defaults/README.md) share
 defaults allocation across executable, lowered and generated callables.
 Generated dataclass configuration allocates 1.73% less. Defaulted rules

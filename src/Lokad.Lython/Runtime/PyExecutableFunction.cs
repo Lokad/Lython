@@ -79,29 +79,33 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     // Complete directly from established operands before either driver
     // prepares an unpack window or enters the zeroed callee workspace.
-    internal bool TryCompleteNativeCall(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
-        object? receiver, LythonRuntime.ExecutionContext context, bool completePositional,
+    internal bool TryCompleteNativeCall(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments,
+        object? receiver, LythonRuntime.ExecutionContext context, bool completePositional, bool borrowedArgument,
         out LythonRuntime.ExecutableSlot result, out bool suppliedInteger)
     {
         result = default;
         suppliedInteger = completePositional &&
-            TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result);
+            TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result, borrowedArgument);
         if (suppliedInteger) return true;
         if (receiver is not null) return false;
 
-        return completePositional
-            ? arguments.Length == 1 && CodeObject.DirectDefinitionReturn is { } definition &&
-                !Closure.IsTypeParameterScope && TryReturnDefinition(definition, arguments[0], call.CallSpan, out result)
-            : CodeObject.HasDirectIntegerReturn && TryStartPreparedIntegerReturn(call, arguments, context, call.CallSpan, out result);
+        if (!completePositional)
+            return CodeObject.HasDirectIntegerReturn &&
+                TryStartPreparedIntegerReturn(call, arguments, context, call.CallSpan, out result, borrowedArgument);
+        if (arguments.Length != 1 || CodeObject.DirectDefinitionReturn is not { } definition) return false;
+        // A captured value can outlive this call. A computed definition
+        // consumes only the integer extracted before its admission callback.
+        if (borrowedArgument && definition.InputCount == 0) _ = arguments[0].Object;
+        return TryReturnDefinition(definition, arguments[0], call.CallSpan, out result);
     }
 
     [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
     private struct NativeValues { private LythonRuntime.ExecutableSlot _first; }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    internal void StartNativeCall(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, object? receiver,
+    internal void StartNativeCall(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
-        bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
+        bool completePositional, bool borrowedArgument, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
         // Both drivers already own this return window before entering the
@@ -114,6 +118,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             frame = null;
             return;
         }
+        // Binding or a continuation can retain the argument across reentry.
+        // Publish its canonical reference before copying it to owned storage.
+        if (borrowedArgument) _ = arguments[0].Object;
         if (consumedByIteration && CodeObject.DirectCasedReturnIndex >= 0 && completePositional &&
             receiver is null && arguments.Length == 1 && unpackedReturn.IsEmpty &&
             LythonRuntime.TryFinishDirectCasedReturn(this, arguments[0], span, out result))
@@ -151,25 +158,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             [], span, this, context, receiver: receiver, callSite: call, operands: arguments);
         StartInline(values, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame, out _);
-    }
-
-    // This shape consumes the argument only as an integer. The caller can
-    // keep its canonical slot private through the definition's admission.
-    internal bool TryStartForwardedComputedDefinition(ExecutableCallSite call, LythonRuntime.ExecutableSlot argument,
-        LythonRuntime.ExecutionContext scope, out LythonRuntime.ExecutableSlot result)
-    {
-        result = default;
-        if (CodeObject.DirectDefinitionReturn is not { InputCount: > 0 } definition ||
-            !TrySelectNativeCall(call, null, out var complete) || !complete) return false;
-        scope.EnterInterpreterFrame(call.CallSpan);
-        try
-        {
-            scope.CheckExecution(call.CallSpan);
-            return TryReturnDefinition(definition, argument, call.CallSpan, out result);
-        }
-        catch (Exception error) when (LythonRuntime.TryTranslateCallableException(error, call.CallSpan, out var translated))
-        { throw translated; }
-        finally { scope.LeaveInterpreterFrame(); }
     }
 
     private bool TryReturnDefinition(ExecutableCreateFunction? definition,
@@ -224,8 +212,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
     }
 
-    internal bool TryStartPreparedIntegerReturn(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+    internal bool TryStartPreparedIntegerReturn(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result,
+        bool borrowedArgument = false)
     {
         result = default;
         // An exposed keyword mapping can run comparisons during binding.
@@ -233,17 +222,17 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (!call.IsPositionalOnly || ParameterCount != CodeObject.FirstTemporarySlot ||
             !HasPreparedOmittedArguments(arguments.Length)) return false;
         context.CheckExecution(span);
-        return TryStartDirectIntegerReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this, _closureCells), span, out result);
+        return TryStartDirectIntegerReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this, _closureCells, borrowedArgument), span, out result);
     }
 
-    internal bool TryStartSuppliedIntegerReturn(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
-        object? receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+    internal bool TryStartSuppliedIntegerReturn(Span<LythonRuntime.ExecutableSlot> arguments,
+        object? receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result, bool borrowedArgument = false)
     {
         result = default;
         if (!CodeObject.HasDirectIntegerReturn ||
             arguments.Length + (receiver is null ? 0 : 1) != CodeObject.FirstTemporarySlot) return false;
         return receiver is null
-            ? TryStartDirectIntegerReturn(new LythonRuntime.SlotIntegerOperands(arguments, _closureCells), span, out result)
+            ? TryStartDirectIntegerReturn(new LythonRuntime.SlotIntegerOperands(arguments, _closureCells, borrowedArgument), span, out result)
             : TryStartDirectIntegerReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments, _closureCells), span, out result);
     }
 

@@ -4,6 +4,13 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static bool CanBorrowForwardedInteger(object target, Span<ExecutableSlot> values, int source)
+        => source >= 0 && values[source].IsUnpublishedInteger && target is PyExecutableFunction
+        {
+            CodeObject: { HasDirectIntegerReturn: true } or { DirectDefinitionReturn.InputCount: > 0 } or
+                { HasDirectDefinitionPair: true },
+        };
+
     private static object ReadExecutableOperand(ExecutableCodeObject code, Span<ExecutableSlot> values,
         int source, int index, int input, ExecutionContext scope, ExecutableCaptures captures)
     {

@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static bool TryEvaluateIntegerInstruction(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
+    private static bool TryEvaluateIntegerInstruction(ExecutableCodeObject code, Span<ExecutableSlot> values,
         int index, ExecutionContext context, out int end, out ExecutableSlot value, ExecutableCaptures captures)
     {
         end = index;

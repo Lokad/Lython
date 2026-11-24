@@ -8,6 +8,44 @@ public sealed class FunctionDefaultMetadataTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ForwardedIntegerKeepsIdentityOnDirectReturnAndAfterDefaultsAreExposed(bool asynchronous)
+    {
+        const string source = """
+            def invoke():
+                def choose(value, *, calculate=False):
+                    return value + 5 if calculate else value
+                def identity(value):
+                    return value
+                for index in range(3):
+                    seed = index + 1200
+                    selected = choose(seed)
+                    print(selected is seed)
+                    defaults = choose.__kwdefaults__
+                    defaults['calculate'] = True
+                    later = index + 1200
+                    updated = choose(later)
+                    print(updated)
+                    defaults['calculate'] = False
+                    fresh = index + 2400
+                    returned = identity(fresh)
+                    print(returned is fresh)
+            invoke()
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True\n1205\nTrue\nTrue\n1206\nTrue\nTrue\n1207\nTrue\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ForwardedFactoryArgumentsAndUpdatesKeepObservedAliasesAndLiveDefaults(bool asynchronous)
     {
         const string source = """

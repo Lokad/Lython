@@ -806,7 +806,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 try
                 {
                     function.StartNativeCall(call, [Slot.FromObject(line)], null, context, CallSpan, false,
-                        completePositional, default, out _, out var result, out var frame);
+                        completePositional, borrowedArgument: false, default, out _, out var result, out var frame);
                     Assert.Null(frame);
                     Assert.True(Assert.IsType<bool>(result.Object));
                     Assert.Null(context.MemoryGovernor.AdmissionFailure);

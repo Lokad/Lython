@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
         // A completed call publishes directly. A child frame or a returned
         // Python failure goes back to the dispatcher's existing continuation.
         private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, object? forwardedArgument,
+            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, object? forwardedArgument, int borrowedArgument,
             out object? continuation)
         {
             continuation = null;
@@ -42,9 +42,10 @@ internal sealed partial class LythonRuntime
                     // Keep a forwarded value private until native work takes it.
                     // A continuing child copies the input into its funded slots.
                     var argument = ExecutableSlot.FromObject(forwardedArgument);
-                    var arguments = forwardedArgument is not null ? new ReadOnlySpan<ExecutableSlot>(in argument)
+                    var arguments = borrowedArgument >= 0 ? execution.Stack.Values.AsSpan(borrowedArgument, 1)
+                        : forwardedArgument is not null ? new Span<ExecutableSlot>(ref argument)
                         : execution.Stack.Values.AsSpan(start + call.ArgumentOffset, call.ArgumentCount);
-                    if (function.TryCompleteNativeCall(call, arguments, functionReceiver, scope, completePositional,
+                    if (function.TryCompleteNativeCall(call, arguments, functionReceiver, scope, completePositional, borrowedArgument >= 0,
                         out var value, out var suppliedInteger))
                     {
                         scope.LeaveInterpreterFrame();
@@ -55,7 +56,7 @@ internal sealed partial class LythonRuntime
                     }
                     var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
                     function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
-                        CallResultConsumedByIteration(in execution, call), completePositional, unpackedReturn,
+                        CallResultConsumedByIteration(in execution, call), completePositional, borrowedArgument >= 0, unpackedReturn,
                         out var unpacked, out value, out var frame);
                     if (!unpacked) execution.Stack.RestoreNativeExtent(originalExtent);
                     if (frame is not null)

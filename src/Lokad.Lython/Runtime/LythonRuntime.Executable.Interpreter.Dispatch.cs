@@ -343,28 +343,24 @@ internal sealed partial class LythonRuntime
                             var callStart = instruction.ResultSlot;
                             object target;
                             object? forwardedArgument = null;
+                            var borrowedArgument = -1;
                             if (instruction.HasForwardedCallOperands && execution.Stack.LiveExtent == callStart)
                             {
                                 target = ReadOperand(ref execution, instruction.InputStart, scope, 0);
                                 var source = instruction.SecondInput;
-                                if (instruction.InputStart >= 0 && invocation is not null &&
-                                    target is PyExecutableFunction function &&
-                                    function.TryStartForwardedComputedDefinition(call, execution.Stack.Values[source], scope, out var defined))
-                                {
-                                    PublishInstructionResult(ref execution, invocation, instruction, defined);
-                                    break;
-                                }
                                 if (source >= 0 && execution.Stack.Values[source].TryGetShortUtf8(out var packed)
                                     && TryInvokeShortUtf8Float(packed, target, call.CallSpan, scope, out var converted))
                                 {
                                     PublishInstructionResult(ref execution, invocation, instruction, converted);
                                     break;
                                 }
-                                forwardedArgument = ReadOperand(ref execution, source, scope, 1);
+                                if (invocation is not null && CanBorrowForwardedInteger(target, execution.Stack.Values, source))
+                                    borrowedArgument = source;
+                                else forwardedArgument = ReadOperand(ref execution, source, scope, 1);
                             }
                             else target = execution.Stack[callStart + call.TargetOffset];
                             if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target,
-                                forwardedArgument, out var continuation))
+                                forwardedArgument, borrowedArgument, out var continuation))
                             {
                                 if (continuation is null) break;
                                 if (continuation is LythonRuntimeException failure)
@@ -376,6 +372,7 @@ internal sealed partial class LythonRuntime
                                 pendingSpan = call.CallSpan;
                                 return InstructionPause.Call;
                             }
+                            if (borrowedArgument >= 0) forwardedArgument = ReadOperand(ref execution, borrowedArgument, scope, 1);
                             if (forwardedArgument is not null)
                             {
                                 // Ordinary dispatch owns the evaluated pair

@@ -52,14 +52,15 @@ internal sealed partial class LythonRuntime
         ExecutableSlot ReadLocal(int slot);
     }
 
-    internal readonly ref struct SlotIntegerOperands(ReadOnlySpan<ExecutableSlot> slots, ExecutableCaptures captures) : IIntegerOperands
+    internal readonly ref struct SlotIntegerOperands(Span<ExecutableSlot> slots, ExecutableCaptures captures,
+        bool borrowedArgument = false) : IIntegerOperands
     {
-        private readonly ReadOnlySpan<ExecutableSlot> _slots = slots;
+        private readonly Span<ExecutableSlot> _slots = slots;
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
             => TryReadMachineOperand(code, _slots, slot, scope, out value, captures);
 
-        public ExecutableSlot ReadLocal(int slot) => _slots[slot];
+        public ExecutableSlot ReadLocal(int slot) => borrowedArgument ? ExecutableSlot.FromObject(_slots[slot].Object) : _slots[slot];
     }
 
     internal readonly ref struct BoundIntegerOperands(object receiver, ReadOnlySpan<ExecutableSlot> arguments, ExecutableCaptures captures) : IIntegerOperands
@@ -73,16 +74,18 @@ internal sealed partial class LythonRuntime
         public ExecutableSlot ReadLocal(int slot) => slot == 0 ? ExecutableSlot.FromObject(receiver) : _arguments[slot - 1];
     }
 
-    internal readonly ref struct DefaultIntegerOperands(ReadOnlySpan<ExecutableSlot> supplied, FunctionBindingPlan plan, ExecutableCaptures captures) : IIntegerOperands
+    internal readonly ref struct DefaultIntegerOperands(Span<ExecutableSlot> supplied, FunctionBindingPlan plan,
+        ExecutableCaptures captures, bool borrowedArgument) : IIntegerOperands
     {
-        private readonly ReadOnlySpan<ExecutableSlot> _supplied = supplied;
+        private readonly Span<ExecutableSlot> _supplied = supplied;
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
             => slot >= _supplied.Length
                 ? plan.ReadPreparedDefault(slot).TryGetInteger(out value)
                 : TryReadMachineOperand(code, _supplied, slot, scope, out value, captures);
 
-        public ExecutableSlot ReadLocal(int slot) => slot < _supplied.Length ? _supplied[slot] : plan.ReadPreparedDefault(slot);
+        public ExecutableSlot ReadLocal(int slot) => slot >= _supplied.Length ? plan.ReadPreparedDefault(slot)
+            : borrowedArgument ? ExecutableSlot.FromObject(_supplied[slot].Object) : _supplied[slot];
     }
 
     private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, ExecutableCaptures cells,
@@ -100,7 +103,7 @@ internal sealed partial class LythonRuntime
 
     // Both executable forms follow the same closed arithmetic sequence. Only the
     // final result is published through the caller's ordinary lifetime machinery.
-    private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
+    private static bool TryIntegerChain(ExecutableCodeObject code, Span<ExecutableSlot> values,
         int index, long left, long right, ExecutionContext scope,
         out int end, out long result, ExecutableCaptures captures)
         => TryIntegerChain(code, new SlotIntegerOperands(values, captures), index, left, right, scope, out end, out result);

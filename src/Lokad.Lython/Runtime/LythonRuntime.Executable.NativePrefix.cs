@@ -432,28 +432,24 @@ internal sealed partial class LythonRuntime
             var start = instruction.ResultSlot;
             object target;
             object? forwardedArgument = null;
+            var borrowedArgument = -1;
             if (instruction.HasForwardedCallOperands && LiveExtent == start)
             {
                 target = Read(instruction.InputStart, 0);
                 var source = instruction.SecondInput;
-                if (instruction.InputStart >= 0 && _scope.State.CurrentRecursionDepth < NativeCallDepth &&
-                    target is PyExecutableFunction function &&
-                    function.TryStartForwardedComputedDefinition(call, Values[source], _scope, out var defined))
-                {
-                    Publish(instruction, defined);
-                    return true;
-                }
                 if (source >= 0 && Values[source].TryGetShortUtf8(out var packed)
                     && TryInvokeShortUtf8Float(packed, target, call.CallSpan, _scope, out var converted))
                 {
                     Publish(instruction, converted);
                     return true;
                 }
-                forwardedArgument = Read(source, 1);
+                if (CanBorrowForwardedInteger(target, Values, source)) borrowedArgument = source;
+                else forwardedArgument = Read(source, 1);
             }
             else target = Values[start + call.TargetOffset].Object.RequireNotNull();
             var argument = ExecutableSlot.FromObject(forwardedArgument);
-            var arguments = forwardedArgument is not null ? new Span<ExecutableSlot>(ref argument)
+            var arguments = borrowedArgument >= 0 ? Values.Slice(borrowedArgument, 1)
+                : forwardedArgument is not null ? new Span<ExecutableSlot>(ref argument)
                 : Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
             var result = default(ExecutableSlot);
             var directInteger = false;
@@ -461,7 +457,7 @@ internal sealed partial class LythonRuntime
             {
                 if (!call.IsPositionalOnly)
                 {
-                    if (!CallFunction(call, start, target, arguments, out result, out directInteger)) goto Declined;
+                    if (!CallFunction(call, start, target, arguments, false, out result, out directInteger)) goto Declined;
                 }
                 else if (!call.HasReceiver && ExecutionContext.IsRangeBuiltin(target))
                 {
@@ -487,10 +483,10 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    var invoked = forwardedArgument is null
+                    var invoked = borrowedArgument < 0 && (forwardedArgument is null
                         ? TryInvokeBuiltinFromSlots(call, target, Values, start, _scope, allowProtocol: false, out result)
                         : target is BuiltinCallable builtin && TryInvokeUnaryBuiltin(builtin, forwardedArgument,
-                            call.CallSpan, _scope, allowProtocol: false, out result);
+                            call.CallSpan, _scope, allowProtocol: false, out result));
                     if (invoked)
                     {
                         if (result.Reference is LythonRuntimeException failure)
@@ -500,7 +496,7 @@ internal sealed partial class LythonRuntime
                             return false;
                         }
                     }
-                    else if (!CallFunction(call, start, target, arguments, out result, out directInteger)) goto Declined;
+                    else if (!CallFunction(call, start, target, arguments, borrowedArgument >= 0, out result, out directInteger)) goto Declined;
                 }
             }
             catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
@@ -536,16 +532,20 @@ internal sealed partial class LythonRuntime
         Declined:
             // A prepared child already owns the evaluated argument. Other
             // continuations resume from ordinary operands at this same call.
-            if (forwardedArgument is not null && _preparedChild is null)
+            if (_preparedChild is null)
             {
-                Put(start, start + 1, target);
-                Put(start + 1, start + 2, forwardedArgument);
+                if (borrowedArgument >= 0) forwardedArgument = Read(borrowedArgument, 1);
+                if (forwardedArgument is not null)
+                {
+                    Put(start, start + 1, target);
+                    Put(start + 1, start + 2, forwardedArgument);
+                }
             }
             return false;
         }
 
         private bool CallFunction(ExecutableCallSite call, int start, object target,
-            scoped ReadOnlySpan<ExecutableSlot> arguments, out ExecutableSlot result, out bool directInteger)
+            scoped Span<ExecutableSlot> arguments, bool borrowedArgument, out ExecutableSlot result, out bool directInteger)
         {
             result = ExecutableSlot.FromObject(PyNone.Instance);
             directInteger = false;
@@ -562,16 +562,17 @@ internal sealed partial class LythonRuntime
             var entered = true;
             try
             {
-                if (function.TryCompleteNativeCall(call, arguments, receiver, _scope, completePositional,
+                if (borrowedArgument) _scope.CheckExecution(call.CallSpan);
+                if (function.TryCompleteNativeCall(call, arguments, receiver, _scope, completePositional, borrowedArgument,
                     out result, out directInteger))
                     return true;
                 var consumedByIteration = call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly;
                 ExecutionContext? child;
                 if (call.UnpackedReturnCount != 0 && Code.LastOwnedTemporarySlot < start)
                     StartNativeFixedReturn(function, call, arguments, receiver, start, consumedByIteration,
-                        completePositional, out result, out child);
+                        completePositional, borrowedArgument, out result, out child);
                 else function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
-                    consumedByIteration, completePositional, default, out _, out result, out child);
+                    consumedByIteration, completePositional, borrowedArgument, default, out _, out result, out child);
                 if (child is not null)
                 {
                     // No operation is running in the child. Keep its exact
@@ -588,8 +589,8 @@ internal sealed partial class LythonRuntime
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private void StartNativeFixedReturn(PyExecutableFunction function, ExecutableCallSite call,
-            scoped ReadOnlySpan<ExecutableSlot> arguments, object? receiver, int start, bool consumedByIteration,
-            bool completePositional, out ExecutableSlot result, out ExecutionContext? child)
+            scoped Span<ExecutableSlot> arguments, object? receiver, int start, bool consumedByIteration,
+            bool completePositional, bool borrowedArgument, out ExecutableSlot result, out ExecutionContext? child)
         {
             // This destination cannot overlap an owned temporary. Binding
             // consumes arguments before the callee writes. Track wider returns
@@ -598,7 +599,7 @@ internal sealed partial class LythonRuntime
             var returned = Values.Slice(start, call.UnpackedReturnCount);
             LiveExtent = Math.Max(originalExtent, start + returned.Length);
             function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
-                consumedByIteration, completePositional, returned, out var unpacked, out result, out child);
+                consumedByIteration, completePositional, borrowedArgument, returned, out var unpacked, out result, out child);
             if (unpacked) Index++; // The caller completes this existing unpack after leaving the call.
             else LiveExtent = originalExtent;
         }
