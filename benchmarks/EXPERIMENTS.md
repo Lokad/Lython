@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1607](results/2026-11-24-prepared-closed-defaults/refined/README.md)
+restores the shared call frame and reduces generated constructor code.
+Defaulted warm elapsed spans zero and first use takes 0.38–3.41% longer.
+Postponed warm elapsed rises 3.95–12.30% with CPU support. Keep both
+variants private and carry the initial gain and adverse controls forward.
+
 [B1606](results/2026-11-24-prepared-closed-defaults/README.md)
 shares the direct default constructor. Defaulted rules take 3.53–6.00%
 less warm elapsed with lower CPU. First use spans zero. Postponed CPU

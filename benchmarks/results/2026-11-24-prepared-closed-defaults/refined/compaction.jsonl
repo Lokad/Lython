@@ -1,0 +1,3 @@
+{"freeBefore": 4370432}
+{"directory": "prepared-closed-defaults-b1606-20261124", "preserved": "candidate-core.dll.xz", "coreSHA256": "c80216caa69613378872a14049bf48ed9f5df358c2feeddc53fddfc6030c2877", "compressedSHA256": "90c556d3dc972025aabecb7710fb407b6d40830346f48bb50e43717ec19c49c8", "rawBytes": 5832704, "storedBytes": 1594380, "freeAfter": 8605696}
+{"directory": "closed-capture-pair-b1602-20261124", "preserved": "candidate-core.dll.xz", "coreSHA256": "4dae2e26195e603347272cc6308e768f289a36d2a53e5fc0646b1ce7996667c7", "compressedSHA256": "747c170731056b62ad59bf3169ed0021802cec034c6e72a48a1cf4c175de64cf", "rawBytes": 5832704, "storedBytes": 1593972, "freeAfter": 12840960}
