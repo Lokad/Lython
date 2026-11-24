@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
@@ -118,7 +119,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyFunctionBase CreateClosedComputedDefinition(ExecutableCreateFunction definition,
-        ExecutableCodeObject factory, ExecutionContext scope, ExecutableSlot argument, object? keywordCapture)
+        ExecutableCodeObject factory, ExecutionContext scope, long argument, object? keywordCapture)
     {
         var instructions = factory.Instructions;
         var defaults = AllocateExecutableDefaults(definition.ParameterLayout, false, scope, instructions[0].Span);
@@ -127,15 +128,11 @@ internal sealed partial class LythonRuntime
             var index = 1;
             var positional = EvaluateClosedDefault(factory, argument, scope, ref index);
             defaults.Positional!.SetPrivateDefault(0, positional, scope.State, instructions[index++].Span);
-            ExecutableSlot keyword;
-            if (keywordCapture is not null)
-            {
-                scope.CheckExecution(instructions[index++].Span);
-                keyword = ExecutableSlot.FromObject(keywordCapture);
-            }
-            else keyword = EvaluateClosedDefault(factory, argument, scope, ref index);
+            ExecutableSlot keyword = default;
+            if (keywordCapture is null) keyword = EvaluateClosedDefault(factory, argument, scope, ref index);
+            else scope.CheckExecution(instructions[index++].Span);
             scope.CheckExecution(instructions[index++].Span);
-            defaults = defaults with { Keywords = RuntimeValue(keyword.Object) };
+            defaults = defaults with { Keywords = RuntimeValue(keywordCapture ?? keyword.Object) };
             var span = instructions[index].Span;
             scope.CheckExecution(span);
             var result = definition.EagerAnnotationReads is { } reads
@@ -148,7 +145,7 @@ internal sealed partial class LythonRuntime
         finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
     }
 
-    private static ExecutableSlot EvaluateClosedDefault(ExecutableCodeObject factory, ExecutableSlot argument,
+    private static ExecutableSlot EvaluateClosedDefault(ExecutableCodeObject factory, long argument,
         ExecutionContext scope, ref int index)
     {
         var result = default(ExecutableSlot);
@@ -156,17 +153,27 @@ internal sealed partial class LythonRuntime
         {
             ref readonly var instruction = ref factory.Instructions[index++];
             scope.CheckExecution(instruction.Span);
-            var left = Read(instruction.InputStart, result);
-            var right = Read(instruction.SecondInput, result);
-            if (left.TryGetInteger(out var a) && right.TryGetInteger(out var b) &&
+            if (TryReadInteger(instruction.InputStart, in result, out var a) &&
+                TryReadInteger(instruction.SecondInput, in result, out var b) &&
                 TryMachineBinary(instruction.BinaryOperator, a, b, out var integer))
                 result.SetInteger(integer);
-            else result.Object = EvaluateBinaryOperator(instruction.BinaryOperator, left.Object!, right.Object!, scope, instruction.Span);
+            else result.Object = EvaluateBinaryOperator(instruction.BinaryOperator,
+                ReadObject(instruction.InputStart, result), ReadObject(instruction.SecondInput, result), scope, instruction.Span);
         }
         return result;
 
-        ExecutableSlot Read(int source, ExecutableSlot prior) => source == 0 ? argument : source < 0
-            ? ExecutableSlot.FromObject(factory.Constants[~source]!) : prior;
+        bool TryReadInteger(int source, in ExecutableSlot prior, out long value)
+        {
+            if (source == 0)
+            {
+                value = argument;
+                return true;
+            }
+            return source < 0 ? TryMachineInteger(factory.Constants[~source], out value) : prior.TryGetInteger(out value);
+        }
+
+        object ReadObject(int source, ExecutableSlot prior) => source == 0 ? (BigInteger)argument : source < 0
+            ? factory.Constants[~source]! : prior.Object!;
     }
 
     // Keep the eager-only annotation owner out of the default producer's frame.

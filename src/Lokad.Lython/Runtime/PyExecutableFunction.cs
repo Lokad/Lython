@@ -149,8 +149,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         result = default;
         object? keyword = null;
+        long integerArgument = 0;
         if (definition.InputCount != 0 &&
-            (!argument.TryGetInteger(out _) || (CodeObject.ClosureNames.Count != 0 && (keyword = _closureCells.FixedValue) is null)))
+            (!argument.TryGetInteger(out integerArgument) || (CodeObject.ClosureNames.Count != 0 && (keyword = _closureCells.FixedValue) is null)))
             return false;
         try
         {
@@ -160,7 +161,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             {
                 var function = definition.InputCount == 0
                     ? LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument, CodeObject.Instructions[0].Span)
-                    : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, argument, keyword);
+                    : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, integerArgument, keyword);
                 Closure.CheckExecution(CodeObject.Instructions[^1].Span);
                 result = LythonRuntime.ExecutableSlot.FromObject(function);
                 return true;
