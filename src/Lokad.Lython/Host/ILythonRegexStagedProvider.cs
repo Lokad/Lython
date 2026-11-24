@@ -70,4 +70,35 @@ public interface ILythonRegexParsedPattern : IDisposable
     /// Lython resolves guest-visible flags after program construction succeeds.
     /// </remarks>
     ILythonRegexPattern Compile(int programFlags, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken);
+
+    /// <summary>Compiles when the matching-flag union returned a guest object.</summary>
+    /// <remarks>
+    /// Use the borrowed operand at Python's compiler decision points. Await
+    /// operations serially, including scoped flag combinations. During a
+    /// synchronous run the supplied operations complete synchronously. Join
+    /// all work before returning or throwing. The owned program survives
+    /// disposal of the parsed pattern and retains no operand or caller token.
+    /// </remarks>
+    ValueTask<ILythonRegexPattern> CompileAsync(LythonRegexCompilerFlags flags, ILythonMemoryBudget memoryOwner,
+        CancellationToken cancellationToken)
+        => throw new LythonRegexException(LythonRegexFailure.Capability,
+            "Regex provider cannot compile with a guest matching-flag operand.");
+}
+
+/// <summary>Represents a Python flag operand borrowed during regex program construction.</summary>
+/// <remarks>Release this operand and any derived operands when program construction ends.</remarks>
+public abstract class LythonRegexCompilerFlags
+{
+    private protected LythonRegexCompilerFlags() { }
+
+    /// <summary>Evaluates the Python truth value of this operand bitwise-ANDed with the supplied flag bits.</summary>
+    public abstract ValueTask<bool> TestAsync(int flagBits);
+
+    /// <summary>Applies Python's scoped add and remove flag operations and returns the new operand.</summary>
+    /// <remarks>
+    /// An added character mode first clears the existing modes with an in-place
+    /// AND. The OR of added bits and the AND of the complement of removed bits
+    /// both run, including when a mask of added or removed flags is zero.
+    /// </remarks>
+    public abstract ValueTask<LythonRegexCompilerFlags> WithScopedFlagsAsync(int addFlags, int removeFlags);
 }

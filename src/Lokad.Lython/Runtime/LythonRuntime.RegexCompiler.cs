@@ -445,7 +445,8 @@ internal sealed partial class LythonRuntime
             var verboseValue = await state.ReadVerboseAsync().ConfigureAwait(false);
             var verbose = await verboseValue.IsEnabledAsync().ConfigureAwait(false);
             await state.FinishAsync().ConfigureAwait(false);
-            var programFlags = await state.ReadProgramFlagsAsync().ConfigureAwait(false);
+            var (_, integerFlags) = await state.ReadProgramFlagsAsync().ConfigureAwait(false);
+            var programFlags = integerFlags ?? throw RuntimeErrors.Capability("Regex compilation requires integer matching flags.", span);
             var reportedFlags = await state.ReadReportedFlagsAsync().ConfigureAwait(false);
             // Identical explicit modes use the same request as exact flags.
             var options = new LythonRegexOptions(reportedFlags, verbose)
@@ -468,10 +469,12 @@ internal sealed partial class LythonRuntime
             {
                 using (var parsed = await ParseStagedPattern(provider, flags, pattern, context, span, token).ConfigureAwait(false))
                 {
-                    var programFlags = await flags.ReadProgramFlagsAsync().ConfigureAwait(false);
-                    unpublished = ProviderCall((parsed, programFlags, governor, token),
-                        static state => state.parsed.Compile(state.programFlags, state.governor.Budget, state.token),
-                        governor, token, span, pattern);
+                    var (operand, integerFlags) = await flags.ReadProgramFlagsAsync().ConfigureAwait(false);
+                    unpublished = integerFlags is { } bits
+                        ? ProviderCall((parsed, bits, governor, token),
+                            static state => state.parsed.Compile(state.bits, state.governor.Budget, state.token),
+                            governor, token, span, pattern)
+                        : await CompileGuestProgramAsync(parsed, flags, operand, context, span, pattern, token).ConfigureAwait(false);
                 }
 
                 var reported = await flags.ReadReportedFlagsAsync().ConfigureAwait(false);
@@ -483,6 +486,30 @@ internal sealed partial class LythonRuntime
                     span, context, asynchronous).ConfigureAwait(false);
             }
             finally { unpublished?.Dispose(); }
+        }
+
+        private static async ValueTask<ILythonRegexPattern> CompileGuestProgramAsync(ILythonRegexParsedPattern parsed,
+            GuestRegexFlags flags, object operand, ExecutionContext context, LythonSourceSpan span, PyString pattern,
+            CancellationToken token)
+        {
+            context.CheckExecution(span);
+            ILythonRegexPattern? unpublished = null;
+            try
+            {
+                unpublished = await parsed.CompileAsync(flags.OpenCompilerFlags(operand), context.MemoryGovernor.Budget, token)
+                    .ConfigureAwait(false);
+                context.CheckExecution(span);
+                var program = unpublished ?? throw RuntimeErrors.Runtime("Regex program construction returned no result.", span);
+                unpublished = null;
+                return program;
+            }
+            catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
+            { throw ProviderFailure(error, context.MemoryGovernor, token, span, pattern, "Regex program construction"); }
+            finally
+            {
+                flags.CloseCompilerFlags();
+                unpublished?.Dispose();
+            }
         }
 
         private static async ValueTask<ILythonRegexParsedPattern> ParseStagedPattern(ILythonRegexStagedProvider provider,
@@ -643,12 +670,13 @@ internal sealed partial class LythonRuntime
         private sealed class GuestRegexFlags(object requested, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous) : ILythonRegexParserFlags
         {
-            internal const int ProgramMask = PythonIgnoreCaseFlag | PythonLocaleFlag | PythonMultilineFlag |
-                PythonDotAllFlag | PythonUnicodeFlag | PythonAsciiFlag;
+            private const int CharacterModeMask = PythonLocaleFlag | PythonUnicodeFlag | PythonAsciiFlag;
+            internal const int ProgramMask = CharacterModeMask | PythonIgnoreCaseFlag | PythonMultilineFlag | PythonDotAllFlag;
 
             private readonly object _requested = requested;
             private object _parserFlags = requested;
             private bool _parsingClosed;
+            private bool _compiling;
             internal bool ParsingComplete { get; private set; }
             internal void CloseParsing() => _parsingClosed = true;
 
@@ -700,22 +728,73 @@ internal sealed partial class LythonRuntime
                 ParsingComplete = true;
             }
 
-            internal async ValueTask<int> ReadProgramFlagsAsync()
+            internal async ValueTask<(object Operand, int? Bits)> ReadProgramFlagsAsync()
             {
                 context.CheckExecution(span);
                 await ProbeDebugAsync().ConfigureAwait(false);
                 var program = await Evaluate(BinaryOperatorSyntax.BitwiseOr, _parserFlags, _requested).ConfigureAwait(false);
                 // Wide integers can carry arbitrary unused bits. Mask through
                 // the managed numeric path with its allocation admission.
-                return program switch
+                int? integerFlags = program switch
                 {
                     bool => 0,
                     int bits => bits & ProgramMask,
                     BigInteger bits when bits >= int.MinValue && bits <= int.MaxValue => (int)bits & ProgramMask,
                     BigInteger => ToRegexCInt(await Evaluate(BinaryOperatorSyntax.BitwiseAnd,
                         program, new BigInteger(ProgramMask)).ConfigureAwait(false), span, context),
-                    _ => throw RuntimeErrors.Capability("Regex compilation requires integer matching flags.", span),
+                    _ => null,
                 };
+                return (program, integerFlags);
+            }
+
+            internal LythonRegexCompilerFlags OpenCompilerFlags(object operand)
+            {
+                _compiling = true;
+                return new CompilerFlags(this, operand);
+            }
+
+            internal void CloseCompilerFlags() => _compiling = false;
+
+            private void CheckCompiling()
+            {
+                if (!_compiling) throw RuntimeErrors.Capability("Regex provider used flags outside program construction.", span);
+                context.CheckExecution(span);
+            }
+
+            private ValueTask<object> ClearCharacterModesAsync(object operand)
+                => asynchronous
+                    ? EvaluateAugmentedAssignmentAsync(operand, new BigInteger(~CharacterModeMask),
+                        AugmentedAssignmentOperatorSyntax.BitwiseAnd, context, span)
+                    : new(EvaluateAugmentedAssignment(operand, new BigInteger(~CharacterModeMask),
+                        AugmentedAssignmentOperatorSyntax.BitwiseAnd, context, span));
+
+            private sealed class CompilerFlags(GuestRegexFlags owner, object operand) : LythonRegexCompilerFlags
+            {
+                public override async ValueTask<bool> TestAsync(int flagBits)
+                {
+                    owner.CheckCompiling();
+                    var value = await owner.Evaluate(BinaryOperatorSyntax.BitwiseAnd, operand, new BigInteger(flagBits))
+                        .ConfigureAwait(false);
+                    owner.CheckCompiling();
+                    var result = await owner.ReadTruthAsync(value).ConfigureAwait(false);
+                    owner.CheckCompiling();
+                    return result;
+                }
+
+                public override async ValueTask<LythonRegexCompilerFlags> WithScopedFlagsAsync(int addFlags, int removeFlags)
+                {
+                    owner.CheckCompiling();
+                    var parent = (addFlags & CharacterModeMask) == 0 ? operand
+                        : await owner.ClearCharacterModesAsync(operand).ConfigureAwait(false);
+                    owner.CheckCompiling();
+                    var combined = await owner.Evaluate(BinaryOperatorSyntax.BitwiseOr, parent, new BigInteger(addFlags))
+                        .ConfigureAwait(false);
+                    owner.CheckCompiling();
+                    var child = await owner.Evaluate(BinaryOperatorSyntax.BitwiseAnd, combined, new BigInteger(~removeFlags))
+                        .ConfigureAwait(false);
+                    owner.CheckCompiling();
+                    return new CompilerFlags(owner, child);
+                }
             }
 
             internal async ValueTask<int> ReadReportedFlagsAsync()

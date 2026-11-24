@@ -2613,12 +2613,19 @@ parser decision points. A borrowed verbose operand can run a truth operation
 each time the parser uses it. The parsed handle owns its temporary storage
 through matching-flag resolution and program construction. Lython closes it
 before computing the reported flag value. The unpublished program stays
-funded through reporting and closes on any failure. Both provider paths
-require the matching-flag union to return an integer. A noninteger result
-reports a capability error before program construction and flag reporting.
-Exact flag requests in the frontend, imports and runtime use `Compile`.
-The pinned adapter uses that single operation for guest flag objects too,
-with limited parity for grammar-dependent callback ordering.
+funded through reporting and closes on any failure. A staged provider uses
+`ILythonRegexParsedPattern.Compile` for integer matching flags. For a
+noninteger matching operand it can implement `CompileAsync`, testing the
+borrowed operand and combining scoped flags at Python's compiler decision
+points. Each test can run both a guest bitwise operation and a truth operation.
+The current token and parse allowance stay active through provider work and
+guest callbacks. The provider releases the operand and joins all work before
+returning. Reported flag operators run after successful program construction.
+Providers without staged compiler callbacks report a capability error for
+noninteger matching operands. Exact flag requests in the frontend, imports and
+runtime use `ILythonRegexProvider.Compile`. The pinned adapter uses that
+single operation for guest flag objects that resolve to integers, with limited
+parity for grammar-dependent callback ordering.
 The per-execution cache preserves requested integer flag identity.
 Omitted flags and explicit `re.UNICODE` give distinct cached pattern
 objects when both compile. The provider receives the same flag inputs

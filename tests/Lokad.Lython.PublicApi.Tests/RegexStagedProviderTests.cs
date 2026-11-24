@@ -170,9 +170,111 @@ public sealed class RegexStagedProviderTests
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task GuestCompilerFlagsPreserveRepeatedTruthAndScopedFlagOperations()
+    {
+        const string source = """
+            import re
+            trace = []
+            class Truth:
+                def __init__(self, bit, value):
+                    self.bit, self.value = bit, value
+                def __bool__(self):
+                    trace.append(('truth', self.bit))
+                    return bool(self.value)
+            class Operand:
+                def __init__(self, bits):
+                    self.bits = bits
+                def __and__(self, bit):
+                    trace.append(('and', int(bit)))
+                    return Operand(self.bits & bit) if bit < 0 else Truth(bit, self.bits & bit)
+                def __iand__(self, bit):
+                    trace.append(('iand', int(bit)))
+                    return Operand(self.bits & bit)
+                def __or__(self, bit):
+                    trace.append(('or', int(bit)))
+                    return Operand(self.bits | bit)
+            class Flags:
+                def __and__(self, bit): return 0
+                def __ior__(self, bits): return bits
+                def __ror__(self, bits): return Operand(34)
+                def __or__(self, bits):
+                    trace.append(('reported', int(bits)))
+                    return 32
+            for expression in ('x', '(?a-i:x)'):
+                trace.clear()
+                flags = Flags()
+                pattern = re.compile(expression, flags)
+                assert re.compile(expression, flags) is pattern
+                print(expression, pattern.flags, pattern.fullmatch('X') is not None)
+                print(trace)
+            """;
+        const string expected = """
+            x 32 True
+            [('and', 2), ('truth', 2), ('and', 4), ('truth', 4), ('and', 2), ('truth', 2), ('and', 32), ('truth', 32), ('and', 2), ('truth', 2), ('and', 32), ('truth', 32), ('and', 2), ('truth', 2), ('and', 4), ('truth', 4), ('and', 32), ('truth', 32), ('and', 2), ('truth', 2), ('and', 4), ('truth', 4), ('reported', 32)]
+            (?a-i:x) 32 False
+            [('and', 2), ('truth', 2), ('and', 4), ('truth', 4), ('and', 2), ('truth', 2), ('and', 32), ('truth', 32), ('iand', -293), ('or', 256), ('and', -3), ('and', 2), ('truth', 2), ('and', 2), ('truth', 2), ('and', 2), ('truth', 2), ('and', 4), ('truth', 4), ('and', 32), ('truth', 32), ('iand', -293), ('or', 256), ('and', -3), ('and', 2), ('truth', 2), ('and', 2), ('truth', 2), ('reported', 32)]
+            """;
+        var provider = new ScriptedProvider { GuestProgram = CompileProbe };
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var script = new LythonEngine(provider).Compile(source, budget);
+        using (script)
+        {
+            Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            for (var asynchronous = 0; asynchronous < 2; asynchronous++)
+            {
+                var host = new MockLythonHost();
+                using (var result = asynchronous == 0 ? script.Run(host) : await script.RunAsync(host))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(expected.ReplaceLineEndings("\n") + "\n", result.StandardOutput);
+                }
+                Assert.Equal(0, provider.LiveParses);
+                Assert.Equal(0, provider.LivePrograms);
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(4, provider.ProgramCalls);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        static async ValueTask<int> CompileProbe(ReadOnlyMemory<byte> text, LythonRegexCompilerFlags flags, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            // The literal and scoped-literal CPython probes reach these decisions
+            // in prefix analysis and code generation. The adapter builds the match.
+            Assert.True(await flags.TestAsync(2));
+            Assert.False(await flags.TestAsync(4));
+            Assert.True(await flags.TestAsync(2));
+            Assert.True(await flags.TestAsync(32));
+            var scoped = text.Span.SequenceEqual("(?a-i:x)"u8);
+            if (scoped)
+            {
+                var prefix = await flags.WithScopedFlagsAsync(256, 2);
+                Assert.False(await prefix.TestAsync(2));
+                Assert.False(await prefix.TestAsync(2));
+            }
+            else
+            {
+                Assert.True(await flags.TestAsync(2));
+                Assert.True(await flags.TestAsync(32));
+            }
+            Assert.True(await flags.TestAsync(2));
+            Assert.False(await flags.TestAsync(4));
+            Assert.True(await flags.TestAsync(32));
+            var body = scoped ? await flags.WithScopedFlagsAsync(256, 2) : flags;
+            var ignoreCase = await body.TestAsync(2);
+            Assert.False(await body.TestAsync(scoped ? 2 : 4));
+            return 32 | (ignoreCase ? 2 : 0);
+        }
+    }
+
     [Theory]
     [InlineData("parser", false)]
     [InlineData("program", false)]
+    [InlineData("compiler-operator", false)]
+    [InlineData("compiler-truth", false)]
+    [InlineData("compiler-truth", true)]
     [InlineData("reported", false)]
     [InlineData("reported", true)]
     public async Task PendingFlagFailureReleasesTheCorrectStage(string failureStage, bool refuse)
@@ -184,10 +286,16 @@ public sealed class RegexStagedProviderTests
                     if stream.read() == 'refuse':
                         return len('x' * 4000000)
                 return 32
+            class Truth:
+                def __bool__(self): return bool(read())
+            class Program:
+                def __and__(self, bits): return read() if failure_stage == 'compiler-operator' else Truth()
             class Flags:
                 def __and__(self, bit): return 0
                 def __ior__(self, bits): return read() if failure_stage == 'parser' else bits
-                def __ror__(self, bits): return read() if failure_stage == 'program' else bits
+                def __ror__(self, bits):
+                    if failure_stage.startswith('compiler-'): return Program()
+                    return read() if failure_stage == 'program' else bits
                 def __or__(self, bits): return read() if failure_stage == 'reported' else bits
             try:
                 re.compile('x', Flags())
@@ -196,7 +304,11 @@ public sealed class RegexStagedProviderTests
             print('continued')
             """;
         var budget = new LythonMemoryBudget(1024 * 1024);
-        var provider = new ScriptedProvider();
+        var guestCompiler = failureStage.StartsWith("compiler-", StringComparison.Ordinal);
+        var provider = new ScriptedProvider
+        {
+            GuestProgram = guestCompiler ? static async (_, flags, _) => await flags.TestAsync(2) ? 34 : 32 : null,
+        };
         using var script = new LythonEngine(provider).Compile($"failure_stage = '{failureStage}'\n" + body, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
         var baseline = budget.ReservedBytes;
@@ -213,6 +325,7 @@ public sealed class RegexStagedProviderTests
                 await entered.WaitAsync(TimeSpan.FromSeconds(5));
                 Assert.Equal(1 - expectedProgramCount, provider.LiveParses);
                 Assert.Equal(expectedProgramCount, provider.LivePrograms);
+                Assert.Equal(guestCompiler ? 1 : 0, provider.LiveGuestCompilers);
                 Assert.True(budget.ReservedBytes > baseline);
             }
             catch
@@ -232,24 +345,39 @@ public sealed class RegexStagedProviderTests
         }
         Assert.Equal(1, host.ClosedFileCount);
         Assert.Equal(tokenSource.Token, provider.ParseToken);
+        if (guestCompiler) Assert.Equal(tokenSource.Token, provider.GuestCompilerToken);
         Assert.Equal(expectedProgramCount, provider.ProgramCalls);
         Assert.Equal(0, provider.LiveParses);
         Assert.Equal(0, provider.LivePrograms);
+        Assert.Equal(0, provider.LiveGuestCompilers);
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task CancellingProviderParseJoinsItBeforeReturningTheAllowance()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancellingProviderWorkJoinsItBeforeReturningTheAllowance(bool duringCompilation)
     {
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var provider = new ScriptedProvider { PauseParsing = entered };
+        var provider = new ScriptedProvider
+        {
+            PauseParsing = duringCompilation ? null : entered,
+            GuestProgram = duringCompilation ? async (_, _, token) =>
+            {
+                entered.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                return 32;
+            } : null,
+        };
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var script = new LythonEngine(provider).Compile("""
             import re
+            class Operand:
+                def __and__(self, bit): return 0
             class Flags:
                 def __and__(self, bit): return 0
                 def __ior__(self, bits): return bits
-                def __ror__(self, bits): return bits
+                def __ror__(self, bits): return Operand()
                 def __or__(self, bits): return bits
             re.compile('x', Flags())
             """, budget);
@@ -261,7 +389,9 @@ public sealed class RegexStagedProviderTests
         {
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.Equal(cancellation.Token, provider.ParseToken);
+            if (duringCompilation) Assert.Equal(cancellation.Token, provider.GuestCompilerToken);
             Assert.Equal(1, provider.LiveParses);
+            Assert.Equal(duringCompilation ? 1 : 0, provider.LiveGuestCompilers);
             Assert.True(budget.ReservedBytes > baseline);
         }
         catch
@@ -278,6 +408,7 @@ public sealed class RegexStagedProviderTests
         }
         Assert.Equal(0, provider.LiveParses);
         Assert.Equal(0, provider.ProgramCalls);
+        Assert.Equal(0, provider.LiveGuestCompilers);
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
@@ -297,8 +428,11 @@ public sealed class RegexStagedProviderTests
         internal int ProgramCalls { get; private set; }
         internal int LiveParses { get; private set; }
         internal int LivePrograms { get; private set; }
+        internal int LiveGuestCompilers { get; private set; }
         internal CancellationToken ParseToken { get; private set; }
+        internal CancellationToken GuestCompilerToken { get; private set; }
         internal TaskCompletionSource? PauseParsing { get; init; }
+        internal Func<ReadOnlyMemory<byte>, LythonRegexCompilerFlags, CancellationToken, ValueTask<int>>? GuestProgram { get; init; }
 
         public ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
             ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
@@ -346,7 +480,8 @@ public sealed class RegexStagedProviderTests
                 if (pattern.Span.SequenceEqual("x|y"u8)) _ = await flags.ReadVerboseAsync();
                 await flags.FinishAsync();
                 cancellationToken.ThrowIfCancellationRequested();
-                return new Parsed(this, pattern.ToArray(), owner);
+                return GuestProgram is null ? new Parsed(this, pattern.ToArray(), owner)
+                    : new CallbackParsed(this, pattern.ToArray(), owner);
             }
             catch
             {
@@ -356,25 +491,45 @@ public sealed class RegexStagedProviderTests
             }
         }
 
-        private sealed class Parsed(ScriptedProvider provider, byte[] text, ILythonMemoryScope owner) : ILythonRegexParsedPattern
+        private class Parsed(ScriptedProvider provider, byte[] text, ILythonMemoryScope owner) : ILythonRegexParsedPattern
         {
             private bool _disposed;
+            protected ScriptedProvider Provider { get; } = provider;
+            protected byte[] Text { get; } = text;
 
             public ILythonRegexPattern Compile(int programFlags, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
             {
                 Assert.False(_disposed);
-                provider.ProgramCalls++;
-                var program = Utf8RegexProvider.Instance.Compile(text, new(programFlags, false), memoryOwner, cancellationToken);
-                provider.LivePrograms++;
-                return new Program(provider, program);
+                Provider.ProgramCalls++;
+                var program = Utf8RegexProvider.Instance.Compile(Text, new(programFlags, false), memoryOwner, cancellationToken);
+                Provider.LivePrograms++;
+                return new Program(Provider, program);
             }
 
             public void Dispose()
             {
                 if (_disposed) return;
+                Assert.Equal(0, Provider.LiveGuestCompilers);
                 _disposed = true;
                 owner.Dispose();
-                provider.LiveParses--;
+                Provider.LiveParses--;
+            }
+        }
+
+        private sealed class CallbackParsed(ScriptedProvider provider, byte[] text, ILythonMemoryScope owner)
+            : Parsed(provider, text, owner), ILythonRegexParsedPattern
+        {
+            public async ValueTask<ILythonRegexPattern> CompileAsync(LythonRegexCompilerFlags flags,
+                ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
+            {
+                Provider.GuestCompilerToken = cancellationToken;
+                Provider.LiveGuestCompilers++;
+                try
+                {
+                    var bits = await Provider.GuestProgram!(Text, flags, cancellationToken);
+                    return Compile(bits, memoryOwner, cancellationToken);
+                }
+                finally { Provider.LiveGuestCompilers--; }
             }
         }
 
