@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1596](results/2026-11-24-closed-factory-pairs/native-entry/README.md)
+restores both shared callers and selects direct pairs at native function entry.
+Defaulted rules improve in both phases at matched allocation and admission.
+Short-text and invoice elapsed cross zero. Captured rules incur a measured
+warm regression. The native-entry version ships with that debt recorded.
+
 [B1595](results/2026-11-24-closed-factory-pairs/refinement/README.md)
 restores the single-definition constructor. Defaulted rules repeat the
 large gain in both phases. Postponed spans zero and short text slows again.

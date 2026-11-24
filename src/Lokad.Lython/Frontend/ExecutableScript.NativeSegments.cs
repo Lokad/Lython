@@ -1,15 +1,26 @@
 using System.Numerics;
+using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
-    private ExecutableCreateFunction? PrepareDirectDefinitionReturn(CancellationToken cancellationToken)
+    private ExecutableCreateFunction? PrepareDirectDefinitionReturn(CancellationToken cancellationToken,
+        out bool definitionPair)
     {
+        definitionPair = false;
         var createIndex = Instructions.Length - 2;
         if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
-            createIndex < 0 || Instructions[createIndex].OpCode != ExecutableOpCode.ApplyOperation ||
-            Instructions[^1].OpCode != ExecutableOpCode.Return || Instructions[^1].InputStart != Instructions[createIndex].ResultSlot ||
+            createIndex < 0 || Instructions[^1].OpCode != ExecutableOpCode.Return ||
+            Instructions[^1].InputStart != Instructions[createIndex].ResultSlot) return null;
+
+        if (Instructions[createIndex].OpCode == ExecutableOpCode.MakeTuple)
+        {
+            definitionPair = HasClosedDefinitionPair(createIndex, cancellationToken);
+            return null;
+        }
+
+        if (Instructions[createIndex].OpCode != ExecutableOpCode.ApplyOperation ||
             Constants[Instructions[createIndex].ConstantIndex] is not ExecutableCreateFunction
             {
                 DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
@@ -19,7 +30,10 @@ internal sealed partial class ExecutableCodeObject
         var body = definition.CodeObject;
         if (!body.UsesOnlyLexicalSlots || body.ScopeFacts.RequiresClassCell) return null;
         if (createIndex != 0)
-            return HasClosedDefinitionDefaults(definition, createIndex, cancellationToken) ? definition : null;
+            return definition.InputCount == 2 && definition.ParameterLayout is { PositionalDefaultCount: 1, Defaults.Length: 2 }
+                && ClosureNames.Count <= 1 && TryReadClosedDefinition(0, ClosureNames.Count != 0, pair: false,
+                    cancellationToken, out var emitted)
+                && emitted == createIndex ? definition : null;
 
         // The declaration captures the factory's only bound argument by value.
         // Its code still owns live function metadata and allocates a fresh callable.
@@ -29,53 +43,105 @@ internal sealed partial class ExecutableCodeObject
             ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
     }
 
-    private bool HasClosedDefinitionDefaults(ExecutableCreateFunction definition, int createIndex, CancellationToken cancellationToken)
+    private bool HasClosedDefinitionPair(int tupleIndex, CancellationToken token)
     {
-        if (definition.InputCount != 2 || definition.CodeObject.ClosureNames.Count != 0 ||
-            definition.ParameterLayout is not { PositionalDefaultCount: 1, Defaults.Length: 2 } ||
-            ClosureNames.Count > 1 || createIndex < 5 ||
-            Instructions[0] is not { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start ||
-            !ReferenceEquals(Constants[start.ConstantIndex], definition.ParameterLayout) ||
-            start.ResultSlot != Instructions[createIndex].InputStart || start.LiveExtent != start.ResultSlot + 2) return false;
+        if (ClosureNames.Count != 0 || CapturedLocalSlots.Count != 0 ||
+            Instructions[tupleIndex] is not { ItemCount: 2, HasResultConsumer: false } tuple ||
+            !TryReadClosedDefinition(0, false, pair: true, token, out var first) ||
+            first + 2 >= tupleIndex ||
+            !TryReadDefinitionStore(first, out var left) ||
+            !TryReadClosedDefinition(first + 2, false, pair: true, token, out var second) ||
+            second + 4 != tupleIndex || !TryReadDefinitionStore(second, out var right) || left == right)
+            return false;
 
-        var index = 1;
-        return MatchesDefault(start.ResultSlot, fixedCapture: false) &&
-            MatchesDefault(start.ResultSlot + 1, fixedCapture: ClosureNames.Count != 0) && index == createIndex;
+        ref readonly var leftRead = ref Instructions[tupleIndex - 2];
+        ref readonly var rightRead = ref Instructions[tupleIndex - 1];
+        return leftRead is { OpCode: ExecutableOpCode.PreparedTupleReturn } &&
+            leftRead.PreparedTupleIndex == tupleIndex && leftRead.LocalSlot == left && leftRead.ResultSlot == tuple.InputStart &&
+            rightRead is { OpCode: ExecutableOpCode.LoadLocal } &&
+            rightRead.LocalSlot == right && rightRead.ResultSlot == tuple.InputStart + 1;
+    }
 
-        bool MatchesDefault(int destination, bool fixedCapture)
+    private bool TryReadDefinitionStore(int index, out int local)
+    {
+        local = -1;
+        if (index + 1 >= Instructions.Length ||
+            Instructions[index + 1] is not { OpCode: ExecutableOpCode.StoreLocal, StoresCapturedLocal: false } store ||
+            !Instructions[index].HasResultConsumer || store.InputStart != Instructions[index].ResultSlot || store.LocalSlot == 0)
+            return false;
+        local = store.LocalSlot;
+        return true;
+    }
+
+    private bool TryReadClosedDefinition(int startIndex, bool fixedKeyword, bool pair, CancellationToken token, out int creationIndex)
+    {
+        creationIndex = -1;
+        if (Instructions[startIndex] is not { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start ||
+            Constants[start.ConstantIndex] is not FunctionParameterLayout { Defaults.Length: > 0 } layout ||
+            start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
+
+        var index = startIndex + 1;
+        for (var i = 0; i < layout.Defaults.Length; i++)
         {
-            if (index >= createIndex) return false;
+            PythonTokenization.CheckCancellation(token, index);
+            if (index >= Instructions.Length) return false;
+            var positional = i < layout.PositionalDefaultCount;
             var result = -1;
-            if (fixedCapture)
+            ref readonly var read = ref Instructions[index];
+            if (fixedKeyword && !positional)
             {
-                ref readonly var read = ref Instructions[index++];
                 if (read is not { OpCode: ExecutableOpCode.LoadClosure, ClosureSlot: 0, HasResultConsumer: true }) return false;
                 result = read.ResultSlot;
+                index++;
+            }
+            else if (pair && read.OpCode == ExecutableOpCode.LoadConst)
+            {
+                if (!read.HasResultConsumer || Constants[read.ConstantIndex] is not BigInteger) return false;
+                result = read.ResultSlot;
+                index++;
             }
             else
             {
-                while (index < createIndex && Instructions[index].OpCode == ExecutableOpCode.Binary)
+                while (index + 1 < Instructions.Length && Instructions[index].OpCode == ExecutableOpCode.Binary)
                 {
-                    PythonTokenization.CheckCancellation(cancellationToken, index);
+                    PythonTokenization.CheckCancellation(token, index);
                     ref readonly var binary = ref Instructions[index++];
+                    var last = Instructions[index].OpCode == ExecutableOpCode.StoreFunctionDefault;
                     if (binary.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
-                        BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo) ||
+                        BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo) &&
+                        !(pair && last && LythonRuntime.IsScalarComparison(binary.BinaryOperator)) ||
                         !IsInput(binary.InputStart, result) || !IsInput(binary.SecondInput, result) ||
-                        binary.ResultSlot < start.LiveExtent ||
-                        binary.HasResultConsumer != (index < createIndex && Instructions[index].OpCode == ExecutableOpCode.StoreFunctionDefault))
+                        binary.ResultSlot < start.LiveExtent || binary.HasResultConsumer != last)
                         return false;
                     result = binary.ResultSlot;
                 }
             }
 
-            if (index >= createIndex || result < 0) return false;
+            if (result < start.LiveExtent || index >= Instructions.Length) return false;
             ref readonly var store = ref Instructions[index++];
-            return store is { OpCode: ExecutableOpCode.StoreFunctionDefault, DefaultValueIndex: 0 } &&
-                store.InputStart == destination && store.ResultSlot == result;
+            var destination = positional ? start.ResultSlot : start.LiveExtent - 1;
+            var valueIndex = positional ? i : layout.KeywordDefaultAt(layout.Defaults[i].KeywordIndex).RecordPosition;
+            if (store.OpCode != ExecutableOpCode.StoreFunctionDefault || store.DefaultValueIndex != valueIndex ||
+                store.InputStart != destination || store.ResultSlot != result) return false;
         }
 
-        // Each expression may only read the bound argument, an exact integer
-        // literal or its immediately preceding result.
+        if (index >= Instructions.Length || Instructions[index] is not { OpCode: ExecutableOpCode.ApplyOperation } create ||
+            create.InputStart != start.ResultSlot) return false;
+        var body = Constants[create.ConstantIndex] switch
+        {
+            ExecutableCreateFunction { DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
+                TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0 } definition
+                when ReferenceEquals(definition.ParameterLayout, layout) => definition.CodeObject,
+            ExecutableCreateLambda { Binding: { IsGenerator: false, NamespaceClosure: false } binding }
+                when ReferenceEquals(binding.Layout, layout) => binding.CodeObject,
+            _ => null,
+        };
+        if (body is not { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false }) return false;
+        creationIndex = index;
+        return true;
+
+        // The argument, immutable literals and the immediately preceding
+        // integer are the only live inputs during a default expression.
         bool IsInput(int source, int previous) => source == 0 || (source >= 0 ? source == previous :
             (uint)~source < (uint)Constants.Length && Constants[~source] is BigInteger);
     }

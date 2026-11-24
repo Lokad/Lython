@@ -145,6 +145,69 @@ internal sealed partial class LythonRuntime
         finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal static void CompleteClosedDefinitionPair(ExecutableCodeObject factory, ExecutionContext scope,
+        long argument, Span<ExecutableSlot> destination)
+    {
+        var index = 0;
+        var first = CreateClosedPairMember(factory, scope, argument, ref index);
+        var instructions = factory.Instructions;
+        scope.CheckExecution(instructions[index++].Span); // First private store.
+        var second = CreateClosedPairMember(factory, scope, argument, ref index);
+        for (; index < instructions.Length; index++) scope.CheckExecution(instructions[index].Span);
+        // The caller consumes the first result from the top.
+        destination[1].Object = first;
+        destination[0].Object = second;
+    }
+
+    private static PyFunctionBase CreateClosedPairMember(ExecutableCodeObject factory,
+        ExecutionContext scope, long argument, ref int index)
+    {
+        var instructions = factory.Instructions;
+        ref readonly var start = ref instructions[index++];
+        var layout = (FunctionParameterLayout)factory.Constants[start.ConstantIndex]!;
+        var defaults = AllocateExecutableDefaults(layout, false, scope, start.Span);
+        try
+        {
+            for (var i = 0; i < layout.Defaults.Length; i++)
+            {
+                ExecutableSlot value;
+                ref readonly var first = ref instructions[index];
+                if (first.OpCode == ExecutableOpCode.LoadConst)
+                {
+                    index++;
+                    scope.CheckExecution(first.Span);
+                    value = ExecutableSlot.FromObject(factory.Constants[first.ConstantIndex]);
+                }
+                else value = EvaluateClosedDefault(factory, argument, scope, ref index);
+                ref readonly var store = ref instructions[index++];
+                if (i < layout.PositionalDefaultCount)
+                    defaults.Positional!.SetPrivateDefault(store.DefaultValueIndex, value, scope.State, store.Span);
+                else if (defaults.Keywords is object?[] values)
+                    StorePreparedKeywordDefault(values, store.DefaultValueIndex, value, scope.State, store.Span);
+                else
+                {
+                    scope.CheckExecution(store.Span);
+                    defaults = defaults with { Keywords = RuntimeValue(value.Object) };
+                }
+            }
+
+            ref readonly var create = ref instructions[index++];
+            scope.CheckExecution(create.Span);
+            var operation = factory.Constants[create.ConstantIndex];
+            var result = operation is ExecutableCreateFunction definition
+                ? definition.EagerAnnotationReads is { } reads
+                    ? CreateClosedEagerDefinition(definition, factory, reads, scope, create.Span, defaults)
+                    : CreateFunctionValue(layout, definition.CodeObject, GetGlobalContext(scope),
+                        default, defaults, false, scope, create.Span, postponedAnnotations: definition.PostponedAnnotations)
+                : CreateFunctionValue(layout, ((ExecutableCreateLambda)operation!).CodeObject, GetGlobalContext(scope),
+                    default, defaults, false, scope, create.Span);
+            defaults = default;
+            return result;
+        }
+        finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
+    }
+
     private static ExecutableSlot EvaluateClosedDefault(ExecutableCodeObject factory, long argument,
         ExecutionContext scope, ref int index)
     {
@@ -153,11 +216,22 @@ internal sealed partial class LythonRuntime
         {
             ref readonly var instruction = ref factory.Instructions[index++];
             scope.CheckExecution(instruction.Span);
+            var operation = instruction.BinaryOperator;
             if (TryReadInteger(instruction.InputStart, in result, out var a) &&
-                TryReadInteger(instruction.SecondInput, in result, out var b) &&
-                TryMachineBinary(instruction.BinaryOperator, a, b, out var integer))
-                result.SetInteger(integer);
-            else result.Object = EvaluateBinaryOperator(instruction.BinaryOperator,
+                TryReadInteger(instruction.SecondInput, in result, out var b))
+            {
+                if (TryMachineBinary(operation, a, b, out var integer))
+                {
+                    result.SetInteger(integer);
+                    continue;
+                }
+                if (IsScalarComparison(operation))
+                {
+                    result.Object = RuntimeValue(CompareOrderedResult(operation, a.CompareTo(b)));
+                    continue;
+                }
+            }
+            result.Object = EvaluateBinaryOperator(operation,
                 ReadObject(instruction.InputStart, result), ReadObject(instruction.SecondInput, result), scope, instruction.Span);
         }
         return result;

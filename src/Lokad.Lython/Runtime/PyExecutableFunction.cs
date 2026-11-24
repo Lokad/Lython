@@ -104,6 +104,26 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
+        // Both drivers already own this return window before entering the
+        // callee. A proved pair completes before workspace initialization.
+        if (unpackedReturn.Length == 2 && CodeObject.HasDirectDefinitionPair && completePositional &&
+            receiver is null && arguments.Length == 1 &&
+            TryReturnDefinition(null, arguments[0], span, out result, unpackedReturn))
+        {
+            unpacked = true;
+            frame = null;
+            return;
+        }
+        StartNativeWorkspace(call, arguments, receiver, context, span, consumedByIteration, completePositional,
+            unpackedReturn, out unpacked, out result, out frame);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private void StartNativeWorkspace(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, object? receiver,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
+        bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
+        out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
+    {
         // Both executable callers select eligibility before entry. Starting a
         // selected call completes or transfers its exact work; it never declines
         // after binding and asks the caller to try another execution route.
@@ -144,13 +164,15 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         finally { scope.LeaveInterpreterFrame(); }
     }
 
-    private bool TryReturnDefinition(ExecutableCreateFunction definition,
-        LythonRuntime.ExecutableSlot argument, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+    private bool TryReturnDefinition(ExecutableCreateFunction? definition,
+        LythonRuntime.ExecutableSlot argument, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result,
+        Span<LythonRuntime.ExecutableSlot> destination = default)
     {
         result = default;
         object? keyword = null;
         long integerArgument = 0;
-        if (definition.InputCount != 0 &&
+        var capturesArgument = definition is { InputCount: 0 };
+        if (!capturesArgument &&
             (!argument.TryGetInteger(out integerArgument) || (CodeObject.ClosureNames.Count != 0 && (keyword = _closureCells.FixedValue) is null)))
             return false;
         try
@@ -159,11 +181,16 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             var previous = Closure.State.CurrentException;
             try
             {
-                var function = definition.InputCount == 0
-                    ? LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument, CodeObject.Instructions[0].Span)
-                    : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, integerArgument, keyword);
-                Closure.CheckExecution(CodeObject.Instructions[^1].Span);
-                result = LythonRuntime.ExecutableSlot.FromObject(function);
+                if (definition is null)
+                    LythonRuntime.CompleteClosedDefinitionPair(CodeObject, Closure, integerArgument, destination);
+                else
+                {
+                    var function = capturesArgument
+                        ? LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument, CodeObject.Instructions[0].Span)
+                        : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, integerArgument, keyword);
+                    Closure.CheckExecution(CodeObject.Instructions[^1].Span);
+                    result = LythonRuntime.ExecutableSlot.FromObject(function);
+                }
                 return true;
             }
             catch (LythonRuntimeException error)

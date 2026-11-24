@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Return two fresh lexical callables from eligible closed factories without
+  constructing a callee workspace. Preserve ordered defaults and admission.
 - Refund frontend regex storage when a constant pattern is rejected. A
   reached runtime call still supplies the normal Python error fields.
 - Add an optional staged regex provider contract so parser-dependent guest

@@ -640,7 +640,11 @@ internal sealed partial class ExecutableCodeObject
             && (capturedLocalSlots.Count == 0 ||
                 usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);
         HasDirectIntegerReturn = CanRunNativeInstructions && HasClosedIntegerReturn(cancellationToken);
-        if (CanRunNativeInstructions) DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken);
+        if (CanRunNativeInstructions)
+        {
+            DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out var definitionPair);
+            HasDirectDefinitionPair = definitionPair;
+        }
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
     }
@@ -664,6 +668,7 @@ internal sealed partial class ExecutableCodeObject
     internal int[] ModuleGlobalSlots { get; private set; } = [];
     internal ExecutableCaptureSources? CaptureSources { get; private set; }
     internal ExecutableCreateFunction? DirectDefinitionReturn { get; }
+    internal bool HasDirectDefinitionPair { get; }
     internal bool ForwardsCaptures { get; init; }
     internal int FirstSnapshotCell { get; init; }
     internal int[]? SnapshotTailOrder { get; init; }
