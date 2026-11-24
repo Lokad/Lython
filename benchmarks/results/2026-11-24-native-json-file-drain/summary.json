@@ -1,0 +1,234 @@
+{
+  "sourcePatch": "b19b4f50cdfb195844b331d5193c6e7b42a65b6747e6b7769e2805cdc1f7a1c3",
+  "reference": "d7dd3d4bd8a356c6e3c010a92870280178f0e4b0",
+  "timedBatches": 120,
+  "performanceQualified": false,
+  "collectorSeconds": 124.04114603297785,
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "warm",
+      "elapsedPercent": [
+        -34.647149683984736,
+        25.334849679211736
+      ],
+      "cpuPercent": [
+        -19.89270255441079,
+        20.411663807890214
+      ],
+      "elapsedMediansMs": {
+        "candidate": 1.4440218323232323,
+        "reference": 1.582269394520548,
+        "candidate-control": 1.0340581489971348,
+        "reference-control": 1.1521311399176954
+      },
+      "widerCpuMediansMs": {
+        "candidate": 1.3131313131313131,
+        "reference": 1.2876712328767124,
+        "candidate-control": 1.0315186246418337,
+        "reference-control": 1.0905349794238683
+      },
+      "sameSourceElapsedSpreadPercent": [
+        37.33414015991099,
+        39.64609569816693
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.small",
+      "lane": "warm",
+      "elapsedPercent": [
+        -9.614113937763902,
+        18.66104939558817
+      ],
+      "cpuPercent": [
+        -2.8340080971659964,
+        17.82997762863534
+      ],
+      "elapsedMediansMs": {
+        "reference-control": 0.4191442005208333,
+        "candidate-control": 0.45187078970917227,
+        "reference": 0.38080801746724896,
+        "candidate": 0.3788471995192308
+      },
+      "widerCpuMediansMs": {
+        "reference-control": 0.4947916666666667,
+        "candidate-control": 0.5145413870246085,
+        "reference": 0.4366812227074236,
+        "candidate": 0.4807692307692308
+      },
+      "sameSourceElapsedSpreadPercent": [
+        10.067063006855248,
+        19.275209182649554
+      ]
+    },
+    {
+      "case": "scripts.json-lines-shipment.expanded-options.large",
+      "lane": "warm",
+      "elapsedPercent": [
+        -4.220191841467824,
+        25.083464152416312
+      ],
+      "cpuPercent": [
+        -12.5,
+        42.85714285714286
+      ],
+      "elapsedMediansMs": {
+        "candidate": 19.565626375,
+        "reference": 17.208323375,
+        "candidate-control": 21.524767,
+        "reference-control": 20.427715142857146
+      },
+      "widerCpuMediansMs": {
+        "candidate": 21.25,
+        "reference": 20.0,
+        "candidate-control": 28.571428571428573,
+        "reference-control": 24.285714285714285
+      },
+      "sameSourceElapsedSpreadPercent": [
+        18.70834071222902,
+        10.013176105127375
+      ]
+    },
+    {
+      "case": "scripts.json-lines-shipment.default-options.large",
+      "lane": "warm",
+      "elapsedPercent": [
+        -7.827593089492746,
+        11.713998220560473
+      ],
+      "cpuPercent": [
+        -3.8461538461538436,
+        -1.9230769230769273
+      ],
+      "elapsedMediansMs": {
+        "reference-control": 6.028367960000001,
+        "candidate-control": 6.001665307692307,
+        "reference": 5.3723485,
+        "candidate": 5.556491846153846
+      },
+      "widerCpuMediansMs": {
+        "reference-control": 6.8,
+        "candidate-control": 6.538461538461538,
+        "reference": 6.666666666666667,
+        "candidate": 6.538461538461538
+      },
+      "sameSourceElapsedSpreadPercent": [
+        12.211036942223696,
+        8.01177206525745
+      ]
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "lane": "warm",
+      "elapsedPercent": [
+        -9.717615456195627,
+        19.286703763052504
+      ],
+      "cpuPercent": [
+        -8.854166666666663,
+        19.047619047619047
+      ],
+      "elapsedMediansMs": {
+        "candidate": 8.866093523809523,
+        "reference": 8.88138104,
+        "candidate-control": 8.018322583333333,
+        "reference-control": 7.432591599999999
+      },
+      "widerCpuMediansMs": {
+        "candidate": 9.523809523809524,
+        "reference": 9.6,
+        "candidate-control": 8.75,
+        "reference-control": 8.0
+      },
+      "sameSourceElapsedSpreadPercent": [
+        19.492385939784462,
+        10.572921351884034
+      ]
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "warm-async",
+      "elapsedPercent": [
+        -18.417392421285918,
+        -2.694868115799376
+      ],
+      "cpuPercent": [
+        -17.78006166495375,
+        -5.384615384615376
+      ],
+      "elapsedMediansMs": {
+        "reference-control": 0.3194642899728997,
+        "candidate-control": 0.3108551486810552,
+        "reference": 0.3556525355555556,
+        "candidate": 0.2901506124260355
+      },
+      "widerCpuMediansMs": {
+        "reference-control": 0.4065040650406504,
+        "candidate-control": 0.38369304556354916,
+        "reference": 0.4666666666666667,
+        "candidate": 0.38461538461538464
+      },
+      "sameSourceElapsedSpreadPercent": [
+        11.327790528864966,
+        7.1357892654104305
+      ]
+    }
+  ],
+  "allocations": [
+    {
+      "case": "scripts.config-manifest.small",
+      "allocationBytes": [
+        99640,
+        96536
+      ],
+      "peakAdmission": [
+        56623,
+        56623
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.small",
+      "allocationBytes": [
+        56664,
+        56536
+      ],
+      "peakAdmission": [
+        71708,
+        71708
+      ]
+    },
+    {
+      "case": "scripts.json-lines-shipment.expanded-options.large",
+      "allocationBytes": [
+        5523678,
+        5523678
+      ],
+      "peakAdmission": [
+        6157312,
+        6157312
+      ]
+    },
+    {
+      "case": "scripts.json-lines-shipment.default-options.large",
+      "allocationBytes": [
+        4938610,
+        4940386
+      ],
+      "peakAdmission": [
+        6228493,
+        6228493
+      ]
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "allocationBytes": [
+        3280550,
+        3280774
+      ],
+      "peakAdmission": [
+        9040266,
+        9040266
+      ]
+    }
+  ]
+}

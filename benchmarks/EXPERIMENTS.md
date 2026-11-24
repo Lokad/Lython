@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1617](results/2026-11-24-native-json-file-drain/README.md) removes
+per-chunk traversal reentry and discarded write counts together.
+The manifest uses 3,104 fewer managed bytes per run, while default
+JSON Lines takes 1.43–4.54% longer on the quiet VM. The combined
+prototype stays private while the write-result change is isolated.
+
 [B1616](results/2026-11-24-file-script-attribution/README.md) samples
 the delivered manifest and JSON summary on WSL. Host methods account
 for most of their file-open stacks. The manifest encoder remains an
