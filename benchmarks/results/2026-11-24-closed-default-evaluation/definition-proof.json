@@ -1,0 +1,86 @@
+{
+  "reference": {
+    "scripts.captured-rule-closures": [
+      {
+        "code": "make_rules",
+        "instructions": 20,
+        "slots": 10,
+        "directDefinition": false
+      }
+    ],
+    "scripts.rule-default-closures": [
+      {
+        "code": "make_rules",
+        "instructions": 23,
+        "slots": 7,
+        "directDefinition": false
+      }
+    ],
+    "scripts.annotated-rule-closures": [
+      {
+        "code": "compile_rule",
+        "instructions": 8,
+        "slots": 6,
+        "directDefinition": false
+      }
+    ],
+    "scripts.annotated-rule-closures.nested-factories.postponed": [
+      {
+        "code": "for_policy",
+        "instructions": 2,
+        "slots": 6,
+        "directDefinition": true
+      },
+      {
+        "code": "compile_rule",
+        "instructions": 7,
+        "slots": 6,
+        "directDefinition": true
+      }
+    ],
+    "diagnostic.text-summary.nonlocal-computed-width.large": [],
+    "scripts.csv-invoice.method-policy.quoted-control": []
+  },
+  "candidate": {
+    "scripts.captured-rule-closures": [
+      {
+        "code": "make_rules",
+        "instructions": 20,
+        "slots": 10,
+        "directDefinition": false
+      }
+    ],
+    "scripts.rule-default-closures": [
+      {
+        "code": "make_rules",
+        "instructions": 23,
+        "slots": 7,
+        "directDefinition": false
+      }
+    ],
+    "scripts.annotated-rule-closures": [
+      {
+        "code": "compile_rule",
+        "instructions": 8,
+        "slots": 6,
+        "directDefinition": true
+      }
+    ],
+    "scripts.annotated-rule-closures.nested-factories.postponed": [
+      {
+        "code": "for_policy",
+        "instructions": 2,
+        "slots": 6,
+        "directDefinition": true
+      },
+      {
+        "code": "compile_rule",
+        "instructions": 7,
+        "slots": 6,
+        "directDefinition": true
+      }
+    ],
+    "diagnostic.text-summary.nonlocal-computed-width.large": [],
+    "scripts.csv-invoice.method-policy.quoted-control": []
+  }
+}

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1590](results/2026-11-24-closed-default-evaluation/README.md) replaces
+the fixed default factory match. Eager annotated rules avoid the native
+workspace and improve 36.64–43.34% elapsed. Postponed annotated elapsed
+increases, with mixed CPU. Retain the eager improvement and carry the
+postponed regression forward.
+
 [B1589](results/2026-11-24-captured-local-reads/README.md) removes three
 captured-local loads from the factory. Captured-rule timing is inconclusive,
 the unchanged-tape text control slows, and the annotated control also moves.
