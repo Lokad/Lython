@@ -31,16 +31,43 @@ internal sealed partial class LythonRuntime
         private byte[] _escaped = escaped;
         private MemoryGovernor.TemporaryMemoryReservation? _storage = storage;
 
-        internal void AppendTo(GovernedByteBuilder builder, PyString template, ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
+        internal PyString Expand(PyString template, ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
         {
+            long length = 0;
             for (var i = 0; i < count; i++)
             {
                 context.CheckExecution(span);
-                var part = _parts[i];
-                if (part.Group < 0) AppendLiteral(builder, template, part, context, span);
-                else AppendRegexBytes(builder, match.GroupBytes(part.Group), context, span);
+                length = checked(length + ExpansionBytes(template, match, _parts[i]).Length);
             }
+            context.CheckExecution(span);
+            if (length > Array.MaxLength) throw RuntimeErrors.Runtime("byte buffer allocation is too large.", span);
+            if (length == 0) return PyString.Empty;
+
+            var governor = context.MemoryGovernor;
+            var bytes = PyString.EstimateApproximateBytes((int)length);
+            governor.Reserve(bytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var result = PyString.CreateReservedUtf8((int)length, governor);
+                var destination = result.UnpublishedUtf8;
+                for (var i = 0; i < count; i++)
+                {
+                    context.CheckExecution(span);
+                    var piece = ExpansionBytes(template, match, _parts[i]);
+                    PyStringOps.CopyJoinBytes(piece, destination, context, span);
+                    destination = destination[piece.Length..];
+                }
+                context.CheckExecution(span);
+                result.CompleteUnpublishedUtf8((int)length);
+                governor.Commit(bytes);
+                return result;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
         }
+
+        private ReadOnlySpan<byte> ExpansionBytes(PyString template, ReMatchObject match, RegexReplacementPiece part)
+            => part.Group < 0 ? LiteralBytes(template, part) : match.GroupBytes(part.Group);
 
         internal void AppendTo(GovernedByteBuilder builder, PyString template, RegexSubjectRange range, ReadOnlySpan<LythonRegexCapture?> captures,
             ExecutionContext context, LythonSourceSpan span)
@@ -49,18 +76,17 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 var part = _parts[i];
-                if (part.Group < 0) AppendLiteral(builder, template, part, context, span);
+                if (part.Group < 0) AppendRegexBytes(builder, LiteralBytes(template, part), context, span);
                 else if (captures[part.Group] is { } capture)
                     AppendRegexBytes(builder, range.Original.Utf8Span.Slice(capture.StartByte,
                         capture.EndByte - capture.StartByte), context, span);
             }
         }
 
-        private void AppendLiteral(GovernedByteBuilder builder, PyString template, RegexReplacementPiece part,
-            ExecutionContext context, LythonSourceSpan span)
+        private ReadOnlySpan<byte> LiteralBytes(PyString template, RegexReplacementPiece part)
         {
             var source = part.Group == RegexReplacementPiece.LiteralRange ? template.Utf8Span : _escaped.AsSpan();
-            AppendRegexBytes(builder, source.Slice(part.Start, part.Length), context, span);
+            return source.Slice(part.Start, part.Length);
         }
 
         public void Dispose()
@@ -77,17 +103,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             using var plan = CompileReplacementTemplate(match.Pattern, template, context, span);
-            if (plan is null)
-                return PyString.CopyFromUtf8(template.Utf8Span, context.MemoryGovernor, span, context);
-            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-            try
-            {
-                plan.AppendTo(builder, template, match, context, span);
-                var result = builder.ToPyStringAndRelease();
-                context.CheckExecution(span);
-                return result;
-            }
-            finally { builder.Release(); }
+            return plan is null ? PyString.CopyFromUtf8(template.Utf8Span, context.MemoryGovernor, span, context)
+                : plan.Expand(template, match, context, span);
         }
 
         // Unescaped text is already in its final UTF-8 representation.

@@ -137,7 +137,9 @@ public sealed class RegexExpansionOwnershipTests
     [Fact]
     public void LongLiteralTemplateFitsAlongsideItsRetainedExpansion()
     {
-        const long allowance = 112 * 1024;
+        // Enough for the private plan and one exact result, with no room for
+        // the earlier growable output's 32 KiB → 64 KiB replacement.
+        const long allowance = 36 * 1024;
         var root = new LythonMemoryBudget(1024 * 1024);
         using (var owner = root.CreateScope())
         {

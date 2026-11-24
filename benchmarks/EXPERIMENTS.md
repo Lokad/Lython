@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1558](results/2026-11-24-direct-match-expand/README.md) replaces
+the growable output with one admitted expansion. The wide script
+allocates 69.81% less and takes 29.40–31.48% less warm time.
+The short script allocates 26.47% less and takes 18.11–20.49% less.
+The substitution control has a small adverse CPU signal.
+
 [B1557](results/2026-11-24-cased-empty-iteration/README.md) keeps
 early empty cased iteration private. The short report with blank
 lines takes 3.74–9.00% longer warm, with adverse CPU and unchanged

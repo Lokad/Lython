@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Size `match.expand()` from its validated UTF-8 ranges and write into one
+  admitted string. Eliminate output growth and its replacement overlap.
 - Reuse the admitted capacity of unmaterialized words across private
   casing cursor loans. Constructed words keep their execution owner.
 - Parse complete buffered CSV lines directly from the decoded file

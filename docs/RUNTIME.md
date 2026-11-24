@@ -2658,6 +2658,8 @@ ranges from the funded template and stores adjacent decoded escapes in a private
 UTF-8 buffer. Temporary name funding returns before replay. The plan returns its
 allowance after use and retained output has its own admission. Result copying
 checks cancellation in bounded chunks. Replacement plans live for one operation.
+For `match.expand()`, the plan supplies the exact byte count before output
+admission. Literal and capture bytes then go directly into the new string.
 Split and substitution consume capture byte ranges directly. Callable replacements
 receive ordinary Python matches, and RunAsync awaits their callbacks.
 
