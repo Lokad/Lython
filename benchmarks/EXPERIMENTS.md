@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1656](results/2026-11-24-inline-defaults-cpython/README.md) refreshes the
+representative CPython comparison on the committed B1655 image. Defaulted
+rules still have the largest measured warm gap. The report and quote-heavy
+invoice are near warm parity. Compilation and compile-to-result stay separate.
+
 [B1655](results/2026-11-24-inline-positional-default/README.md) delays
 singleton default tuple construction until metadata exposes it. The affected
 scripts allocate 10.30–15.48% less with matching admission peaks. The
