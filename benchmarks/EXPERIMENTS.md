@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1553](results/2026-11-24-json-encoding-flags/README.md) retains the
+compact JSON iterator and reuses Boolean boxes. Expanded export
+allocates 9.65% less and takes 3.21–3.53% less warm elapsed. Its CPU
+range spans zero. Default allocation is flat.
+
+[B1554](results/2026-11-24-json-scalar-windows/README.md) measures
+one-window quote and payload emission. Expanded encoding requires
+more admitted and CLR memory. The trial stays private.
+
 [B1552](results/2026-11-24-json-encoding-settings/README.md) embeds the
 resolved JSON options. Expanded export allocates less, default encoding
 has larger iterators and takes longer, and the unchanged call control
