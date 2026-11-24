@@ -166,6 +166,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public static PyString Empty { get; } = new([]);
 
+    internal static PyString FromAsciiCharacter(byte value) => AsciiCharacters[value];
+
     public int Length
     {
         get

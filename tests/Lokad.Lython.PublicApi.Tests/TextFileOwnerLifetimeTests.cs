@@ -49,4 +49,50 @@ public sealed class TextFileOwnerLifetimeTests : LifetimeScenario
         await AssertBatchCompletes("with open('/line') as f:\n first = f.readline()\nf = None\nfor i in range(16):\n with open('/file', 'w') as f:\n  pass\n f = None\nreturn i == 15 and first == 'café 😀' * 2048 + '\\n'\n", true, 262144,
             hostFactory: () => { var h = new MockLythonHost(); h.SeedFile("/line", string.Concat(Enumerable.Repeat("café 😀", 2048)) + "\n"); return h; });
     }
+
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task SingleAsciiValuesShareIdentityAcrossTextReads(string newline)
+    {
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine().Compile("""
+            with open('/line', encoding='utf8') as stream:
+                first = next(stream)
+                second = stream.readline()
+                letter = stream.read(1)
+                third = stream.read(1)
+                repeated = stream.read(1)
+                fourth = stream.read(1)
+            with open('/last', encoding='utf8') as stream:
+                last = stream.readline()
+            print(first == '\n', letter == 'A')
+            print(first is second, first is third, first is fourth,
+                  letter is repeated, letter is last)
+            """, budget);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var input = newline + newline + "A" + newline + "A" + newline;
+        var sync = new MockLythonHost();
+        sync.SeedFile("/line", input);
+        sync.SeedFile("/last", "A");
+        using (var result = script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True\nTrue True True True True\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        var asyncHost = new DelayedLythonHost();
+        asyncHost.SeedFile("/line", input);
+        asyncHost.SeedFile("/last", "A");
+        using (var result = await script.RunAsync(asyncHost))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True\nTrue True True True True\n", result.StandardOutput);
+        }
+        Assert.True(asyncHost.CompletedAsynchronously > 0);
+        Assert.Equal(2, asyncHost.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
 }

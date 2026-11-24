@@ -553,7 +553,13 @@ internal sealed partial class LythonRuntime
             private PyString EmitAccumulated(GovernedByteBuilder? builder)
             {
                 if (builder is null || builder.Length == 0) return PyString.Empty;
-                var text = builder.ToPyStringAndRelease();
+                PyString text;
+                if (builder.Length == 1)
+                {
+                    text = PyString.FromAsciiCharacter(builder.WrittenSpan[0]);
+                    builder.Release();
+                }
+                else text = builder.ToPyStringAndRelease();
                 _services.CheckExecution(null);
                 return text;
             }
@@ -606,6 +612,9 @@ internal sealed partial class LythonRuntime
             {
                 var length = end - start;
                 if (length <= 0) return PyString.Empty;
+                // The decoded window is valid UTF-8. A one-byte value can
+                // use the same immutable character as string indexing.
+                if (length == 1) return PyString.FromAsciiCharacter(_window.Span[start]);
                 if (length <= PyString.InlineUtf8Capacity)
                     return PyString.CopyFromUtf8(_window.Span[start..end], _services.MemoryGovernor, null);
                 if (!MemoryMarshal.TryGetArray(_window, out var window) || window.Array is null)
