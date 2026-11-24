@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1650](results/2026-11-24-frontend-phase-profile/README.md) profiles
+compilation after shared match bindings. Parsing and executable construction
+lead the generated classifier and validator. Operand layout accounts for
+68–82 samples in those profiles and 57 in the manifest. This is attribution
+for the next redesign, with no before-and-after timing claim.
+
 [B1648](results/2026-11-24-shared-match-bindings/README.md) removes repeated
 capture walks. The generated classifier allocates 10.47% less when compiling
 and reaches its result 8.05–8.84% sooner with lower CPU. The manifest control
