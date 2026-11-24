@@ -80,6 +80,24 @@ public sealed class SharedCompilerFactTests
         await Check(source, "OK True\n", asynchronous);
     }
 
+    [Fact]
+    public void UnrelatedMutationPreservesDiagnosticsForAnImmutableTupleGraph()
+    {
+        const int depth = 12;
+        var source = "pure = 1\n" + string.Concat(Enumerable.Repeat("pure = (pure, pure)\n", depth)) +
+            "items = []\nmixed = (pure, items)\nitems.append(1)\nlen(mixed[0]" +
+            string.Concat(Enumerable.Repeat("[1]", depth)) + ")\n";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var compiled = new LythonEngine().Compile(source, budget))
+        {
+            Assert.False(compiled.IsValid);
+            var diagnostic = Assert.Single(compiled.Diagnostics);
+            Assert.Equal("LA3032", diagnostic.Code);
+            Assert.Equal(17, diagnostic.Span?.Line);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]

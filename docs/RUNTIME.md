@@ -326,6 +326,9 @@ Module and indented suites share statement parsing and recovery. Separator
 checks use the next statement's existing span to locate its physical line.
 Abstract statement and expression checks use the same binding state. Their
 branch, short-circuit and diagnostic order remains explicit.
+That state summarizes known collection facts, so invalidation and deferred
+scope setup can skip irrelevant scans. Widening retains immutable tuple
+branches and still clears facts affected by mutable aliases.
 Name-binding diagnostics use the prepared local-name sets and check each
 nested function header in its defining scope before checking the body.
 Numeric syntax carries the parsed value for analysis, annotations and execution.

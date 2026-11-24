@@ -1,0 +1,112 @@
+[
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      217728,
+      217728
+    ],
+    "retainedAdmission": [
+      212960,
+      212960
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "allocationBytes": [
+      44688,
+      44688
+    ],
+    "retainedAdmission": [
+      67040,
+      67040
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      2170816,
+      2170816
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  },
+  {
+    "case": "scripts.dataclass-inherited-configuration.generated",
+    "allocationBytes": [
+      488400,
+      488400
+    ],
+    "retainedAdmission": [
+      414656,
+      414656
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      60760,
+      60760
+    ],
+    "retainedAdmission": [
+      78622,
+      78622
+    ]
+  },
+  {
+    "case": "scripts.csv-summary-functions.small",
+    "allocationBytes": [
+      82720,
+      82720
+    ],
+    "retainedAdmission": [
+      93920,
+      93920
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.small",
+    "allocationBytes": [
+      74760,
+      74760
+    ],
+    "retainedAdmission": [
+      91040,
+      91040
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      80344,
+      80344
+    ],
+    "retainedAdmission": [
+      92127,
+      92127
+    ]
+  },
+  {
+    "case": "diagnostic.immutable-dag",
+    "allocationBytes": [
+      106536,
+      103368
+    ],
+    "retainedAdmission": [
+      123104,
+      123104
+    ]
+  },
+  {
+    "case": "diagnostic.mixed-dag",
+    "allocationBytes": [
+      114336,
+      108096
+    ],
+    "retainedAdmission": [
+      111104,
+      111104
+    ]
+  }
+]

@@ -144,6 +144,27 @@ public sealed class AbstractStateResolutionLifetimeTests
         Assert.Equal(AbstractSequenceLengthBounds.Exact(2), bounds);
     }
 
+    [Fact]
+    public void JoinedOptionalTupleWidensItsMutableItemWithoutChangingTheSibling()
+    {
+        var state = new AbstractState();
+        var left = state.Clone();
+        var right = state.Clone();
+        left.Set("value", AbstractValue.None(Span));
+        var list = AbstractValue.List([AbstractValue.Integer(1, Span)], Span);
+        right.Set("value", AbstractValue.Tuple([list], Span));
+
+        state.TakeJoinedBranches(left, right);
+        state.InvalidateMutableSequenceFacts();
+
+        Assert.True(state.TryGet("value", out var joined));
+        Assert.Equal(AbstractValueKind.MaybeNone, joined.Kind);
+        Assert.Equal(AbstractValueKind.ListType, joined.RequireNestedValue().RequireSequenceItems()[0].Kind);
+        Assert.False(state.CloneForDeferredBody().TryGet("value", out _));
+        Assert.True(right.TryGet("value", out var original));
+        Assert.Equal(AbstractValueKind.List, original.RequireSequenceItems()[0].Kind);
+    }
+
     private static void AssertInteger(AbstractState state, int expected)
     {
         Assert.True(StaticAbstractValueResolver.TryResolve(Read, state, out var value));

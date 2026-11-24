@@ -180,6 +180,7 @@ internal enum AbstractValueFacts : byte
     Dictionary = 1,
     MutableCollection = 2,
     Callback = 4,
+    MutableSequence = 8,
 }
 
 internal readonly record struct AbstractValue
@@ -197,8 +198,11 @@ internal readonly record struct AbstractValue
         _facts = containedFacts | (kind switch
         {
             AbstractValueKind.Dict => AbstractValueFacts.Dictionary | AbstractValueFacts.MutableCollection,
-            AbstractValueKind.List or AbstractValueKind.Set => AbstractValueFacts.MutableCollection,
-            AbstractValueKind.ListType or AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
+            AbstractValueKind.List => AbstractValueFacts.MutableCollection | AbstractValueFacts.MutableSequence,
+            AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque =>
+                AbstractValueFacts.MutableCollection | AbstractValueFacts.MutableSequence | AbstractValueFacts.Callback,
+            AbstractValueKind.Set => AbstractValueFacts.MutableCollection,
+            AbstractValueKind.SetType or
                 AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter or
                 AbstractValueKind.CollectionsChainMap => AbstractValueFacts.MutableCollection | AbstractValueFacts.Callback,
             AbstractValueKind.String or AbstractValueKind.StringType or

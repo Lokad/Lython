@@ -1,0 +1,468 @@
+{
+  "instrumentedCore": [
+    "d1526e56e751a2cdbea339f59f7d357a0535fcfa9cb567a9a264bf7cacea7330",
+    "d9a7a97dff495349e1ebc1d47d2b85e78113b64c8a3e58398ed88024826c9476"
+  ],
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "retainedAdmission": 212960,
+      "counts": {
+        "invalidationRequests": [
+          48,
+          48
+        ],
+        "invalidationBindingVisits": [
+          178,
+          14
+        ],
+        "wideningCalls": [
+          175,
+          0
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          9,
+          9
+        ],
+        "deferredBindingVisits": [
+          21,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "retainedAdmission": 67040,
+      "counts": {
+        "invalidationRequests": [
+          10,
+          10
+        ],
+        "invalidationBindingVisits": [
+          13,
+          0
+        ],
+        "wideningCalls": [
+          13,
+          0
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          0,
+          0
+        ],
+        "deferredBindingVisits": [
+          0,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "retainedAdmission": 2294048,
+      "counts": {
+        "invalidationRequests": [
+          586,
+          586
+        ],
+        "invalidationBindingVisits": [
+          1170,
+          14
+        ],
+        "wideningCalls": [
+          1168,
+          5
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          1,
+          1
+        ],
+        "deferredBindingVisits": [
+          1,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "retainedAdmission": 414656,
+      "counts": {
+        "invalidationRequests": [
+          147,
+          147
+        ],
+        "invalidationBindingVisits": [
+          294,
+          6
+        ],
+        "wideningCalls": [
+          294,
+          2
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          0,
+          0
+        ],
+        "deferredBindingVisits": [
+          0,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "retainedAdmission": 78622,
+      "counts": {
+        "invalidationRequests": [
+          7,
+          7
+        ],
+        "invalidationBindingVisits": [
+          16,
+          0
+        ],
+        "wideningCalls": [
+          16,
+          0
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          4,
+          4
+        ],
+        "deferredBindingVisits": [
+          4,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.small",
+      "retainedAdmission": 93920,
+      "counts": {
+        "invalidationRequests": [
+          14,
+          14
+        ],
+        "invalidationBindingVisits": [
+          32,
+          3
+        ],
+        "wideningCalls": [
+          31,
+          0
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          1,
+          1
+        ],
+        "deferredBindingVisits": [
+          0,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.small",
+      "retainedAdmission": 91040,
+      "counts": {
+        "invalidationRequests": [
+          9,
+          9
+        ],
+        "invalidationBindingVisits": [
+          34,
+          4
+        ],
+        "wideningCalls": [
+          33,
+          0
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          2,
+          2
+        ],
+        "deferredBindingVisits": [
+          0,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "retainedAdmission": 92127,
+      "counts": {
+        "invalidationRequests": [
+          2,
+          2
+        ],
+        "invalidationBindingVisits": [
+          0,
+          0
+        ],
+        "wideningCalls": [
+          0,
+          0
+        ],
+        "tupleOrOptionalWideningCalls": [
+          0,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          0,
+          0
+        ],
+        "wideningLimit": [
+          0,
+          0
+        ],
+        "deferredScopeCopies": [
+          0,
+          0
+        ],
+        "deferredBindingVisits": [
+          0,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.immutable-dag",
+      "retainedAdmission": 123104,
+      "counts": {
+        "invalidationRequests": [
+          6,
+          5
+        ],
+        "invalidationBindingVisits": [
+          10,
+          5
+        ],
+        "wideningCalls": [
+          778,
+          2
+        ],
+        "tupleOrOptionalWideningCalls": [
+          417,
+          0
+        ],
+        "immutableTupleOrOptionalCalls": [
+          417,
+          0
+        ],
+        "wideningLimit": [
+          33,
+          0
+        ],
+        "deferredScopeCopies": [
+          2,
+          2
+        ],
+        "deferredBindingVisits": [
+          2,
+          0
+        ],
+        "deferredMutableDrops": [
+          0,
+          0
+        ],
+        "functionSummaries": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.mixed-dag",
+      "retainedAdmission": 111104,
+      "counts": {
+        "invalidationRequests": [
+          6,
+          5
+        ],
+        "invalidationBindingVisits": [
+          16,
+          15
+        ],
+        "wideningCalls": [
+          1424,
+          17
+        ],
+        "tupleOrOptionalWideningCalls": [
+          769,
+          10
+        ],
+        "immutableTupleOrOptionalCalls": [
+          764,
+          5
+        ],
+        "wideningLimit": [
+          65,
+          0
+        ],
+        "deferredScopeCopies": [
+          2,
+          2
+        ],
+        "deferredBindingVisits": [
+          4,
+          4
+        ],
+        "deferredMutableDrops": [
+          2,
+          2
+        ],
+        "functionSummaries": [
+          1,
+          1
+        ]
+      }
+    }
+  ]
+}

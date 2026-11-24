@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve compile-time diagnostics for immutable tuple values across
+  unrelated collection mutations. Skip invalidation scans when the current
+  binding state has no affected collection facts.
 - Return private callable, default and annotation storage when a closed
   factory fails before returning its callable pair.
 - Complete eligible exact-string cased-split helpers directly for

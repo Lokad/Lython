@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1613](results/2026-11-24-abstract-collection-graphs/README.md) reuses
+compiler collection facts to avoid binding scans and preserve the known
+shape of immutable tuple branches. Sparse validator invalidation visits
+fall from 1,170 to 14. CPU results span zero on the timed scripts.
+
 [B1612](results/2026-11-24-shared-parser-statements/README.md) shares
 statement parsing and reuses source spans for separation. Sparse validator
 compile elapsed falls 3.10–5.04% and time to result falls 1.69–3.52% with

@@ -69,6 +69,9 @@ internal sealed class AbstractState
     private readonly Dictionary<ExpressionSyntax, AbstractValueResolution> _abstractValueCache;
     private Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
     private Dictionary<string, AbstractValue> _values;
+    // An upper bound on the effects carried by the current value map. The
+    // existing filtering and join walks can also discard stale bits.
+    private AbstractValueFacts _bindingFacts;
     private bool _containerFactsInvalidated;
     private bool _valuesShared;
     private bool _sequenceLengthsShared;
@@ -99,6 +102,7 @@ internal sealed class AbstractState
     public void Set(string name, AbstractValue value)
     {
         WritableValues()[name] = value;
+        _bindingFacts |= value.Facts;
         if (AbstractValue.TryGetExactSequenceLength(value, AnalysisContext, out var length))
         {
             WritableSequenceLengths()[name] = AbstractSequenceLengthBounds.Exact(length);
@@ -141,6 +145,11 @@ internal sealed class AbstractState
     private void InvalidateContainerFacts(bool dictionaries, bool sequences)
     {
         _containerFactsInvalidated = true;
+        var effects = (dictionaries ? AbstractValueFacts.Dictionary : AbstractValueFacts.None) |
+            (sequences ? AbstractValueFacts.MutableSequence : AbstractValueFacts.None);
+        if ((_bindingFacts & effects) == 0) return;
+
+        var retainedFacts = AbstractValueFacts.None;
         var changed = false;
         List<(string Name, AbstractValue Value)>? rewrites = null;
         try
@@ -157,15 +166,17 @@ internal sealed class AbstractState
                     continue;
                 }
 
-                if (!sequences) continue;
-                var remainingTupleWork = Parser.MaxNestingDepth;
-                var widened = ForgetMutableSequenceContents(value, ref remainingTupleWork);
-                if (widened.Kind != value.Kind || !widened.HasSamePayload(value))
+                var retained = value;
+                if (sequences && (value.Facts & AbstractValueFacts.MutableSequence) != 0)
                 {
-                    (rewrites ??= []).Add((name, widened));
+                    var remainingTupleWork = Parser.MaxNestingDepth;
+                    retained = ForgetMutableSequenceContents(value, ref remainingTupleWork);
+                    if (retained.Kind != value.Kind || !retained.HasSamePayload(value))
+                        (rewrites ??= []).Add((name, retained));
+                    if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
+                        changed |= RemoveSequenceLength(name);
                 }
-                if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
-                    changed |= RemoveSequenceLength(name);
+                retainedFacts |= retained.Facts;
             }
 
             // Apply actual value replacements after enumeration.
@@ -178,6 +189,7 @@ internal sealed class AbstractState
                     changed = true;
                 }
             }
+            _bindingFacts = retainedFacts;
         }
         finally
         {
@@ -187,6 +199,7 @@ internal sealed class AbstractState
 
     private AbstractValue ForgetMutableSequenceContents(AbstractValue value, ref int remainingTupleWork)
     {
+        if ((value.Facts & AbstractValueFacts.MutableSequence) == 0) return value;
         switch (value.Kind)
         {
             case AbstractValueKind.List:
@@ -240,16 +253,20 @@ internal sealed class AbstractState
     public AbstractState CloneForDeferredBody()
     {
         var clone = Clone();
+        if ((_bindingFacts & AbstractValueFacts.MutableCollection) == 0) return clone;
         // Captured collections can change before a def or lambda runs. Forget
         // their contents, including through tuples and other captured values;
         // new local collections will establish their own facts in the body.
+        var retainedFacts = AbstractValueFacts.None;
         foreach (var (name, value) in _values)
         {
             if (ContainsMutableCollectionFacts(value, AnalysisContext))
             {
                 clone.Remove(name);
             }
+            else retainedFacts |= value.Facts;
         }
+        clone._bindingFacts = retainedFacts;
         return clone;
     }
 
@@ -272,6 +289,7 @@ internal sealed class AbstractState
         _valuesShared = _sequenceLengthsShared = true;
         return new(_values, _sequenceLengths, AnalysisContext)
         {
+            _bindingFacts = _bindingFacts,
             _valuesShared = true,
             _sequenceLengthsShared = true,
         };
@@ -316,6 +334,7 @@ internal sealed class AbstractState
         branch._containerFactsInvalidated = priorInvalidation;
 
         (_values, branch._values) = (branch._values, _values);
+        (_bindingFacts, branch._bindingFacts) = (branch._bindingFacts, _bindingFacts);
         (_sequenceLengths, branch._sequenceLengths) = (branch._sequenceLengths, _sequenceLengths);
         (_valuesShared, branch._valuesShared) = (branch._valuesShared, _valuesShared);
         (_sequenceLengthsShared, branch._sequenceLengthsShared) = (branch._sequenceLengthsShared, _sequenceLengthsShared);
@@ -330,11 +349,14 @@ internal sealed class AbstractState
         _containerFactsInvalidated |= right._containerFactsInvalidated;
         InvalidateCachedFacts();
         var kept = 0;
+        var joinedFacts = AbstractValueFacts.None;
         foreach (var (name, rightValue) in right._values)
         {
             if (_values.TryGetValue(name, out var leftValue))
             {
-                WritableValues()[name] = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
+                var joined = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
+                WritableValues()[name] = joined;
+                joinedFacts |= joined.Facts;
                 kept++;
             }
         }
@@ -347,6 +369,7 @@ internal sealed class AbstractState
                 if (!right._values.ContainsKey(name)) WritableValues().Remove(name);
             }
         }
+        _bindingFacts = joinedFacts;
 
         if (ReferenceEquals(_sequenceLengths, right._sequenceLengths)) return;
         kept = 0;
