@@ -1997,6 +1997,10 @@ until their enclosing owner ends. Keeping the largest working chunk can require
 more headroom between yields. Reentrant advancement raises Python's generator
 ValueError while preserving the active operation. Large integer and Python float formatting still use managed invariant
 text renderers. Hooks, circular-reference checks and cancellation remain active.
+Unsorted encoding can observe a replacement for an existing dictionary value
+after a hook returns. Inserting or deleting a key during that traversal raises
+`RuntimeError`, including during `dumps`. Sorted encoding uses its captured item
+pairs.
 
 Native JSON and CSV file output share the executable engine's guarded write
 operation, including stack admission, cancellation, type checks and error handling.

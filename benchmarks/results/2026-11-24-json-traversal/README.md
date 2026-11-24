@@ -42,6 +42,15 @@ pre-callback pairs for sorted encoding and reject those size changes in
 incremental iteration. The original test and CPython observations are in
 the procedures archive.
 
+A follow-up CPython 3.13.2 probe deletes the item being encoded and observes
+the next item at its original table position. Clearing the dictionary and
+inserting `a` followed by `b` during the first item's callback produces
+`{"first": "v", "b": 2}`. The native cursor resumes at the old physical
+position in the new table. Lython compacts an ordered dictionary on removal.
+An unchecked dense index would skip a live item after a deletion, and a cursor
+over insertion sequence would visit `a` in the clear-and-replace case. Matching
+these effects requires separate work on the dictionary representation.
+
 The initial disk preflight refused staging before retiring any files or
 starting workers. The retry reused the exact frozen reference and catalog
 and retired the exact archived B1585 candidate copy. It retained the 2.5 MiB
