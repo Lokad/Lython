@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1575](results/2026-11-24-rule-activation-cpython/README.md) refreshes
+four complete scripts against CPython on the shared capture-decoding
+checkpoint. Captured and defaulted rules still take about twice CPython's
+warm time. The short report takes 1.291–1.354× and the quoted invoice
+spans parity. Compilation is measured separately.
+
 [B1574](results/2026-11-24-external-arithmetic-operands/README.md) keeps
 capture decoding in the existing reader. Defaulted-rule warm elapsed
 and CPU fall, and short-report elapsed falls with mixed CPU.
