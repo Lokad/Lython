@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1584](results/2026-11-24-prepared-tuple-exit/refinement/README.md)
+keeps prepared tuple admission in the preparation helper. The shared
+frame loop returns to its former size. Defaulted rules improve on both
+clocks with worker variation. The other four comparisons span zero.
+Admitted peaks match. Retain the refined implementation.
+
 [B1583](results/2026-11-24-prepared-tuple-exit/README.md) removes the
 second fixed-return dispatch and scalar estimate pass. Defaulted rules
 use the prepared return for their callable pair. Allocation and admitted
