@@ -22,7 +22,7 @@ eager case and callable creation and defaults for the postponed case.
 These intervals overlap other inclusive costs and predict no speedup.
 
 Exact tapes establish the candidate scope independently of sampling.
-The defaulted factory has twenty instructions, including two complete
+The defaulted factory has 23 instructions, including two complete
 lexical definitions and a prepared tuple return for their private local
 bindings. Eager and postponed default factories already take the direct
 route. The captured factory has an actual nested `alternate()` call.

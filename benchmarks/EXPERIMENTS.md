@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1594](results/2026-11-24-closed-factory-pairs/README.md) completes two
+closed definitions into the existing unpack window. Defaulted rules use
+32.16–35.87% less warm elapsed and 30.20–31.81% less time through result.
+Both phases use less CPU at matched allocation and admission. Postponed
+and text controls cost more. Keep the initial version private while
+isolating the generalized constructor from the single-definition path.
+
 [B1593](results/2026-11-24-annotated-factories-cpython/README.md) compares
 four factory workloads with stock CPython. Annotated warm elapsed is
 1.053–1.153× for eager and 1.099–1.142× for postponed. Captured and
