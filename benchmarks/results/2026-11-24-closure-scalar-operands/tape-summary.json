@@ -1,0 +1,46 @@
+{
+  "inspector": {
+    "Inspect.dll": "363452b1acf12aeea34c73fe350230589fbaf1389422c3105df5495c75b37101",
+    "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+    "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+  },
+  "capturedFallback": {
+    "reference": {
+      "LoadLocal": 1,
+      "LoadClosure": 1,
+      "Binary": 2,
+      "Return": 1
+    },
+    "candidate": {
+      "Binary": 2,
+      "Return": 1
+    },
+    "activationsDisplacedPerInvocation": 2048,
+    "source": "One exact fallback call per iteration for 2,048 iterations in the captured-rule script."
+  },
+  "changedTapes": {
+    "scripts.captured-rule-closures": [
+      {
+        "function": "apply",
+        "referenceInstructions": 12,
+        "candidateInstructions": 9
+      },
+      {
+        "function": "alternate",
+        "referenceInstructions": 6,
+        "candidateInstructions": 5
+      },
+      {
+        "function": "<lambda>",
+        "referenceInstructions": 5,
+        "candidateInstructions": 3
+      }
+    ]
+  },
+  "unchangedTapes": [
+    "scripts.rule-default-closures",
+    "scripts.annotated-rule-closures",
+    "diagnostic.text-summary.nonlocal-computed-width.large",
+    "scripts.csv-invoice.method-policy.quoted-control"
+  ]
+}

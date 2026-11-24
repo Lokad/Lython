@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1571](results/2026-11-24-closure-scalar-operands/README.md) reuses
+scalar returns for captured arithmetic. Captured rules allocate
+10.25% less and take 0.69–3.29% less warm time. Annotated rules and
+short-report first use slow. The patch stays private for a combined check.
+
 [B1570](results/2026-11-24-regex-module-index/README.md) awaits module regex
 index protocols and shares callable definitions. Module log search
 allocates 2.68% less. Module elapsed falls slightly with mixed CPU.
