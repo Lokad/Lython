@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1609](results/2026-11-24-closed-line-helper-cpython/README.md)
+puts the delivered Unicode report at 0.954–1.036× CPython warm and
+0.916–0.920× through result. Defaulted rules remain at 1.376–1.418×
+warm. A separate allocation census finds 4,096 singleton positional
+default tuples per defaulted invocation and no metadata reads.
+
 [B1608](results/2026-11-24-closed-line-helper/README.md)
 completes cased text helpers before workspace setup. The short report
 takes 24.78–27.37% less warm elapsed and 19.01–25.68% less time through
