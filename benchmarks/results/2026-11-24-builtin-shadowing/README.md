@@ -48,9 +48,10 @@ applicable RAM-backed I/O and checks. Wider CPU also covers fixture
 reset and request framing. This block had no quiet-machine gate.
 The manifest's reference time-to-result worker spread reaches 8.75%.
 Keep the correctness changes, retain the adverse compile observations,
-and confirm them on a quiet host before attributing an elapsed or CPU
-change. B1614 remains the source-identified external comparison.
+and use the quiet confirmation to interpret them. B1614 remains
+the source-identified external comparison.
 
 [Summary](summary.json) · [Images](identity.json) ·
 [Raw responses, patch, goldens and test logs](observations.tar.xz) ·
+[Quiet confirmation](quiet-confirmation/README.md) ·
 [B1614](../2026-11-24-abstract-compiler-cpython/README.md).

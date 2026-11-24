@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1620](results/2026-11-24-builtin-shadowing/quiet-confirmation/README.md)
+confirms the delivered builtin-resolution source on the quiet VM.
+Manifest compilation spans zero. Time to result rises 0.74–1.40%.
+Sparse-validator compile CPU falls 1.37–3.64%.
+
 [B1617](results/2026-11-24-native-json-file-drain/README.md) removes
 per-chunk traversal reentry and discarded write counts together.
 The manifest uses 3,104 fewer managed bytes per run, while default
