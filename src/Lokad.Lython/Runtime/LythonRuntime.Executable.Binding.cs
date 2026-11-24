@@ -448,9 +448,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var arrayBytes = names.Count == 1 ? 0 : checked(ExecutableCellsArrayBaseBytes +
-            ExecutableCellsArraySlotBytes * (long)names.Count);
-        var retainedBytes = checked(arrayBytes + ExecutableCell.StorageBytes * newCells);
+        var retainedBytes = ExecutableCaptureBytes(names.Count, newCells);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
         try
@@ -502,6 +500,10 @@ internal sealed partial class LythonRuntime
             cell.RetentionCharged = true;
         }
     }
+
+    private static long ExecutableCaptureBytes(int captures, int newCells)
+        => checked((captures <= 1 ? 0 : ExecutableCellsArrayBaseBytes + ExecutableCellsArraySlotBytes * (long)captures)
+            + ExecutableCell.StorageBytes * (long)newCells);
 
     // Namespace-backed closures outlive executable workspaces. Seed the current
     // values before switching cells to namespace reads; there is no slot cache

@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
         if (!uncapturedLocal.IsEmpty)
         {
             System.Diagnostics.Debug.Assert(uncapturedLocal.Length == 1 && cells.IsEmpty && preparedAnnotations.Values is null);
-            bytes = checked(bytes + (captureByValue ? RuntimeMemoryEstimates.ScalarStorageBytes : ExecutableCell.StorageBytes));
+            bytes = checked(bytes + InlineCaptureBytes(captureByValue));
         }
         var governor = context.MemoryGovernor;
         if (preparedAnnotations.Values is null) governor.Reserve(bytes, span);
@@ -109,6 +109,9 @@ internal sealed partial class LythonRuntime
             throw;
         }
     }
+
+    private static long InlineCaptureBytes(bool captureByValue)
+        => captureByValue ? RuntimeMemoryEstimates.ScalarStorageBytes : ExecutableCell.StorageBytes;
 
     internal static PyFunctionBase CreateClosedFunctionDefinition(ExecutableCreateFunction definition,
         ExecutionContext scope, ExecutableSlot argument, LythonSourceSpan span)

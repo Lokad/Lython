@@ -254,4 +254,40 @@ public sealed class ExecutableDefinitionPairTests
         }
         finally { context.State.CloseResources(); }
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CapturedPairFailureRefundsUnpublishedFunctionsAndCells(bool multiple, bool refuseLeftCallable)
+    {
+        var extra = multiple ? "    factor = seed % 5 + 1\n" : "";
+        var calculation = multiple ? "(value + offset) * factor" : "value + offset";
+        var source = "def make(seed):\n    offset = seed % 7\n" + extra +
+            "    def left(value):\n        return " + calculation + "\n" +
+            "    def alternate():\n        step = 7 // seed\n        return lambda value: value - step\n" +
+            "    return left, alternate()\nfirst, other = make(0)\n";
+        var module = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+        var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
+        Assert.True(factory.HasDirectCapturedDefinitionPair);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
+        LythonRuntime.ChargeClosureRetention(context, context.MemoryGovernor, null);
+        var before = budget.ReservedBytes;
+        var results = new LythonRuntime.ExecutableSlot[2];
+
+        try
+        {
+            if (refuseLeftCallable) hook.RefuseGrowth = bytes => bytes == 160;
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                LythonRuntime.CompleteClosedCapturedPair(factory, context, 0, results));
+            Assert.Equal(refuseLeftCallable ? "MemoryError" : "ZeroDivisionError", error.ExceptionType);
+            if (refuseLeftCallable) Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+            Assert.All(results, result => Assert.True(result.IsUnassigned));
+            Assert.Equal(before, budget.ReservedBytes);
+        }
+        finally { context.State.CloseResources(); }
+    }
 }

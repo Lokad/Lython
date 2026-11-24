@@ -414,8 +414,10 @@ metadata reads can retain aliases.
 An eligible closed factory keeps both members of its callable pair private
 until it returns them. The defaulted pair owns private default backing as each
 member evaluates it. Failure refunds that backing and any completed
-callables and annotation records in reverse construction order. Shared
-module storage keeps its existing owner.
+callables and annotation records in reverse construction order. A captured
+pair likewise refunds its unpublished functions, private cells and capture
+arrays before a catchable failure returns to its caller. Shared module
+storage keeps its existing owner.
 An eligible native call can complete an exact integer return or return a
 closed lexical definition before preparing callee workspace or a tuple-unpack
 destination. Both executable drivers use the same completion check. Exact
