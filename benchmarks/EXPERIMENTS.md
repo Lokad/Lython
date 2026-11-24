@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1615](results/2026-11-24-builtin-shadowing/README.md) corrects static
+builtin resolution and singleton unpacking. Both modes match CPython on
+22 probes, including 21 failures in the reference. The short WSL
+comparison shows conflicting compiler elapsed changes and leaves the
+manifest compile and JSON CPU costs open for quiet confirmation.
+
 [B1614](results/2026-11-24-abstract-compiler-cpython/README.md) compares
 `0bf516c79` with stock CPython 3.13.16. The manifest takes
 1.188–1.218× warm and 0.825–0.832× through result. The sparse

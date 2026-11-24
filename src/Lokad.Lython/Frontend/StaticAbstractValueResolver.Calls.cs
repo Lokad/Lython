@@ -4,82 +4,29 @@ internal static partial class StaticAbstractValueResolver
 {
     private static bool TryResolveCallAbstractValue(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
     {
-        if (call.Target is IdentifierExpressionSyntax { Name: "str" })
+        if (call.Target is IdentifierExpressionSyntax identifier)
         {
-            value = AbstractValue.StringType(call.Span);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "open" } &&
-            StaticCallArguments.TryGetConcreteArguments(call, bindings, out var openArguments))
-        {
-            value = ResolveFileHandle(openArguments, modePosition: 1, bindings, call.Span);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "len" } &&
-            TryResolveLenAbstractValue(call, bindings, out value))
-        {
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "bool" })
-        {
-            value = AbstractValue.BooleanType(call.Span);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "int" })
-        {
-            value = AbstractValue.IntegerType(call.Span);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "float" })
-        {
-            value = AbstractValue.FloatType(call.Span);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "bytes" })
-        {
-            value = AbstractValue.BytesType(call.Span);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "list" or "tuple" } constructor &&
-            TryResolveSequenceConstructorAbstractValue(constructor.Name, call, bindings, out value))
-        {
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "sorted" } &&
-            TryResolveSortedAbstractValue(call, bindings, out value))
-        {
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax functionIdentifier &&
-            bindings.TryGet(functionIdentifier.Name, out var functionValue) &&
-            functionValue.Kind == AbstractValueKind.Function &&
-            StaticCallArguments.TryGetConcreteArguments(call, bindings, out var functionArguments) &&
-            StaticBindingEngine.TryResolveFunctionCallReturn(
-                functionValue.RequireFunctionSummary(),
-                functionArguments,
-                bindings,
-                call.Span,
-                out value))
-        {
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax classIdentifier &&
-            bindings.TryGet(classIdentifier.Name, out var classValue) &&
-            classValue.Kind == AbstractValueKind.UserClass &&
-            StaticCallArguments.TryGetConcreteArguments(call, bindings, out var classArguments) &&
-            StaticBindingEngine.TryInstantiateUserClass(classValue.RequireClassSummary(), classArguments, bindings, call.Span, out value))
-        {
-            return true;
+            if (bindings.TryGet(identifier.Name, out var target))
+            {
+                switch (target.Kind)
+                {
+                    case AbstractValueKind.Function when StaticCallArguments.TryGetConcreteArguments(call, bindings, out var functionArguments):
+                        if (StaticBindingEngine.TryResolveFunctionCallReturn(
+                                target.RequireFunctionSummary(), functionArguments, bindings, call.Span, out value))
+                            return true;
+                        break;
+                    case AbstractValueKind.UserClass when StaticCallArguments.TryGetConcreteArguments(call, bindings, out var classArguments):
+                        if (StaticBindingEngine.TryInstantiateUserClass(
+                                target.RequireClassSummary(), classArguments, bindings, call.Span, out value))
+                            return true;
+                        break;
+                }
+            }
+            else if (bindings.CanUseUnboundBuiltin(identifier.Name) &&
+                TryResolveBuiltinCallReturn(identifier.Name, call, bindings, out value))
+            {
+                return true;
+            }
         }
 
         if (call.Target is MemberExpressionSyntax { Target: var methodReceiver, MemberName: var methodName } &&
@@ -110,6 +57,40 @@ internal static partial class StaticAbstractValueResolver
 
         value = default;
         return false;
+    }
+
+    private static bool TryResolveBuiltinCallReturn(string name, CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
+    {
+        switch (name)
+        {
+            case "str":
+                value = AbstractValue.StringType(call.Span);
+                return true;
+            case "open" when StaticCallArguments.TryGetConcreteArguments(call, bindings, out var openArguments):
+                value = ResolveFileHandle(openArguments, modePosition: 1, bindings, call.Span);
+                return true;
+            case "len":
+                return TryResolveLenAbstractValue(call, bindings, out value);
+            case "bool":
+                value = AbstractValue.BooleanType(call.Span);
+                return true;
+            case "int":
+                value = AbstractValue.IntegerType(call.Span);
+                return true;
+            case "float":
+                value = AbstractValue.FloatType(call.Span);
+                return true;
+            case "bytes":
+                value = AbstractValue.BytesType(call.Span);
+                return true;
+            case "list" or "tuple":
+                return TryResolveSequenceConstructorAbstractValue(name, call, bindings, out value);
+            case "sorted":
+                return TryResolveSortedAbstractValue(call, bindings, out value);
+            default:
+                value = default;
+                return false;
+        }
     }
 
     private static AbstractValue ResolveFileHandle(ConcreteCallArguments arguments, int modePosition,

@@ -4,44 +4,28 @@ internal static class StaticCollectionContractFamily
 {
     public static bool TryAnalyze(
         CallExpressionSyntax call,
+        string? builtinName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (call.Target is IdentifierExpressionSyntax { Name: "list" or "tuple" or "set" })
+        switch (builtinName)
         {
-            AnalyzeLiteralIterableBuiltinCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "len" })
-        {
-            AnalyzeLenCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "dict" })
-        {
-            AnalyzeDictCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "any" or "all" or "min" or "max" })
-        {
-            AnalyzeLiteralIterableBuiltinCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "sum" })
-        {
-            AnalyzeFirstIterableArgument(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is IdentifierExpressionSyntax { Name: "sorted" })
-        {
-            AnalyzeSortedCall(arguments, diagnostics, bindings);
-            return true;
+            case "list" or "tuple" or "set" or "any" or "all" or "min" or "max":
+                AnalyzeLiteralIterableBuiltinCall(arguments, diagnostics, bindings);
+                return true;
+            case "len":
+                AnalyzeLenCall(arguments, diagnostics, bindings);
+                return true;
+            case "dict":
+                AnalyzeDictCall(arguments, diagnostics, bindings);
+                return true;
+            case "sum":
+                AnalyzeFirstIterableArgument(arguments, diagnostics, bindings);
+                return true;
+            case "sorted":
+                AnalyzeSortedCall(arguments, diagnostics, bindings);
+                return true;
         }
 
         if (call.Target is MemberExpressionSyntax

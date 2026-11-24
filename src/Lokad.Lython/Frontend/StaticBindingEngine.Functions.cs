@@ -19,11 +19,11 @@ internal static partial class StaticBindingEngine
         }
 
         var capturedBindings = bindings.CloneForDeferredBody();
-        capturedBindings.Remove(functionDefinition.Name);
+        capturedBindings.BindUnknown(functionDefinition.Name);
         // Type parameters belong to the function's annotation scope, not to
         // a same-named value inferred in the defining module or outer function.
         if (functionDefinition.TypeParameters is { } typeParameters)
-            foreach (var typeParameter in typeParameters) capturedBindings.Remove(typeParameter.Name);
+            foreach (var typeParameter in typeParameters) capturedBindings.BindUnknown(typeParameter.Name);
         summary = new AbstractFunctionSummary(functionDefinition, capturedBindings);
         return true;
     }
@@ -299,7 +299,7 @@ internal static partial class StaticBindingEngine
                 case WithStatementSyntax withStatement:
                     {
                         var withBindings = bindings.Clone();
-                        foreach (var name in withStatement.BoundNames) withBindings.Remove(name);
+                        foreach (var name in withStatement.BoundNames) withBindings.BindUnknown(name);
                         if (withStatement.VariableName is not null &&
                             StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
                             contextValue.Kind is AbstractValueKind.TextFileHandle or AbstractValueKind.BinaryFileHandle or AbstractValueKind.StringIO or AbstractValueKind.BytesIO)
@@ -313,7 +313,7 @@ internal static partial class StaticBindingEngine
                         }
 
                         bindings.TakeBranchResult(withBindings);
-                        foreach (var name in withStatement.BoundNames) bindings.Remove(name);
+                        foreach (var name in withStatement.BoundNames) bindings.BindUnknown(name);
 
                         break;
                     }

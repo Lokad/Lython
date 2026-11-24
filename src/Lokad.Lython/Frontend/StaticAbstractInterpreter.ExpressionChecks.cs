@@ -216,6 +216,7 @@ internal static partial class StaticAbstractInterpreter
             case AssignmentExpressionSyntax assignment:
             {
                 AnalyzeExpression(assignment.Expression, diagnostics, bindings);
+                bindings.BindUnknown(assignment.Name);
                 return;
             }
 
@@ -228,6 +229,7 @@ internal static partial class StaticAbstractInterpreter
 
                 var lambdaBindings = bindings.CloneForDeferredBody();
                 StaticBindingEngine.BindFunctionParametersUnknown(lambda.Parameters, lambdaBindings);
+                lambdaBindings.ShadowLocalBuiltins(ScopeDirectiveFactsCollector.ForLambda(lambda));
                 AnalyzeExpression(lambda.Body, diagnostics, lambdaBindings);
                 return;
             }
@@ -269,7 +271,8 @@ internal static partial class StaticAbstractInterpreter
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (StaticAbstractValueResolver.TryResolve(call.Target, bindings, out var targetValue) && StaticAbstractFacts.IsDefinitelyNonCallable(targetValue))
+        var targetIsResolved = StaticAbstractValueResolver.TryResolve(call.Target, bindings, out var targetValue);
+        if (targetIsResolved && StaticAbstractFacts.IsDefinitelyNonCallable(targetValue))
         {
             AddDiagnostic(diagnostics, "LA3107", "Object is not callable.", call.Target.Span);
             return;
@@ -280,12 +283,12 @@ internal static partial class StaticAbstractInterpreter
             return;
         }
 
-        if (AnalyzeUserDefinedCallShape(call, arguments, diagnostics, bindings))
+        if (AnalyzeUserDefinedCallShape(call, targetValue, arguments, diagnostics, bindings))
         {
             return;
         }
 
-        if (StaticContractEngine.AnalyzeKnownCallContract(call, arguments, diagnostics, bindings))
+        if (StaticContractEngine.AnalyzeKnownCallContract(call, targetValue, arguments, diagnostics, bindings))
         {
             return;
         }
@@ -295,16 +298,19 @@ internal static partial class StaticAbstractInterpreter
             return;
         }
 
-        _ = StaticContractEngine.TryAnalyzeCall(call, arguments, diagnostics, bindings);
+        var builtinName = !targetIsResolved && call.Target is IdentifierExpressionSyntax identifier &&
+            bindings.CanUseUnboundBuiltin(identifier.Name) ? identifier.Name : null;
+        _ = StaticContractEngine.TryAnalyzeCall(call, builtinName, arguments, diagnostics, bindings);
     }
 
     private static bool AnalyzeUserDefinedCallShape(
         CallExpressionSyntax call,
+        AbstractValue targetValue,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (call.Target is IdentifierExpressionSyntax identifier && bindings.TryGet(identifier.Name, out var targetValue))
+        if (call.Target is IdentifierExpressionSyntax identifier)
         {
             if (targetValue.Kind == AbstractValueKind.Function && StaticBindingEngine.TryGetFunctionCallShapeFailure(targetValue.RequireFunctionSummary(), arguments, out var functionReason, out var functionOffendingExpression))
             {

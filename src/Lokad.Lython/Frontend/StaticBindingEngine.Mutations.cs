@@ -12,8 +12,7 @@ internal static partial class StaticBindingEngine
             return true;
         }
 
-        if (call.Target is IdentifierExpressionSyntax builtin && !bindings.TryGet(builtin.Name, out _) &&
-            builtin.Name is "len" or "abs" or "chr" or "ord" or "hex" or "oct" or "bin" or
+        if (bindings.UnshadowedBuiltinName(call.Target) is "len" or "abs" or "chr" or "ord" or "hex" or "oct" or "bin" or
                 "int" or "float" or "bool" or "str" or "repr" or "type")
         {
             return false;

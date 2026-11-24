@@ -43,7 +43,7 @@ internal static class StaticConditionRefinements
         {
             // On this path the key exists. Drop an incompatible exact shape
             // instead of emitting a missing-key error for a guarded read.
-            bindings.Remove(dictionary.Name);
+            bindings.ForgetValue(dictionary.Name);
             return;
         }
 
@@ -308,12 +308,12 @@ internal static class StaticConditionRefinements
             expression = parenthesized.Inner;
         }
 
-        if (bindings.TryGet("len", out _) ||
-            expression is not CallExpressionSyntax
+        if (expression is not CallExpressionSyntax
             {
-                Target: IdentifierExpressionSyntax { Name: "len" },
+                Target: var target,
                 Arguments: [{ Kind: CallArgumentKind.Positional, Expression: var argument }]
-            })
+            } ||
+            bindings.UnshadowedBuiltinName(target) != "len")
         {
             sequenceName = string.Empty;
             return false;

@@ -326,6 +326,9 @@ Module and indented suites share statement parsing and recovery. Separator
 checks use the next statement's existing span to locate its physical line.
 Abstract statement and expression checks use the same binding state. Their
 branch, short-circuit and diagnostic order remains explicit.
+The state keeps possible shadows of builtin names when a binding's value
+becomes unknown. Call diagnostics, return inference and mutation analysis
+require lookup without a possible shadow before applying builtin facts.
 That state summarizes known collection facts, so invalidation and deferred
 scope setup can skip irrelevant scans. Widening retains immutable tuple
 branches and still clears facts affected by mutable aliases.

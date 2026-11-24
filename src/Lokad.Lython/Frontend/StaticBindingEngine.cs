@@ -30,7 +30,7 @@ internal static partial class StaticBindingEngine
                     }
                     else
                     {
-                        bindings.Remove(importStatement.BindingName);
+                        bindings.BindUnknown(importStatement.BindingName);
                     }
                 }
                 else
@@ -45,7 +45,7 @@ internal static partial class StaticBindingEngine
                             }
                             else
                             {
-                                bindings.Remove(memberName);
+                                bindings.BindUnknown(memberName);
                             }
                         }
 
@@ -60,14 +60,14 @@ internal static partial class StaticBindingEngine
                         }
                         else
                         {
-                            bindings.Remove(member.BindingName);
+                            bindings.BindUnknown(member.BindingName);
                         }
                     }
                 }
                 break;
 
             case TypeAliasStatementSyntax alias:
-                bindings.Remove(alias.Name);
+                bindings.BindUnknown(alias.Name);
                 break;
             case AssignmentStatementSyntax assignment:
                 UpdateBinding(assignment.Name, assignment.Expression, bindings);
@@ -92,19 +92,19 @@ internal static partial class StaticBindingEngine
                 {
                     foreach (var target in unpacking.Targets)
                     {
-                        RemoveUnpackingTargetBinding(target, bindings);
+                        ForgetUnpackingTargetBinding(target, bindings);
                     }
                 }
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
-                RemoveAugmentedAssignmentBindings(augmented.Target, bindings);
+                ForgetAugmentedAssignmentBindings(augmented.Target, bindings);
                 break;
 
             case DeleteStatementSyntax deleteStatement:
                 StatementSyntaxTraversal.VisitDeletionTargets(deleteStatement.Target, bindings, static (state, target) =>
                 {
-                    if (target is IdentifierExpressionSyntax name) state.Remove(name.Name);
+                    if (target is IdentifierExpressionSyntax name) state.DeleteBinding(name.Name);
                 });
                 break;
 
@@ -115,7 +115,7 @@ internal static partial class StaticBindingEngine
                 }
                 else
                 {
-                    bindings.Remove(functionDefinition.Name);
+                    bindings.BindUnknown(functionDefinition.Name);
                 }
                 break;
 
@@ -126,20 +126,20 @@ internal static partial class StaticBindingEngine
                 }
                 else
                 {
-                    bindings.Remove(classDefinition.Name);
+                    bindings.BindUnknown(classDefinition.Name);
                 }
                 break;
 
             case SubscriptAssignmentStatementSyntax subscript when subscript.Target is IdentifierExpressionSyntax subscriptIdentifier:
-                bindings.Remove(subscriptIdentifier.Name);
+                bindings.ForgetValue(subscriptIdentifier.Name);
                 break;
 
             case SliceAssignmentStatementSyntax slice when slice.Target is IdentifierExpressionSyntax sliceIdentifier:
-                bindings.Remove(sliceIdentifier.Name);
+                bindings.ForgetValue(sliceIdentifier.Name);
                 break;
 
             case MemberAssignmentStatementSyntax member when member.Target is IdentifierExpressionSyntax memberIdentifier:
-                bindings.Remove(memberIdentifier.Name);
+                bindings.ForgetValue(memberIdentifier.Name);
                 break;
 
         }
@@ -148,7 +148,7 @@ internal static partial class StaticBindingEngine
         foreach (var receiver in mutatedReceivers)
         {
             // A mutating method may also change the receiver's more specific abstract kind.
-            bindings.Remove(receiver);
+            bindings.ForgetValue(receiver);
         }
     }
 
@@ -171,37 +171,37 @@ internal static partial class StaticBindingEngine
                 break;
 
             case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
-                bindings.Remove(subscriptIdentifier.Name);
+                bindings.ForgetValue(subscriptIdentifier.Name);
                 break;
 
             case SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
-                bindings.Remove(sliceIdentifier.Name);
+                bindings.ForgetValue(sliceIdentifier.Name);
                 break;
 
             case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
-                bindings.Remove(memberIdentifier.Name);
+                bindings.ForgetValue(memberIdentifier.Name);
                 break;
         }
     }
 
-    private static void RemoveAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)
+    private static void ForgetAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)
     {
         switch (target)
         {
             case NameAssignmentTargetSyntax name:
-                bindings.Remove(name.Name);
+                bindings.BindUnknown(name.Name);
                 break;
 
             case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
-                bindings.Remove(subscriptIdentifier.Name);
+                bindings.ForgetValue(subscriptIdentifier.Name);
                 break;
 
             case SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
-                bindings.Remove(sliceIdentifier.Name);
+                bindings.ForgetValue(sliceIdentifier.Name);
                 break;
 
             case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
-                bindings.Remove(memberIdentifier.Name);
+                bindings.ForgetValue(memberIdentifier.Name);
                 break;
         }
     }
@@ -388,7 +388,7 @@ internal static partial class StaticBindingEngine
         }
         else
         {
-            bindings.Remove(name);
+            bindings.BindUnknown(name);
         }
     }
 
@@ -397,12 +397,6 @@ internal static partial class StaticBindingEngine
         ExpressionSyntax expression,
         AbstractState bindings)
     {
-        if (targets.Count == 1 && targets[0] is UnpackingNameTargetSyntax singleName && !singleName.IsStarred)
-        {
-            UpdateBinding(singleName.Name, expression, bindings);
-            return true;
-        }
-
         if (!TryGetOrderedUnpackingItems(expression, bindings, out var items))
         {
             return false;
@@ -474,33 +468,33 @@ internal static partial class StaticBindingEngine
                 break;
         }
 
-        RemoveUnpackingTargetBinding(target, bindings);
+        ForgetUnpackingTargetBinding(target, bindings);
     }
 
-    private static void RemoveUnpackingTargetBinding(UnpackingTargetSyntax target, AbstractState bindings)
+    private static void ForgetUnpackingTargetBinding(UnpackingTargetSyntax target, AbstractState bindings)
     {
         switch (target)
         {
             case UnpackingNameTargetSyntax name:
-                bindings.Remove(name.Name);
+                bindings.BindUnknown(name.Name);
                 break;
 
             case UnpackingSubscriptTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
-                bindings.Remove(subscriptIdentifier.Name);
+                bindings.ForgetValue(subscriptIdentifier.Name);
                 break;
 
             case UnpackingSliceTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
-                bindings.Remove(sliceIdentifier.Name);
+                bindings.ForgetValue(sliceIdentifier.Name);
                 break;
 
             case UnpackingMemberTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
-                bindings.Remove(memberIdentifier.Name);
+                bindings.ForgetValue(memberIdentifier.Name);
                 break;
 
             case UnpackingNestedTargetSyntax nested:
                 foreach (var nestedItem in nested.Items)
                 {
-                    RemoveUnpackingTargetBinding(nestedItem, bindings);
+                    ForgetUnpackingTargetBinding(nestedItem, bindings);
                 }
 
                 break;

@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
 internal readonly record struct AbstractSequenceLengthBounds(
@@ -69,10 +71,11 @@ internal sealed class AbstractState
     private readonly Dictionary<ExpressionSyntax, AbstractValueResolution> _abstractValueCache;
     private Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
     private Dictionary<string, AbstractValue> _values;
-    // An upper bound on the effects carried by the current value map. The
+    // An upper bound on the collection effects carried by the value map. The
     // existing filtering and join walks can also discard stale bits.
     private AbstractValueFacts _bindingFacts;
     private bool _containerFactsInvalidated;
+    private bool _deferred;
     private bool _valuesShared;
     private bool _sequenceLengthsShared;
 
@@ -98,6 +101,49 @@ internal sealed class AbstractState
     }
 
     public bool TryGet(string name, out AbstractValue value) => _values.TryGetValue(name, out value);
+
+    public string? UnshadowedBuiltinName(ExpressionSyntax target)
+        => target is IdentifierExpressionSyntax identifier && !_values.ContainsKey(identifier.Name) &&
+            CanUseUnboundBuiltin(identifier.Name) ? identifier.Name : null;
+
+    // Callers have already established that there is no flow binding. Deferred
+    // bodies can observe module writes that have not happened at definition.
+    public bool CanUseUnboundBuiltin(string name)
+        => !_deferred || AnalysisContext?.Script.PreparedScopeFacts?.LocalNames.Contains(name) != true;
+
+    public void BindUnknown(string name)
+    {
+        if (ExecutionState.BuiltinNames.Contains(name))
+            Set(name, AbstractValue.Unknown());
+        else
+            Remove(name);
+    }
+
+    public void ForgetValue(string name)
+    {
+        if (ExecutionState.BuiltinNames.Contains(name) && _values.ContainsKey(name))
+            Set(name, AbstractValue.Unknown());
+        else
+            Remove(name);
+    }
+
+    public void ShadowLocalBuiltins(ScopeDirectiveFacts scope)
+    {
+        foreach (var name in scope.LocalNames)
+        {
+            AnalysisContext?.CheckExecution();
+            if (ExecutionState.BuiltinNames.Contains(name))
+                Set(name, AbstractValue.Unknown());
+        }
+    }
+
+    public void DeleteBinding(string name)
+    {
+        if (_deferred)
+            BindUnknown(name);
+        else
+            Remove(name);
+    }
 
     public void Set(string name, AbstractValue value)
     {
@@ -159,8 +205,15 @@ internal sealed class AbstractState
                 AnalysisContext?.CheckExecution();
                 if (dictionaries && (value.Facts & AbstractValueFacts.Dictionary) != 0)
                 {
-                    // Remove preserves active dictionary enumerators on .NET 10/11.
-                    WritableValues().Remove(name);
+                    if (ExecutionState.BuiltinNames.Contains(name))
+                    {
+                        (rewrites ??= []).Add((name, AbstractValue.Unknown()));
+                    }
+                    else
+                    {
+                        // Remove preserves active dictionary enumerators on .NET 10/11.
+                        WritableValues().Remove(name);
+                    }
                     RemoveSequenceLength(name);
                     changed = true;
                     continue;
@@ -253,6 +306,7 @@ internal sealed class AbstractState
     public AbstractState CloneForDeferredBody()
     {
         var clone = Clone();
+        clone._deferred = true;
         if ((_bindingFacts & AbstractValueFacts.MutableCollection) == 0) return clone;
         // Captured collections can change before a def or lambda runs. Forget
         // their contents, including through tuples and other captured values;
@@ -262,7 +316,7 @@ internal sealed class AbstractState
         {
             if (ContainsMutableCollectionFacts(value, AnalysisContext))
             {
-                clone.Remove(name);
+                clone.BindUnknown(name);
             }
             else retainedFacts |= value.Facts;
         }
@@ -290,6 +344,7 @@ internal sealed class AbstractState
         return new(_values, _sequenceLengths, AnalysisContext)
         {
             _bindingFacts = _bindingFacts,
+            _deferred = _deferred,
             _valuesShared = true,
             _sequenceLengthsShared = true,
         };
@@ -342,8 +397,8 @@ internal sealed class AbstractState
         branch.InvalidateCachedFacts();
     }
 
-    // The left branch owns these maps. Keep its intersection with the
-    // completed right branch and preserve the left binding's diagnostic span.
+    // Values require facts on both paths, but a write on either path is
+    // enough to prevent assuming a builtin.
     internal void JoinBranch(AbstractState right)
     {
         _containerFactsInvalidated |= right._containerFactsInvalidated;
@@ -359,6 +414,11 @@ internal sealed class AbstractState
                 joinedFacts |= joined.Facts;
                 kept++;
             }
+            else if (ExecutionState.BuiltinNames.Contains(name))
+            {
+                WritableValues()[name] = AbstractValue.Unknown();
+                kept++;
+            }
         }
         if (kept != _values.Count)
         {
@@ -366,7 +426,11 @@ internal sealed class AbstractState
             foreach (var name in _values.Keys)
             {
                 AnalysisContext?.CheckExecution();
-                if (!right._values.ContainsKey(name)) WritableValues().Remove(name);
+                if (right._values.ContainsKey(name)) continue;
+                if (ExecutionState.BuiltinNames.Contains(name))
+                    WritableValues()[name] = AbstractValue.Unknown();
+                else
+                    WritableValues().Remove(name);
             }
         }
         _bindingFacts = joinedFacts;

@@ -17,7 +17,6 @@ internal static class StaticContractEngine
 
     private static readonly StaticCallContract[] RegisteredCallContracts =
     [
-        new(IsInputCall, AnalyzeInputCall),
         new(IsDefaultDictCall, AnalyzeDefaultDictCall),
         new(IsArgumentParserConstructorCall, AnalyzeArgumentParserConstructorCall),
         new(IsFunctoolsPartialCall, AnalyzeFunctoolsPartialCall),
@@ -26,21 +25,26 @@ internal static class StaticContractEngine
 
     public static bool TryAnalyzeCall(
         CallExpressionSyntax call,
+        string? builtinName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (TryAnalyzeRegisteredCall(call, arguments, diagnostics, bindings))
+        if (builtinName == "input")
+        {
+            StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "prompt", "LA3086",
+                "input([prompt]) expects zero or one string argument.", diagnostics, bindings);
+            return true;
+        }
+
+        if (TryAnalyzeRegisteredCall(call, arguments, diagnostics, bindings)) return true;
+
+        if (StaticTextIoContractFamily.TryAnalyze(call, builtinName, arguments, diagnostics, bindings))
         {
             return true;
         }
 
-        if (StaticTextIoContractFamily.TryAnalyze(call, arguments, diagnostics, bindings))
-        {
-            return true;
-        }
-
-        if (StaticCollectionContractFamily.TryAnalyze(call, arguments, diagnostics, bindings))
+        if (StaticCollectionContractFamily.TryAnalyze(call, builtinName, arguments, diagnostics, bindings))
         {
             return true;
         }
@@ -142,12 +146,15 @@ internal static class StaticContractEngine
 
     public static bool AnalyzeKnownCallContract(
         CallExpressionSyntax call,
+        AbstractValue targetValue,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (!TryResolveKnownCallableTarget(call.Target, bindings, out var targetName) ||
-            !StaticContracts.TryGetKnownCallContract(targetName, out var contract))
+        if (targetValue.Kind != AbstractValueKind.KnownCallable)
+            return false;
+        var targetName = targetValue.RequireText();
+        if (!StaticContracts.TryGetKnownCallContract(targetName, out var contract))
         {
             return false;
         }
@@ -354,9 +361,6 @@ internal static class StaticContractEngine
         return result.Kind == AbstractValueKind.Never ? AbstractValue.Unknown(span) : result;
     }
 
-    private static bool IsInputCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "input" };
-
     private static bool IsDefaultDictCall(CallExpressionSyntax call)
         => call.Target is IdentifierExpressionSyntax { Name: "defaultdict" } or
             MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "collections" }, MemberName: "defaultdict" };
@@ -394,11 +398,6 @@ internal static class StaticContractEngine
             },
             MemberName: "write"
         };
-
-    private static void AnalyzeInputCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "prompt", "LA3086", "input([prompt]) expects zero or one string argument.", diagnostics, bindings);
-    }
 
     private static void AnalyzeDefaultDictCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {

@@ -8,11 +8,12 @@ internal static class StaticTextIoContractFamily
 
     public static bool TryAnalyze(
         CallExpressionSyntax call,
+        string? builtinName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (call.Target is IdentifierExpressionSyntax { Name: "open" })
+        if (builtinName == "open")
         {
             AnalyzeOpenCall(call.Span, arguments, diagnostics, bindings);
             return true;

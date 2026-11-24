@@ -81,7 +81,7 @@ internal static partial class StaticAbstractInterpreter
                 var contextValue = withStatement.VariableName is null ? default
                     : StaticAbstractValueResolver.ResolveOrUnknown(withStatement.ContextExpression, bindings);
                 foreach (var name in withStatement.BoundNames)
-                    bindings.Remove(name);
+                    bindings.BindUnknown(name);
                 if (withStatement.VariableName is { } variable && contextValue.Kind is
                     AbstractValueKind.TextFileHandle or AbstractValueKind.BinaryFileHandle or AbstractValueKind.StringIO or AbstractValueKind.BytesIO)
                 {
@@ -90,7 +90,7 @@ internal static partial class StaticAbstractInterpreter
 
                 AnalyzeStatements(withStatement.Body, diagnostics, bindings);
                 foreach (var name in withStatement.BoundNames)
-                    bindings.Remove(name);
+                    bindings.BindUnknown(name);
                 return;
             }
 
@@ -145,6 +145,8 @@ internal static partial class StaticAbstractInterpreter
                 foreach (var matchCase in matchStatement.Cases)
                 {
                     var caseBindings = bindings.Clone();
+                    ScopeDirectiveFactsCollector.CollectPatternBindings(matchCase.Pattern, caseBindings,
+                        static (state, name) => state.BindUnknown(name));
                     if (matchCase.Guard is not null)
                     {
                         AnalyzeExpression(matchCase.Guard, diagnostics, caseBindings);
@@ -187,7 +189,8 @@ internal static partial class StaticAbstractInterpreter
                 // mutate aliases without an explicit call in the outer scope.
                 if (mayMutateCollections) bindings.InvalidateCollectionFacts();
 
-                if (ScopeDirectiveFactsCollector.ForFunction(functionDefinition).ContainsDirectivesInBody)
+                var scope = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
+                if (scope.ContainsDirectivesInBody)
                 {
                     InvalidateDirectiveBindings(functionDefinition.Body, bindings);
                     bindings.InvalidateMutableSequenceFacts();
@@ -197,11 +200,12 @@ internal static partial class StaticAbstractInterpreter
                 var functionBindings = bindings.CloneForDeferredBody();
                 if (functionDefinition.TypeParameters is { } typeParameters)
                     foreach (var typeParameter in typeParameters)
-                        functionBindings.Remove(typeParameter.Name);
+                        functionBindings.BindUnknown(typeParameter.Name);
                 foreach (var parameter in functionDefinition.Parameters)
                 {
                     functionBindings.Remove(parameter.Name);
                 }
+                functionBindings.ShadowLocalBuiltins(scope);
 
                 AnalyzeStatements(functionDefinition.Body, diagnostics, functionBindings);
                 return;
@@ -215,7 +219,7 @@ internal static partial class StaticAbstractInterpreter
                 if (classFacts.GlobalNames.Count != 0 || classFacts.NonlocalNames.Count != 0)
                 {
                     foreach (var name in classFacts.GlobalNames.Concat(classFacts.NonlocalNames))
-                        bindings.Remove(name);
+                        bindings.BindUnknown(name);
                     bindings.InvalidateMutableSequenceFacts();
                     return;
                 }
@@ -367,7 +371,11 @@ internal static partial class StaticAbstractInterpreter
             clauseBindings.InvalidateCollectionFacts();
             if (handler.ExceptionTypeExpression is { } header)
                 AnalyzeExpression(header, [], clauseBindings);
+            if (handler.ExceptionVariableName is { } name)
+                clauseBindings.BindUnknown(name);
             AnalyzeStatements(handler.Body, diagnostics, clauseBindings);
+            if (handler.ExceptionVariableName is { } clearedName)
+                clauseBindings.DeleteBinding(clearedName);
 
             if (exceptBindings is null) exceptBindings = clauseBindings;
             else exceptBindings.JoinBranch(clauseBindings);
@@ -395,7 +403,7 @@ internal static partial class StaticAbstractInterpreter
         {
             if (statement is ScopeDirectiveStatementSyntax directive)
                 foreach (var name in directive.Names)
-                    bindings.Remove(name);
+                    bindings.BindUnknown(name);
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
                 InvalidateDirectiveBindings(body, bindings);
         }

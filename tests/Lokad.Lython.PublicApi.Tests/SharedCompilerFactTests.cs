@@ -113,6 +113,100 @@ public sealed class SharedCompilerFactTests
         await Check(source, "2 True\n", asynchronous);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReboundBuiltinCallsUseTheActualTargets(bool asynchronous)
+    {
+        await Check("""
+            def int(value): return "word"
+            print(len(int(1)))
+            del int
+            def len(value): return "word"
+            print(len(1).upper())
+            del len
+            def open(value): return [value]
+            print(open("name")[0])
+            def bool(value): return [value]
+            print(len(bool(9)))
+            from operator import index as str
+            print(str(7) + 1)
+            input = lambda value: value + 1
+            print(input(3))
+            sum = lambda value: value + 2
+            print(sum(3))
+            """, "4\nWORD\nname\n1\n8\n4\n5\n", asynchronous);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnknownRebindingsAndOneSidedBranchesDoNotRestoreBuiltinFacts(bool asynchronous)
+    {
+        await Check("""
+            values = [1]
+            def maker(): return lambda value: values.append("ok")
+            if callable(lambda: None):
+                len = maker()
+            len(3)
+            print(values[1].upper())
+            del len
+            if not callable(lambda: None):
+                pass
+            else:
+                int = lambda value: "branch"
+            print(len(int(3)))
+            (len,) = [lambda value: "unpacked"]
+            print(len(3))
+            print((len := lambda value: "walrus")(3), len(4))
+            """, "OK\n6\nunpacked\nwalrus walrus\n", asynchronous);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeferredBodiesRespectParametersLexicalLocalsAndLaterModuleWrites(bool asynchronous)
+    {
+        await Check("""
+            def use(int):
+                value = int(1)
+                print(len(value))
+            use(lambda x: "ok")
+            def late(): return len(3)
+            len = lambda value: "late"
+            print(late())
+            del len
+            def outer():
+                def read(): return len(3)
+                len = lambda value: "outer"
+                return read()
+            print(outer())
+            """, "2\nlate\nouter\n", asynchronous);
+    }
+
+    [Fact]
+    public void DeletionRestoresTheModuleBuiltinAndKeepsAFunctionLocalUnbound()
+    {
+        using var module = new LythonEngine().Compile("""
+            len = lambda value: "bound"
+            del len
+            len(3)
+            """);
+        var builtinError = Assert.Single(module.Diagnostics);
+        Assert.Equal("LA3032", builtinError.Code);
+        Assert.Equal(3, builtinError.Span?.Line);
+
+        using var local = new LythonEngine().Compile("""
+            def read():
+                len = lambda value: "bound"
+                del len
+                return len(3)
+            """);
+        var localError = Assert.Single(local.Diagnostics);
+        Assert.Equal("LA3146", localError.Code);
+        Assert.Equal(4, localError.Span?.Line);
+    }
+
     private static async Task Check(string source, string expected, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
