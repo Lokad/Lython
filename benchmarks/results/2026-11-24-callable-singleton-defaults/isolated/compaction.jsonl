@@ -1,0 +1,3 @@
+{"freeBefore": 3088384}
+{"coreSHA256": "c6c7e1cfb73c624fddec2afa6d5b306cd151fc143808bdf5f5fed903724eef71", "compressedSHA256": "fa07eaaca774dfbabcf4ef41f972aa20691a67939aa1feb4d93fce6ed58305b2", "stored": "callable-singleton-defaults-b1610-20261124/candidate-core.dll.xz", "freeAfter": 7327744}
+{"coreSHA256": "83af401ebccff4f1fcec8ab48786d1c1f6cd17f5e6b30e653bc14e2e77a9f502", "compressedSHA256": "d21dd5bf9c6c49ea5dced70b86c29adbfd06869dd584733f0fcf18dc5f1bee85", "stored": "delivery-comparison-b406-20261107/candidate-core.dll.xz", "freeAfter": 11452416}

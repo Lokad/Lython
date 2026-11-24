@@ -6,11 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
-[B1610](results/2026-11-24-callable-singleton-defaults/README.md)
-removes singleton-default tuple allocation from the defaulted factory
-pair and allocates about 20.1% less on the target. Defaulted time spans
-zero. Eager rules slow and the enlarged base layout raises rule-control
-allocations. The first layout stays private.
+[B1610](results/2026-11-24-callable-singleton-defaults/README.md) and
+[B1611](results/2026-11-24-callable-singleton-defaults/isolated/README.md)
+remove singleton-default tuple allocation from the defaulted factory pair.
+The isolated layout saves exactly 192 KiB and restores rule-control
+allocations. Defaulted warm elapsed falls 2.75–3.16% with lower CPU.
+Defaulted compile-to-result elapsed rises 1.62–3.26% with higher CPU.
+Both layouts stay private. The probe also reproduces admission growth
+after caught errors constructing the second callable on both images.
 
 [B1609](results/2026-11-24-closed-line-helper-cpython/README.md)
 puts the delivered Unicode report at 0.954–1.036× CPython warm and
