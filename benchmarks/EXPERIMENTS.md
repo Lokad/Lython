@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1582](results/2026-11-24-native-completed-call-workspace/README.md)
+completes existing closed factory and defaulted scalar calls before native
+workspace setup. Defaulted warm elapsed and CPU fall with uncertain
+magnitude. Other elapsed ranges cross zero. Allocation and admission match.
+
 [B1581](results/2026-11-24-regex-wrapper-cache/README.md) separates
 requested Python flags from normalized provider options at the wrapper lookup.
 Guest hash and equality can suspend. Module log elapsed and CPU fall, and

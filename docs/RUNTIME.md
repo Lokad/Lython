@@ -392,13 +392,13 @@ compiled key layouts stay funded with the code. Decorators can expose a
 definition, so its finished defaults transfer before the first decorator call.
 Binding uses the live tuple and holds selected values through keyword lookup
 and suspension.
-An eligible call with all positional arguments supplied can evaluate an
-exact integer return from the caller's slots before preparing a callee
-activation or tuple-unpack destination. The same function-call and stack
-admission apply. Eligible helpers can read live captures and exact Boolean
-defaults. A conditional return can use the selected arm directly and
-preserve an existing integer alias. Wide arithmetic and protocols use
-the ordinary activation.
+An eligible native call can complete an exact integer return or return a
+closed lexical definition before preparing callee workspace or a tuple-unpack
+destination. Both executable drivers use the same completion check. Exact
+operands can come from supplied arguments, prepared defaults and live
+captures. A conditional return can use the selected arm directly and
+preserve an existing integer alias. The same function-call and stack
+admission apply. Wide arithmetic and protocols use the ordinary activation.
 An adjacent addition to a private local can carry early reads through an
 exact call. The existing operand window holds only provisional integers until
 the selected helper and its arguments are known to finish without callbacks.
