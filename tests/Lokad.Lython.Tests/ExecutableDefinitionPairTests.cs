@@ -33,14 +33,14 @@ public sealed class ExecutableDefinitionPairTests
     [InlineData(true, true)]
     public async Task InterruptedSecondDefaultStoragePrecedesArithmeticAndRefunds(bool asynchronous, bool cancelDuringAdmission)
     {
-        const string source = """
+        var source = """
             def make(seed):
                 def first(value=seed % 7):
                     return value
                 other = lambda left=10 // seed, right=seed + 1: left + right
                 return first, other
             first, other = make(0)
-            """;
+            """.ReplaceLineEndings("\n");
         var syntax = LythonFrontend.Compile(source).Script!;
         var module = ExecutableScript.Compile(syntax).EntryPoint;
         Assert.True(Assert.Single(module.FunctionBindings()).CodeObject!.HasDirectDefinitionPair);
