@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1567](results/2026-11-24-fixed-result-order/README.md) writes final
+unpack slots directly. Captured rules, quoted invoice and split-heavy
+text show 0.58–3.30% lower elapsed with unchanged peak admission.
+Default and annotated rule timing remains inconclusive.
+
 [B1566](results/2026-11-24-fixed-return-ownership/README.md) admits
 actual scalar storage for fixed unpack. Captured and default rules
 use 128 KiB less peak admitted memory and the quoted invoice uses
