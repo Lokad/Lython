@@ -487,7 +487,7 @@ internal sealed partial class LythonRuntime
             in ExecutableInstruction tuple, Span<ExecutableSlot> destination)
         {
             var items = execution.Stack.Values.AsSpan(tuple.InputStart, tuple.ItemCount);
-            AdmitUnpackedTuple(items, scope, tuple.Span);
+            AdmitUnpackedReturnScalars(items, scope, tuple.Span);
             execution.InstructionIndex++;
             scope.CheckExecution(execution.Code.Instructions[execution.InstructionIndex].Span);
             // Both arrays are live. Publication follows the callee's cleanup.

@@ -64,8 +64,12 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
 
     internal static long EstimateObjectSlotStorage(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => checked(EstimateApproximateBytes(values.Length) + EstimateScalarSlots(values, context, span));
+
+    internal static long EstimateScalarSlots(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = EstimateApproximateBytes(values.Length);
+        long bytes = 0;
         for (var i = 0; i < values.Length; i++)
         {
             if ((i & 1023) == 0) context.CheckExecution(span);

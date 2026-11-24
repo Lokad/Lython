@@ -611,7 +611,7 @@ internal sealed partial class LythonRuntime
         {
             if (Code.NativePrefixEnd != Code.Instructions.Length ||
                 !IsUnpackedTupleReturn(Code, Index, instruction, _unpackedReturnCount)) return false;
-            AdmitUnpackedTuple(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
+            AdmitUnpackedReturnScalars(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
             // The return wrapper copies these already-admitted operands before
             // native cleanup. The hot execution state retains no caller borrow.
             _unpackedTupleStart = instruction.InputStart;

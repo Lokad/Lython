@@ -273,7 +273,7 @@ finally:
             def factory(saved):
                 def capture(): return saved
                 time.time()
-                return capture,saved
+                return capture,1000
             sink=Sink()
             shared=[]
             try: sink.value,alias=factory(shared)

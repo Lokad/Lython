@@ -635,8 +635,9 @@ Cancellation and refused admission remain terminal through guest handlers.
 
 Eligible tuple returns consumed by immediate exact unpacking can place their
 elements directly in the caller's admitted operands, including helpers using larger
-bound storage. Eager tuple admission and conservative element funding remain;
-target stores follow completed child cleanup and observe cancellation/refusal.
+bound storage. The admitted caller slots hold the values, and retained scalar
+publication is funded before any target stores. Target stores follow completed
+child cleanup and observe cancellation and terminal admission refusal.
 An incomplete prefix transfers through the existing frame without retaining a
 borrowed return span. Escaping tuples, starred/mismatched unpacking and dynamic
 protocols keep ordinary Python values and behavior.
@@ -1115,8 +1116,9 @@ binding and continuation semantics. Receiver and argument evaluation order stays
 the same, including rebinding and admission callbacks.
 An exact tuple returned immediately to a fixed unpack can transfer its elements
 into the caller's admitted operand slots. Native helpers, borrowed functions
-and eligible executable frames share the tuple shape check and conservative
-admission. An eligible frame can stage elements after resuming from host I/O.
+and eligible executable frames share the tuple shape check and admit retained
+scalar elements. The direct result uses the caller's existing capacity. An
+eligible frame can stage elements after resuming from host I/O.
 Publication waits for child
 cleanup, and preserves element aliases and assignment order. Protected framed
 returns, escaping tuples, starred targets and mismatched counts keep ordinary

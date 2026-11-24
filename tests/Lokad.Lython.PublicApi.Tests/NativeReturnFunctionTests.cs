@@ -50,6 +50,55 @@ public sealed class NativeReturnFunctionTests
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task FixedUnpackFundsPublishedScalarsWithinTheExistingWindow(bool asynchronous)
+    {
+        const int count = 8;
+        var targets = string.Join(',', Enumerable.Range(0, count).Select(index => "item" + index));
+        var objects = string.Join(',', Enumerable.Repeat("value", count));
+        var scalars = string.Join(',', Enumerable.Range(0, count).Select(index => $"value + {index}"));
+        foreach (var (values, argument, resultExpression, scalar) in new[]
+        {
+            (objects, "['kept']", "item0 is item7", false),
+            (scalars, "1000", "item7", true)
+        })
+        {
+            using var script = new LythonEngine().Compile($"""
+                import time
+                def bundle(value):
+                    time.time()
+                    return {values}
+                {targets} = bundle({argument})
+                return {resultExpression}
+                """);
+            Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+            var budget = new AdmissionGateBudget();
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            foreach (var headroom in new[] { 32L, 1024L * 1024 })
+            {
+                budget.Gate(64L * 1024 * 1024);
+                var host = new AdmissionGateHost(budget, headroom);
+                using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+                {
+                    Assert.True(budget.AtGate > 0);
+                    if (scalar && headroom == 32)
+                    {
+                        Assert.False(result.Success);
+                        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                        Assert.Equal(4, Assert.IsType<LythonRuntimeFailure>(result.Failure).Span?.Line);
+                    }
+                    else
+                    {
+                        Assert.True(result.Success, result.Failure?.Message);
+                        Assert.Equal(scalar ? (object)new System.Numerics.BigInteger(1007) : true, result.ReturnValue);
+                    }
+                }
+                Assert.Equal(0, budget.Root.ReservedBytes);
+            }
+        }
+    }
+
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {

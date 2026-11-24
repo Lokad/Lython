@@ -115,11 +115,12 @@ internal sealed partial class LythonRuntime
         return next.OpCode == ExecutableOpCode.Return && next.InputStart == tuple.ResultSlot;
     }
 
-    private static void AdmitUnpackedTuple(ReadOnlySpan<ExecutableSlot> items, ExecutionContext scope, LythonSourceSpan span)
+    private static void AdmitUnpackedReturnScalars(ReadOnlySpan<ExecutableSlot> items, ExecutionContext scope, LythonSourceSpan span)
     {
-        // Keep eager admission for the retained elements and their eventual
-        // boxes. The guest cannot observe a tuple shell in a fixed unpack.
-        var bytes = PyTuple.EstimateObjectSlotStorage(items, scope, span);
+        // Only scalar publication needs new funding. The caller owns the
+        // operand window, and a fixed unpack constructs no tuple.
+        var bytes = PyTuple.EstimateScalarSlots(items, scope, span);
+        if (bytes == 0) return;
         var governor = scope.MemoryGovernor;
         governor.Reserve(bytes, span);
         try
