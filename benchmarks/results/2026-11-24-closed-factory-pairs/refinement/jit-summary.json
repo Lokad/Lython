@@ -1,0 +1,64 @@
+{
+  "reference": {
+    "methods": {
+      "TryExecuteNativeCall": {
+        "stackBytes": 328,
+        "nativeBytes": 3784
+      },
+      "StartNativeCall": {
+        "stackBytes": 440,
+        "nativeBytes": 549
+      },
+      "TryReturnDefinition": {
+        "stackBytes": 72,
+        "nativeBytes": 797
+      },
+      "CreateClosedComputedDefinition": {
+        "stackBytes": 280,
+        "nativeBytes": 1134
+      },
+      "EvaluateClosedDefault": {
+        "stackBytes": 168,
+        "nativeBytes": 1028
+      }
+    },
+    "coreSha": "924bb28a0d0998445beac348471705eb9fc988fb9dc82d6acaff47c294ebc525"
+  },
+  "candidate": {
+    "methods": {
+      "TryExecuteNativeCall": {
+        "stackBytes": 328,
+        "nativeBytes": 3902
+      },
+      "TryReturnDefinitionPair": {
+        "stackBytes": 88,
+        "nativeBytes": 147
+      },
+      "StartNativeCall": {
+        "stackBytes": 440,
+        "nativeBytes": 549
+      },
+      "TryReturnDefinition": {
+        "stackBytes": 80,
+        "nativeBytes": 833
+      },
+      "CompleteClosedDefinitionPair": {
+        "stackBytes": 72,
+        "nativeBytes": 332
+      },
+      "CreateClosedPairMember": {
+        "stackBytes": 376,
+        "nativeBytes": 1832
+      },
+      "EvaluateClosedDefault": {
+        "stackBytes": 168,
+        "nativeBytes": 1111
+      },
+      "CreateClosedComputedDefinition": {
+        "stackBytes": 280,
+        "nativeBytes": 1134
+      }
+    },
+    "coreSha": "569c5c97dab7bf4616d045f6f995807a6a1b7817259c82c0a5331bf4882d5154"
+  }
+}

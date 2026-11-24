@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1595](results/2026-11-24-closed-factory-pairs/refinement/README.md)
+restores the single-definition constructor. Defaulted rules repeat the
+large gain in both phases. Postponed spans zero and short text slows again.
+Keep the refinement private while isolating the shared callers.
+
 [B1594](results/2026-11-24-closed-factory-pairs/README.md) completes two
 closed definitions into the existing unpack window. Defaulted rules use
 32.16–35.87% less warm elapsed and 30.20–31.81% less time through result.
