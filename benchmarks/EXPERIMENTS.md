@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1569](results/2026-11-24-regex-index-resumption/README.md) awaits guest
+index protocols for compiled-pattern arguments. Saved-method elapsed
+rises 0.98–2.06% with higher CPU. Direct search spans zero. The admitted
+peaks match and focused cancellation checks pass.
+
 [B1568](results/2026-11-24-runtime-checkpoint-cpython/README.md) refreshes
 six complete scripts against CPython. The short report takes
 1.363–1.412× warm and 0.508–0.517× to compile. Captured rules take
