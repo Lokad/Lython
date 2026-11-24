@@ -6,6 +6,10 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1556](results/2026-11-24-short-text-helper-cpu/README.md) attributes
+the current report's helper entry, dispatch and word preparation
+across three equivalent script shapes.
+
 [B1555](results/2026-11-24-json-text-cpython/README.md) refreshes
 expanded JSON and the short nonlocal report against CPython. The
 expanded export takes 0.762–0.794× warm elapsed. The short report takes
