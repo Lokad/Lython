@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1597](results/2026-11-24-closed-pairs-cpython/README.md)
+compares the delivered factory-pair source with stock CPython. Defaulted
+rules are 1.410–1.434× warm and 1.328–1.346× through result. Captured rules
+remain about 2×. Earlier guard failures and the verified recovery are archived.
+
 [B1596](results/2026-11-24-closed-factory-pairs/native-entry/README.md)
 restores both shared callers and selects direct pairs at native function entry.
 Defaulted rules improve in both phases at matched allocation and admission.
