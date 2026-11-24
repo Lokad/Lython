@@ -32,7 +32,17 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 if (pattern.Span[i] == (byte)'(') slots++;
             }
             Reserve(owner, checked(65536L + 2048L * Math.Max(0, slots - 2) + 256L * Math.Max(0, pattern.Length - 64)));
-            var backendOptions = Options(options.Flags);
+            var matchingFlags = options.Flags;
+            if (options.ProgramFlags is { } programFlags)
+            {
+                if ((programFlags & LocaleFlag) != 0)
+                    throw new LythonRegexException(LythonRegexFailure.Capability,
+                        "The regex provider requires culture-invariant matching.");
+                // The producer defaults to Unicode. An explicit compiler
+                // request without the Unicode bit uses ASCII character modes.
+                matchingFlags = (programFlags & UnicodeFlag) != 0 ? programFlags & ~AsciiFlag : programFlags | AsciiFlag;
+            }
+            var backendOptions = Options(matchingFlags);
             backendOptions = options.Verbose ? backendOptions | PythonReCompileOptions.Verbose : backendOptions & ~PythonReCompileOptions.Verbose;
             var regex = Backend((Pattern: pattern, Options: backendOptions), static (state, token) =>
                 Utf8PythonRegex.Compile(state.Pattern.Span, state.Options,

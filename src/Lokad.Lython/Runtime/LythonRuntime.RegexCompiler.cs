@@ -735,13 +735,13 @@ internal sealed partial class LythonRuntime
             else if (await TestFlag(PythonUnicodeFlag).ConfigureAwait(false))
                 throw RuntimeErrors.Value("ASCII and UNICODE flags are incompatible", span);
 
-            // The DEBUG probes are observable guest operations even when the
-            // converted flag bits leave debugging disabled.
+            // CPython uses the parser state in both unions. The left operand
+            // changes, so guest dispatch can produce different integers.
             var debug = new BigInteger(RegexDebugFlag);
             _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
-            var combined = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, stateFlags, value).ConfigureAwait(false);
+            var program = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, stateFlags, value).ConfigureAwait(false);
             _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
-            var converted = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, combined).ConfigureAwait(false);
+            var converted = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, stateFlags).ConfigureAwait(false);
             if (converted is PyInstance)
                 converted = (await CoerceTypeIndexAsync(converted, context, span, asynchronous).ConfigureAwait(false))!;
             var flagBits = ToRegexCInt(converted, span, context);
@@ -750,7 +750,25 @@ internal sealed partial class LythonRuntime
             if ((flagBits & RegexDebugFlag) != 0)
                 throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
 
-            return new(flagBits, verbose);
+            // Extract the compiler's integer modes through the managed numeric
+            // path. Wide integers can carry arbitrary unused bits.
+            const int programMask = PythonIgnoreCaseFlag | PythonLocaleFlag | PythonMultilineFlag |
+                PythonDotAllFlag | PythonUnicodeFlag | PythonAsciiFlag;
+            int? programBits = program switch
+            {
+                bool => 0,
+                int bits => bits & programMask,
+                BigInteger bits when bits >= int.MinValue && bits <= int.MaxValue => (int)bits & programMask,
+                BigInteger => ToRegexCInt(await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd,
+                    program, new BigInteger(programMask)).ConfigureAwait(false), span, context),
+                _ => null,
+            };
+            // Identical explicit modes are the same request used by exact
+            // flags. Preserve frontend reuse and known program equality.
+            if (programBits == (flagBits & programMask)
+                && (flagBits & (PythonUnicodeFlag | PythonAsciiFlag)) != 0)
+                programBits = null;
+            return new(flagBits, verbose) { ProgramFlags = programBits };
 
             ValueTask<object> EvaluateFlagOperation(BinaryOperatorSyntax operation, object left, object right)
                 => asynchronous ? EvaluateBinaryOperatorAsync(operation, left, right, context, span)

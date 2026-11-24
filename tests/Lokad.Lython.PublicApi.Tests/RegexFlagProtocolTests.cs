@@ -157,6 +157,64 @@ public sealed class RegexFlagProtocolTests
         Assert.Equal(baseline, allowance.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("32", "'x', 'X', 34", "34 False")]
+    [InlineData("34", "'x', 'X', 32", "32 True")]
+    [InlineData("48", "'.', '\\n', 32", "32 True")]
+    [InlineData("0", "r'\\w', 'é', 32", "32 False")]
+    [InlineData("32", "r'\\w', 'é', 256", "256 True")]
+    [InlineData("1099511627810", "'x', 'X', 32", "32 True")]
+    public async Task CompileAndReportedFlagsUseIndependentUnions(string programFlags, string arguments, string expected)
+    {
+        const string source = """
+            import re
+            operands = []
+            class Flags:
+                def __init__(self, reported):
+                    self.reported = reported
+                def __and__(self, other): return 0
+                def __ior__(self, other): return other
+                def __ror__(self, state):
+                    operands.append(('program', state))
+                    with open('/flags.txt') as stream:
+                        return int(stream.read())
+                def __or__(self, state):
+                    operands.append(('reported', state))
+                    return self.reported
+
+            def check(expression, subject, reported):
+                pattern = re.compile(expression, Flags(reported))
+                print(pattern.flags, pattern.fullmatch(subject) is not None)
+                print(operands)
+            """;
+        expected += "\n[('program', 32), ('reported', 32)]\n";
+        var allowance = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            source + "\ncheck(" + arguments + ")\n", allowance);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = allowance.ReservedBytes;
+
+        var sync = new MockLythonHost();
+        sync.SeedFile("/flags.txt", programFlags);
+        using (var result = script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(baseline, allowance.ReservedBytes);
+
+        var host = new DelayedLythonHost();
+        host.SeedFile("/flags.txt", programFlags);
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, allowance.ReservedBytes);
+    }
+
     [Fact]
     public async Task WrapperCacheUsesRequestedFlagIdentityAndSuspendingEquality()
     {

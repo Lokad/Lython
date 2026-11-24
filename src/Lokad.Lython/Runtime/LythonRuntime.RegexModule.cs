@@ -114,7 +114,8 @@ internal sealed partial class LythonRuntime
             if (Flags != other.Flags || !Pattern.Equals(other.Pattern, context, span)) return false;
             // Unicode provenance only affects validation. Both handles already
             // represent successful compilations of the same original pattern.
-            if (Options.Flags == other.Options.Flags && Options.Verbose == other.Options.Verbose ||
+            if (Options.Flags == other.Options.Flags && Options.Verbose == other.Options.Verbose &&
+                Options.ProgramFlags == other.Options.ProgramFlags ||
                 ReferenceEquals(Regex, other.Regex)) return true;
             return RegexCompiler.ProviderCall((Pattern: this, other, context, span),
                 static state => state.Pattern.CompareProgramKeys(state.other, state.context, state.span),

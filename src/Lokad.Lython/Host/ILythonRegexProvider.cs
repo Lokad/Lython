@@ -28,17 +28,26 @@ public interface ILythonRegexProvider
         ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken);
 }
 
-/// <summary>Contains normalized Python flag bits and the parsing-time verbose setting.</summary>
+/// <summary>Contains Python flag bits for pattern metadata, parsing and matching.</summary>
 /// <remarks>
 /// Lython performs Python's flag-operator protocol, including implicit Unicode.
 /// Verbose is separate because a guest flag object's earlier bitwise result can
-/// differ from its final integer bits. Providers preserve the supplied bits in
-/// reported flags, applying global inline flags as Python does.
+/// differ from its final integer bits. Providers preserve <see cref="Flags"/>
+/// in reported flags, applying global inline flags as Python does.
 /// Parse the pattern before reporting string-pattern mode conflicts with
 /// <see cref="LythonRegexFailure.Flags"/>.
 /// </remarks>
 public readonly record struct LythonRegexOptions(int Flags, bool Verbose)
 {
+    /// <summary>Gets the optional separate Python flag bits used to compile matching behavior.</summary>
+    /// <remarks>
+    /// A guest flag object can return different integers for the two flag unions.
+    /// These bits select the root program's case, line, dot and character modes
+    /// independently of the reported <see cref="Flags"/>. When absent, compile
+    /// using the ordinary flag and inline-mode rules.
+    /// </remarks>
+    public int? ProgramFlags { get; init; }
+
     /// <summary>Identifies the Unicode bit that Python adds when no mode was requested.</summary>
     /// <remarks>
     /// Global inline ASCII can replace implicit Unicode. Explicit Unicode and
