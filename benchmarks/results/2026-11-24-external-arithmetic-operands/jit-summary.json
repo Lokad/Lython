@@ -1,0 +1,39 @@
+{
+  "machine": "Windows x64, .NET 11 RC3; JIT FullOpts with tiering disabled",
+  "diagnostic": "Same allocation helper exercising the verified source images. Frequency and elapsed are unmeasured.",
+  "observations": [
+    {
+      "revision": "2334fafec",
+      "sha256": "94b2d22bbe4a7535b239af2d0ab22606610ce7e4558b0b911ee3d569b77be708",
+      "file": "2334fafec.asm",
+      "methodBytes": {
+        "ReadExecutableOperand": 319,
+        "TryEvaluateIntegerInstruction": 877,
+        "TryEvaluateBuiltinArithmetic": 1282,
+        "TryReadDoubleOperand": 181
+      }
+    },
+    {
+      "revision": "768cd861d",
+      "sha256": "be1ec140a05bc5989a0d717824e500f26875a55e5a8ec0e6e5c295570d2e21b4",
+      "file": "768cd861d.asm",
+      "methodBytes": {
+        "ReadExecutableOperand": 460,
+        "TryEvaluateIntegerInstruction": 1252,
+        "TryEvaluateBuiltinArithmetic": 1329,
+        "TryReadDoubleOperand": 254
+      }
+    },
+    {
+      "revision": "531499f09",
+      "sha256": "794a3e1c6d359724f6a2a16ea42e02b27364174b1dccacba43d9084745ad790b",
+      "file": "531499f09.asm",
+      "methodBytes": {
+        "ReadExecutableOperand": 452,
+        "TryEvaluateIntegerInstruction": 1007,
+        "TryEvaluateBuiltinArithmetic": 1329,
+        "TryReadDoubleOperand": 218
+      }
+    }
+  ]
+}

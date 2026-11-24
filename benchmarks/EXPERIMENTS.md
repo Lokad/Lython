@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1574](results/2026-11-24-external-arithmetic-operands/README.md) keeps
+capture decoding in the existing reader. Defaulted-rule warm elapsed
+and CPU fall, and short-report elapsed falls with mixed CPU.
+Captured rules and quoted-invoice elapsed remain inconclusive.
+
 [B1573](results/2026-11-24-dictionary-loop-entry/README.md) tests earlier
 counting-loop exit on the combined scalar-return base. Both short-text
 controls move enough to leave the effect unresolved. Mixed-width CPU
