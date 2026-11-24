@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1552](results/2026-11-24-json-encoding-settings/README.md) embeds the
+resolved JSON options. Expanded export allocates less, default encoding
+has larger iterators and takes longer, and the unchanged call control
+is adverse. The value layout stays private.
+
 [B1551](results/2026-11-24-typed-csv-cpython/README.md) measures the
 retained typed meter against CPython. It is 8.5–8.9% behind warm and
 2.4–5.3% behind through result.

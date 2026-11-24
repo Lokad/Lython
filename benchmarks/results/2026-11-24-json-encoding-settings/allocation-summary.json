@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "allocatedBytes": [
+      6115116,
+      5449988
+    ],
+    "peakAdmission": [
+      6157312,
+      6157312
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.default-options.large",
+    "allocatedBytes": [
+      4938972,
+      5111004
+    ],
+    "peakAdmission": [
+      6228493,
+      6228493
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "allocatedBytes": [
+      34896,
+      34776
+    ],
+    "peakAdmission": [
+      15184,
+      15184
+    ]
+  },
+  {
+    "case": "calls.positional.large",
+    "allocatedBytes": [
+      11712,
+      11712
+    ],
+    "peakAdmission": [
+      1284,
+      1284
+    ]
+  }
+]
