@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1610](results/2026-11-24-callable-singleton-defaults/README.md)
+removes singleton-default tuple allocation from the defaulted factory
+pair and allocates about 20.1% less on the target. Defaulted time spans
+zero. Eager rules slow and the enlarged base layout raises rule-control
+allocations. The first layout stays private.
+
 [B1609](results/2026-11-24-closed-line-helper-cpython/README.md)
 puts the delivered Unicode report at 0.954–1.036× CPython warm and
 0.916–0.920× through result. Defaulted rules remain at 1.376–1.418×
