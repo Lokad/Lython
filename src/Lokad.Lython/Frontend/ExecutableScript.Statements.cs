@@ -97,8 +97,7 @@ internal sealed partial class ExecutableScript
                     }
                     else
                     {
-                        currentBlock = CompileExpression(returnStatement.Expression, currentBlock);
-                        AddInstruction(currentBlock, ExecutableInstruction.Return(returnStatement.Span));
+                        CompileReturnValue(returnStatement.Expression, currentBlock, returnStatement.Span);
                     }
 
                     return null;

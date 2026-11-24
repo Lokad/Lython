@@ -213,7 +213,7 @@ internal sealed partial class LythonRuntime
                         if (TryIntegerOperation()) break;
                         goto case ExecutableOpCode.Unary;
                     case ExecutableOpCode.Unary:
-                        if (!TryEvaluateBuiltinArithmetic(Code, Values, Index, _scope, out var arithmetic)) return false;
+                        if (!TryEvaluateBuiltinArithmetic(Code, Values, Index, _scope, out var arithmetic, _cells)) return false;
                         Publish(instruction, arithmetic);
                         break;
                     case ExecutableOpCode.CompareJumpIfFalse:
@@ -653,7 +653,7 @@ internal sealed partial class LythonRuntime
         }
 
         private object Read(int source, int input)
-            => ReadExecutableOperand(Code, Values, source, Index, input, _scope);
+            => ReadExecutableOperand(Code, Values, source, Index, input, _scope, _cells);
 
         private object Take(in ExecutableInstruction instruction)
         {

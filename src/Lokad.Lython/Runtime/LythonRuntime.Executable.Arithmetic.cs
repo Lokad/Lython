@@ -10,21 +10,21 @@ internal sealed partial class LythonRuntime
     // operand retirement/publication nor manufactures asynchronous call state.
     // Unknown protocol values return before executing their operation.
     private static bool TryEvaluateBuiltinArithmetic(ExecutableCodeObject code, Span<ExecutableSlot> values,
-        int index, ExecutionContext scope, out ExecutableSlot result)
+        int index, ExecutionContext scope, out ExecutableSlot result, ExecutableCaptures captures)
     {
         result = default;
         ref readonly var instruction = ref code.Instructions[index];
         var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
         if (augmented && instruction.AugmentedOperator == AugmentedAssignmentOperatorSyntax.MatrixMultiply)
             return false;
-        if (TryReadDoubleOperand(code, values, instruction.InputStart, scope, out var left))
+        if (TryReadDoubleOperand(code, values, instruction.InputStart, scope, out var left, captures))
         {
             if (instruction.OpCode == ExecutableOpCode.Unary)
             {
                 if (instruction.UnaryOperator == ExecutableUnaryOperator.Minus)
                 { result.SetDouble(-left); return true; }
             }
-            else if (TryReadDoubleOperand(code, values, instruction.SecondInput, scope, out var right))
+            else if (TryReadDoubleOperand(code, values, instruction.SecondInput, scope, out var right, captures))
             {
                 var floatingOperation = augmented ? AugmentedBinaryOperator(instruction.AugmentedOperator) : instruction.BinaryOperator;
                 switch (floatingOperation)
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
                 }
             }
         }
-        var first = ReadExecutableOperand(code, values, instruction.InputStart, index, 0, scope);
+        var first = ReadExecutableOperand(code, values, instruction.InputStart, index, 0, scope, captures);
         if (instruction.OpCode == ExecutableOpCode.Unary)
         {
             if (instruction.UnaryOperator == ExecutableUnaryOperator.Not ? !CanUseNativeTruth(first)
@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
             result.Object = EvaluateExecutableUnary(instruction.UnaryOperator, first, scope, instruction.Span);
             return true;
         }
-        var second = ReadExecutableOperand(code, values, instruction.SecondInput, index, 1, scope);
+        var second = ReadExecutableOperand(code, values, instruction.SecondInput, index, 1, scope, captures);
         if (!augmented && TryEvaluateScalarComparison(instruction.BinaryOperator, first, second,
             scope, instruction.Span, out var truth))
         {
@@ -89,8 +89,8 @@ internal sealed partial class LythonRuntime
                 var end = execution.InstructionIndex;
                 ExecutableSlot value = default;
                 var completed = instruction.OpCode != ExecutableOpCode.Unary &&
-                    TryEvaluateIntegerInstruction(execution.Code, execution.Stack.Values, end, scope, out end, out value);
-                if (!completed && !TryEvaluateBuiltinArithmetic(execution.Code, execution.Stack.Values, end, scope, out value))
+                    TryEvaluateIntegerInstruction(execution.Code, execution.Stack.Values, end, scope, out end, out value, execution.Captures);
+                if (!completed && !TryEvaluateBuiltinArithmetic(execution.Code, execution.Stack.Values, end, scope, out value, execution.Captures))
                     return false;
                 execution.InstructionIndex = end;
                 PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[end], value);

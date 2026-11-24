@@ -656,6 +656,7 @@ internal sealed partial class ExecutableCodeObject
     public object?[] Constants { get; }
 
     public string[] Names { get; }
+    internal int CaptureOperandBase => checked(Constants.Length + Names.Length);
 
     // A location fact, never a cached guest value. Independently compiled code
     // keeps ordinary namespace resolution; active modules prove exact identity.

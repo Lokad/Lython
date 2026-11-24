@@ -216,8 +216,7 @@ internal sealed partial class ExecutableScript
                     null, generatorExpression.Span, entryBlock, yielding: true);
             else if (lambda is not null)
             {
-                var resultBlock = CompileExpression(lambda.Lambda.Body, entryBlock);
-                AddInstruction(resultBlock, ExecutableInstruction.Return(lambda.Span));
+                CompileReturnValue(lambda.Lambda.Body, entryBlock, lambda.Span);
                 exitBlock = null;
             }
             else exitBlock = CompileStatements(statements, entryBlock, docstring is null ? 0 : 1);

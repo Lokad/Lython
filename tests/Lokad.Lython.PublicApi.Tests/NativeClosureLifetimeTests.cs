@@ -6,6 +6,67 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NativeClosureLifetimeTests
 {
     [Fact]
+    public async Task CapturedScalarHelperReadsLiveCellAcrossPromotionAndSuspension()
+    {
+        const string source = """
+            def factory(step):
+                def apply(base):
+                    return (base - step) * 2
+                def change(value):
+                    nonlocal step
+                    step = value
+                return apply, change
+            apply, change = factory(7)
+            class Operand:
+                def __sub__(self, step):
+                    change(100)
+                    with open('/body') as stream:
+                        stream.read()
+                    return step
+            return apply(10), apply(Operand()), apply(110), apply(2**70)
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/body", "ready");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new object?[] { new BigInteger(6), new BigInteger(14), new BigInteger(20),
+                    (BigInteger.One << 71) - 200 }, Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CapturedScalarHelperReportsFirstUnboundRead(bool asynchronous)
+    {
+        const string source = """
+            def factory():
+                def apply(base):
+                    return (base - step) * 2
+                value = apply(10)
+                step = 4
+                return value
+            return factory()
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.False(result.Success);
+        Assert.Contains("free variable 'step'", result.Failure?.Message);
+        Assert.Equal(3, result.Failure?.Span?.Line);
+        Assert.Equal(24, result.Failure?.Span?.Column);
+    }
+
+    [Fact]
     public async Task BinaryAssignmentPreservesClosureAliasesAcrossASuspendingOperator()
     {
         const string source = """

@@ -6,14 +6,14 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static bool TryEvaluateIntegerInstruction(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
-        int index, ExecutionContext context, out int end, out ExecutableSlot value)
+        int index, ExecutionContext context, out int end, out ExecutableSlot value, ExecutableCaptures captures)
     {
         end = index;
         value = default;
         ref readonly var instruction = ref code.Instructions[index];
         if (instruction.OpCode is not (ExecutableOpCode.Binary or ExecutableOpCode.Augmented)
-            || !TryReadMachineOperand(code, values, instruction.InputStart, context, out var left)
-            || !TryReadMachineOperand(code, values, instruction.SecondInput, context, out var right)) return false;
+            || !TryReadMachineOperand(code, values, instruction.InputStart, context, out var left, captures)
+            || !TryReadMachineOperand(code, values, instruction.SecondInput, context, out var right, captures)) return false;
         if (instruction.OpCode == ExecutableOpCode.Binary)
         {
             if (IsScalarComparison(instruction.BinaryOperator))
@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             if (instruction.HasIntegerContinuation &&
-                TryIntegerChain(code, values, index, left, right, context, out var last, out var chained))
+                TryIntegerChain(code, values, index, left, right, context, out var last, out var chained, captures))
             {
                 end = last;
                 value.SetInteger(chained);
@@ -180,7 +180,7 @@ internal sealed partial class LythonRuntime
     {
         private bool TryIntegerOperation()
         {
-            if (!TryEvaluateIntegerInstruction(Code, Values, Index, _scope, out var end, out var result)) return false;
+            if (!TryEvaluateIntegerInstruction(Code, Values, Index, _scope, out var end, out var result, _cells)) return false;
             Index = end;
             Publish(Code.Instructions[end], result);
             return true;

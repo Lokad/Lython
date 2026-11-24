@@ -17,6 +17,8 @@ public sealed class NativeConditionalHelperTests
         { "custom-truth","events=[]\nclass Flag:\n def __bool__(self):events.append('truth');return False\ndef f(flag):\n if flag:return 'yes'\n return 'no'\nprint(f(Flag()),events)\n","no ['truth']\n" },
         { "joins-and-loops","def f(flag,word):\n if flag:word=word.upper()\n else:word=word.lower()\n return word\nprint(f(True,'Ab'),f(False,'Ab'))\ndef g(word):\n while word.islower():return word.upper()\n return word\nprint(g('ab'),g('AB'))\n","AB ab\nAB AB\n" },
         { "branch-forwarding","def f(flag,word):\n if flag:\n  local=word.lower()\n  return local.split()\n local=word.upper()\n return local.split()\nprint(f(True,'A B'),f(False,'a b'))\n","['a', 'b'] ['A', 'B']\n" },
+        { "protected-return","kept=[]\ndef bad(): raise ValueError('branch')\ndef f(flag):\n try: return kept if flag else bad()\n finally: kept.append('cleanup')\nresult=f(True)\ntry: f(False)\nexcept ValueError: print(result is kept, result)\n","True ['cleanup', 'cleanup']\n" },
+        { "scalar-alias-live-default","def factory(offset):\n def apply(value,/,*,enabled=False): return (value-offset)*2 if enabled else value\n return apply\napply=factory(7)\nvalue=1200\nprint(apply(value) is value)\napply.__kwdefaults__['enabled']=True\nprint(apply(10))\nclass Flag:\n def __bool__(self): print('truth');return False\napply.__kwdefaults__['enabled']=Flag()\nprint(apply(value) is value)\n","True\n6\ntruth\nTrue\n" },
     };
 
     [Theory]
@@ -58,8 +60,7 @@ public sealed class NativeConditionalHelperTests
                     finally:
                         return True
             def choose(flag):
-                if flag:return []
-                return []
+                return [] if flag else []
             choose(Flag())
             """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

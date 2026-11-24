@@ -54,37 +54,57 @@ internal sealed partial class ExecutableCodeObject
 
     private bool HasClosedIntegerReturn(CancellationToken cancellationToken)
     {
-        if (Instructions.Length < 2 || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
-            CapturedLocalSlots.Count != 0 || Instructions[^1].OpCode != ExecutableOpCode.Return ||
-            Instructions[^1].InputStart != Instructions[^2].ResultSlot) return false;
+        if (Instructions.Length < 2 || EntryIndex != 0 || ExceptionRegions.Count != 0 || CapturedLocalSlots.Count != 0)
+            return false;
 
-        // The complete body uses only the existing integer chain and wraps
-        // one new result. Runtime arity verifies that all locals are arguments.
-        var carry = Instructions[0].ResultSlot;
-        for (var index = 0; index < Instructions.Length - 1; index++)
+        // Returned conditional expressions already have their own terminal
+        // instructions. An exact condition can choose between the two ranges
+        // with the same scalar evaluator used for an unconditional return.
+        ref readonly var first = ref Instructions[0];
+        if (first.OpCode == ExecutableOpCode.JumpIfFalse)
         {
-            PythonTokenization.CheckCancellation(cancellationToken, index);
-            ref readonly var instruction = ref Instructions[index];
-            if (instruction.OpCode != ExecutableOpCode.Binary || instruction.ResultSlot != carry ||
-                instruction.HasResultConsumer ||
-                instruction.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
-                    BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo))
-                return false;
-
-            var left = instruction.InputStart;
-            var right = instruction.SecondInput;
-            if (index == 0)
-            {
-                if (!IsInput(left) || !IsInput(right)) return false;
-            }
-            else if (!Instructions[index - 1].HasIntegerContinuation ||
-                !(left == carry && IsInput(right) || right == carry && IsInput(left))) return false;
+            var alternative = first.TargetIndex;
+            return Instructions[1] is { OpCode: ExecutableOpCode.Jump, TargetIndex: 2 } &&
+                alternative > 2 && alternative < Instructions.Length && IsInput(first.InputStart) &&
+                HasClosedPath(2, alternative - 1) && HasClosedPath(alternative, Instructions.Length - 1);
         }
-        return true;
+        return HasClosedPath(0, Instructions.Length - 1);
 
-        // A forwarded global occupies the same encoded range as constants,
-        // after the last constant. Only immutable literal operands qualify.
-        bool IsInput(int slot) => slot >= 0 ? slot < FirstTemporarySlot : ~slot < Constants.Length;
+        bool HasClosedPath(int start, int end)
+        {
+            ref readonly var returned = ref Instructions[end];
+            if (returned.OpCode != ExecutableOpCode.Return) return false;
+            if (start == end) return IsInput(returned.InputStart);
+            if (returned.InputStart != Instructions[end - 1].ResultSlot) return false;
+
+            // The full selected body uses the existing chain and publishes
+            // a single arithmetic result. Runtime arity checks its locals.
+            var carry = Instructions[start].ResultSlot;
+            for (var index = start; index < end; index++)
+            {
+                PythonTokenization.CheckCancellation(cancellationToken, index);
+                ref readonly var instruction = ref Instructions[index];
+                if (instruction.OpCode != ExecutableOpCode.Binary || instruction.ResultSlot != carry ||
+                    instruction.HasResultConsumer ||
+                    instruction.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
+                        BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo))
+                    return false;
+                var left = instruction.InputStart;
+                var right = instruction.SecondInput;
+                if (index == start)
+                {
+                    if (!IsInput(left) || !IsInput(right)) return false;
+                }
+                else if (!Instructions[index - 1].HasIntegerContinuation ||
+                    !(left == carry && IsInput(right) || right == carry && IsInput(left))) return false;
+            }
+            return true;
+        }
+
+        // A capture reads the function's live cell. An ordinary global
+        // stays on the main instruction path.
+        bool IsInput(int slot) => slot >= 0 ? slot < FirstTemporarySlot
+            : ~slot < Constants.Length || ~slot >= CaptureOperandBase;
     }
 
     // A native get/add/store can reuse one table probe. Original instructions

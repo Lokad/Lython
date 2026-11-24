@@ -6,51 +6,83 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal static bool TryEvaluateDirectIntegerReturn<T>(ExecutableCodeObject code, T operands,
-        ExecutionContext scope, out ExecutableSlot value)
+        ExecutionContext scope, ExecutableCaptures captures, out ExecutableSlot value)
         where T : IIntegerOperands, allows ref struct
     {
         value = default;
-        ref readonly var first = ref code.Instructions[0];
+        var start = 0;
+        ref readonly var head = ref code.Instructions[0];
+        if (head.OpCode == ExecutableOpCode.JumpIfFalse)
+        {
+            scope.CheckExecution(head.Span);
+            if (ReadDirectInput(code, operands, captures, head.InputStart).Reference is not bool condition) return false;
+            if (condition) scope.CheckExecution(code.Instructions[1].Span);
+            start = condition ? code.Instructions[1].TargetIndex : head.TargetIndex;
+        }
+        ref readonly var first = ref code.Instructions[start];
         scope.CheckExecution(first.Span);
+        if (first.OpCode == ExecutableOpCode.Return)
+        {
+            // Move the selected slot so an already published integer or tuple
+            // borrow keeps its identity. Wider values use ordinary evaluation.
+            value = ReadDirectInput(code, operands, captures, first.InputStart);
+            return value.TryGetInteger(out _);
+        }
         if (!operands.TryRead(code, first.InputStart, scope, out var left) ||
             !operands.TryRead(code, first.SecondInput, scope, out var right) ||
-            !TryIntegerChain(code, operands, 0, left, right, scope, out var end, out var result)) return false;
-        System.Diagnostics.Debug.Assert(end == code.Instructions.Length - 2);
+            !TryIntegerChain(code, operands, start, left, right, scope, out var end, out var result)) return false;
+        System.Diagnostics.Debug.Assert(code.Instructions[end + 1].OpCode == ExecutableOpCode.Return);
         scope.CheckExecution(code.Instructions[end + 1].Span);
         value.SetInteger(result);
         return true;
     }
 
+    private static ExecutableSlot ReadDirectInput<T>(ExecutableCodeObject code, T operands, ExecutableCaptures captures, int input)
+        where T : IIntegerOperands, allows ref struct
+    {
+        if (input >= 0) return operands.ReadLocal(input);
+        var index = ~input;
+        if (index < code.Constants.Length) return ExecutableSlot.FromObject(RuntimeValue(code.Constants[index]));
+        return captures.TryRead(index - code.CaptureOperandBase, out var value) ? ExecutableSlot.FromObject(value) : default;
+    }
+
     internal interface IIntegerOperands
     {
         bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value);
+        ExecutableSlot ReadLocal(int slot);
     }
 
-    internal readonly ref struct SlotIntegerOperands(ReadOnlySpan<ExecutableSlot> slots) : IIntegerOperands
+    internal readonly ref struct SlotIntegerOperands(ReadOnlySpan<ExecutableSlot> slots, ExecutableCaptures captures) : IIntegerOperands
     {
         private readonly ReadOnlySpan<ExecutableSlot> _slots = slots;
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
-            => TryReadMachineOperand(code, _slots, slot, scope, out value);
+            => TryReadMachineOperand(code, _slots, slot, scope, out value, captures);
+
+        public ExecutableSlot ReadLocal(int slot) => _slots[slot];
     }
 
-    internal readonly ref struct BoundIntegerOperands(object receiver, ReadOnlySpan<ExecutableSlot> arguments) : IIntegerOperands
+    internal readonly ref struct BoundIntegerOperands(object receiver, ReadOnlySpan<ExecutableSlot> arguments, ExecutableCaptures captures) : IIntegerOperands
     {
         private readonly ReadOnlySpan<ExecutableSlot> _arguments = arguments;
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
             => slot == 0 ? TryMachineInteger(receiver, out value)
-                : TryReadMachineOperand(code, _arguments, slot > 0 ? slot - 1 : slot, scope, out value);
+                : TryReadMachineOperand(code, _arguments, slot > 0 ? slot - 1 : slot, scope, out value, captures);
+
+        public ExecutableSlot ReadLocal(int slot) => slot == 0 ? ExecutableSlot.FromObject(receiver) : _arguments[slot - 1];
     }
 
-    internal readonly ref struct DefaultIntegerOperands(ReadOnlySpan<ExecutableSlot> supplied, FunctionBindingPlan plan) : IIntegerOperands
+    internal readonly ref struct DefaultIntegerOperands(ReadOnlySpan<ExecutableSlot> supplied, FunctionBindingPlan plan, ExecutableCaptures captures) : IIntegerOperands
     {
         private readonly ReadOnlySpan<ExecutableSlot> _supplied = supplied;
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
             => slot >= _supplied.Length
-                ? plan.TryReadPreparedDefaultInteger(slot, out value)
-                : TryReadMachineOperand(code, _supplied, slot, scope, out value);
+                ? plan.ReadPreparedDefault(slot).TryGetInteger(out value)
+                : TryReadMachineOperand(code, _supplied, slot, scope, out value, captures);
+
+        public ExecutableSlot ReadLocal(int slot) => slot < _supplied.Length ? _supplied[slot] : plan.ReadPreparedDefault(slot);
     }
 
     private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, ExecutableCaptures cells,
@@ -70,8 +102,8 @@ internal sealed partial class LythonRuntime
     // final result is published through the caller's ordinary lifetime machinery.
     private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
         int index, long left, long right, ExecutionContext scope,
-        out int end, out long result)
-        => TryIntegerChain(code, new SlotIntegerOperands(values), index, left, right, scope, out end, out result);
+        out int end, out long result, ExecutableCaptures captures)
+        => TryIntegerChain(code, new SlotIntegerOperands(values, captures), index, left, right, scope, out end, out result);
 
     private static bool TryIntegerChain<T>(ExecutableCodeObject code, T operands,
         int index, long left, long right, ExecutionContext scope, out int end, out long result)

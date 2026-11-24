@@ -73,17 +73,16 @@ internal abstract class FunctionBindingPlan
             supplied <= PositionalCount &&
             supplied >= PositionalCount - ((PositionalDefaults as PyTuple)?.Count ?? 0);
 
-    internal bool TryReadPreparedDefaultInteger(int index, out long value)
+    internal LythonRuntime.ExecutableSlot ReadPreparedDefault(int index)
     {
         if (index >= PositionalCount)
         {
             var keywordPosition = _layout.KeywordDefaultAt(index - PositionalCount).RecordPosition;
             var stored = _inlineKeywordDefault ? _keywordDefaults : ((object?[])_keywordDefaults!)[keywordPosition];
-            return LythonRuntime.ExecutableSlot.FromObject(stored).TryGetInteger(out value);
+            return LythonRuntime.ExecutableSlot.FromObject(stored);
         }
-        if (TryGetPositionalDefault(index, out var slot)) return slot.TryGetInteger(out value);
-        value = default;
-        return false;
+        TryGetPositionalDefault(index, out var slot);
+        return slot;
     }
 
     internal bool TryFillPreparedKeywordDefaults(Span<LythonRuntime.ExecutableSlot> bound,

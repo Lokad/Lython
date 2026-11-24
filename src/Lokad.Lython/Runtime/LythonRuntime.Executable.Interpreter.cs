@@ -343,7 +343,7 @@ internal sealed partial class LythonRuntime
                     : ExecutableSlot.FromObject(TakeOperand(ref execution, instruction, scope)), instruction.Span);
 
         private static object ReadOperand(ref ExecutableWorkState execution, int source, ExecutionContext scope, int input)
-            => ReadExecutableOperand(execution.Code, execution.Stack.Values, source, execution.InstructionIndex, input, scope);
+            => ReadExecutableOperand(execution.Code, execution.Stack.Values, source, execution.InstructionIndex, input, scope, execution.Captures);
 
         private static object TakeOperand(ref ExecutableWorkState execution, in ExecutableInstruction instruction, ExecutionContext scope)
         {

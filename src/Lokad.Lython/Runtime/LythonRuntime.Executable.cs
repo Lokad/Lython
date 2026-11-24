@@ -54,6 +54,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        internal bool TryReadInteger(out long value)
+        {
+            if (_hasInteger && !UsesNamespace) { value = _integer; return true; }
+            return TryMachineInteger(Value, out value);
+        }
+
         internal bool CanStoreDirectly => _owner is null || (_name is not null && _owner.GlobalNamespace is null);
         internal bool HasNamespaceOwner => _owner is not null;
 
@@ -135,6 +141,14 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             value = null;
+            return false;
+        }
+
+        internal bool TryReadInteger(int index, out long value)
+        {
+            if (GetCell(index) is { } cell) return cell.TryReadInteger(out value);
+            if (index == 0 && _storage is not ExecutableCell[]) return TryMachineInteger(_storage, out value);
+            value = 0;
             return false;
         }
 

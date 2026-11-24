@@ -533,6 +533,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     source = ~checked(code.Constants.Length + leaf.NameIndex);
                     span = leaf.Span;
                 }
+                else if (leaf.OpCode == ExecutableOpCode.LoadClosure &&
+                    instruction.OpCode is (ExecutableOpCode.Binary or ExecutableOpCode.JumpIfFalse) && code.IsFunctionScope &&
+                    code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring)
+                {
+                    source = ~checked(code.CaptureOperandBase + leaf.ClosureSlot);
+                    span = leaf.Span;
+                }
                 else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
                     && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
                 {

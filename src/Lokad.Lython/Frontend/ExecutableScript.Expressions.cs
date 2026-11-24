@@ -382,14 +382,8 @@ internal sealed partial class ExecutableScript
         // arrive with the same stack depth.
         private int CompileConditionalExpression(ConditionalExpressionSyntax conditional, int currentBlock)
         {
-            currentBlock = CompileExpression(conditional.Condition, currentBlock);
-
-            var consequentBlock = CreateBlock();
-            var alternativeBlock = CreateBlock();
+            var (consequentBlock, alternativeBlock) = CompileConditionalBranches(conditional, currentBlock);
             var joinBlock = CreateBlock();
-
-            AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(alternativeBlock, conditional.Condition.Span));
-            AddInstruction(currentBlock, ExecutableInstruction.Jump(consequentBlock, conditional.Span));
 
             var consequentExit = CompileExpression(conditional.Consequent, consequentBlock);
             if (!IsTerminated(consequentExit))
@@ -404,6 +398,33 @@ internal sealed partial class ExecutableScript
             }
 
             return joinBlock;
+        }
+
+        private (int Consequent, int Alternative) CompileConditionalBranches(ConditionalExpressionSyntax conditional, int currentBlock)
+        {
+            currentBlock = CompileExpression(conditional.Condition, currentBlock);
+            var consequent = CreateBlock();
+            var alternative = CreateBlock();
+            AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(alternative, conditional.Condition.Span));
+            AddInstruction(currentBlock, ExecutableInstruction.Jump(consequent, conditional.Span));
+            return (consequent, alternative);
+        }
+
+        private void CompileReturnValue(ExpressionSyntax value, int block, LythonSourceSpan span)
+        {
+            while (value is ParenthesizedExpressionSyntax parenthesized) value = parenthesized.Inner;
+            if (value is ConditionalExpressionSyntax conditional)
+            {
+                // A return takes the selected value straight out of its branch.
+                // Both arms retain the original return span and the active
+                // protected-region cleanup.
+                var (consequent, alternative) = CompileConditionalBranches(conditional, block);
+                CompileReturnValue(conditional.Consequent, consequent, span);
+                CompileReturnValue(conditional.Alternative, alternative, span);
+                return;
+            }
+            block = CompileExpression(value, block);
+            AddInstruction(block, ExecutableInstruction.Return(span));
         }
 
         private bool TryCompleteLiteralTuple(int block, int start, int count, LythonSourceSpan span)

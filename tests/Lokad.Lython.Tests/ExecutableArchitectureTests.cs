@@ -8,6 +8,29 @@ namespace Lokad.Lython.Tests;
 public sealed class ExecutableArchitectureTests
 {
     [Fact]
+    public void ClosedScalarReturnReadsCapturedOperandFromItsLiveCell()
+    {
+        const string source = """
+            def factory(step):
+                def apply(base):
+                    return (base - step) * 2
+                return apply
+            """;
+        var frontend = LythonFrontend.Compile(source);
+        var module = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
+        var factory = Assert.Single(module.FunctionBindings()).CodeObject;
+        var helper = Assert.Single(factory.FunctionBindings()).CodeObject;
+
+        Assert.True(helper.HasDirectIntegerReturn);
+        Assert.Equal([ExecutableOpCode.Binary, ExecutableOpCode.Binary, ExecutableOpCode.Return],
+            helper.Instructions.Select(instruction => instruction.OpCode));
+        var captured = ~helper.Instructions[0].SecondInput - helper.CaptureOperandBase;
+        Assert.Equal("step", helper.ClosureNames[captured]);
+        var span = helper.OperandReadSpan(0, 1);
+        Assert.Equal("step", source.ReplaceLineEndings("\n").Substring(span.Start, span.Length));
+    }
+
+    [Fact]
     public void ExecutableScript_CompilesSimpleAssignmentsIntoLocalsAndConstants()
     {
         var frontend = LythonFrontend.Compile("""
