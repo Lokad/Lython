@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1651–B1652](results/2026-11-24-single-pass-operand-layout/README.md) combine
+operand forwarding and layout with identical tapes and storage bounds. The
+initial classifier improves and two other CPU ranges regress. The refinement
+improves manifest CPU and slows the classifier. Both patches remain private.
+
 [B1650](results/2026-11-24-frontend-phase-profile/README.md) profiles
 compilation after shared match bindings. Parsing and executable construction
 lead the generated classifier and validator. Operand layout accounts for

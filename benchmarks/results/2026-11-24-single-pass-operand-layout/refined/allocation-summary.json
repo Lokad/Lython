@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.generated-record-classifier",
+    "allocationBytes": [
+      53296,
+      53296
+    ],
+    "peakAdmission": [
+      28052,
+      28052
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      68216,
+      68216
+    ],
+    "peakAdmission": [
+      92830,
+      92830
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      96536,
+      96536
+    ],
+    "peakAdmission": [
+      56399,
+      56399
+    ]
+  }
+]
