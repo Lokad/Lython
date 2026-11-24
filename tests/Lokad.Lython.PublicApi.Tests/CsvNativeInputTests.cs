@@ -131,16 +131,19 @@ public sealed class CsvNativeInputTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ShortCsvDictionaryKeysKeepTheFirstInsertedIdentity(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ShortCsvDictionaryKeysKeepTheFirstInsertedIdentity(bool asynchronous, bool typed)
     {
-        await AssertFile(asynchronous, "é1,1\né1,2\na,3\nb,4\nc,5\nd,6\né1,7\n", """
+        var options = typed ? ", quoting=csv.QUOTE_NONNUMERIC" : "";
+        await AssertFile(asynchronous, "\"é1\",1\n\"é1\",2\n\"a\",3\n\"b\",4\n\"c\",5\n\"d\",6\n\"é1\",7\n", $$"""
             import csv
             counts = {}
             previous_keys = []
             with open('/input.csv', encoding='utf-8', newline='') as source:
-                for key, amount in csv.reader(source):
+                for key, amount in csv.reader(source{{options}}):
                     previous = counts.get(key, 0)
                     counts[key] = previous + int(amount)
                     previous_keys.append(key)
