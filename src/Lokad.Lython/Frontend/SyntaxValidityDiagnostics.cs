@@ -18,7 +18,7 @@ internal static class SyntaxValidityDiagnostics
         public int LastAnnotationCheck = -1;
     }
 
-    private readonly record struct ExpressionVisit(ExpressionSyntax Expression, IReadOnlySet<string>? Targets,
+    private readonly record struct ExpressionVisit(ExpressionSyntax Expression, IReadOnlyCollection<string>? Targets,
         bool Iterable, bool InLambda = false, bool RecordCall = false);
 
     private static int ReadFuturePrefix(IReadOnlyList<StatementSyntax> statements, CancellationToken cancellationToken,

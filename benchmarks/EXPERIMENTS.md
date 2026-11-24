@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1662](results/2026-11-25-shared-function-local-slots/README.md) shares
+lexical and executable local tables. Defaulted-rule compile allocation
+falls 1.81% and its wider CPU through result falls in both blocks. The
+manifest compile gain and invoice warm slowdown vary in the longer block.
+Tape, slot order and retained admission match.
+
 [B1661](results/2026-11-25-direct-callback-return/README.md) returns
 directly from borrowed positional callback arguments. The full CSV report
 reaches its result 2.77–4.69% sooner and warm async takes 2.56–6.73% less

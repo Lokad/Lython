@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      65472,
+      64288
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      215376,
+      213664
+    ],
+    "retainedAdmission": [
+      212960,
+      212960
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      2170128,
+      2169688
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  },
+  {
+    "case": "diagnostic.generated-record-classifier",
+    "allocationBytes": [
+      888504,
+      888376
+    ],
+    "retainedAdmission": [
+      703904,
+      703904
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      134984,
+      134072
+    ],
+    "retainedAdmission": [
+      157114,
+      157114
+    ]
+  }
+]

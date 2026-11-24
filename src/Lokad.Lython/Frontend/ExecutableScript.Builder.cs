@@ -103,7 +103,7 @@ internal sealed partial class ExecutableScript
             internal readonly List<ExecutableCallSite> CallSites = [];
             internal readonly List<ExecutableMatchCaseBinding> MatchCases = [];
             internal readonly Stack<LoopContext> Loops = [];
-            internal readonly Stack<IReadOnlySet<string>> ComprehensionNames = [];
+            internal readonly Stack<IReadOnlyCollection<string>> ComprehensionNames = [];
 
             internal void Clear()
             {
@@ -128,7 +128,8 @@ internal sealed partial class ExecutableScript
         private readonly Buffers _buffers;
         // These maps become code metadata, including the identity used to
         // select a prepared capture layout at execution.
-        private readonly Dictionary<string, int> _localIndexes = new(StringComparer.Ordinal);
+        private Dictionary<string, int> _localIndexes;
+        private readonly string[] _declaredLocalNames;
         private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
         private int _lookupCacheCount;
         private int _protectedDepth;
@@ -137,7 +138,7 @@ internal sealed partial class ExecutableScript
 
         private readonly FunctionParameterLayout? _parameterLayout;
         private readonly Builder? _lexicalParent;
-        private readonly IReadOnlySet<string>? _typeParameterNames;
+        private readonly IReadOnlyCollection<string>? _typeParameterNames;
         private readonly bool _completeLexicalParent;
         private readonly bool _classBody;
         private readonly ScopeDirectiveFacts _scopeFacts;
@@ -150,7 +151,7 @@ internal sealed partial class ExecutableScript
             ScopeDirectiveFacts scopeFacts,
             bool completeLexicalParent = false,
             List<ExecutableCodeObject>? moduleCode = null,
-            IReadOnlySet<string>? typeParameterNames = null,
+            IReadOnlyCollection<string>? typeParameterNames = null,
             bool generator = false,
             bool classBody = false)
         {
@@ -160,6 +161,8 @@ internal sealed partial class ExecutableScript
             _classBody = classBody;
             _moduleCode = moduleCode;
             _scopeFacts = scopeFacts;
+            _localIndexes = scopeFacts.PreparedLocalSlots ?? new(StringComparer.Ordinal);
+            _declaredLocalNames = scopeFacts.PreparedLocalSlots is null ? [] : scopeFacts.LocalBindingOrder;
             _parameterLayout = parameterLayout;
             // Only enclosing executable compilation supplies complete lexical
             // bindings. Independently compiled class methods/generator lambdas use
@@ -181,17 +184,15 @@ internal sealed partial class ExecutableScript
             // Module facts are prepared too, but a module is not a closure.
             if ((!_generator || generatorExpression is not null || _completeLexicalParent) && _scopeFacts.RequiresClassCell && _parameterLayout is not null)
                 InternClosure("__class__");
-            // Binding and executable locals use one prepared parameter order.
-            // Body locals are appended below, without reclassifying the signature.
-            if (_parameterLayout is not null)
+            // Function declarations already supply their executable prefix.
+            // Generator expressions still build the implicit loop's locals here.
+            if (_parameterLayout is not null && _scopeFacts.PreparedLocalSlots is null)
+            {
                 foreach (var parameterName in _parameterLayout.LayoutParameterNames)
                     if (IsLocalBindingName(parameterName)) InternLocal(parameterName);
-            // Function locals include bindings in dead control-flow bodies.
-            // Keep the argument prefix above; no second binding walk. Modules
-            // retain their dynamic namespace; actual stores intern needed slots.
-            if (_parameterLayout is not null)
                 foreach (var localName in _scopeFacts.LocalBindingOrder)
                     InternLocal(localName);
+            }
 
             var resolvedNonlocals = _completeLexicalParent;
             if (resolvedNonlocals && generatorExpression is null && _scopeFacts.NonlocalNames.Count != 0)
@@ -253,7 +254,7 @@ internal sealed partial class ExecutableScript
                 name,
                 _buffers.Constants.ToArray(),
                 _buffers.Names.ToArray(),
-                _buffers.Locals.ToArray(),
+                CompleteLocalNames(),
                 _localIndexes,
                 capturedLocalSlots,
                 _buffers.Closures.ToArray(),
@@ -445,7 +446,7 @@ internal sealed partial class ExecutableScript
                 return string.CompareOrdinal(Name(left), Name(right));
             }
 
-            string Name(int slot) => slot < 0 ? free[~slot] : _buffers.Locals[slot];
+            string Name(int slot) => slot < 0 ? free[~slot] : LocalName(slot);
         }
 
     }

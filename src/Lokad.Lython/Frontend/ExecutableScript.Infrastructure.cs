@@ -47,10 +47,25 @@ internal sealed partial class ExecutableScript
                 return index;
             }
 
-            index = _buffers.Locals.Count;
+            if (ReferenceEquals(_localIndexes, _scopeFacts.PreparedLocalSlots))
+                _localIndexes = new(_localIndexes, StringComparer.Ordinal);
+            index = checked(_declaredLocalNames.Length + _buffers.Locals.Count);
             _buffers.Locals.Add(name);
             _localIndexes.Add(name, index);
             return index;
+        }
+
+        private string LocalName(int slot) => slot < _declaredLocalNames.Length ? _declaredLocalNames[slot]
+            : _buffers.Locals[slot - _declaredLocalNames.Length];
+
+        private string[] CompleteLocalNames()
+        {
+            if (_buffers.Locals.Count == 0) return _declaredLocalNames;
+            if (_declaredLocalNames.Length == 0) return _buffers.Locals.ToArray();
+            var names = new string[checked(_declaredLocalNames.Length + _buffers.Locals.Count)];
+            _declaredLocalNames.CopyTo(names, 0);
+            _buffers.Locals.CopyTo(names, _declaredLocalNames.Length);
+            return names;
         }
 
         private bool IsLocalBindingName(string name)
@@ -226,7 +241,7 @@ internal sealed partial class ExecutableScript
 
         private ExecutableCodeObject CompileFunctionCode(string name,
             FunctionParameterLayout parameterLayout, IReadOnlyList<StatementSyntax> body,
-            ScopeDirectiveFacts scopeFacts, IReadOnlySet<string>? typeParameterNames = null,
+            ScopeDirectiveFacts scopeFacts, IReadOnlyCollection<string>? typeParameterNames = null,
             bool generator = false, PyString? qualifiedName = null, LoweredLambdaExpression? lambda = null)
         {
             return new Builder(_compilation, parameterLayout, this, scopeFacts,

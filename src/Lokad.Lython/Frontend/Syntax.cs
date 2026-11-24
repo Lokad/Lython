@@ -346,7 +346,7 @@ internal sealed record FunctionDefinitionStatementSyntax(
     IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
-    internal IReadOnlySet<string>? PreparedTypeParameterNames { get; set; }
+    internal IReadOnlyCollection<string>? PreparedTypeParameterNames { get; set; }
     internal PyString? PreparedQualifiedName { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;

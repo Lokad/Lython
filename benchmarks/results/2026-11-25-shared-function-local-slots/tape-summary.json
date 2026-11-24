@@ -1,0 +1,55 @@
+{
+  "reference": "7841d74b8c0def4c1f6fb102a48fcfced69114b1727c821925b4612d0fb346b1",
+  "candidate": "c245761b61564fa55e32cabfb9b307d9d8ffa9f67b4ad737a898e2adaa358329",
+  "rows": [
+    {
+      "case": "diagnostic.generated-record-classifier",
+      "tapes": 2,
+      "instructions": 601,
+      "preparedSlots": 6,
+      "retainedAdmission": 703904
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "tapes": 3,
+      "instructions": 2937,
+      "preparedSlots": 4,
+      "retainedAdmission": 2294048
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "tapes": 7,
+      "instructions": 251,
+      "preparedSlots": 20,
+      "retainedAdmission": 212960
+    },
+    {
+      "case": "diagnostic.shipment-routing-callbacks",
+      "tapes": 4,
+      "instructions": 168,
+      "preparedSlots": 24,
+      "retainedAdmission": 164576
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "tapes": 4,
+      "instructions": 58,
+      "preparedSlots": 10,
+      "retainedAdmission": 74175
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "tapes": 4,
+      "instructions": 150,
+      "preparedSlots": 10,
+      "retainedAdmission": 157114
+    },
+    {
+      "case": "slot-order-and-implicit-scope",
+      "tapes": 4,
+      "instructions": 34,
+      "preparedSlots": 10,
+      "retainedAdmission": 57693
+    }
+  ]
+}

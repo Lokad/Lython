@@ -3,8 +3,8 @@ namespace Lokad.Lython.Frontend;
 internal sealed record ScopeDirectiveFacts(
     IReadOnlySet<string> GlobalNames,
     IReadOnlySet<string> NonlocalNames,
-    IReadOnlySet<string> LocalNames,
-    IReadOnlyList<string> LocalBindingOrder)
+    IReadOnlyCollection<string> LocalNames,
+    string[] LocalBindingOrder)
 {
     // A free __class__ cell is required only by lexical reads in this function
     // or an enclosed scope. A neighboring method does not supply that demand.
@@ -27,6 +27,10 @@ internal sealed record ScopeDirectiveFacts(
     public HashSet<string>? NestedNonlocalNames { get; set; }
 
     internal bool WritesParameter { get; init; }
+
+    // Function declarations already know their initial executable coordinates.
+    // A builder extending this map must first take an independent copy.
+    internal Dictionary<string, int>? PreparedLocalSlots { get; init; }
 
     // Scope validation visits child suites and records their directive effects.
     public bool ContainsDirectivesInBody { get; set; }
@@ -64,30 +68,18 @@ internal static class ScopeDirectiveFactsCollector
         };
     }
 
-    private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
+    private static ScopeDirectiveFacts CollectFunctionBindings(FunctionParameterLayout parameters,
         IReadOnlyList<StatementSyntax> body, Func<StatementSyntax, bool>? scheduleLexicalWork,
-        CancellationToken cancellationToken, IReadOnlyDictionary<string, int>? parameterSlots = null)
+        CancellationToken cancellationToken)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
 
-        var bindings = new List<string>();
-        foreach (var name in parameterNames)
-        {
-            bindings.Add(name);
-        }
-
-        var parameterCount = bindings.Count;
+        var bindings = new List<string>(parameters.LayoutParameterNames);
         var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames, scheduleLexicalWork,
             cancellationToken);
-        var localNames = CompactLocalBindings(bindings, globalNames, nonlocalNames,
-            parameterSlots, parameterCount, out var writesParameter);
-
-        return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, bindings.ToArray())
-        {
-            ContainsVariableAnnotations = containsAnnotations,
-            WritesParameter = writesParameter
-        };
+        return CompactLocalBindings(bindings, globalNames, nonlocalNames,
+            parameters.LayoutParameterIndex, parameters.LayoutParameterNames.Count, cancellationToken, containsAnnotations);
     }
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
@@ -100,10 +92,10 @@ internal static class ScopeDirectiveFactsCollector
 
     internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition, Func<StatementSyntax, bool> scheduleLexicalWork,
         CancellationToken cancellationToken)
-        => definition.PreparedScopeFacts = CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
-            definition.Body, scheduleLexicalWork, cancellationToken, definition.ParameterLayout.LayoutParameterIndex);
+        => definition.PreparedScopeFacts = CollectFunctionBindings(definition.ParameterLayout,
+            definition.Body, scheduleLexicalWork, cancellationToken);
 
-    public static IReadOnlySet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
+    public static IReadOnlyCollection<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
         if (lambda.PreparedScopeFacts is { } prepared) return prepared.LocalNames;
         var localNames = new HashSet<string>(
@@ -113,12 +105,12 @@ internal static class ScopeDirectiveFactsCollector
         return localNames;
     }
 
-    private static ScopeDirectiveFacts CollectLambdaBindings(IEnumerable<string> parameterNames, ExpressionSyntax body)
+    private static ScopeDirectiveFacts CollectLambdaBindings(FunctionParameterLayout parameters, ExpressionSyntax body,
+        CancellationToken cancellationToken)
     {
-        var bindings = parameterNames.ToList();
+        var bindings = new List<string>(parameters.LayoutParameterNames);
         CollectExpressionBindings(body, bindings);
-        var locals = CompactLocalBindings(bindings, EmptyNames, EmptyNames, null, 0, out _);
-        return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals, bindings.ToArray());
+        return CompactLocalBindings(bindings, EmptyNames, EmptyNames, null, 0, cancellationToken);
     }
 
     public static ScopeDirectiveFacts ForLambda(LambdaExpressionSyntax lambda)
@@ -126,23 +118,26 @@ internal static class ScopeDirectiveFactsCollector
         return lambda.PreparedScopeFacts.RequireNotNull();
     }
 
-    internal static ScopeDirectiveFacts PrepareLambda(LambdaExpressionSyntax lambda)
-        => lambda.PreparedScopeFacts = CollectLambdaBindings(lambda.Parameters.Select(parameter => parameter.Name), lambda.Body);
+    internal static ScopeDirectiveFacts PrepareLambda(LambdaExpressionSyntax lambda, FunctionParameterLayout parameters,
+        CancellationToken cancellationToken)
+        => lambda.PreparedScopeFacts = CollectLambdaBindings(parameters, lambda.Body, cancellationToken);
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
 
-    private static HashSet<string> CompactLocalBindings(List<string> bindings,
+    private static ScopeDirectiveFacts CompactLocalBindings(List<string> bindings,
         IReadOnlySet<string> globalNames, IReadOnlySet<string> nonlocalNames,
-        IReadOnlyDictionary<string, int>? parameterSlots, int parameterCount, out bool writesParameter)
+        IReadOnlyDictionary<string, int>? parameterSlots, int parameterCount, CancellationToken cancellationToken,
+        bool containsAnnotations = false)
     {
-        writesParameter = false;
-        var locals = new HashSet<string>(StringComparer.Ordinal);
+        var writesParameter = false;
+        var slots = new Dictionary<string, int>(StringComparer.Ordinal);
         var written = 0;
         for (var scan = 0; scan < bindings.Count; scan++)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, scan);
             var name = bindings[scan];
             if (globalNames.Contains(name) || nonlocalNames.Contains(name)) continue;
-            if (!locals.Add(name))
+            if (!slots.TryAdd(name, written))
             {
                 if (!writesParameter && scan >= parameterCount && parameterSlots?.ContainsKey(name) == true)
                     writesParameter = true;
@@ -150,10 +145,15 @@ internal static class ScopeDirectiveFactsCollector
             }
             bindings[written++] = name;
         }
-        // Compaction preserves the first source occurrence. The one set is
-        // also the membership data used by the prepared scope.
+        // Preserve the binder's parameter prefix and the first occurrence of
+        // each body name. Scope membership uses the same map's key collection.
         bindings.RemoveRange(written, bindings.Count - written);
-        return locals;
+        return new ScopeDirectiveFacts(globalNames, nonlocalNames, slots.Keys, bindings.ToArray())
+        {
+            PreparedLocalSlots = slots,
+            WritesParameter = writesParameter,
+            ContainsVariableAnnotations = containsAnnotations
+        };
     }
 
     private static bool CollectScopeBindings(IReadOnlyList<StatementSyntax> statements, ICollection<string> names,

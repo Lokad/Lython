@@ -67,7 +67,7 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeStatements(
         IReadOnlyList<StatementSyntax> statements,
         StaticAnalysisContext context,
-        IReadOnlySet<string> localNames,
+        IReadOnlyCollection<string> localNames,
         AssignmentFacts maybeAssigned)
     {
         foreach (var statement in statements)
@@ -79,7 +79,7 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeStatement(
         StatementSyntax statement,
         StaticAnalysisContext context,
-        IReadOnlySet<string> localNames,
+        IReadOnlyCollection<string> localNames,
         AssignmentFacts maybeAssigned)
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
@@ -265,7 +265,7 @@ internal static class StaticNameBindingDiagnostics
     }
 
     private static void AnalyzeOptionalBranch(IReadOnlyList<StatementSyntax>? statements, StaticAnalysisContext context,
-        IReadOnlySet<string> localNames, AssignmentFacts assignments)
+        IReadOnlyCollection<string> localNames, AssignmentFacts assignments)
     {
         if (statements is null) return;
         var branch = assignments.BeginBranch();
@@ -276,7 +276,7 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeExpression(
         ExpressionSyntax expression,
         StaticAnalysisContext context,
-        IReadOnlySet<string> localNames,
+        IReadOnlyCollection<string> localNames,
         AssignmentFacts maybeAssigned)
     {
         switch (expression)
@@ -328,7 +328,7 @@ internal static class StaticNameBindingDiagnostics
     // Clause targets stay visible within this comprehension. Only binding
     // expressions can assign in the surrounding scope.
     private static void AnalyzeComprehension(ExpressionSyntax expression, IReadOnlyList<ComprehensionClauseSyntax> clauses,
-        ExpressionSyntax item, ExpressionSyntax? value, StaticAnalysisContext context, IReadOnlySet<string> localNames,
+        ExpressionSyntax item, ExpressionSyntax? value, StaticAnalysisContext context, IReadOnlyCollection<string> localNames,
         AssignmentFacts assignments)
     {
         var branch = assignments.BeginBranch();
@@ -349,7 +349,7 @@ internal static class StaticNameBindingDiagnostics
         string name,
         LythonSourceSpan span,
         StaticAnalysisContext context,
-        IReadOnlySet<string> localNames,
+        IReadOnlyCollection<string> localNames,
         AssignmentFacts maybeAssigned)
     {
         if (localNames.Contains(name) && !maybeAssigned.Contains(name))
@@ -386,7 +386,7 @@ internal static class StaticNameBindingDiagnostics
     }
 
     private static void AnalyzeLoopStores(LoopTargetSyntax target, StaticAnalysisContext context,
-        IReadOnlySet<string> localNames, AssignmentFacts assigned)
+        IReadOnlyCollection<string> localNames, AssignmentFacts assigned)
     {
         if (target is LoopTupleTargetSyntax tuple)
         {

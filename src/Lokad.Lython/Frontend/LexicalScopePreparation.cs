@@ -210,8 +210,8 @@ internal static class LexicalScopePreparation
                 (callables ??= []).Add(lambda);
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
-                var facts = ScopeDirectiveFactsCollector.PrepareLambda(lambda);
                 var parameters = lambda.PrepareParameterLayout(cancellationToken);
+                var facts = ScopeDirectiveFactsCollector.PrepareLambda(lambda, parameters, cancellationToken);
                 var qualified = scope.QualifyDeclaration("<lambda>", qualifiedNameWorkspace, lambda.Span, cancellationToken);
                 lambda.PreparedQualifiedName = PrepareQualifiedName(qualified, lambda.Span);
                 var lambdaScope = new Scope(scope, facts, Function: true,
