@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      96536,
+      96536
+    ],
+    "peakAdmission": [
+      56623,
+      56399
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.small",
+    "allocationBytes": [
+      56536,
+      56536
+    ],
+    "peakAdmission": [
+      71708,
+      71708
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "allocationBytes": [
+      5523678,
+      5523796
+    ],
+    "peakAdmission": [
+      6157312,
+      6157312
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.default-options.large",
+    "allocationBytes": [
+      4938362,
+      4938496
+    ],
+    "peakAdmission": [
+      6228493,
+      6228493
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3280520,
+      3280460
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

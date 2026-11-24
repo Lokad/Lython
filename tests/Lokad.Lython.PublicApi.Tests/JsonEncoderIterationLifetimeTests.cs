@@ -54,7 +54,7 @@ public sealed class JsonEncoderIterationLifetimeTests
                     assert str(error) == 'stop encoding'
                 else:
                     raise AssertionError('missing encoding error')
-            assert len(offsets) == 2 and offsets[0] >= 2 and offsets[1] >= 10, repr(offsets)
+            assert offsets == [4, 12], repr(offsets)
             with open('/output', encoding='utf-8') as source:
                 return source.read()
             """, budget))
@@ -64,7 +64,59 @@ public sealed class JsonEncoderIterationLifetimeTests
             using (var result = asynchronous ? await script.RunAsync(new DelayedLythonHost()) : script.Run(new MockLythonHost()))
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Contains(Assert.IsType<string>(result.ReturnValue), new[] { "[1, \"kept\"", "[1, \"kept\", " });
+                Assert.Equal("[1, \"kept\", ", result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CustomWriterSeesTheKeyPrefixAndKeepsTheSelectedValue(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile("""
+            import json
+            selected = {2}
+            record = {'a': 1, 'b': selected, 'c': {3}}
+            seen = []
+            class Writer:
+                def __init__(self): self.parts = []
+                def write(self, piece):
+                    self.parts.append(piece)
+                    if ''.join(self.parts) == '{"a": 1, "b": ':
+                        record['b'] = 'changed by writer'
+            writer = Writer()
+            def fallback(value):
+                seen.append(''.join(writer.parts))
+                if len(seen) == 1:
+                    assert value is selected and record['b'] == 'changed by writer'
+                    with open('/value') as source:
+                        return source.read()
+                raise TypeError('stop encoding')
+            try:
+                json.dump(record, writer, default=fallback)
+            except TypeError as error:
+                assert str(error) == 'stop encoding'
+            else:
+                raise AssertionError('missing encoding error')
+            assert seen == ['{"a": 1, "b": ', '{"a": 1, "b": "kept", "c": '], repr(seen)
+            return ''.join(writer.parts)
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            var synchronous = new MockLythonHost();
+            var delayed = new DelayedLythonHost();
+            synchronous.SeedFile("/value", "kept");
+            delayed.SeedFile("/value", "kept");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(synchronous))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("{\"a\": 1, \"b\": \"kept\", \"c\": ", result.ReturnValue);
+                if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }

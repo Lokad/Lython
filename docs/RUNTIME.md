@@ -2036,8 +2036,10 @@ the original string identity. A native consumer error leaves an escaped encoder
 resumable. Output remains staged and funded through existing flush/close cleanup.
 The exact builtin `dump` owns its private traversal for the duration of the
 call, including a suspended write. Custom encoders can retain iterator aliases.
-If a default callback raises during list encoding, CPython may leave a trailing
-separator that Lython still holds in its pending chunk.
+Incremental encoding publishes any nonempty item prefix before invoking
+`default` or reporting an unsupported value. The iterator retains the selected
+value across the write, including when a custom writer changes its container.
+Chunk grouping remains implementation-specific.
 
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm

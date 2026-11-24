@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Publish the JSON item prefix before invoking an incremental encoder's default
+  callback or reporting an unsupported value.
 - Release the exact builtin `json.dump` traversal when its writer finishes.
 - Discard the native file write count from `json.dump` before boxing it.
 - Resolve shadowed builtin names through their actual bindings during static

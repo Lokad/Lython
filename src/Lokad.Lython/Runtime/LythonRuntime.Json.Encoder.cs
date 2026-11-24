@@ -234,14 +234,14 @@ internal sealed partial class LythonRuntime
         private EmitFrame[] _nestedFrames = [];
         private int _frameCount;
         private HashSet<object>? _nestedMarkers;
-        private object? _rootValue;
+        private object? _pendingValue;
         private bool _finished;
         private GovernedByteBuilder? _builder;
         private int _advancing;
 
         private JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            _rootValue = value;
+            _pendingValue = value;
             _options = options;
             _context = context;
             _span = span;
@@ -413,7 +413,7 @@ internal sealed partial class LythonRuntime
         private void Finish()
         {
             _finished = true;
-            _rootValue = null;
+            _pendingValue = null;
             _builder?.Release();
             _builder = null;
             while (_frameCount != 0) CloseFrame();
@@ -438,10 +438,11 @@ internal sealed partial class LythonRuntime
             {
                 _context.CheckExecution(_span);
                 var chunkReady = true;
-                if (_rootValue is { } root)
+                if (_pendingValue is { } pending)
                 {
-                    _rootValue = null;
-                    chunkReady = await AdvanceValueAsync(root, 0, asynchronous).ConfigureAwait(false);
+                    _pendingValue = null;
+                    var depth = _frameCount == 0 ? 0 : FrameAt(_frameCount - 1).Depth + 1;
+                    chunkReady = await AdvanceValueAsync(pending, depth, asynchronous).ConfigureAwait(false);
                 }
                 else
                 {
@@ -471,13 +472,14 @@ internal sealed partial class LythonRuntime
                             if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
                             JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
                             frame.Index++;
-                            chunkReady = await AdvanceValueAsync(element, depth + 1, asynchronous).ConfigureAwait(false);
+                            chunkReady = await AdvanceValueAsync(element, depth + 1, asynchronous,
+                                yieldBeforeDefault: stopAtChunk).ConfigureAwait(false);
                         }
                     }
                     else
                     {
                         var pair = await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
-                        chunkReady = await AdvancePairAsync(frameIndex, pair, asynchronous).ConfigureAwait(false);
+                        chunkReady = await AdvancePairAsync(frameIndex, pair, asynchronous, stopAtChunk).ConfigureAwait(false);
                     }
                 }
                 if (stopAtChunk && chunkReady && builder.Length != 0) return true;
@@ -485,7 +487,7 @@ internal sealed partial class LythonRuntime
         }
 
         private ValueTask<bool> AdvancePairAsync(int frameIndex,
-            (bool Found, object Key, object Value) pair, bool asynchronous)
+            (bool Found, object Key, object Value) pair, bool asynchronous, bool yieldBeforeDefault)
         {
             var builder = _builder!;
             ref var frame = ref FrameAt(frameIndex);
@@ -503,29 +505,29 @@ internal sealed partial class LythonRuntime
             if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
             JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
             var pending = JsonModule.AppendJsonObjectKeyAsync(builder, pair.Key, _options, _context, _span, asynchronous);
-            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frameIndex, pair.Value, asynchronous);
+            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frameIndex, pair.Value, asynchronous, yieldBeforeDefault);
             pending.GetAwaiter().GetResult();
-            return AdvancePairValueAsync(frameIndex, pair.Value, asynchronous);
+            return AdvancePairValueAsync(frameIndex, pair.Value, asynchronous, yieldBeforeDefault);
         }
 
         private ValueTask<bool> AdvancePairValueAsync(int frameIndex,
-            object value, bool asynchronous)
+            object value, bool asynchronous, bool yieldBeforeDefault)
         {
             JsonModule.AppendSeparator(_builder!, _options.KeySeparator, _context, _span);
             ref var frame = ref FrameAt(frameIndex);
             frame.Index++;
-            return AdvanceValueAsync(value, frame.Depth + 1, asynchronous);
+            return AdvanceValueAsync(value, frame.Depth + 1, asynchronous, yieldBeforeDefault: yieldBeforeDefault);
         }
 
         private async ValueTask<bool> CompleteKeyAsync(ValueTask pending,
-            int frameIndex, object value, bool asynchronous)
+            int frameIndex, object value, bool asynchronous, bool yieldBeforeDefault)
         {
             await pending.ConfigureAwait(false);
-            return await AdvancePairValueAsync(frameIndex, value, asynchronous).ConfigureAwait(false);
+            return await AdvancePairValueAsync(frameIndex, value, asynchronous, yieldBeforeDefault).ConfigureAwait(false);
         }
 
         private ValueTask<bool> AdvanceValueAsync(object value, int depth,
-            bool asynchronous, int defaultDepth = 0)
+            bool asynchronous, int defaultDepth = 0, bool yieldBeforeDefault = false)
         {
             var builder = _builder!;
             // Completed default replacements stay in the existing traversal.
@@ -571,6 +573,13 @@ internal sealed partial class LythonRuntime
                     case PyDefaultDict defaultDict:
                         return CompleteValue(PushDictFrameAsync(defaultDict.InnerDict, depth, asynchronous), chunkReady: false);
                     default:
+                        if (yieldBeforeDefault && builder.Length != 0)
+                        {
+                            // The consumer sees the item's prefix before invoking default.
+                            // Keep the selected value even if the writer changes the container.
+                            _pendingValue = value;
+                            return new(true);
+                        }
                         if (_options.DefaultCallable is null)
                             throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
                         if (_options.CheckCircular)

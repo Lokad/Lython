@@ -24,6 +24,9 @@ public sealed class JsonIteratorTerminalOwnershipTests
         var iterator = LythonRuntime.JsonEncodeIterator.Create(input, options, context, span);
         if (asynchronous) Assert.True((await iterator.TryMoveNextAsync()).HasValue);
         else Assert.True(iterator.TryMoveNext().HasValue);
+        var prefix = asynchronous ? await iterator.TryMoveNextAsync() : iterator.TryMoveNext();
+        Assert.True(prefix.HasValue);
+        Assert.Equal("\"00\": ", Assert.IsType<PyString>(prefix.Value).ToString());
         var activeCharge = budget.ReservedBytes;
         Assert.True(activeCharge >= inputCharge + 32 * 32);
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -41,7 +44,7 @@ public sealed class JsonIteratorTerminalOwnershipTests
         Assert.Empty(nested);
         var outer = type.GetField("_outerFrame", fields)!.GetValue(iterator)!;
         Assert.Null(outer.GetType().GetField("SortedEntries")!.GetValue(outer));
-        Assert.Null(type.GetField("_rootValue", fields)!.GetValue(iterator));
+        Assert.Null(type.GetField("_pendingValue", fields)!.GetValue(iterator));
         Assert.Equal(32, input.Count);
         Assert.False(iterator.TryMoveNext().HasValue);
         GC.KeepAlive(iterator);

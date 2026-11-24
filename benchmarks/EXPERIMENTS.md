@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1621](results/2026-11-24-json-default-prefix/README.md) stages JSON
+prefixes before default handling. Both modes match CPython on 30 prefix
+probes. The file checkpoint includes the private traversal refund.
+Manifest allocation matches and peak admission falls 224 B. A separate
+untimed census finds 8,193 of 8,200 allowance growth requests in closed
+pair construction for the defaulted-rules script.
+
 [B1620](results/2026-11-24-builtin-shadowing/quiet-confirmation/README.md)
 confirms the delivered builtin-resolution source on the quiet VM.
 Manifest compilation spans zero. Time to result rises 0.74–1.40%.
