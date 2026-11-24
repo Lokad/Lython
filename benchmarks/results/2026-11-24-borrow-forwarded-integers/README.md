@@ -14,8 +14,8 @@ rules differ by 120 B. The short Unicode report and quoted invoice match.
 All five admission peaks match, and every allowance returns to baseline.
 
 Windows and Ubuntu each pass 1,102 white-box and 782 public .NET 11
-Release checks and 78 focused .NET 10 checks. Both images match five CPython 3.13.2 probes in both
-execution modes. The probes cover direct return identity, exposed
+Release checks and 78 focused .NET 10 checks. Both images match five
+CPython 3.13.2 probes in both execution modes. The probes cover direct return identity, exposed
 defaults, wide integer promotion, dynamic operations and unpack failure.
 All five complete-script goldens verify on both 32-file images.
 
@@ -45,6 +45,30 @@ text and invoice controls remain inconclusive in this block. All 168
 batches and both quiet gates pass. Workers join, fixtures are removed
 and the archive verifies under the lease.
 
+## B1632 Combined change against the earlier baseline
+
+The same candidate, `d6a168491`, is compared directly with `cdaf31164`,
+before default-storage consolidation and forwarded-slot borrowing.
+This block uses the same machine and measurement boundaries. Both exact
+images pass the two complete-script goldens before the three timed lanes.
+
+| Workload and boundary | Elapsed change | Wider CPU change | Elapsed spread, reference / candidate |
+| --- | ---: | ---: | ---: |
+| Defaulted rules, warm | −8.11 to −3.85% | −7.78 to −2.62% | 3.65 / 0.96% |
+| Defaulted rules, time to result | −2.39 to +1.83% | −1.95 to +1.33% | 2.21 / 2.06% |
+| Quoted CSV invoice, warm | −0.11 to +2.08% | −2.22 to +4.65% | 1.03 / 1.15% |
+
+The combined source retains a warm gain. The earlier defaulted-rule
+through-result slowdown is confined to the defaults-only confirmation.
+The combined through-result and invoice ranges cross zero.
+Keep the two simplifications and refresh the external baseline at this
+runtime checkpoint. All 84 batches pass, with both quiet gates, joined
+workers, removed fixtures and a verified archive.
+
 [Image identity](identity.json) · [Allocation](allocation-summary.json) ·
 [Timings](quiet-summary.json) · [Observations](quiet-observations.tar.xz) ·
 [Procedures, probes and source patch](procedures.tar.xz) · [Terminal receipt](quiet-terminal-status.json).
+[Combined timings](cumulative/quiet-summary.json) ·
+[Combined observations](cumulative/quiet-observations.tar.xz) ·
+[Combined procedures](cumulative/procedures.tar.xz) ·
+[Combined receipt](cumulative/quiet-terminal-status.json).
