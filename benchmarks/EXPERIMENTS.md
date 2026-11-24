@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1601](results/2026-11-24-private-call-source-cpu/README.md)
+locates 512 of 1,191 resolved captured-rule samples in the outer
+factory outside the private inner call. The closed integer consumers
+account for 107. The paired control profiles leave their earlier
+regressions unexplained.
+
 [B1600](results/2026-11-24-private-calls-cpython/README.md)
 puts delivered captured rules at 1.714–1.778× CPython warm and
 1.626–1.634× through result. The quoted invoice is near external parity.

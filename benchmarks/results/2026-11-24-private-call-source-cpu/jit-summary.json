@@ -1,0 +1,96 @@
+{
+  "reference": {
+    "core": "02e32b4d19720ed486a1c24241f5a9afad7d47dc5258960841e88fee17cc80b3",
+    "methods": {
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeWorkspace": {
+        "bytes": 549,
+        "frameBytes": 440
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartInline": {
+        "bytes": 896,
+        "frameBytes": 216
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": {
+        "bytes": 5642,
+        "frameBytes": 224
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:ApplyDefinition": {
+        "bytes": 666,
+        "frameBytes": 136
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CreateInlineDefinition": {
+        "bytes": 975,
+        "frameBytes": 280
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:CaptureExecutableCells": {
+        "bytes": 146,
+        "frameBytes": 104
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CallFunction": {
+        "bytes": 958,
+        "frameBytes": 200
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryStartDirectIntegerReturn[Lokad.Lython.Runtime.LythonRuntime+SlotIntegerOperands]": {
+        "bytes": 302,
+        "frameBytes": 48
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryStartDirectIntegerReturn[Lokad.Lython.Runtime.LythonRuntime+DefaultIntegerOperands]": {
+        "bytes": 302,
+        "frameBytes": 48
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryStartDirectIntegerReturn[Lokad.Lython.Runtime.LythonRuntime+BoundIntegerOperands]": {
+        "bytes": 302,
+        "frameBytes": 48
+      }
+    }
+  },
+  "candidate": {
+    "core": "4c9c4163766f285d24347018d82305f1cfade3859854bad812874edea65f681c",
+    "methods": {
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeWorkspace": {
+        "bytes": 549,
+        "frameBytes": 440
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartInline": {
+        "bytes": 896,
+        "frameBytes": 216
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": {
+        "bytes": 5642,
+        "frameBytes": 224
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:ApplyDefinition": {
+        "bytes": 700,
+        "frameBytes": 136
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CreateInlineDefinition": {
+        "bytes": 975,
+        "frameBytes": 280
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:CaptureExecutableCells": {
+        "bytes": 146,
+        "frameBytes": 104
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:TryCompleteImmediatelyCalledDefinition": {
+        "bytes": 1713,
+        "frameBytes": 240
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryStartDirectIntegerReturn[Lokad.Lython.Runtime.LythonRuntime+SlotIntegerOperands]": {
+        "bytes": 302,
+        "frameBytes": 48
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryStartDirectIntegerReturn[Lokad.Lython.Runtime.LythonRuntime+DefaultIntegerOperands]": {
+        "bytes": 302,
+        "frameBytes": 48
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CallFunction": {
+        "bytes": 958,
+        "frameBytes": 200
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryStartDirectIntegerReturn[Lokad.Lython.Runtime.LythonRuntime+BoundIntegerOperands]": {
+        "bytes": 302,
+        "frameBytes": 48
+      }
+    }
+  }
+}

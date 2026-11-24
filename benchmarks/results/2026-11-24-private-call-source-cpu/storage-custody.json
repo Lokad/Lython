@@ -1,0 +1,55 @@
+{
+  "freeBefore": 3878912,
+  "freeAfter": 8859648,
+  "verifiedDuplicateRetired": [
+    {
+      "location": "csv-deferred-number-b1495-20261123",
+      "bytes": 712219,
+      "rawSHA256": "69b134cdd61da85ff92ecc9724fe6d35eff8b87a5dd4d3b4de9375edc79e134f",
+      "archiveSHA256": "3e9ddccdf6ac30a60afd8453715771fe7855189644bc461a62ae3b1ac99b91d7",
+      "durableArchive": "benchmarks/results/2026-11-23-csv-deferred-number/observations.tar.xz"
+    },
+    {
+      "location": "forwarded-global-call-b1489-20261123",
+      "bytes": 711183,
+      "rawSHA256": "d0decd0056e7f6286c02719da302fff182735a7505316cdff16d2741138d3ad8",
+      "archiveSHA256": "a1337a97a0a88a28d0d4835f7f46297f6471ff6484dfdd523fd37c1420601ab9",
+      "durableArchive": "benchmarks/results/2026-11-23-forwarded-global-call/observations.tar.xz"
+    },
+    {
+      "location": "csv-batched-markers-b1511-20261123",
+      "bytes": 710515,
+      "rawSHA256": "0218ff4199d163878f1bc72b58a398ab186bf9992d69808b15f59261544a4f52",
+      "archiveSHA256": "0d526a3b4dc0ee3e1f5f9483422245a4440529f78c8006a02b9c66f228e71e3e",
+      "durableArchive": "benchmarks/results/2026-11-23-csv-batched-markers/observations.tar.xz"
+    },
+    {
+      "location": "csv-combined-scan-b1494-20261123",
+      "bytes": 710457,
+      "rawSHA256": "4e6ac488bb7fca7fe8bfad9d32166050ad6357c259156456c7c875b8c77fc3d2",
+      "archiveSHA256": "ce9c6f4adc26d60261630f990b49dd16a49e27e76438172da20db5ec18306bfb",
+      "durableArchive": "benchmarks/results/2026-11-23-csv-combined-scan/observations.tar.xz"
+    },
+    {
+      "location": "strict-short-float-b1465-20261123",
+      "bytes": 709047,
+      "rawSHA256": "7746c2d4abb3276836827710fc9f8cb1249cc34966e9b8c2e4b9144ea96d049b",
+      "archiveSHA256": "c9b3cab1fac742c258aaa5e11ba6dcfa4beb15b785fa8a466efbaee9d054813c",
+      "durableArchive": "benchmarks/results/2026-11-23-exact-short-decimal/observations.tar.xz"
+    },
+    {
+      "location": "computed-factory-cpython-b1503-20261123",
+      "bytes": 705035,
+      "rawSHA256": "14ba670c78256dc679836472669fc6c1970c2cba6dc46acf5f1bee535ac27dc9",
+      "archiveSHA256": "4939f33f4d972408d915c034fc673a4eb3dfc90efbd28c63e75f6b151a2a284c",
+      "durableArchive": "benchmarks/results/2026-11-23-computed-factory-cpython/observations.tar.xz"
+    },
+    {
+      "location": "terminal-tuple-reads-b1531-20261123",
+      "bytes": 701532,
+      "rawSHA256": "b153bb4a13f123be018e0be49853399146b570cd32b00ecd2b1fe33f444eba8e",
+      "archiveSHA256": "1c80552cf48e08f1c2297f3011690b5cd0b30be14c65a32ceed84a0213481741",
+      "durableArchive": "benchmarks/results/2026-11-23-terminal-tuple-reads/observations.tar.xz"
+    }
+  ]
+}
