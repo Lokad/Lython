@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1563](results/2026-11-24-compact-lexical-cells/README.md) keeps
+capture metadata in the existing code object. Captured rules allocate
+13.18% less, but run 2.21–4.50% slower. Both ordinary rule controls
+also slow at unchanged allocation. Grouped storage stays private.
+
 [B1562](results/2026-11-24-grouped-lexical-cells/README.md) groups
 contiguous native lexical captures. Captured rules allocate 9.88% less
 and run 6.59–10.03% slower. The prototype widens unaffected function
