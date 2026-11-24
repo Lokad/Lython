@@ -18,7 +18,7 @@ internal static class SyntaxValidityDiagnostics
         public int LastAnnotationCheck = -1;
     }
 
-    private readonly record struct ExpressionVisit(ExpressionSyntax Expression, HashSet<string>? Targets,
+    private readonly record struct ExpressionVisit(ExpressionSyntax Expression, IReadOnlySet<string>? Targets,
         bool Iterable, bool InLambda = false, bool RecordCall = false);
 
     private static int ReadFuturePrefix(IReadOnlyList<StatementSyntax> statements, CancellationToken cancellationToken,
@@ -272,9 +272,17 @@ internal static class SyntaxValidityDiagnostics
                 if (clauses is not null)
                 {
                     needsLexicalExpressions = true;
-                    var nestedTargets = targets is null ? new HashSet<string>(StringComparer.Ordinal)
-                        : new HashSet<string>(targets, StringComparer.Ordinal);
-                    foreach (var clause in clauses) AddTargetNames(clause.Target, nestedTargets);
+                    // Keep the comprehension's own bindings separate from
+                    // the enclosing targets used to validate assignments.
+                    var facts = ComprehensionSyntaxFacts.PrepareBindings(expression, clauses,
+                        expression is GeneratorExpressionSyntax);
+                    var nestedTargets = facts.LocalNames;
+                    if (targets is not null)
+                    {
+                        var combined = new HashSet<string>(targets, StringComparer.Ordinal);
+                        combined.UnionWith(nestedTargets);
+                        nestedTargets = combined;
+                    }
                     foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
                         expressions.Push(new(child, nestedTargets,
                             iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child)), inLambda));
@@ -326,21 +334,6 @@ internal static class SyntaxValidityDiagnostics
                     break;
             }
             return names;
-        }
-    }
-
-    private static void AddTargetNames(LoopTargetSyntax target, HashSet<string> names)
-    {
-        switch (target)
-        {
-            case LoopStoreTargetSyntax store:
-                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) names.Add(binding);
-                break;
-            case LoopNameTargetSyntax name: names.Add(name.Name); break;
-            case LoopStarredTargetSyntax star: names.Add(star.Name); break;
-            case LoopTupleTargetSyntax tuple:
-                foreach (var child in tuple.Items) AddTargetNames(child, names);
-                break;
         }
     }
 }

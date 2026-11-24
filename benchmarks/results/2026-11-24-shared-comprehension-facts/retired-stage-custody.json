@@ -1,0 +1,10 @@
+{
+  "bytes": 42428271,
+  "sha256": "8567460167be712d2eaee251d13c91d6263a306b4a368677686926ee646cd77c",
+  "relative": "native-call-boundary-b116-20261102/upload.tar.gz",
+  "retiredOnlyRemoteUpload": true,
+  "freeBefore": 4083712,
+  "freeAfter": 46518272,
+  "stagedBytesNeeded": 7839744,
+  "verifiedRetainedLocalCopy": true
+}

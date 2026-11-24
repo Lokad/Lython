@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.prepared-comprehension-rules",
+    "allocationBytes": [
+      2360728,
+      2093136
+    ],
+    "retainedAdmission": [
+      1760288,
+      1760288
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      217648,
+      215968
+    ],
+    "retainedAdmission": [
+      212960,
+      212960
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      2170776,
+      2170208
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  }
+]

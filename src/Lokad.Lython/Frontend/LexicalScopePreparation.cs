@@ -222,18 +222,19 @@ internal static class LexicalScopePreparation
             else if (ComprehensionSyntaxFacts.TryGetParts(node, out var items, out var clauses, out var generator))
             {
                 pending.Push((clauses[0].Iterable, scope));
-                var facts = ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator);
+                // Lazy type expressions reach preparation through their own scope.
+                var facts = ComprehensionSyntaxFacts.PrepareBindings(node, clauses, generator);
                 if (!generator && scope.IsModule && facts.LocalNames.Contains("super")) moduleUsesSuper = true;
                 if (generator)
                 {
                     (callables ??= []).Add(node);
                     facts = scope.BindGeneratorAssignments(node, facts);
+                    node.PreparedComprehensionScopeFacts = facts;
                 }
                 var generatorName = generator
                     ? scope.QualifyDeclaration("<genexpr>", qualifiedNameWorkspace, node.Span, cancellationToken) ?? "<genexpr>" : null;
                 var bodyScope = new Scope(scope, facts, Function: generator || scope.Function,
                     Positional: generator || scope.Positional, DeclarationName: generatorName, Inlined: !generator);
-                node.PreparedComprehensionScopeFacts = facts;
                 foreach (var item in items) pending.Push((item, bodyScope));
                 for (var i = 0; i < clauses.Count; i++)
                 {

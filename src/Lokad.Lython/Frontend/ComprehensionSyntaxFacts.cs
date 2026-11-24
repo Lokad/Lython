@@ -16,29 +16,37 @@ internal static class ComprehensionSyntaxFacts
         }
     }
 
-    public static ScopeDirectiveFacts Bindings(IEnumerable<LoopTargetSyntax> targets, bool generator = false)
+    public static ScopeDirectiveFacts PrepareBindings(ExpressionSyntax expression,
+        IReadOnlyList<ComprehensionClauseSyntax> clauses, bool generator)
     {
-        var names = new List<string>();
-        foreach (var target in targets) CollectNames(target, names);
-        if (generator) names.Add(".0");
-        var order = names.Distinct(StringComparer.Ordinal).ToArray();
-        return new ScopeDirectiveFacts(ScopeDirectiveFacts.Empty.GlobalNames, ScopeDirectiveFacts.Empty.NonlocalNames,
-            new HashSet<string>(order, StringComparer.Ordinal), order);
-    }
+        if (expression.PreparedComprehensionScopeFacts is { } prepared) return prepared;
 
-    private static void CollectNames(LoopTargetSyntax target, ICollection<string> names)
-    {
-        switch (target)
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        var order = new List<string>();
+        foreach (var clause in clauses) CollectNames(clause.Target);
+        if (generator) Add(".0");
+        return expression.PreparedComprehensionScopeFacts = new ScopeDirectiveFacts(
+            ScopeDirectiveFacts.Empty.GlobalNames, ScopeDirectiveFacts.Empty.NonlocalNames,
+            names, order.ToArray());
+
+        void Add(string name)
         {
-            case LoopNameTargetSyntax name: names.Add(name.Name); break;
-            case LoopStarredTargetSyntax starred: names.Add(starred.Name); break;
-            case LoopStoreTargetSyntax store:
-                foreach (var name in AssignmentTargetFacts.Names(store.Target)) names.Add(name);
-                break;
-            case LoopTupleTargetSyntax tuple:
-                foreach (var child in tuple.Items) CollectNames(child, names);
-                break;
+            if (names.Add(name)) order.Add(name);
+        }
+
+        void CollectNames(LoopTargetSyntax target)
+        {
+            switch (target)
+            {
+                case LoopNameTargetSyntax name: Add(name.Name); break;
+                case LoopStarredTargetSyntax starred: Add(starred.Name); break;
+                case LoopStoreTargetSyntax store:
+                    foreach (var name in AssignmentTargetFacts.Names(store.Target)) Add(name);
+                    break;
+                case LoopTupleTargetSyntax tuple:
+                    foreach (var child in tuple.Items) CollectNames(child);
+                    break;
+            }
         }
     }
-
 }

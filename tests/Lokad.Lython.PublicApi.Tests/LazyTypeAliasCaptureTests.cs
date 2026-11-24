@@ -12,6 +12,19 @@ public sealed class LazyTypeAliasCaptureTests
         { "alias-before-rebinding", "def make(value):\n type A=value\n value=str\n return A\nalias=make(int)\nprint(alias.__value__ is str)", "True\n" },
         { "module-late-binding", "value=int\ndef make():\n type A=value\n return A\nvalue=str\nprint(make().__value__ is str)", "True\n" },
         { "nonlocal-editor", "def outer():\n value=int\n def make():\n  type A=value\n  return A\n def edit():\n  nonlocal value\n  value=str\n return make,edit\nmake,edit=outer()\nedit()\nprint(make().__value__ is str)", "True\n" },
+        { "comprehension-bindings", """
+            def make():
+                rows = [(1, 2, 3)]
+                bias = 0
+                type A = ([a + b + bias for a, *tail in rows for b in tail],
+                          {b: a + b + bias for a, *tail in rows for b in tail},
+                          {a + b + bias for a, *tail in rows for b in tail},
+                          tuple(a + b + bias for a, *tail in rows for b in tail))
+                bias = 8
+                return A
+            values, mapping, distinct, ordered = make().__value__
+            print(values, sorted(mapping.items()), sum(distinct), ordered)
+            """, "[11, 12] [(2, 11), (3, 12)] 23 (11, 12)\n" },
     };
 
     [Theory]

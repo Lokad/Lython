@@ -143,7 +143,7 @@ internal sealed record LoweredSetComprehensionExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => SetComprehension;
-    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
+    public ScopeDirectiveFacts ScopeFacts => SetComprehension.PreparedComprehensionScopeFacts.RequireNotNull();
 }
 
 internal sealed record LoweredComprehensionClause(
@@ -161,7 +161,7 @@ internal sealed record LoweredListComprehensionExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => ListComprehension;
-    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
+    public ScopeDirectiveFacts ScopeFacts => ListComprehension.PreparedComprehensionScopeFacts.RequireNotNull();
 }
 
 internal sealed record LoweredGeneratorExpression : LoweredExpression
@@ -170,15 +170,13 @@ internal sealed record LoweredGeneratorExpression : LoweredExpression
     {
         Generator = generator;
         OuterIterable = outerIterable;
-        ScopeFacts = generator.PreparedComprehensionScopeFacts ??
-            ComprehensionSyntaxFacts.Bindings(generator.Clauses.Select(static clause => clause.Target), generator: true);
         generator.PreparedCallable = this;
     }
 
     public GeneratorExpressionSyntax Generator { get; }
     public LoweredExpression OuterIterable { get; }
     public override ExpressionSyntax Syntax => Generator;
-    public ScopeDirectiveFacts ScopeFacts { get; }
+    public ScopeDirectiveFacts ScopeFacts => Generator.PreparedComprehensionScopeFacts.RequireNotNull();
     internal ExecutableCodeObject? PreparedCode { get; private set; }
     public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
     internal void CompleteCompilation(ExecutableCodeObject code) => PreparedCode = code;
@@ -213,7 +211,7 @@ internal sealed record LoweredDictComprehensionExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => DictComprehension;
-    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
+    public ScopeDirectiveFacts ScopeFacts => DictComprehension.PreparedComprehensionScopeFacts.RequireNotNull();
 }
 
 internal sealed record LoweredMemberExpression(

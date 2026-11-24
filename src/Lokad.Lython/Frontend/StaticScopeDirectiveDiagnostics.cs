@@ -429,31 +429,15 @@ internal static class StaticScopeDirectiveDiagnostics
             case AssignmentExpressionSyntax assignment:
                 names.Add(assignment.Name);
                 break;
-            case ListComprehensionExpressionSyntax listComprehension:
-                CollectComprehensionTargetNames(listComprehension.Clauses, names);
-                break;
-            case GeneratorExpressionSyntax generator:
-                CollectComprehensionTargetNames(generator.Clauses, names);
-                break;
-            case SetComprehensionExpressionSyntax setComprehension:
-                CollectComprehensionTargetNames(setComprehension.Clauses, names);
-                break;
-            case DictComprehensionExpressionSyntax dictComprehension:
-                CollectComprehensionTargetNames(dictComprehension.Clauses, names);
+            case { PreparedComprehensionScopeFacts: { } facts }:
+                // The expression traversal below also visits target reads.
+                names.UnionWith(facts.LocalNames);
                 break;
         }
 
         foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
         {
             CollectSeenNames(child, names);
-        }
-    }
-
-    private static void CollectComprehensionTargetNames(IReadOnlyList<ComprehensionClauseSyntax> clauses, HashSet<string> names)
-    {
-        foreach (var clause in clauses)
-        {
-            CollectSeenNames(clause.Target, names);
         }
     }
 

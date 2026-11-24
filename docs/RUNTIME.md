@@ -354,10 +354,12 @@ bindings to determine call effects. The map is temporary compiler storage.
 The lexical binding walk queues only statements that need further work.
 It preserves ordinary source-order bindings, prepares nested declarations and
 canonical postponed-annotation text, and revisits expressions that require
-lexical facts. Analysis, lowering and
-class creation reuse the resulting immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. A function declaration also owns one flat parameter
-name/slot table, role counts and generator classification, shared by analysis,
+lexical facts. Validation and both execution paths share each comprehension's
+iteration names in binding order. Lazy type expressions prepare those facts in
+their own lexical scope. Analysis, lowering and class creation reuse the
+function/class/lambda facts as part of the compiled program. A function
+declaration also owns one flat parameter name/slot table, role counts and
+generator classification, shared by analysis,
 lowering and its created functions. Lowered definitions and lambdas keep the
 default expressions in layout order. Executable `def` and `lambda` sites use
 the same prepared definition and operand layout. Lambdas reached through
