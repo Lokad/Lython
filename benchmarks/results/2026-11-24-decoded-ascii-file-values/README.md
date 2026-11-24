@@ -29,6 +29,12 @@ the patch, exercising iteration, bounded reads and a final unterminated
 byte. The tests check results after sync and genuinely asynchronous close
 and require shared allowance to return to baseline. Windows and Ubuntu
 each pass 100 white-box and 139 public .NET 11 Release checks.
+The first full delivery found five codec accounting cases per platform
+that expected every one-byte result to retain its own allocation. The
+follow-up tests verify shared and independently owned results under
+the same raw-buffer budget and preserve close/refund assertions.
+Both platforms pass 37 focused codec and window Release checks.
+[Initial CI](https://github.com/Lokad/Lython/actions/runs/45340439144).
 
 Both 32-file images match five CPython 3.13.16 goldens and differ only in
 the core DLL. The Azure F4as_v7 ran Ubuntu 24.04.4 and .NET 11 RC3 on

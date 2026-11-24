@@ -36,9 +36,9 @@ public sealed class TextCodecAccountingTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SmallReadNeedsRawCapacityAndItsResultWithoutASecondFullWindow(bool asynchronous)
+    [InlineData(false, 1)] [InlineData(false, 2)]
+    [InlineData(true, 1)] [InlineData(true, 2)]
+    public async Task SmallReadNeedsRawCapacityWithoutASecondFullWindow(bool asynchronous, int size)
     {
         const int window = 4096;
         var host = new MockLythonHost();
@@ -61,10 +61,13 @@ public sealed class TextCodecAccountingTests
             using (pressure)
             {
                 var before = budget.ReservedBytes;
-                var value = asynchronous ? await state.ReadAsync(1) : state.Read(1);
-                Assert.Equal("a", value.ToString());
+                var value = asynchronous ? await state.ReadAsync(size) : state.Read(size);
+                Assert.Equal(new string('a', size), value.ToString());
+                var retained = size == 1 ? 0 : value.CommittedOwnedBytes;
+                if (size == 1) Assert.Null(value.OwnerMemoryGovernor);
+                else Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor);
                 state.Release();
-                Assert.Equal(before + value.CommittedOwnedBytes - transportStorage, budget.ReservedBytes);
+                Assert.Equal(before + retained - transportStorage, budget.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
         }

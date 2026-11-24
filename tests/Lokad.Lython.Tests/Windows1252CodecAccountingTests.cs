@@ -45,9 +45,10 @@ public sealed class Windows1252CodecAccountingTests
             Assert.True(context.MemoryGovernor.CurrentCommittedBytes > before);
             var owned = state.OwnedBytes - LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes;
             var beforeClose = context.MemoryGovernor.CurrentCommittedBytes;
+            var retained = value.OwnerMemoryGovernor is null ? 0 : value.CommittedOwnedBytes;
             state.Release();
             Assert.Equal(beforeClose - owned, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= before + value.CommittedOwnedBytes);
+            Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= before + retained);
             Assert.Equal(1, value.Length);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
