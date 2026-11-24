@@ -9,13 +9,15 @@ internal sealed partial class LythonRuntime
         bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
     {
         var defaults = AllocateFunctionDefaults(layout, keywordsOnly, context, span);
-        if (defaults.Positional is { } positional) operands[0] = ExecutableSlot.OwnPrivateDefault(positional);
+        if (defaults.Positional is { } positional)
+            operands[0] = defaults.InlinePositional
+                ? ExecutableSlot.OwnPrivatePositionalDefault(positional) : ExecutableSlot.OwnPrivateDefault(positional);
         if (defaults.Keywords is { } keyword)
             operands[^1] = defaults.InlineKeyword
                 ? ExecutableSlot.OwnPrivateKeywordDefault(keyword) : ExecutableSlot.OwnPrivateDefault(keyword);
     }
 
-    // Admit the final containers before evaluating any default expression.
+    // Admit the final backing, even when a singleton tuple is still implicit.
     private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, bool keywordsOnly,
         ExecutionContext context, LythonSourceSpan span)
     {
@@ -30,12 +32,16 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            var positional = positionalCount == 0 ? null :
-                PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes);
+            object? positional = positionalCount switch
+            {
+                0 => null,
+                1 => PyNone.Instance,
+                _ => PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes),
+            };
             var inlineKeyword = keys?.Count == 1;
             object? keyword = keys is null ? null : inlineKeyword ? PyNone.Instance : new object?[keywordCapacity];
             governor.Commit(bytes);
-            return new(positional, keyword, inlineKeyword);
+            return new(positional, keyword, inlineKeyword, positionalCount == 1);
         }
         catch { governor.ReleaseReserved(bytes); throw; }
     }
@@ -44,11 +50,15 @@ internal sealed partial class LythonRuntime
         bool directKeywordDefault = false)
     {
         System.Diagnostics.Debug.Assert(operands.Length == layout.DefaultStorageCount);
+        var positional = layout.PositionalDefaultCount == 0 ? default : operands[0];
         var keyword = layout.HasKeywordDefaults ? operands[^1] : default;
-        return new(layout.PositionalDefaultCount == 0 ? null : (PyTuple)operands[0].Reference!,
+        return new(positional.Reference,
             directKeywordDefault ? RuntimeValue(keyword.Object) : keyword.Reference,
-            directKeywordDefault || keyword.HasPrivateKeywordDefault);
+            directKeywordDefault || keyword.HasPrivateKeywordDefault, positional.HasPrivatePositionalDefault);
     }
+
+    private static object StoreInlinePositionalDefault(ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
+        => FunctionDefaults.PreparePositionalValue(value, materialize: true, state, span, out _).Reference!;
 
     private static void StorePreparedKeywordDefault(object?[] values, int index, ExecutableSlot value,
         ExecutionState state, LythonSourceSpan span)
@@ -60,7 +70,12 @@ internal sealed partial class LythonRuntime
     private static void StoreFunctionDefault(ref FunctionDefaults defaults, int index, bool positional,
         ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
     {
-        if (positional) defaults.Positional!.SetPrivateDefault(index, value, state, span);
+        if (positional)
+        {
+            if (defaults.InlinePositional)
+                defaults = defaults with { Positional = StoreInlinePositionalDefault(value, state, span) };
+            else ((PyTuple)defaults.Positional!).SetPrivateDefault(index, value, state, span);
+        }
         else if (defaults.Keywords is object?[] values)
             StorePreparedKeywordDefault(values, index, value, state, span);
         else

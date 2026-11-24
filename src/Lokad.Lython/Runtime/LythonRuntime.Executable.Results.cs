@@ -87,7 +87,9 @@ internal sealed partial class LythonRuntime
     private static void StoreDefaultResult(ref ExecutableSlot destination,
         in ExecutableInstruction consumer, ExecutableSlot value, ExecutionState state)
     {
-        if (destination.HasPrivateKeywordDefault)
+        if (destination.HasPrivatePositionalDefault)
+            destination = ExecutableSlot.OwnPrivatePositionalDefault(StoreInlinePositionalDefault(value, state, consumer.Span));
+        else if (destination.HasPrivateKeywordDefault)
         {
             state.CheckExecution(consumer.Span);
             destination = ExecutableSlot.OwnPrivateKeywordDefault(RuntimeValue(value.Object));

@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
         {
             var index = 1;
             var positional = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
-            defaults.Positional!.SetPrivateDefault(0, positional, scope.State, instructions[index++].Span);
+            StoreFunctionDefault(ref defaults, 0, true, positional, scope.State, instructions[index++].Span);
             ExecutableSlot keyword = default;
             if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             else scope.CheckExecution(instructions[index++].Span);

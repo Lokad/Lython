@@ -2,9 +2,9 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyOwnershipSnapshot
+internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyOwnershipSnapshot
 {
-    private readonly Array? _items;
+    private readonly Array _items;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private long _committedBytes;
@@ -46,20 +46,12 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
         _items = takeOwnership ? items : [.. items];
     }
 
-    private PyTuple(Array? items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
+    private PyTuple(Array items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
     {
         _items = items;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _committedBytes = committedBytes;
-    }
-
-    // A dynamic singleton default has one canonical tuple and one value slot.
-    // Put that slot in the tuple so calls and metadata share lazy box identity.
-    internal sealed class SingletonDefault(MemoryGovernor governor, LythonSourceSpan span, long bytes)
-        : PyTuple(null, governor, span, bytes)
-    {
-        internal LythonRuntime.ExecutableSlot Item;
     }
 
     internal static long EstimateObjectSlotStorage(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
@@ -136,32 +128,16 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
 
     internal static PyTuple CreateAdmittedDefaultStorage(int count, MemoryGovernor governor,
         LythonSourceSpan span, long bytes)
-        => count == 1 ? new SingletonDefault(governor, span, bytes)
-            : new PyTuple(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
+        => new(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
+
+    internal static PyTuple CreateAdmittedSingletonDefault(object value, MemoryGovernor governor,
+        LythonSourceSpan? span, long bytes)
+        => new(new object[] { value }, governor, span, bytes);
 
     internal void SetPrivateDefault(int index, LythonRuntime.ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
     {
-        var extra = Math.Max(0, value.ScalarStorageBytes - RuntimeMemoryEstimates.ScalarStorageBytes);
-        var governor = state.MemoryGovernor;
-        if (extra != 0) governor.Reserve(extra, span);
-        try
-        {
-            state.CheckExecution(span);
-            // Fresh integers can stay unboxed. Other values retain their current
-            // identity, including an integer borrowed from another tuple.
-            WritableValueSlot(index) = value.IsUnpublishedInteger
-                ? value : LythonRuntime.ExecutableSlot.FromObject(LythonRuntime.RuntimeValue(value.Object));
-            if (extra != 0)
-            {
-                governor.Commit(extra);
-                _committedBytes += extra;
-            }
-        }
-        catch
-        {
-            if (extra != 0) governor.ReleaseReserved(extra);
-            throw;
-        }
+        WritableValueSlot(index) = FunctionDefaults.PreparePositionalValue(value, materialize: false, state, span, out var extra);
+        _committedBytes += extra;
     }
 
     internal bool TryReadInteger(int index, out long value)
@@ -198,11 +174,7 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
     }
 
     private ref LythonRuntime.ExecutableSlot WritableValueSlot(int index)
-    {
-        if (_items is LythonRuntime.ExecutableSlot[] items) return ref items[index];
-        if (index != 0) throw new IndexOutOfRangeException();
-        return ref ((SingletonDefault)this).Item;
-    }
+        => ref ((LythonRuntime.ExecutableSlot[])_items)[index];
 
     private LythonRuntime.ExecutableSlot ReadValueSlot(int index)
     {
@@ -417,7 +389,7 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
         finally { builder.DiscardUnpublishedStorage(); }
     }
 
-    public int Count => _items?.Length ?? 1;
+    public int Count => _items.Length;
 
     public int Length => Count;
 

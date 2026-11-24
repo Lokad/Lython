@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1655](results/2026-11-24-inline-positional-default/README.md) delays
+singleton default tuple construction until metadata exposes it. The affected
+scripts allocate 10.30–15.48% less with matching admission peaks. The
+original generated CPU increase does not repeat in longer batches.
+Postponed-rule reference spread reaches 21.10%, leaving timing inconclusive.
+
 [B1654](results/2026-11-24-shared-binding-spelling/README.md) removes duplicate
 name materialization and temporary pattern syntax. Classifier compilation
 allocation falls 6.93%. The sparse validator and manifest each shift by less

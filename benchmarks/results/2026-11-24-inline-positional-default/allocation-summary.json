@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      934584,
+      803512
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      423304,
+      357768
+    ],
+    "peakAdmission": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      636416,
+      570880
+    ],
+    "peakAdmission": [
+      2902945,
+      2902945
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      290192,
+      257592
+    ],
+    "peakAdmission": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281382,
+      3281438
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

@@ -73,7 +73,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (completePositional) return true;
         return ParameterCount <= LythonRuntime.NativeValueCapacity
             && VariadicListIndex < 0 && VariadicDictionaryIndex < 0
-            && PositionalDefaults is null or PyTuple
+            && SupportsPreparedPositionalDefaults
             && KeywordDefaultStorage is null or { SupportsNativeStringReads: true };
     }
 

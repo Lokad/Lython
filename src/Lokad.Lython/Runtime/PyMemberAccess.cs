@@ -14,10 +14,6 @@ internal static class PyMemberAccess
 {
     private delegate bool ExactMemberResolver(object target, string memberName, [MaybeNullWhen(false)] out object value);
 
-    private static bool ResolveTupleMember(object target, string memberName, [MaybeNullWhen(false)] out object value)
-        => LythonRuntime.TupleMembers.TryGetMember((PyTuple)target, memberName, out value);
-
-
     private static readonly IReadOnlyDictionary<Type, ExactMemberResolver> ExactResolvers =
         new Dictionary<Type, ExactMemberResolver>
         {
@@ -36,8 +32,7 @@ internal static class PyMemberAccess
             [typeof(PyBytes)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
             [typeof(PyList)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
             [typeof(PyDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),
-            [typeof(PyTuple)] = ResolveTupleMember,
-            [typeof(PyTuple.SingletonDefault)] = ResolveTupleMember,
+            [typeof(PyTuple)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyTuple)target, memberName, out value),
             [typeof(PyDecimalTuple)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyDecimalTuple)target, memberName, out value),
             [typeof(PyRange)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.RangeMembers.TryGetMember((PyRange)target, memberName, out value),
             [typeof(PyNamedTupleObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyNamedTupleObject)target, memberName, out value),

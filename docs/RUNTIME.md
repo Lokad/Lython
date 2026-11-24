@@ -398,17 +398,19 @@ operands admits the callable and final annotation backing before allocating
 either. Refusal can arise from their combined estimate. A declaration with
 scalar literal positional defaults shares one immutable tuple owned by the
 compiled code. Reassigning `__defaults__` still affects only that function.
-Each definition admits its evaluated positional and keyword default storage
-before evaluation. Expressions write into the final private tuple and keyword
-value slots as they complete, with one owner through suspension.
-Fresh integers can stay unboxed until observed. The tuple preflights room
-for eventual scalar boxes, and a larger magnitude can require a further
-charge. A supplied allowance can refuse earlier because this storage is
-admitted before the callbacks. Private containers refund on failure, and the
-compiled key layouts stay funded with the code. Decorators can expose a
-definition, so its finished defaults transfer before the first decorator call.
-Binding uses the live tuple and holds selected values through keyword lookup
-and suspension.
+Each definition admits its positional and keyword default backing before
+evaluation. Values complete into private storage that stays owned through
+suspension. One evaluated positional default can live on the callable as a
+stable reference. Reading `__defaults__` materializes its canonical tuple using
+the existing admission. A larger integer magnitude can require a further
+charge. A tuple holding multiple evaluated defaults can retain fresh integers
+in machine slots with admission for their eventual boxes. Private backing
+refunds on failure, and compiled key layouts stay funded with the code.
+Decorators can expose a definition, so its finished defaults transfer before
+the first decorator call. Binding reads the live defaults and holds selected
+values through keyword lookup and suspension. Positional default replacement
+keeps the prior charge with the execution owner because earlier calls and
+metadata reads can retain aliases.
 An eligible closed factory keeps both members of its callable pair private
 until it returns them. Failure before return refunds the callables and their
 private defaults and annotation records. Shared module storage keeps its

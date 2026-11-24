@@ -137,4 +137,32 @@ public sealed class FunctionDefaultConstructionTests
         Assert.Equal(0, governor.CurrentReservedBytes);
         context.State.CloseResources();
     }
+
+    [Fact]
+    public void ObservingSingletonDefaultsUsesTheExistingAdmissionAndRetainsTheOriginalValue()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var gate = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = gate });
+            object value = BigInteger.One << 127;
+            var plan = LythonRuntime.CreateGeneratedBindingPlan("f",
+                [new("value", FunctionParameterKind.Positional, value)], context, Span);
+            Assert.True(plan.TryGetPositionalDefault(0, out var bound));
+            var admitted = budget.ReservedBytes;
+
+            gate.RefuseGrowth = _ => true;
+            Assert.True(plan.TryGetDefaultMetadata("__defaults__", context, out var metadata));
+            Assert.True(plan.TryGetDefaultMetadata("__defaults__", context, out var secondRead));
+            var tuple = Assert.IsType<PyTuple>(metadata);
+            Assert.Same(tuple, secondRead);
+            Assert.Same(value, Assert.Single(tuple));
+            Assert.True(plan.TrySetDefaultMetadata("__defaults__", PyNone.Instance, context.MemoryGovernor));
+            Assert.Same(bound.Object, Assert.Single(tuple));
+            Assert.Equal(admitted, budget.ReservedBytes);
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 }
