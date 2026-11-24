@@ -392,6 +392,10 @@ compiled key layouts stay funded with the code. Decorators can expose a
 definition, so its finished defaults transfer before the first decorator call.
 Binding uses the live tuple and holds selected values through keyword lookup
 and suspension.
+An eligible closed factory keeps both members of its callable pair private
+until it returns them. Failure before return refunds the callables and their
+private defaults and annotation records. Shared module storage keeps its
+existing owner.
 An eligible native call can complete an exact integer return or return a
 closed lexical definition before preparing callee workspace or a tuple-unpack
 destination. Both executable drivers use the same completion check. Exact

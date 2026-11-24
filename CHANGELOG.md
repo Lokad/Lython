@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Return private callable, default and annotation storage when a closed
+  factory fails before returning its callable pair.
 - Complete eligible exact-string cased-split helpers directly for
   immediate iteration. Preserve ordered nonlocal updates, cancellation
   and admitted cursor ownership.

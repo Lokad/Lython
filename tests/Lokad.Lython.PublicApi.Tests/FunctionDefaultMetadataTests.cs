@@ -200,6 +200,58 @@ public sealed class FunctionDefaultMetadataTests
         }
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task FailedSecondFactoryDefaultReleasesPrivatePairStorage(bool asynchronous, bool annotated)
+    {
+        var annotation = annotated ? ": int" : "";
+        var returnAnnotation = annotated ? " -> int" : "";
+        var source = $$"""
+            def make(seed):
+                def first(value{{annotation}} = seed * 3, /, *, factor=seed % 5 + 1){{returnAnnotation}}:
+                    return value
+                second = lambda value=12 // seed, /, *, factor=2: value
+                return first, second
+
+            def run():
+                first, second = make(3)
+                original = first.__defaults__
+                failures = 0
+                for i in range(attempts):
+                    try: first, second = make(0)
+                    except ZeroDivisionError: failures += 1
+                assert failures == attempts
+                print(first(), second(), first.__defaults__ is original)
+
+            run()
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var once = await Run(1);
+        var repeated = await Run(64);
+        Assert.InRange(repeated, once, once + 2048);
+
+        async Task<long> Run(int attempts)
+        {
+            var host = new MockLythonHost();
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["attempts"] = attempts } };
+            long peak;
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("9 4 True\n", result.StandardOutput);
+                peak = result.PeakExecutionMemoryBytes;
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            return peak;
+        }
+    }
+
     public static TheoryData<string, string> Programs => new()
     {
         { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },

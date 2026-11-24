@@ -150,18 +150,44 @@ internal sealed partial class LythonRuntime
         long argument, Span<ExecutableSlot> destination)
     {
         var index = 0;
-        var first = CreateClosedPairMember(factory, scope, argument, ref index);
-        var instructions = factory.Instructions;
-        scope.CheckExecution(instructions[index++].Span); // First private store.
-        var second = CreateClosedPairMember(factory, scope, argument, ref index);
-        for (; index < instructions.Length; index++) scope.CheckExecution(instructions[index].Span);
-        // The caller consumes the first result from the top.
+        var first = CreateClosedPairMember(factory, scope, argument, ref index, out var firstDefaults);
+        PyFunctionBase? second = null;
+        FunctionDefaults secondDefaults = default;
+        try
+        {
+            var instructions = factory.Instructions;
+            scope.CheckExecution(instructions[index++].Span); // First private store.
+            second = CreateClosedPairMember(factory, scope, argument, ref index, out secondDefaults);
+            for (; index < instructions.Length; index++) scope.CheckExecution(instructions[index].Span);
+        }
+        catch
+        {
+            var governor = scope.MemoryGovernor;
+            try
+            {
+                if (second is not null) RefundUnpublishedPairMember(second, secondDefaults, governor);
+            }
+            finally { RefundUnpublishedPairMember(first, firstDefaults, governor); }
+            throw;
+        }
+        // The pair stays private until the caller receives both results.
         destination[1].Object = first;
         destination[0].Object = second;
     }
 
+    private static void RefundUnpublishedPairMember(PyFunctionBase member, FunctionDefaults defaults, MemoryGovernor governor)
+    {
+        // The closed pair proof excludes decorators, captured locals and
+        // deferred annotations. Any annotation keys describe the admitted
+        // record. The shared module namespace keeps its separate charge.
+        var bytes = member.CodeObject.DefinitionAnnotationKeys is { } keys
+            ? FunctionAndAnnotationBytes(keys.PreparedValueCapacity) : FunctionValueBytes;
+        try { defaults.RefundUnpublished(governor); }
+        finally { governor.Release(bytes); }
+    }
+
     private static PyFunctionBase CreateClosedPairMember(ExecutableCodeObject factory,
-        ExecutionContext scope, long argument, ref int index)
+        ExecutionContext scope, long argument, ref int index, out FunctionDefaults privateDefaults)
     {
         var instructions = factory.Instructions;
         ref readonly var start = ref instructions[index++];
@@ -202,6 +228,7 @@ internal sealed partial class LythonRuntime
                         default, defaults, false, scope, create.Span, postponedAnnotations: definition.PostponedAnnotations)
                 : CreateFunctionValue(layout, ((ExecutableCreateLambda)operation!).CodeObject, GetGlobalContext(scope),
                     default, defaults, false, scope, create.Span);
+            privateDefaults = defaults;
             defaults = default;
             return result;
         }
