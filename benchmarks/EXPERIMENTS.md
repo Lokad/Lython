@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1564](results/2026-11-24-compiled-regex-receivers/README.md) reuses
+existing receiver calls for compiled patterns. Direct log search
+allocates 4.18% less, takes 3.63–6.87% less warm time and preserves
+admitted peaks. Saved-method, module and invoice elapsed span zero.
+
 [B1563](results/2026-11-24-compact-lexical-cells/README.md) keeps
 capture metadata in the existing code object. Captured rules allocate
 13.18% less, but run 2.21–4.50% slower. Both ordinary rule controls
