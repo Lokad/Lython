@@ -6,6 +6,23 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1664](results/2026-11-25-shipment-and-defaulted-cpu/README.md) profiles
+the production shipment report and defaulted rules. Zip's row production
+and admission are visible in the shipment report. Definition construction
+accounts for 598 of 1,166 resolved runtime stacks in the rules.
+
+[Development regex admission](results/2026-11-25-regex-050-native-admission/README.md)
+uses separate program and working owners in the immutable 0.5.0
+adapter bridge. Focused checks confirm first refusal, current-token
+cancellation and cleanup. Initial cursor-admission failures and their
+revised tests are archived with the source patch.
+
+[B1663](results/2026-11-25-shared-locals-cpython/README.md) compares
+the committed `788be8f35` image to CPython 3.13.16. The shipment callback
+report takes 1.609–1.658× warm and defaulted rules take 1.333–1.376×
+through result. Invoice warm elapsed is near parity. Manifest warm
+execution and compilation through result show different ratios.
+
 [B1662](results/2026-11-25-shared-function-local-slots/README.md) shares
 lexical and executable local tables. Defaulted-rule compile allocation
 falls 1.81% and its wider CPU through result falls in both blocks. The
