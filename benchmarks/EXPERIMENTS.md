@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1592](results/2026-11-24-paged-compiler-storage/README.md) shares a paged
+instruction space during emission. It saves about 10% CLR allocation on
+both validators. Sparse validation takes 4.06–5.05% longer to compile and
+3.34–4.69% longer through result, with higher CPU and admitted peak. The
+candidate stays private. The varied-width version, stale-view correction
+and fixed-page measurements are preserved.
+
 [Current compiler storage attribution](results/2026-11-24-current-compiler-block-growth/README.md)
 confirms instruction-list growth in three complete sources. The sparse
 validator recycles 3,884 slots through replacement copies and reopens

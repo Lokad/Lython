@@ -1,0 +1,304 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.config-manifest.small",
+      "allocatedBytes": [
+        217672,
+        214104,
+        214104,
+        217672
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        724.646875,
+        775.6375,
+        1729.3328125,
+        1916.578125
+      ],
+      "peakAccountedBytes": [
+        212960,
+        222608,
+        222608,
+        212960
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "allocatedBytes": [
+        2058980.75,
+        1846369,
+        1842958,
+        2056798
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2094.590625,
+        2628.559375,
+        3616.0875,
+        4242.071875
+      ],
+      "peakAccountedBytes": [
+        2294048,
+        2550032,
+        2550032,
+        2294048
+      ]
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        58528,
+        57456,
+        57496,
+        58528
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        33.2734375,
+        102.8015625,
+        73.7,
+        65.290625
+      ],
+      "peakAccountedBytes": [
+        78718,
+        82958,
+        82958,
+        78718
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "allocatedBytes": [
+        472776,
+        487672,
+        487672,
+        471874.875
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        325.1984375,
+        450.44375,
+        487.3921875,
+        1219.4
+      ],
+      "peakAccountedBytes": [
+        414656,
+        432544,
+        432544,
+        414656
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "allocatedBytes": [
+        2049808,
+        1835648,
+        1835742,
+        2049902
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        1835.928125,
+        2287.8265625,
+        3566.41875,
+        3614.209375
+      ],
+      "peakAccountedBytes": [
+        2291744,
+        2547728,
+        2547728,
+        2291744
+      ]
+    },
+    {
+      "id": "assertion-tail-with-handler",
+      "allocatedBytes": [
+        24144,
+        23224,
+        23224,
+        24144
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        9.1453125,
+        9.4765625,
+        46.1171875,
+        15.6546875
+      ],
+      "peakAccountedBytes": [
+        46304,
+        47472,
+        47472,
+        46304
+      ]
+    },
+    {
+      "id": "dead-heavy-control",
+      "allocatedBytes": [
+        837536,
+        743392,
+        743392,
+        837536
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        436.5390625,
+        591.20625,
+        749.25625,
+        786.2921875
+      ],
+      "peakAccountedBytes": [
+        1054592,
+        1128992,
+        1128992,
+        1054592
+      ]
+    },
+    {
+      "id": "nested-definition-in-protected-suite",
+      "allocatedBytes": [
+        31576,
+        31200,
+        31200,
+        31576
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        13.6640625,
+        36.996875,
+        27.5828125,
+        39.8515625
+      ],
+      "peakAccountedBytes": [
+        46772,
+        47932,
+        47932,
+        46772
+      ]
+    },
+    {
+      "id": "postponed-module-annotation",
+      "allocatedBytes": [
+        15432,
+        15576,
+        15576,
+        15432
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        7.66875,
+        24.178125,
+        11.7828125,
+        13.5515625
+      ],
+      "peakAccountedBytes": [
+        41819,
+        42731,
+        42731,
+        41819
+      ]
+    },
+    {
+      "id": "ordinary-scopes-under-protection",
+      "allocatedBytes": [
+        50512,
+        50352,
+        50352,
+        50512
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        78.853125,
+        78.234375,
+        57.3171875,
+        57.459375
+      ],
+      "peakAccountedBytes": [
+        56654,
+        59698,
+        59698,
+        56654
+      ]
+    },
+    {
+      "id": "complex-scopes-under-protection",
+      "allocatedBytes": [
+        56784,
+        57152,
+        57000,
+        56632
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        60.6171875,
+        88.1,
+        99.1203125,
+        61.2703125
+      ],
+      "peakAccountedBytes": [
+        56458,
+        61098,
+        61098,
+        56458
+      ]
+    },
+    {
+      "id": "native-loop-back-edge",
+      "allocatedBytes": [
+        34192,
+        32872,
+        32872,
+        34192
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        16.9296875,
+        22.565625,
+        51.0359375,
+        27.596875
+      ],
+      "peakAccountedBytes": [
+        49568,
+        51808,
+        51808,
+        49568
+      ]
+    },
+    {
+      "id": "nested-finally-counter",
+      "allocatedBytes": [
+        39872,
+        39088,
+        39088,
+        39872
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        18.16875,
+        48.5328125,
+        40.3875,
+        41.0796875
+      ],
+      "peakAccountedBytes": [
+        51008,
+        55344,
+        55344,
+        51008
+      ]
+    },
+    {
+      "id": "native-call-continuation",
+      "allocatedBytes": [
+        60736,
+        59168,
+        59112,
+        60680
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        39.4296875,
+        79.75,
+        87.9703125,
+        55.715625
+      ],
+      "peakAccountedBytes": [
+        63872,
+        68208,
+        68208,
+        63872
+      ]
+    }
+  ]
+}
