@@ -1,0 +1,37 @@
+{
+  "production": {
+    "methods": {
+      "EvaluateClosedDefault": {
+        "stackBytes": 168,
+        "nativeBytes": 1111,
+        "callsOperandPolicy": false
+      }
+    },
+    "coreSHA256": "02e32b4d19720ed486a1c24241f5a9afad7d47dc5258960841e88fee17cc80b3"
+  },
+  "initial": {
+    "methods": {
+      "EvaluateClosedDefault": {
+        "stackBytes": 200,
+        "nativeBytes": 1861,
+        "callsOperandPolicy": false
+      }
+    },
+    "coreSHA256": "00c77e90e6a533bbd5465ef9d7a18ed1d7e732b3d660f44469b0b3b020b98d6a"
+  },
+  "isolated": {
+    "methods": {
+      "EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+CaptureIntegerSource]": {
+        "stackBytes": 168,
+        "nativeBytes": 1151,
+        "callsOperandPolicy": false
+      },
+      "EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+ParameterIntegerSource]": {
+        "stackBytes": 168,
+        "nativeBytes": 1111,
+        "callsOperandPolicy": false
+      }
+    },
+    "coreSHA256": "4c9c4163766f285d24347018d82305f1cfade3859854bad812874edea65f681c"
+  }
+}

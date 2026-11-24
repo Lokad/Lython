@@ -16,6 +16,9 @@ internal sealed partial class LythonRuntime
                 case ExecutableCreateFunction function
                     when !NeedsDefinitionContext(function, _scope) && CanDefineWithoutInvocation(function.CodeObject,
                         Code, _cells, _scope, span, out var functionCaptures):
+                    if (instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue &&
+                        TryCompleteImmediatelyCalledDefinition(function.CodeObject, instruction.ImmediatelyCalledDefinitionCapture))
+                        return true;
                     // Defaults have executed and these direct annotation reads
                     // need no child evaluator. Like a lambda, construction
                     // finishes in the current admitted body.
@@ -32,6 +35,68 @@ internal sealed partial class LythonRuntime
                 default:
                     return false;
             }
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private bool TryCompleteImmediatelyCalledDefinition(ExecutableCodeObject body, int capture)
+        {
+            if (_scope.State.CurrentRecursionDepth >= NativeCallDepth) return false;
+            var argument = Values[capture];
+            long integer;
+            if (argument.Reference is ExecutableCell cell ? !cell.TryReadInteger(out integer) : !argument.TryGetInteger(out integer))
+                return false;
+
+            var instructions = Code.Instructions;
+            _scope.CheckExecution(instructions[Index + 1].Span);
+            ref readonly var first = ref instructions[Index + 2];
+            _scope.CheckExecution(first.Span);
+            Publish(first, Values[first.LocalSlot]);
+            _scope.CheckExecution(instructions[Index + 3].Span);
+            Index += 4;
+            ref readonly var invoke = ref instructions[Index];
+            var call = Code.CallSites[invoke.CallSiteIndex];
+            _scope.CheckExecution(invoke.Span);
+            _scope.EnterInterpreterFrame(call.CallSpan);
+            try
+            {
+                var previous = _scope.State.CurrentException;
+                PyFunctionBase function;
+                try
+                {
+                    _scope.EnterFunctionCall(call.CallSpan);
+                    try
+                    {
+                        var inner = 0;
+                        var value = EvaluateClosedIntegerSequence<CaptureIntegerSource>(body, integer, _scope, ref inner);
+                        _scope.CheckExecution(body.Instructions[inner++].Span); // The lambda's private capture.
+                        ref readonly var create = ref body.Instructions[inner];
+                        var lambda = ((ExecutableCreateLambda)body.Constants[create.ConstantIndex]!).Binding;
+                        _scope.CheckExecution(create.Span);
+                        function = CreateFunctionValue(lambda.Layout, lambda.CodeObject, GetGlobalContext(_scope), default,
+                            default, false, _scope, create.Span, uncapturedLocal: new Span<ExecutableSlot>(ref value));
+                        _scope.CheckExecution(body.Instructions[^1].Span);
+                    }
+                    catch (LythonRuntimeException error)
+                    {
+                        if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
+                            error.PythonContext ??= previous;
+                        throw;
+                    }
+                    finally
+                    {
+                        _scope.State.SetCurrentException(previous);
+                        _scope.LeaveFunctionCall();
+                    }
+                }
+                catch (LythonRuntimeException error)
+                {
+                    PyFunctionBinding.AnnotateException(error, _scope, body.Name, call.CallSpan);
+                    throw;
+                }
+                Publish(invoke, function);
+                return true;
+            }
+            finally { _scope.LeaveInterpreterFrame(); }
         }
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,

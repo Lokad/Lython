@@ -399,6 +399,11 @@ operands can come from supplied arguments, prepared defaults and live
 captures. A conditional return can use the selected arm directly and
 preserve an existing integer alias. The same function-call and stack
 admission apply. Wide arithmetic and protocols use the ordinary activation.
+An eligible private zero-argument definition in a terminal callable pair
+can run its closed arithmetic at the definition boundary. The nested call
+keeps managed stack admission and cancellation. The returned lambda and
+its capture retain funded storage. Observable bindings and dynamic inputs
+use their ordinary instructions and suspension path.
 An adjacent addition to a private local can carry early reads through an
 exact call. The existing operand window holds only provisional integers until
 the selected helper and its arguments are known to finish without callbacks.

@@ -73,6 +73,92 @@ internal sealed partial class ExecutableCodeObject
         return true;
     }
 
+    // The zero-argument definition is private to a terminal pair. The native
+    // definition boundary may run its body before materializing either its
+    // callable or argument workspace. The original tape is also the exact
+    // continuation for non-integer arguments and general execution.
+    private void PrepareImmediatelyCalledDefinition(CancellationToken token)
+    {
+        var start = Instructions.Length - 7;
+        if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 || start < 2 ||
+            Instructions[start] is not { OpCode: ExecutableOpCode.ApplyOperation } create ||
+            Constants[create.ConstantIndex] is not ExecutableCreateFunction
+            {
+                InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
+                EagerAnnotationReads: null, PostponedAnnotations: null, ParameterLayout.ParameterCount: 0,
+            } definition ||
+            !TryReadDefinitionStore(start, out var target) || CapturedLocalSlots.Contains(target) ||
+            Instructions[start - 2].OpCode != ExecutableOpCode.ApplyOperation ||
+            !TryReadDefinitionStore(start - 2, out var left) || CapturedLocalSlots.Contains(left) || left == target)
+            return;
+
+        ref readonly var first = ref Instructions[start + 2];
+        ref readonly var load = ref Instructions[start + 3];
+        ref readonly var invoke = ref Instructions[start + 4];
+        ref readonly var pair = ref Instructions[start + 5];
+        if (first is not { OpCode: ExecutableOpCode.LoadLocal, HasResultConsumer: false } || first.LocalSlot != left ||
+            load is not { OpCode: ExecutableOpCode.LoadLocal, HasResultConsumer: false } || load.LocalSlot != target ||
+            invoke is not { OpCode: ExecutableOpCode.Call, HasResultConsumer: false } ||
+            CallSites[invoke.CallSiteIndex] is not { ArgumentCount: 0, HasReceiver: false, UnpackedReturnCount: 0 } ||
+            invoke.InputStart != load.ResultSlot || invoke.ResultSlot != first.ResultSlot + 1 ||
+            pair is not { OpCode: ExecutableOpCode.MakeTuple, ItemCount: 2, HasResultConsumer: false } ||
+            pair.InputStart != first.ResultSlot || Instructions[^1].OpCode != ExecutableOpCode.Return ||
+            Instructions[^1].InputStart != pair.ResultSlot) return;
+
+        // A straight-line prefix rules out incoming edges to the skipped
+        // slots. The only references to this initialized private binding
+        // in the suffix are the immediately adjacent load and call.
+        for (var i = 0; i < start; i++)
+        {
+            PythonTokenization.CheckCancellation(token, i);
+            if (Instructions[i].OpCode is not (ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadConst or
+                ExecutableOpCode.Binary or ExecutableOpCode.StoreLocal or ExecutableOpCode.ApplyOperation))
+                return;
+        }
+
+        var body = definition.CodeObject;
+        if (!body.CanRunNativeInstructions || !body.UsesOnlyLexicalSlots || body.ScopeFacts.RequiresClassCell ||
+            body.EntryIndex != 0 || body.ExceptionRegions.Count != 0 || body.ClosureNames.Count != 1 ||
+            body.CaptureSources is not { CanCaptureByValue: true, Slots: [>= 0] } capture ||
+            !ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) || !body.ReturnsLambdaFromClosedCapture(token))
+            return;
+        Instructions[start] = create.WithImmediatelyCalledDefinition(capture.Slots[0]);
+    }
+
+    private bool ReturnsLambdaFromClosedCapture(CancellationToken token)
+    {
+        var storeIndex = Instructions.Length - 3;
+        if (storeIndex < 1 ||
+            Instructions[storeIndex] is not { OpCode: ExecutableOpCode.StoreLocal, StoresCapturedLocal: true } store ||
+            Instructions[^2] is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: false } create ||
+            create.InputStart != store.LiveExtent ||
+            Constants[create.ConstantIndex] is not ExecutableCreateLambda { InputCount: 0,
+                Binding: { NamespaceClosure: false, IsGenerator: false } } lambda ||
+            !lambda.CodeObject.UsesOnlyLexicalSlots || lambda.CodeObject.ScopeFacts.RequiresClassCell ||
+            lambda.CodeObject.CaptureSources is not { Slots.Length: 1 } capture ||
+            !ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) || capture.Slots[0] != store.LocalSlot ||
+            Instructions[^1].OpCode != ExecutableOpCode.Return || Instructions[^1].InputStart != create.ResultSlot)
+            return false;
+
+        var previous = -1;
+        for (var i = 0; i < storeIndex; i++)
+        {
+            PythonTokenization.CheckCancellation(token, i);
+            ref readonly var instruction = ref Instructions[i];
+            if (instruction.OpCode != ExecutableOpCode.Binary ||
+                instruction.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
+                    BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo) ||
+                !IsKnown(instruction.InputStart, previous) || !IsKnown(instruction.SecondInput, previous) ||
+                instruction.ResultSlot < FirstTemporarySlot ||
+                instruction.HasResultConsumer != (i == storeIndex - 1)) return false;
+            previous = instruction.ResultSlot;
+        }
+        return store.InputStart == previous;
+
+        bool IsKnown(int source, int prior) => source >= 0 ? source == prior :
+            ~source == CaptureOperandBase || ((uint)~source < (uint)Constants.Length && Constants[~source] is BigInteger);
+    }
+
     private bool TryReadClosedDefinition(int startIndex, bool fixedKeyword, bool pair, CancellationToken token, out int creationIndex)
     {
         creationIndex = -1;

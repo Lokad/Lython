@@ -126,10 +126,10 @@ internal sealed partial class LythonRuntime
         try
         {
             var index = 1;
-            var positional = EvaluateClosedDefault(factory, argument, scope, ref index);
+            var positional = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             defaults.Positional!.SetPrivateDefault(0, positional, scope.State, instructions[index++].Span);
             ExecutableSlot keyword = default;
-            if (keywordCapture is null) keyword = EvaluateClosedDefault(factory, argument, scope, ref index);
+            if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             else scope.CheckExecution(instructions[index++].Span);
             scope.CheckExecution(instructions[index++].Span);
             defaults = defaults with { Keywords = RuntimeValue(keywordCapture ?? keyword.Object) };
@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
                     scope.CheckExecution(first.Span);
                     value = ExecutableSlot.FromObject(factory.Constants[first.ConstantIndex]);
                 }
-                else value = EvaluateClosedDefault(factory, argument, scope, ref index);
+                else value = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
                 ref readonly var store = ref instructions[index++];
                 if (i < layout.PositionalDefaultCount)
                     defaults.Positional!.SetPrivateDefault(store.DefaultValueIndex, value, scope.State, store.Span);
@@ -208,8 +208,23 @@ internal sealed partial class LythonRuntime
         finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
     }
 
-    private static ExecutableSlot EvaluateClosedDefault(ExecutableCodeObject factory, long argument,
-        ExecutionContext scope, ref int index)
+    private interface IClosedIntegerSource
+    {
+        static abstract bool IsArgument(ExecutableCodeObject code, int slot);
+    }
+
+    private readonly struct ParameterIntegerSource : IClosedIntegerSource
+    {
+        public static bool IsArgument(ExecutableCodeObject code, int slot) => slot == 0;
+    }
+
+    private readonly struct CaptureIntegerSource : IClosedIntegerSource
+    {
+        public static bool IsArgument(ExecutableCodeObject code, int slot) => slot == ~code.CaptureOperandBase;
+    }
+
+    private static ExecutableSlot EvaluateClosedIntegerSequence<TSource>(ExecutableCodeObject factory, long argument,
+        ExecutionContext scope, ref int index) where TSource : struct, IClosedIntegerSource
     {
         var result = default(ExecutableSlot);
         while (factory.Instructions[index].OpCode == ExecutableOpCode.Binary)
@@ -238,7 +253,7 @@ internal sealed partial class LythonRuntime
 
         bool TryReadInteger(int source, in ExecutableSlot prior, out long value)
         {
-            if (source == 0)
+            if (TSource.IsArgument(factory, source))
             {
                 value = argument;
                 return true;
@@ -246,7 +261,7 @@ internal sealed partial class LythonRuntime
             return source < 0 ? TryMachineInteger(factory.Constants[~source], out value) : prior.TryGetInteger(out value);
         }
 
-        object ReadObject(int source, ExecutableSlot prior) => source == 0 ? (BigInteger)argument : source < 0
+        object ReadObject(int source, ExecutableSlot prior) => TSource.IsArgument(factory, source) ? (BigInteger)argument : source < 0
             ? factory.Constants[~source]! : prior.Object!;
     }
 

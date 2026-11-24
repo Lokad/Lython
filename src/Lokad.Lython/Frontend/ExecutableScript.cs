@@ -182,6 +182,9 @@ internal readonly record struct ExecutableInstruction
         or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
         or ExecutableOpCode.StartFunctionDefaults
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
+    internal int ImmediatelyCalledDefinitionCapture => _secondaryOperand;
+    internal ExecutableInstruction WithImmediatelyCalledDefinition(int capture)
+        => new(OpCode, Span, _primaryOperand, capture, _inputStart, _resultSlot, _liveExtent);
     internal bool StartsKeywordDefaultsOnly => _secondaryOperand != 0;
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
@@ -642,6 +645,7 @@ internal sealed partial class ExecutableCodeObject
         HasDirectIntegerReturn = CanRunNativeInstructions && HasClosedIntegerReturn(cancellationToken);
         if (CanRunNativeInstructions)
         {
+            PrepareImmediatelyCalledDefinition(cancellationToken);
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out var definitionPair);
             HasDirectDefinitionPair = definitionPair;
         }

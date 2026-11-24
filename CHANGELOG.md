@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Complete eligible immediate private closure calls at the definition,
+  skipping the short-lived callable and callee workspace. Fund the escaping
+  closure and preserve dynamic call semantics.
 - Accept signed 64-bit replacement and split counts in module and compiled
   regex calls, including values returned by guest index methods.
 - Return two fresh lexical callables from eligible closed factories without

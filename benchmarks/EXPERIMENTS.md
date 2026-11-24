@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1599](results/2026-11-24-private-definition-call/isolation/README.md)
+restores the existing closed parameter evaluator's generated-code size.
+Captured rules take 17.56–18.41% less warm elapsed at 208 KiB less
+allocation and 448 KiB less peak admission. The eager and short-text
+elapsed ranges cross zero. Postponed rules and quoted invoice slow down.
+The isolated version ships with that debt recorded.
+
 [B1598](results/2026-11-24-private-definition-call/README.md)
 removes the captured factory's intermediate callable and activation.
 Captured rules use 14.79–17.76% less warm elapsed, 15.91% less CLR

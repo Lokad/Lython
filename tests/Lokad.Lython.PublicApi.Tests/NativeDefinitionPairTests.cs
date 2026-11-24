@@ -7,6 +7,60 @@ public sealed class NativeDefinitionPairTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PrivateCallKeepsRetainedCapturesFailuresAndDynamicOperands(bool asynchronous)
+    {
+        const string source = """
+            def make(seed):
+                offset = seed % 7
+                def left(value):
+                    return value + offset
+                def alternate():
+                    step = 7 // seed
+                    return lambda value: value - step
+                return left, alternate()
+
+            class Dynamic:
+                def __mod__(self, divisor):
+                    print('mod', divisor)
+                    return 1
+                def __rfloordiv__(self, left):
+                    with open('step.txt') as source:
+                        print('divide', left)
+                        return int(source.read())
+
+            first, second = make(2)
+            a, b = make(2)
+            print(first(10), second(10), first is a, second is b, second.__qualname__)
+            try:
+                a, b = make(0)
+            except ZeroDivisionError:
+                print(a(10), b(10))
+            dynamic_first, dynamic_second = make(Dynamic())
+            print(dynamic_first(10), dynamic_second(10))
+            """;
+        var budget = new LythonMemoryBudget(768 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var syncHost = new MockLythonHost();
+        syncHost.SeedFile("/step.txt", "4");
+        var asyncHost = new DelayedLythonHost();
+        asyncHost.SeedFile("/step.txt", "4");
+        using (var result = asynchronous ? await script.RunAsync(asyncHost) : script.Run(syncHost))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("12 7 False False make.<locals>.alternate.<locals>.<lambda>\n12 7\nmod 7\ndivide 7\n11 6\n",
+                result.StandardOutput);
+            if (asynchronous) Assert.True(asyncHost.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task CallablePairKeepsIndependentDefaultsAndExactResults(bool asynchronous)
     {
         const string source = """

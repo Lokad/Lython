@@ -7,6 +7,79 @@ namespace Lokad.Lython.Tests;
 public sealed class ExecutableDefinitionPairTests
 {
     [Theory]
+    [InlineData("", "alternate()", true)]
+    [InlineData("    snapshot = locals()\n", "snapshot['alternate']()", false)]
+    [InlineData("    seed = seed + 1\n", "alternate()", false)]
+    public void ImmediateInvocationRequiresAnUnobservableBinding(string additional, string right, bool prepared)
+    {
+        var source = "def make(seed):\n" +
+            "    offset = seed % 7\n" +
+            "    def left(value):\n        return value + offset\n" +
+            "    def alternate():\n        step = (seed + 1) % 7\n        return lambda value: value - step\n" +
+            additional + "    return left, " + right + "\n" +
+            "left, right = make(5)\n";
+        var syntax = LythonFrontend.Compile(source).Script!;
+        var module = ExecutableScript.Compile(syntax).EntryPoint;
+        var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
+        Assert.Equal(prepared, factory.Instructions.Any(instruction =>
+            instruction.OpCode == ExecutableOpCode.ApplyOperation && instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PrivateCallStopsDuringItsRetainedLambdaAdmission(bool asynchronous, bool cancelDuringAdmission)
+    {
+        var source = """
+            def make(seed):
+                def first():
+                    return 17
+                def alternate():
+                    step = seed + 1
+                    return lambda: step
+                return first, alternate()
+            first, second = make(5)
+            """.ReplaceLineEndings("\n");
+        var syntax = LythonFrontend.Compile(source).Script!;
+        var module = ExecutableScript.Compile(syntax).EntryPoint;
+        Assert.Contains(Assert.Single(module.FunctionBindings()).CodeObject!.Instructions,
+            instruction => instruction.OpCode == ExecutableOpCode.ApplyOperation &&
+                instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue);
+
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            const long bytes = 160 + LythonRuntime.ExecutableCell.StorageBytes;
+            if (cancelDuringAdmission)
+            {
+                hook.AfterGrowth = growth =>
+                {
+                    if (growth == bytes) cancellation.Cancel();
+                };
+            }
+            else hook.RefuseGrowth = growth => growth == bytes;
+            try
+            {
+                var error = asynchronous
+                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(module, context))
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(module, context, default, null));
+                Assert.Equal(cancelDuringAdmission ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    error.Attribution?.Reason);
+                Assert.Equal(source.IndexOf("lambda", StringComparison.Ordinal), error.Span?.Start);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void ClosedDefaultsRequireTwoPrivateDefinitionsAndAnExactPairReturn(bool guestCall)
