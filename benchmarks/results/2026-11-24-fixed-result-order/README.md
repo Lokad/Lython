@@ -38,6 +38,13 @@ because the collector still expected four lanes. The corrected launch
 verified the same images and catalogs and sampled the intended five
 lanes. The original launch conditions and failure receipts are archived.
 
+The first full delivery found six white-box tests still depending on
+the old slot order or on admission for the removed tuple. The Windows and Ubuntu
+public suites each passed all 18,419 checks. The corrected fixtures verify
+the funded alias path and force refusal and cancellation through an
+actual scalar reservation. [Initial delivery](https://github.com/Lokad/Lython/actions/runs/45325871348) ·
+[Archived test logs](initial-delivery-tests.tar.xz).
+
 [Timing](summary.json) · [Allocation and admission](allocation-summary.json) ·
 [Image identity](identity.json) · [Raw observations](observations.tar.xz) ·
 [Procedures, failed launches and exact patch](procedures.tar.xz) ·

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1570](results/2026-11-24-regex-module-index/README.md) awaits module regex
+index protocols and shares callable definitions. Module log search
+allocates 2.68% less. Module elapsed falls slightly with mixed CPU.
+Quoted invoice elapsed rises 0.51–1.35%.
+
 [B1569](results/2026-11-24-regex-index-resumption/README.md) awaits guest
 index protocols for compiled-pattern arguments. Saved-method elapsed
 rises 0.98–2.06% with higher CPU. Direct search spans zero. The admitted
