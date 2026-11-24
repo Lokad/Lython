@@ -232,10 +232,58 @@ public sealed class RegexAdapterSemanticsTests
     }
 
     [Theory]
+    [InlineData("re.compile(pattern, Flags())")]
+    [InlineData("re.search(pattern, 'x', Flags())")]
+    public async Task InvalidPatternHashPrecedesFlagHashAndProviderWork(string expression)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile($"""
+            import re
+            class Flags:
+                def __hash__(self):
+                    print('flag hash')
+                    raise RuntimeError('flag error')
+            class Rejected:
+                def __hash__(self):
+                    print('pattern hash')
+                    raise ValueError('pattern error')
+            class Hashable:
+                def __hash__(self):
+                    print('pattern hash')
+                    return 1
+            def check(pattern):
+                try:
+                    {expression}
+                except (TypeError, ValueError, RuntimeError) as error:
+                    print(type(error).__name__, str(error))
+            check([])
+            check(Rejected())
+            check(Hashable())
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var expected = "TypeError unhashable type: 'list'\npattern hash\nValueError pattern error\n" +
+                "pattern hash\nflag hash\nRuntimeError flag error\n";
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(expected, result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("re.compile('é').search('aéz', Index())")]
     [InlineData("re.search('é', 'aéz', pos=Index())")]
     [InlineData("re.compile('é', Flag())")]
     [InlineData("re.compile(re.compile('é'), Flag())")]
+    [InlineData("re.compile(Pattern(), UnreachableFlag())")]
     public async Task CancellingARegexArgumentAwaitsFileCleanupAndRefunds(string expression)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
@@ -250,6 +298,13 @@ public sealed class RegexAdapterSemanticsTests
                     return bool(Index().__index__())
                 def __and__(self, other):
                     return Index().__index__() & other
+            class Pattern:
+                def __hash__(self):
+                    return Index().__index__()
+            class UnreachableFlag:
+                def __hash__(self):
+                    print('unexpected flag hash')
+                    return 0
             print({expression})
             """, budget);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));

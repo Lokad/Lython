@@ -2574,6 +2574,10 @@ The per-execution cache preserves requested integer flag identity.
 Omitted flags and explicit `re.UNICODE` give distinct cached pattern
 objects when both compile. The provider receives the same flag inputs
 during analysis and execution, including whether Unicode was implicit.
+An invalid pattern's hash runs before the flag hash and before provider
+work. Guest hashing can suspend in `RunAsync`. Lython uses one request-key
+preparation, so the number of guest hash calls can differ from CPython's
+two-cache lookup.
 Global inline ASCII can replace implicit Unicode. A conflict with
 explicit Unicode raises `ValueError`, and scoped modes remain local.
 For runtime string patterns, providers report syntax errors before

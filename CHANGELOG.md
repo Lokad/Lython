@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Check the hash of an invalid regex pattern before calling guest flag
+  hashing. Preserve the first error and awaited cleanup.
 - Complete eligible immediate private closure calls at the definition,
   skipping the short-lived callable and callee workspace. Fund the escaping
   closure and preserve dynamic call semantics.

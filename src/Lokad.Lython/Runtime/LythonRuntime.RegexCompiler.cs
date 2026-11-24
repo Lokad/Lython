@@ -333,6 +333,28 @@ internal sealed partial class LythonRuntime
                     : RegexPatternCache.Key.Prepared(pattern, Value.RequireNotNull(), Hash, Protocol, token, span);
         }
 
+        private static ValueTask<RequestedFlags> PrepareRequestKey(object pattern, object? flags, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
+        {
+            if (pattern is not (PyString or IPyStringCoercibleValue or RePatternObject))
+            {
+                // An invalid pattern can still fail or run guest code while
+                // hashing its request key. That precedes the flag key.
+                if (asynchronous) return AwaitPatternHash(pattern, flags, span, context);
+                _ = PyHashProtocols.PrepareKeyHash(pattern, context, span);
+                context.CheckExecution(span);
+            }
+            return PrepareRequestedFlags(flags, span, context, asynchronous);
+
+            static async ValueTask<RequestedFlags> AwaitPatternHash(object pattern, object? flags,
+                LythonSourceSpan span, ExecutionContext context)
+            {
+                _ = await PyHashProtocols.PrepareKeyHashAsync(pattern, context, span).ConfigureAwait(false);
+                context.CheckExecution(span);
+                return await PrepareRequestedFlags(flags, span, context, asynchronous: true).ConfigureAwait(false);
+            }
+        }
+
         private static ValueTask<RequestedFlags> PrepareRequestedFlags(object? flags, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
@@ -371,7 +393,7 @@ internal sealed partial class LythonRuntime
         private static ValueTask<RePatternObject> ResolvePattern(object value, object? flags, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            var requested = PrepareRequestedFlags(flags, span, context, asynchronous);
+            var requested = PrepareRequestKey(value, flags, span, context, asynchronous);
             return requested.IsCompletedSuccessfully ? ResolvePreparedPattern(value, requested.Result, span, context, asynchronous)
                 : AwaitRequest(value, requested, span, context);
 
@@ -566,7 +588,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.Type($"{signature} expects pattern, string, optional flags, pos, and endpos.", span);
 
             var flags = bound.Assigned[2] ? arguments[2] : null;
-            var requested = PrepareRequestedFlags(flags, span, context, asynchronous);
+            var requested = PrepareRequestKey(arguments[0], flags, span, context, asynchronous);
             var pos = arguments[3];
             var endPos = arguments[4];
             if (asynchronous && (!requested.IsCompletedSuccessfully || pos is PyInstance || endPos is PyInstance))
