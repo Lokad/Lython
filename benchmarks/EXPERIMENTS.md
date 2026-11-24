@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1565](results/2026-11-24-generated-rule-cpu/README.md) attributes
+three whole-rule scripts. Instruction dispatch and call entry exceed
+nearest lexical binding work. Repeated callable, annotation and
+return construction account for most explicitly located admissions.
+
 [B1564](results/2026-11-24-compiled-regex-receivers/README.md) reuses
 existing receiver calls for compiled patterns. Direct log search
 allocates 4.18% less, takes 3.63–6.87% less warm time and preserves
