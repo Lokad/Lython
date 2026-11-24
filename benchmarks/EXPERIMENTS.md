@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1640](results/2026-11-24-raw-expression-retirement/README.md) removes
+the orphaned raw expression evaluator and its argument selectors. The
+generic-class script allocates 16,896 B less with matching admission.
+Warm elapsed falls 1.67–3.52% and time to result 0.83–2.46%, with lower
+CPU. The short report has 11.64% candidate-worker spread and the manifest
+elapsed range crosses zero.
+
 [B1638–B1639](results/2026-11-24-shared-literal-decoding/README.md)
 share escape decoding and remove the intermediate CLR string and extra
 compiled byte payload. The binary table allocates 72.92% less to compile.

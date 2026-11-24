@@ -1,11 +1,5 @@
-using System.Text.RegularExpressions;
 using Lokad.Lython.Frontend;
 using System.Numerics;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -865,53 +859,6 @@ internal sealed partial class LythonRuntime
         }
 
         return (int)count;
-    }
-
-    private static object EvaluateDictLiteral(DictLiteralExpressionSyntax dict, ExecutionContext context)
-    {
-        var result = new PyDict(context.MemoryGovernor, dict.Span);
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, dict.Span);
-        foreach (var item in dict.Items)
-        {
-            if (item is DictionaryUnpackingItemSyntax unpacking)
-            {
-                var mapping = RuntimeValue(EvaluateExpression(unpacking.Mapping, context));
-                foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Span))
-                {
-                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Span), RuntimeValue(pair.Value));
-                    context.CheckExecution(dict.Span);
-                }
-
-                continue;
-            }
-
-            var keyValue = (DictionaryKeyValueItemSyntax)item;
-            var key = RuntimeValue(EvaluateExpression(keyValue.Key, context));
-            var value = RuntimeValue(EvaluateExpression(keyValue.Value, context));
-            result.SetItem(ValidateDictionaryKey(key, keyValue.Key.Span), value);
-            context.CheckExecution(dict.Span);
-        }
-        return result;
-    }
-
-    private static object EvaluateSetLiteral(SetLiteralExpressionSyntax set, ExecutionContext context)
-    {
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, set.Span);
-        var result = new PySet(context.MemoryGovernor, set.Span);
-        try
-        {
-            for (var i = 0; i < set.Items.Count; i++)
-            {
-                var value = RuntimeValue(EvaluateExpression(set.Items[i].Expression, context));
-                AddSetLiteralItem(result, value, set.Items[i].IsUnpacking, set.Items[i].Span, set.Span, context);
-            }
-        }
-        catch
-        {
-            result.ReleaseUnpublishedStorage();
-            throw;
-        }
-        return result;
     }
 
     private static void AddSetLiteralItem(

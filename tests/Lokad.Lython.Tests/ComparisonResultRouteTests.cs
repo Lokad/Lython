@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
@@ -11,12 +10,10 @@ namespace Lokad.Lython.Tests;
 public sealed class ComparisonResultRouteTests
 {
     [Theory]
-    [InlineData("syntax", false)]
     [InlineData("lowered", false)]
     [InlineData("lowered-async", false)]
     [InlineData("executable", false)]
     [InlineData("executable-async", false)]
-    [InlineData("syntax", true)]
     [InlineData("lowered", true)]
     [InlineData("lowered-async", true)]
     [InlineData("executable", true)]
@@ -43,9 +40,8 @@ public sealed class ComparisonResultRouteTests
         var code = ExecutableScript.Compile(script).EntryPoint;
         var result = route switch
         {
-            "syntax" => Invoke("EvaluateExpression", syntax, context),
-            "lowered" => Invoke("EvaluateLoweredExpression", lowered, context),
-            "lowered-async" => await (ValueTask<object>)Invoke("EvaluateLoweredExpressionAsync", lowered, context),
+            "lowered" => LythonRuntime.EvaluateLoweredExpression(lowered, context),
+            "lowered-async" => await LythonRuntime.EvaluateLoweredExpressionAsync(lowered, context),
             "executable" => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null),
             _ => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
         };
@@ -60,10 +56,6 @@ public sealed class ComparisonResultRouteTests
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
-
-    private static object Invoke(string name, object expression, Context context)
-        => typeof(LythonRuntime).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [expression, context])!;
 
     private sealed class Comparison(object result) : LythonRuntime.ICallable
     {

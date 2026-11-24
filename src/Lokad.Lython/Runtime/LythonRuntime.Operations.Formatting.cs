@@ -1,4 +1,3 @@
-using Lokad.Lython.Frontend;
 using System.Numerics;
 using System.Globalization;
 using System.Text;
@@ -8,43 +7,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object EvaluateFormattedString(FormattedStringExpressionSyntax formatted, ExecutionContext context)
-        => EvaluateFormattedStringParts(formatted.Parts, context, formatted.Span);
-
-    private static PyString EvaluateFormattedStringParts(
-        IReadOnlyList<FormattedStringPartSyntax> parts,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-        try
-        {
-            foreach (var part in parts)
-            {
-                switch (part)
-                {
-                    case FormattedStringTextPartSyntax text:
-                        builder.AppendString(text.Text);
-                        break;
-                    case FormattedStringExpressionPartSyntax expression:
-                        var fieldValue = EvaluateExpression(expression.Expression, context);
-                        if (expression.Conversion is { } conversion)
-                            fieldValue = FormatInterpolatedStringPart(fieldValue, conversion, null, context, span);
-                        var formatSpecifier = expression.FormatSpecifierParts is null
-                            ? expression.FormatSpecifier
-                            : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span);
-                        AppendInterpolatedStringPart(builder, fieldValue, null, formatSpecifier, context, span);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
-                }
-            }
-            var value = builder.ToPyStringAndRelease();
-            context.CheckExecution(span);
-            return value;
-        }
-        finally { builder.Release(); }
-    }
 
     private static PyString ToInterpolatedPyString(object value, ExecutionContext context)
         => PyRendering.ToInterpolatedPyString(value, new PyRenderingContext(context));

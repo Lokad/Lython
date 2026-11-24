@@ -316,8 +316,10 @@ Lexical scopes without regex can skip binding analysis after that check.
 Control-flow suites continue to export their full bindings, and constant regex
 analysis retains conservative bindings across dead and deferred scopes.
 
-Compilation tokenizes/parses source, validates the subset, computes scope facts,
-lowers constructs, and builds executable instructions. Parser ranges use
+Compilation tokenizes and parses source, validates the subset, computes scope
+facts, and builds executable instructions. Deferred expressions retain their
+lowered form for evaluation in the appropriate namespace. Both execution
+paths share the runtime's callable, operator and collection operations. Parser ranges use
 token endpoints to create each final source span directly. Diagnostic offsets
 and lengths count UTF-16 code units after Lython strips a leading byte-order
 mark and normalizes CRLF and CR line endings to LF. Formatted fields map their
@@ -963,8 +965,8 @@ decoding and cleared before refund. There is no per-match copy of the entire
 `__match_args__` tuple or URL-specific duplicate set. Descriptor lookup, duplicate
 checks and extraction errors precede subpatterns; value patterns share contextual
 equality/truth handling. Pattern callbacks currently require synchronous completion.
-String/bytes literals and integer magnitudes belong to lowered nodes and the existing
-compiled constant owner; no global weak literal cache is needed.
+The compiled owner funds string and bytes literals and integer magnitudes.
+Bytes literals share the parser's immutable payload with compiled and lowered code.
 Successful loop advances and true conditional arms continue at the next
 instruction; they need no unconditional entry jump. Exception routing restores
 the compiler-prepared protected-entry depth.

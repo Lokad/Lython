@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -10,15 +9,14 @@ namespace Lokad.Lython.Tests;
 public sealed class DictionaryEntryEvaluationTests
 {
     [Fact]
-    public void SyntaxEvaluationRunsOwnValueBeforeRejectingTheKey()
+    public void LoweredEvaluationRunsOwnValueBeforeRejectingTheKey()
     {
         var syntax = LythonFrontend.Compile("{[]:(marker:=1),**{}}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(syntax.Statements)).Expression;
-        var evaluate = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!
-            .CreateDelegate<Func<ExpressionSyntax, Context, object>>();
         var context = new Context(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         context.Variables["marker"] = BigInteger.Zero;
-        var failure = Assert.Throws<LythonRuntimeException>(() => evaluate(expression, context));
+        var lowered = LoweredScript.LowerExpression(expression);
+        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.EvaluateLoweredExpression(lowered, context));
         Assert.Equal("TypeError", failure.ExceptionType);
         Assert.Equal(BigInteger.One, context.Variables["marker"]);
         Assert.Equal(0, context.State.CurrentRecursionDepth);

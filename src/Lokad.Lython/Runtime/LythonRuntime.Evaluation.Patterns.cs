@@ -5,10 +5,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object EvaluateConditional(ConditionalExpressionSyntax conditional, ExecutionContext context)
-        => IsTruthy(EvaluateExpression(conditional.Condition, context), context, conditional.Condition.Span)
-            ? EvaluateExpression(conditional.Consequent, context)
-            : EvaluateExpression(conditional.Alternative, context);
 
     private static bool TryMatchPattern(LoweredPattern pattern, object subject, ExecutionContext context,
         Span<ExecutableSlot> captures, Span<ExecutableSlot> workspace)

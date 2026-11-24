@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Calls;
@@ -155,24 +154,15 @@ public sealed class CallBindingSubsystemTests
     }
 
     [Fact]
-    public void CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls()
+    public void CallExpansion_PreservesPositionalAndKeywordArgumentOrder()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         context.Variables["items"] = new PyList([new BigInteger(1), new BigInteger(2)]);
         var mapping = new PyDict();
-        mapping.SetItem(PyString.FromString("name"), PyString.FromString("lokad"));
+        var keywordName = PyString.FromString("name");
+        mapping.SetItem(keywordName, PyString.FromString("lokad"));
         context.Variables["mapping"] = mapping;
 
-        using var rawStorage = context.MemoryGovernor.ReserveTemporary(0, Span);
-        var raw = CallExpansion.ExpandRawArguments(
-            [
-                new CallArgumentSyntax(CallArgumentForm.Positional, new StringLiteralExpressionSyntax("head", Span)),
-                new CallArgumentSyntax(CallArgumentForm.StarredList, new IdentifierExpressionSyntax("items", Span)),
-                new CallArgumentSyntax(CallArgumentForm.StarredDictionary, new IdentifierExpressionSyntax("mapping", Span)),
-            ],
-            context,
-            InvokeEvaluateExpression,
-            UnnamedExpansionTarget, rawStorage);
         using var loweredStorage = context.MemoryGovernor.ReserveTemporary(0, Span);
         var lowered = CallExpansion.ExpandLoweredArguments(
             [
@@ -181,34 +171,29 @@ public sealed class CallBindingSubsystemTests
                 new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerExpression(new IdentifierExpressionSyntax("mapping", Span))),
             ],
             context,
-            InvokeEvaluateLoweredExpression,
             UnnamedExpansionTarget, loweredStorage);
-        Assert.Equal(raw, lowered);
+        Assert.Equal(
+            [CallArgumentValue.Positional(PyString.FromString("head")), CallArgumentValue.Positional(BigInteger.One),
+                CallArgumentValue.Positional(new BigInteger(2)), CallArgumentValue.Keyword("name", PyString.FromString("lokad"), keywordName)],
+            lowered);
+        Assert.Same(keywordName, lowered[^1].OriginalKeyword);
     }
 
     [Fact]
-    public void CallExpansion_RejectsNonStringDictionaryKeysForRawAndLoweredCalls()
+    public void CallExpansion_RejectsNonStringDictionaryKeys()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var mapping = new PyDict();
         mapping.SetItem(new BigInteger(1), PyString.FromString("bad"));
         context.Variables["mapping"] = mapping;
 
-        using var rawStorage = context.MemoryGovernor.ReserveTemporary(0, Span);
-        var rawEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandRawArguments(
-            [new CallArgumentSyntax(CallArgumentForm.StarredDictionary, new IdentifierExpressionSyntax("mapping", Span))],
-            context,
-            InvokeEvaluateExpression,
-            UnnamedExpansionTarget, rawStorage));
         using var loweredStorage = context.MemoryGovernor.ReserveTemporary(0, Span);
         var loweredEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandLoweredArguments(
             [new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerExpression(new IdentifierExpressionSyntax("mapping", Span)))],
             context,
-            InvokeEvaluateLoweredExpression,
             UnnamedExpansionTarget, loweredStorage));
-        Assert.Equal("TypeError", rawEx.ExceptionType);
-        Assert.Equal(rawEx.ExceptionType, loweredEx.ExceptionType);
-        Assert.Equal(rawEx.Message, loweredEx.Message);
+        Assert.Equal("TypeError", loweredEx.ExceptionType);
+        Assert.Equal("keywords must be strings", loweredEx.Message);
     }
 
     [Fact]
@@ -254,17 +239,6 @@ f("a")
         }
     }
 
-    private static object InvokeEvaluateExpression(ExpressionSyntax expression, LythonRuntime.ExecutionContext context)
-    {
-        var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        return method.Invoke(null, [expression, context]).RequireNotNull();
-    }
-
-    private static object InvokeEvaluateLoweredExpression(LoweredExpression expression, LythonRuntime.ExecutionContext context)
-    {
-        var method = typeof(LythonRuntime).GetMethod("EvaluateLoweredExpression", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        return method.Invoke(null, [expression, context]).RequireNotNull();
-    }
     [Fact]
     public void UnpackedDuplicateKeywordArgumentsAreRejected()
     {

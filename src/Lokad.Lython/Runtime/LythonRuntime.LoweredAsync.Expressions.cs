@@ -1,6 +1,5 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
-using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -386,7 +385,7 @@ internal sealed partial class LythonRuntime
                 call.Call.Target.Span,
                 call.Span,
                 context,
-                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, EvaluateLoweredExpressionAsync, target, storage))
+                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, target, storage))
             .ConfigureAwait(false);
     }
 

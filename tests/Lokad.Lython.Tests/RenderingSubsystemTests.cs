@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -10,13 +9,12 @@ namespace Lokad.Lython.Tests;
 public sealed class RenderingSubsystemTests
 {
     [Fact]
-    public void RawFormattedAsciiConversionMatchesCompiledExecution()
+    public void LoweredAsciiConversionUsesTheFormattedTextWidth()
     {
         var frontend = LythonFrontend.Compile("f\"{chr(233)!a:>8}\"",regexProvider:Utf8RegexProvider.Instance);
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script!.Statements)).Expression;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null,regexProvider:Utf8RegexProvider.Instance);
-        var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var text = Assert.IsType<PyString>(method.Invoke(null, [expression, context]));
+        var text = Assert.IsType<PyString>(LythonRuntime.EvaluateLoweredExpression(LoweredScript.LowerExpression(expression), context));
         Assert.Equal("  '\\xe9'", text.AsString());
     }
 

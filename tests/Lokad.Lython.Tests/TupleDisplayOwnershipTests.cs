@@ -1,4 +1,3 @@
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -47,7 +46,6 @@ public sealed class TupleDisplayOwnershipTests
     }
 
     [Theory]
-    [InlineData("syntax")]
     [InlineData("lowered")]
     [InlineData("async")]
     public async Task ExpansionRemainsFundedUntilFinalStorageTakesOwnership(string route)
@@ -72,10 +70,8 @@ public sealed class TupleDisplayOwnershipTests
     }
 
     [Theory]
-    [InlineData("syntax", 5, 200, 4)]
     [InlineData("lowered", 5, 200, 4)]
     [InlineData("async", 5, 200, 4)]
-    [InlineData("syntax", 2, 150, 2)]
     [InlineData("lowered", 2, 150, 2)]
     [InlineData("async", 2, 150, 2)]
     public async Task RefusedGrowthOrFinalCopyRefundsScratchAndDisposesSource(
@@ -109,9 +105,6 @@ public sealed class TupleDisplayOwnershipTests
         var lowered = LoweredScript.LowerExpression(expression);
         return route switch
         {
-            "syntax" => ValueTask.FromResult(typeof(LythonRuntime)
-                .GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!
-                .CreateDelegate<Func<ExpressionSyntax, Context, object>>()(expression, context)),
             "lowered" => ValueTask.FromResult(LythonRuntime.EvaluateLoweredExpression(lowered, context)),
             _ => LythonRuntime.EvaluateLoweredExpressionAsync(lowered, context)
         };

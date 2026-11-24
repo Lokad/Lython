@@ -1,7 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
-using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
@@ -577,9 +576,9 @@ internal sealed partial class LythonRuntime
         if (definition.GenericHeaderArguments.Count == 0) return ([], []);
         var arguments = asynchronous
             ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.GenericHeaderArguments, context,
-                EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget, storage, deferSingleStar: false).ConfigureAwait(false)
+                ClassHeaderExpansionTarget, storage, deferSingleStar: false).ConfigureAwait(false)
             : CallExpansion.ExpandLoweredArguments(definition.GenericHeaderArguments, context,
-                EvaluateLoweredExpression, ClassHeaderExpansionTarget, storage, deferSingleStar: false);
+                ClassHeaderExpansionTarget, storage, deferSingleStar: false);
         return SplitClassHeaderArguments(arguments, context, storage, definition.Span);
     }
 

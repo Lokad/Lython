@@ -1,11 +1,5 @@
-using System.Text.RegularExpressions;
 using Lokad.Lython.Frontend;
 using System.Numerics;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -13,18 +7,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object EvaluateAssignmentExpression(AssignmentExpressionSyntax assignment, ExecutionContext context)
-    {
-        var value = EvaluateExpression(assignment.Expression, context);
-        StoreName(assignment.Name, value, context, assignment.Span);
-        return value;
-    }
-
-    private static object EvaluateUnary(UnaryExpressionSyntax unary, ExecutionContext context)
-    {
-        var operand = EvaluateExpression(unary.Operand, context);
-        return EvaluateUnaryOperator(unary.Operator, operand, context, unary.Span);
-    }
 
     private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {

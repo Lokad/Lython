@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.generic-class-headers",
+    "allocationBytes": [
+      894528,
+      877632
+    ],
+    "peakAdmission": [
+      478369,
+      478369
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      323144,
+      323144
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      96536,
+      96536
+    ],
+    "peakAdmission": [
+      56399,
+      56399
+    ]
+  }
+]

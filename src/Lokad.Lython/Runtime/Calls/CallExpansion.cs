@@ -5,175 +5,104 @@ namespace Lokad.Lython.Runtime.Calls;
 
 internal static class CallExpansion
 {
-    public static CallArgumentValue[] ExpandRawArguments(
-        IReadOnlyList<CallArgumentSyntax> arguments,
-        LythonRuntime.ExecutionContext context,
-        Func<ExpressionSyntax, LythonRuntime.ExecutionContext, object> evaluateExpression,
-        object target, MemoryGovernor.TemporaryMemoryReservation storage)
-    {
-        return ExpandArguments(
-            arguments,
-            argument => argument.Form,
-            argument => argument.Expression.Span,
-            argument => evaluateExpression(argument.Expression, context),
-            context,
-            target, storage);
-    }
-
-    public static CallArgumentValue[] ExpandLoweredArguments(
-        IReadOnlyList<LoweredCallArgument> arguments,
-        LythonRuntime.ExecutionContext context,
-        Func<LoweredExpression, LythonRuntime.ExecutionContext, object> evaluateExpression,
-        object target,
-        MemoryGovernor.TemporaryMemoryReservation storage,
+    public static CallArgumentValue[] ExpandLoweredArguments(IReadOnlyList<LoweredCallArgument> arguments,
+        LythonRuntime.ExecutionContext context, object target, MemoryGovernor.TemporaryMemoryReservation storage,
         bool deferSingleStar = true)
     {
-        return ExpandArguments(
-            arguments,
-            argument => argument.Form,
-            argument => argument.Expression.Span,
-            argument => evaluateExpression(argument.Expression, context),
-            context,
-            target, storage, deferSingleStar);
-    }
-
-    public static ValueTask<CallArgumentValue[]> ExpandLoweredArgumentsAsync(
-        IReadOnlyList<LoweredCallArgument> arguments,
-        LythonRuntime.ExecutionContext context,
-        Func<LoweredExpression, LythonRuntime.ExecutionContext, ValueTask<object>> evaluateExpression,
-        object target,
-        MemoryGovernor.TemporaryMemoryReservation storage,
-        bool deferSingleStar = true)
-    {
-        return ExpandArgumentsAsync(
-            arguments,
-            argument => argument.Form,
-            argument => argument.Expression.Span,
-            argument => evaluateExpression(argument.Expression, context),
-            context,
-            target, storage, deferSingleStar);
-    }
-
-    private static CallArgumentValue[] ExpandArguments<TArgument>(
-        IReadOnlyList<TArgument> arguments,
-        Func<TArgument, CallArgumentForm> getForm,
-        Func<TArgument, LythonSourceSpan> getSpan,
-        Func<TArgument, object> evaluateValue,
-        LythonRuntime.ExecutionContext context,
-        object target,
-        MemoryGovernor.TemporaryMemoryReservation storage,
-        bool deferSingleStar = true)
-    {
-        if (!HasStarExpansion(arguments, getForm))
+        if (!HasStarExpansion(arguments))
         {
             if (arguments.Count == 0) return [];
-            var direct = AllocateDirectArguments(arguments.Count, context, getSpan(arguments[0]), storage);
+            var direct = AllocateDirectArguments(arguments.Count, context, arguments[0].Expression.Span, storage);
             for (var i = 0; i < arguments.Count; i++)
             {
                 var argument = arguments[i];
-                var form = getForm(argument);
-                direct[i] = CreateDirectArgument(form, LythonRuntime.RuntimeValue(evaluateValue(argument)));
+                var value = LythonRuntime.EvaluateLoweredExpression(argument.Expression, context);
+                direct[i] = CreateDirectArgument(argument.Form, LythonRuntime.RuntimeValue(value));
             }
-
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context, target,
-            deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm), storage: storage);
-        try
+        using var expanded = new CallArgumentAccumulator(arguments.Count, context, target,
+            deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments), storage: storage);
+        foreach (var argument in arguments)
         {
-            foreach (var argument in arguments)
+            var form = argument.Form;
+            var span = argument.Expression.Span;
+            switch (form.Kind)
             {
-                var form = getForm(argument);
-                var span = getSpan(argument);
-                switch (form.Kind)
-                {
-                    case CallArgumentKind.Positional:
-                        expanded.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(evaluateValue(argument))), span);
-                        break;
-                    case CallArgumentKind.Keyword:
-                        expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(evaluateValue(argument))), span);
-                        break;
-                    case CallArgumentKind.StarredList:
-                        expanded.AppendAsync(form, evaluateValue(argument), getSpan(argument), false).GetAwaiter().GetResult();
-                        break;
-                    case CallArgumentKind.StarredDictionary:
-                        expanded = AppendStarredDictionary(evaluateValue(argument), getSpan(argument), expanded, target, context);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown call argument kind: {form.Kind}");
-                }
+                case CallArgumentKind.Positional:
+                    expanded.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(
+                        LythonRuntime.EvaluateLoweredExpression(argument.Expression, context))), span);
+                    break;
+                case CallArgumentKind.Keyword:
+                    expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(
+                        LythonRuntime.EvaluateLoweredExpression(argument.Expression, context))), span);
+                    break;
+                case CallArgumentKind.StarredList:
+                    expanded.AppendAsync(form, LythonRuntime.EvaluateLoweredExpression(argument.Expression, context),
+                        span, false).GetAwaiter().GetResult();
+                    break;
+                case CallArgumentKind.StarredDictionary:
+                    AppendStarredDictionary(LythonRuntime.EvaluateLoweredExpression(argument.Expression, context),
+                        span, expanded, target, context);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown call argument kind: {form.Kind}");
             }
+        }
 
-            expanded.FinishDeferredStarAsync(false).GetAwaiter().GetResult();
-            return expanded.ToArray();
-        }
-        finally
-        {
-            expanded.Dispose();
-        }
+        expanded.FinishDeferredStarAsync(false).GetAwaiter().GetResult();
+        return expanded.ToArray();
     }
 
-    private static async ValueTask<CallArgumentValue[]> ExpandArgumentsAsync<TArgument>(
-        IReadOnlyList<TArgument> arguments,
-        Func<TArgument, CallArgumentForm> getForm,
-        Func<TArgument, LythonSourceSpan> getSpan,
-        Func<TArgument, ValueTask<object>> evaluateValue,
-        LythonRuntime.ExecutionContext context,
-        object target,
-        MemoryGovernor.TemporaryMemoryReservation storage,
+    public static async ValueTask<CallArgumentValue[]> ExpandLoweredArgumentsAsync(IReadOnlyList<LoweredCallArgument> arguments,
+        LythonRuntime.ExecutionContext context, object target, MemoryGovernor.TemporaryMemoryReservation storage,
         bool deferSingleStar = true)
     {
-        if (!HasStarExpansion(arguments, getForm))
+        if (!HasStarExpansion(arguments))
         {
             if (arguments.Count == 0) return [];
-            var direct = AllocateDirectArguments(arguments.Count, context, getSpan(arguments[0]), storage);
+            var direct = AllocateDirectArguments(arguments.Count, context, arguments[0].Expression.Span, storage);
             for (var i = 0; i < arguments.Count; i++)
             {
                 var argument = arguments[i];
-                var form = getForm(argument);
-                direct[i] = CreateDirectArgument(
-                    form,
-                    LythonRuntime.RuntimeValue(await evaluateValue(argument).ConfigureAwait(false)));
+                var value = await LythonRuntime.EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false);
+                direct[i] = CreateDirectArgument(argument.Form, LythonRuntime.RuntimeValue(value));
             }
-
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context, target,
-            deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm), storage: storage);
-        try
+        using var expanded = new CallArgumentAccumulator(arguments.Count, context, target,
+            deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments), storage: storage);
+        foreach (var argument in arguments)
         {
-            foreach (var argument in arguments)
+            var form = argument.Form;
+            var span = argument.Expression.Span;
+            switch (form.Kind)
             {
-                var form = getForm(argument);
-                var span = getSpan(argument);
-                switch (form.Kind)
-                {
-                    case CallArgumentKind.Positional:
-                        expanded.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(await evaluateValue(argument).ConfigureAwait(false))), span);
-                        break;
-                    case CallArgumentKind.Keyword:
-                        expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(await evaluateValue(argument).ConfigureAwait(false))), span);
-                        break;
-                    case CallArgumentKind.StarredList:
-                        await expanded.AppendAsync(form, await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), true).ConfigureAwait(false);
-                        break;
-                    case CallArgumentKind.StarredDictionary:
-                        expanded = await AppendStarredDictionaryAsync(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), expanded, target, context).ConfigureAwait(false);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown call argument kind: {form.Kind}");
-                }
+                case CallArgumentKind.Positional:
+                    var positional = await LythonRuntime.EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false);
+                    expanded.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(positional)), span);
+                    break;
+                case CallArgumentKind.Keyword:
+                    var keyword = await LythonRuntime.EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false);
+                    expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(keyword)), span);
+                    break;
+                case CallArgumentKind.StarredList:
+                    var sequence = await LythonRuntime.EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false);
+                    await expanded.AppendAsync(form, sequence, span, true).ConfigureAwait(false);
+                    break;
+                case CallArgumentKind.StarredDictionary:
+                    var mapping = await LythonRuntime.EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false);
+                    await AppendStarredDictionaryAsync(mapping, span, expanded, target, context).ConfigureAwait(false);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown call argument kind: {form.Kind}");
             }
+        }
 
-            await expanded.FinishDeferredStarAsync(true).ConfigureAwait(false);
-            return expanded.ToArray();
-        }
-        finally
-        {
-            expanded.Dispose();
-        }
+        await expanded.FinishDeferredStarAsync(true).ConfigureAwait(false);
+        return expanded.ToArray();
     }
 
     private static CallArgumentValue[] AllocateDirectArguments(int count, LythonRuntime.ExecutionContext context,
@@ -184,13 +113,13 @@ internal static class CallExpansion
         return new CallArgumentValue[count];
     }
 
-    private static bool HasSingleStarArgument<TArgument>(IReadOnlyList<TArgument> arguments, Func<TArgument, CallArgumentForm> getForm)
+    private static bool HasSingleStarArgument(IReadOnlyList<LoweredCallArgument> arguments)
     {
         var count = 0;
         var starred = false;
         foreach (var argument in arguments)
         {
-            var kind = getForm(argument).Kind;
+            var kind = argument.Form.Kind;
             if (kind is CallArgumentKind.Positional or CallArgumentKind.StarredList)
             {
                 count++;
@@ -200,13 +129,11 @@ internal static class CallExpansion
         return count == 1 && starred;
     }
 
-    private static bool HasStarExpansion<TArgument>(
-        IReadOnlyList<TArgument> arguments,
-        Func<TArgument, CallArgumentForm> getForm)
+    private static bool HasStarExpansion(IReadOnlyList<LoweredCallArgument> arguments)
     {
         for (var i = 0; i < arguments.Count; i++)
         {
-            if (getForm(arguments[i]).Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
+            if (arguments[i].Form.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
             {
                 return true;
             }
@@ -223,10 +150,10 @@ internal static class CallExpansion
             _ => throw new InvalidOperationException($"Unknown direct call argument kind: {form.Kind}")
         };
 
-    private static CallArgumentAccumulator AppendStarredDictionary(object value, LythonSourceSpan span,
+    private static void AppendStarredDictionary(object value, LythonSourceSpan span,
         CallArgumentAccumulator expanded, object target, LythonRuntime.ExecutionContext context)
     {
-        try { return AppendStarredDictionaryCore(value, span, expanded, target, context); }
+        try { AppendStarredDictionaryCore(value, span, expanded, target, context); }
         catch (LythonRuntimeException error) when (error.ExceptionType == "KeyError")
         {
             var converted = MappingKeyError(error, target, context, span);
@@ -235,10 +162,10 @@ internal static class CallExpansion
         }
     }
 
-    private static async ValueTask<CallArgumentAccumulator> AppendStarredDictionaryAsync(object value, LythonSourceSpan span,
+    private static async ValueTask AppendStarredDictionaryAsync(object value, LythonSourceSpan span,
         CallArgumentAccumulator expanded, object target, LythonRuntime.ExecutionContext context)
     {
-        try { return await AppendStarredDictionaryCoreAsync(value, span, expanded, target, context).ConfigureAwait(false); }
+        try { await AppendStarredDictionaryCoreAsync(value, span, expanded, target, context).ConfigureAwait(false); }
         catch (LythonRuntimeException error) when (error.ExceptionType == "KeyError")
         {
             var converted = MappingKeyError(error, target, context, span);
@@ -261,7 +188,7 @@ internal static class CallExpansion
             " got multiple values for keyword argument '" + name + "'", span);
     }
 
-    private static CallArgumentAccumulator AppendStarredDictionaryCore(
+    private static void AppendStarredDictionaryCore(
         object value,
         LythonSourceSpan span,
         CallArgumentAccumulator expanded,
@@ -283,7 +210,7 @@ internal static class CallExpansion
                 var item = LythonRuntime.GetUserItem(instance, key, context, span);
                 AppendMappingArgument(expanded, argument, item, span);
             }
-            return expanded;
+            return;
         }
         // N16: the Try signal tells absent mappings apart from guest failures by result,
         // never by message text: a guest keys() raising the same TypeError wording now
@@ -306,13 +233,16 @@ internal static class CallExpansion
             expanded.Add(expanded.PrepareKeyword(key, pair.Value, span), span, uniqueKeywordSource);
         }
 
-        return expanded;
     }
 
-    private static async ValueTask<CallArgumentAccumulator> AppendStarredDictionaryCoreAsync(object value,
+    private static async ValueTask AppendStarredDictionaryCoreAsync(object value,
         LythonSourceSpan span, CallArgumentAccumulator expanded, object target, LythonRuntime.ExecutionContext context)
     {
-        if (value is not PyInstance instance) return AppendStarredDictionaryCore(value, span, expanded, target, context);
+        if (value is not PyInstance instance)
+        {
+            AppendStarredDictionaryCore(value, span, expanded, target, context);
+            return;
+        }
         var keysMember = await LythonRuntime.TryResolveRuntimeMemberAsync(instance, "keys", context, span).ConfigureAwait(false);
         if (!keysMember.Found) throw MappingUnpackingError(value, target, context, span);
         var keys = await LythonRuntime.InvokeCallableTargetAsync(keysMember.Value, span, span, context,
@@ -327,7 +257,6 @@ internal static class CallExpansion
             var item = await LythonRuntime.GetUserItemAsync(instance, key, context, span).ConfigureAwait(false);
             AppendMappingArgument(expanded, argument, item, span);
         }
-        return expanded;
     }
 
     private static void AppendMappingKey(List<object> keys, object key, MemoryGovernor.TemporaryMemoryReservation storage,

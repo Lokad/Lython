@@ -1,11 +1,5 @@
-using System.Text.RegularExpressions;
 using Lokad.Lython.Frontend;
 using System.Numerics;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -111,27 +105,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateChainedComparison(ChainedComparisonExpressionSyntax chainedComparison, ExecutionContext context)
-    {
-        var left = EvaluateExpression(chainedComparison.Operands[0], context);
-        for (var i = 0; i < chainedComparison.Operators.Count; i++)
-        {
-            var right = EvaluateExpression(chainedComparison.Operands[i + 1], context);
-            var result = EvaluateBinaryOperator(chainedComparison.Operators[i], left, right, context, chainedComparison.Span);
-            if (i == chainedComparison.Operators.Count - 1 || !IsTruthy(result, context, chainedComparison.Span))
-            {
-                return result;
-            }
-
-            left = right;
-        }
-
-        return true;
-    }
-
-    private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
-        => CreateLoweredLambda(lambda.PreparedCallable.RequireNotNull(), context);
-
 
     private static void InvokeItemMutation(
         PyInstance instance,
@@ -149,37 +122,6 @@ internal sealed partial class LythonRuntime
         }
 
         _ = callable.Invoke(arguments, span, context);
-    }
-
-    internal static void AssignTarget(AssignmentTargetSyntax target, object value, ExecutionContext context)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax name:
-                StoreName(name.Name, value, context, name.Span);
-                return;
-            case UnpackingAssignmentTargetGroupSyntax unpacking:
-                AssignTargets(unpacking.Targets, value, unpacking.Span, context);
-                return;
-            case SubscriptAssignmentTargetSyntax subscript:
-                AssignSubscriptTarget(subscript, value, context);
-                return;
-            case SliceAssignmentTargetSyntax slice:
-                AssignSliceTarget(slice, value, context);
-                return;
-            case MemberAssignmentTargetSyntax member:
-                AssignMemberTarget(member, value, context);
-                return;
-            default:
-                throw new InvalidOperationException($"Unsupported assignment target syntax: {target.GetType().Name}");
-        }
-    }
-
-    private static void AssignSubscriptTarget(SubscriptAssignmentTargetSyntax subscript, object value, ExecutionContext context)
-    {
-        var target = EvaluateExpression(subscript.Target, context);
-        var index = EvaluateExpression(subscript.Index, context);
-        SetSubscriptValue(target, index, value, subscript.Span, context);
     }
 
     internal static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
@@ -264,24 +206,6 @@ internal sealed partial class LythonRuntime
             _ => UnboundTypeMethod.PythonTypeName(target, context),
         };
         return new LythonRuntimeException("TypeError", $"'{name}' object does not support item assignment", span);
-    }
-
-    private static void AssignSliceTarget(SliceAssignmentTargetSyntax slice, object value, ExecutionContext context)
-    {
-        ExecuteSliceAssignment(
-            EvaluateExpression(slice.Target, context),
-            slice.Start is null ? null : EvaluateExpression(slice.Start, context),
-            slice.End is null ? null : EvaluateExpression(slice.End, context),
-            slice.Step is null ? null : EvaluateExpression(slice.Step, context),
-            value,
-            slice.Span,
-            context);
-    }
-
-    private static void AssignMemberTarget(MemberAssignmentTargetSyntax member, object value, ExecutionContext context)
-    {
-        var target = EvaluateExpression(member.Target, context);
-        SetMemberValue(target, member.MemberName, value, member.Span, context);
     }
 
     private static void SetMemberValue(object target, string memberName, object value, LythonSourceSpan span, ExecutionContext context)

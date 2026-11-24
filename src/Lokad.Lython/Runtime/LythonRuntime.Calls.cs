@@ -1,5 +1,4 @@
 using Lokad.Lython.Frontend;
-using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Numbers;
 using System.Collections.Frozen;
 using System.Text;
@@ -19,23 +18,6 @@ internal sealed partial class LythonRuntime
 {
     private static readonly PyString DefaultPrintSeparator = PyString.FromOwnedUtf8([(byte)' ']);
     private static readonly PyString DefaultPrintEnding = PyString.FromOwnedUtf8([(byte)'\n']);
-
-    private static object InvokeCall(CallExpressionSyntax call, ExecutionContext context)
-    {
-        var target = EvaluateExpression(call.Target, context);
-        if (call.PreloadImplicitSuperArguments)
-        {
-            context.CheckExecution(call.Span);
-            PreloadImplicitSuperArguments(context, call.Span);
-        }
-        using var storage = context.MemoryGovernor.ReserveTemporary(0, call.Span);
-        return InvokeCallableTarget(
-            target,
-            call.Target.Span,
-            call.Span,
-            context,
-            () => CallExpansion.ExpandRawArguments(call.Arguments, context, EvaluateExpression, target, storage));
-    }
 
     internal static object InvokeCallableTarget(
         object target,

@@ -1,7 +1,5 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
-using Lokad.Lython.Runtime.Text;
-using System.Text.RegularExpressions;
 using System.Runtime.ExceptionServices;
 
 namespace Lokad.Lython.Runtime;
@@ -395,7 +393,7 @@ internal sealed partial class LythonRuntime
             call.Call.Target.Span,
             call.Span,
             context,
-            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, EvaluateLoweredExpression, target, storage));
+            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, target, storage));
     }
 
     private static void InvokeInitSubclass(PyType type, CallArgumentValue[] keywordArguments, LythonSourceSpan span, ExecutionContext context)
