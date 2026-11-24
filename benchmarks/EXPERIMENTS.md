@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1568](results/2026-11-24-runtime-checkpoint-cpython/README.md) refreshes
+six complete scripts against CPython. The short report takes
+1.363–1.412× warm and 0.508–0.517× to compile. Captured rules take
+2.132–2.278× warm. The quoted invoice spans parity.
+
 [B1567](results/2026-11-24-fixed-result-order/README.md) writes final
 unpack slots directly. Captured rules, quoted invoice and split-heavy
 text show 0.58–3.30% lower elapsed with unchanged peak admission.
