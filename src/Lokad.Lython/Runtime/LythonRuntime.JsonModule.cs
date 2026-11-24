@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Dumps))
                 {
-                    return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
+                    return JsonEncodeIterator.EncodeToStringAsync(arguments[0].Value, JsonDumpOptions.Default, context, span, asynchronous: false).GetAwaiter().GetResult();
                 }
                 return InvokeOptions(new CallBinder.PacketInputs(arguments), span, context, asynchronous: false)
                     .GetAwaiter().GetResult();
@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Dumps))
                 {
-                    return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true);
+                    return JsonEncodeIterator.EncodeToStringAsync(arguments[0].Value, JsonDumpOptions.Default, context, span, asynchronous: true);
                 }
                 return InvokeOptions(new CallBinder.PacketInputs(arguments), span, context, asynchronous: true);
             }
@@ -344,7 +344,7 @@ internal sealed partial class LythonRuntime
 
             var value = bound.Values[0];
             if (await CanUseDefaultEncoderAsync(bound, extras, 0, span, context, asynchronous).ConfigureAwait(false))
-                return await DumpsDefault(value, span, context, asynchronous).ConfigureAwait(false);
+                return await JsonEncodeIterator.EncodeToStringAsync(value, JsonDumpOptions.Default, context, span, asynchronous).ConfigureAwait(false);
 
             var cls = ResolveEncoderClass(GetOptional(bound.Values, 5), span);
             if (cls is JsonEncoderClass && extras.Count == 0)
@@ -359,12 +359,6 @@ internal sealed partial class LythonRuntime
                     span, span, context, arguments).ConfigureAwait(false)
                 : InvokeCallableTarget(PyTextStream.ResolveMember(instance, "encode", span, context),
                     span, span, context, arguments);
-        }
-
-        private async ValueTask<object> DumpsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            context.CheckExecution(span);
-            return await SerializeJsonTextCoreAsync(value, JsonDumpOptions.Default, context, span, asynchronous).ConfigureAwait(false);
         }
 
         private static object EncodingFlag(BoundBuiltinArguments bound, int index, bool fallback)
@@ -393,7 +387,7 @@ internal sealed partial class LythonRuntime
                 if (oneShot && value is PyString text)
                 {
                     var ascii = await JsonOptionTruthAsync(asciiFlag, context, span, asynchronous).ConfigureAwait(false);
-                    return await SerializeJsonTextCoreAsync(text, JsonDumpOptions.Default with { EnsureAscii = ascii },
+                    return await JsonEncodeIterator.EncodeToStringAsync(text, JsonDumpOptions.Default with { EnsureAscii = ascii },
                         context, span, asynchronous).ConfigureAwait(false);
                 }
 
@@ -416,7 +410,7 @@ internal sealed partial class LythonRuntime
                 var options = new JsonDumpOptions(skip, ensureAscii, circular, allowNan, indentText, item, key,
                     callback is PyNone ? JsonDumpOptions.Default.DefaultCallable : callback, sort);
                 return oneShot
-                    ? await SerializeJsonTextCoreAsync(value, options, context, span, asynchronous).ConfigureAwait(false)
+                    ? await JsonEncodeIterator.EncodeToStringAsync(value, options, context, span, asynchronous).ConfigureAwait(false)
                     : JsonEncodeIterator.Create(value, options, context, span);
             }
             catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }

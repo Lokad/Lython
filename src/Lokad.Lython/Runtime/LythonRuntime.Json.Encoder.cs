@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
             if (value is PyString text)
             {
                 var ascii = await JsonOptionTruthAsync(await ReadAsync("ensure_ascii", context, span, asynchronous).ConfigureAwait(false), context, span, asynchronous).ConfigureAwait(false);
-                return await JsonModule.SerializeJsonTextCoreAsync(text, JsonDumpOptions.Default with { EnsureAscii = ascii }, context, span, asynchronous).ConfigureAwait(false);
+                return await JsonEncodeIterator.EncodeToStringAsync(text, JsonDumpOptions.Default with { EnsureAscii = ascii }, context, span, asynchronous).ConfigureAwait(false);
             }
             if (GuestOwner is not null)
             {
@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
                     : StringMembers.Join(PyString.Empty, chunks, span, context);
             }
             var options = await GetDumpOptionsAsync(context, span, asynchronous, true).ConfigureAwait(false);
-            return await JsonModule.SerializeJsonTextCoreAsync(value, options, context, span, asynchronous).ConfigureAwait(false);
+            return await JsonEncodeIterator.EncodeToStringAsync(value, options, context, span, asynchronous).ConfigureAwait(false);
         }
 
         public object IterEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
             var options = await GetDumpOptionsAsync(context, span, asynchronous, oneShot).ConfigureAwait(false);
             if (oneShot)
             {
-                var text = await JsonModule.SerializeJsonTextCoreAsync(arguments[0], options, context, span, asynchronous).ConfigureAwait(false);
+                var text = await JsonEncodeIterator.EncodeToStringAsync(arguments[0], options, context, span, asynchronous).ConfigureAwait(false);
                 return new PyTuple(new object[] { text }, context.MemoryGovernor, span);
             }
             return JsonEncodeIterator.Create(arguments[0], options, context, span);
@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
                         if (_finished) return PyIterationResult.End;
                         var builder = _builder ??= new GovernedByteBuilder(_context.MemoryGovernor, _span);
                         builder.Clear();
-                        if (!await EmitAsync(builder, asynchronous, stopAtChunk: true).ConfigureAwait(false))
+                        if (!await EmitAsync(asynchronous, stopAtChunk: true).ConfigureAwait(false))
                         {
                             Finish();
                             return PyIterationResult.End;
@@ -328,24 +328,39 @@ internal sealed partial class LythonRuntime
             finally { Volatile.Write(ref _advancing, 0); }
         }
 
-        // The eager iterator is private, so only exposed chunk iteration needs
-        // the reentry guard. Its working storage covers suspended callbacks too.
-        internal static async ValueTask WriteRootToBuilderAsync(object value, JsonDumpOptions options,
-            GovernedByteBuilder builder, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        internal static async ValueTask<object> EncodeToStringAsync(object value, JsonDumpOptions options,
+            ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var governor = context.MemoryGovernor;
-            governor.Reserve(StorageBytes, span);
             try
             {
                 context.CheckExecution(span);
-                var iterator = new JsonEncodeIterator(value, options, context, span);
+                var governor = context.MemoryGovernor;
+                var builder = new GovernedByteBuilder(governor, span);
                 try
                 {
-                    await iterator.EmitAsync(builder, asynchronous, stopAtChunk: false).ConfigureAwait(false);
+                    governor.Reserve(StorageBytes, span);
+                    try
+                    {
+                        context.CheckExecution(span);
+                        var traversal = new JsonEncodeIterator(value, options, context, span) { _builder = builder };
+                        try { await traversal.EmitAsync(asynchronous, stopAtChunk: false).ConfigureAwait(false); }
+                        finally
+                        {
+                            // Retire traversal scratch before admitting the result's metadata.
+                            // The eager caller still owns the builder and its admitted bytes.
+                            traversal._builder = null;
+                            traversal.Finish();
+                        }
+                    }
+                    finally { governor.ReleaseReserved(StorageBytes); }
+                    return builder.ToPyStringAndRelease();
                 }
-                finally { iterator.Finish(); }
+                finally { builder.Release(); }
             }
-            finally { governor.ReleaseReserved(StorageBytes); }
+            catch (InvalidOperationException error)
+            {
+                throw new LythonRuntimeException("TypeError", error.Message, span);
+            }
         }
 
         private ref EmitFrame FrameAt(int index)
@@ -410,8 +425,9 @@ internal sealed partial class LythonRuntime
 
         // Produce the next public chunk or drain the same traversal into the
         // eager builder. Frame pushes and completed tokens stay in this loop.
-        private async ValueTask<bool> EmitAsync(GovernedByteBuilder builder, bool asynchronous, bool stopAtChunk)
+        private async ValueTask<bool> EmitAsync(bool asynchronous, bool stopAtChunk)
         {
+            var builder = _builder!;
             while (true)
             {
                 _context.CheckExecution(_span);
@@ -419,7 +435,7 @@ internal sealed partial class LythonRuntime
                 if (_rootValue is { } root)
                 {
                     _rootValue = null;
-                    chunkReady = await AdvanceValueAsync(root, 0, builder, asynchronous).ConfigureAwait(false);
+                    chunkReady = await AdvanceValueAsync(root, 0, asynchronous).ConfigureAwait(false);
                 }
                 else
                 {
@@ -449,13 +465,13 @@ internal sealed partial class LythonRuntime
                             if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
                             JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
                             frame.Index++;
-                            chunkReady = await AdvanceValueAsync(element, depth + 1, builder, asynchronous).ConfigureAwait(false);
+                            chunkReady = await AdvanceValueAsync(element, depth + 1, asynchronous).ConfigureAwait(false);
                         }
                     }
                     else
                     {
                         var pair = await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
-                        chunkReady = await AdvancePairAsync(frameIndex, pair, builder, asynchronous).ConfigureAwait(false);
+                        chunkReady = await AdvancePairAsync(frameIndex, pair, asynchronous).ConfigureAwait(false);
                     }
                 }
                 if (stopAtChunk && chunkReady && builder.Length != 0) return true;
@@ -463,8 +479,9 @@ internal sealed partial class LythonRuntime
         }
 
         private ValueTask<bool> AdvancePairAsync(int frameIndex,
-            (bool Found, object Key, object Value) pair, GovernedByteBuilder builder, bool asynchronous)
+            (bool Found, object Key, object Value) pair, bool asynchronous)
         {
+            var builder = _builder!;
             ref var frame = ref FrameAt(frameIndex);
             var depth = frame.Depth;
             var index = frame.Index;
@@ -480,30 +497,31 @@ internal sealed partial class LythonRuntime
             if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
             JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
             var pending = JsonModule.AppendJsonObjectKeyAsync(builder, pair.Key, _options, _context, _span, asynchronous);
-            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frameIndex, pair.Value, builder, asynchronous);
+            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frameIndex, pair.Value, asynchronous);
             pending.GetAwaiter().GetResult();
-            return AdvancePairValueAsync(frameIndex, pair.Value, builder, asynchronous);
+            return AdvancePairValueAsync(frameIndex, pair.Value, asynchronous);
         }
 
         private ValueTask<bool> AdvancePairValueAsync(int frameIndex,
-            object value, GovernedByteBuilder builder, bool asynchronous)
+            object value, bool asynchronous)
         {
-            JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
+            JsonModule.AppendSeparator(_builder!, _options.KeySeparator, _context, _span);
             ref var frame = ref FrameAt(frameIndex);
             frame.Index++;
-            return AdvanceValueAsync(value, frame.Depth + 1, builder, asynchronous);
+            return AdvanceValueAsync(value, frame.Depth + 1, asynchronous);
         }
 
         private async ValueTask<bool> CompleteKeyAsync(ValueTask pending,
-            int frameIndex, object value, GovernedByteBuilder builder, bool asynchronous)
+            int frameIndex, object value, bool asynchronous)
         {
             await pending.ConfigureAwait(false);
-            return await AdvancePairValueAsync(frameIndex, value, builder, asynchronous).ConfigureAwait(false);
+            return await AdvancePairValueAsync(frameIndex, value, asynchronous).ConfigureAwait(false);
         }
 
         private ValueTask<bool> AdvanceValueAsync(object value, int depth,
-            GovernedByteBuilder builder, bool asynchronous, int defaultDepth = 0)
+            bool asynchronous, int defaultDepth = 0)
         {
+            var builder = _builder!;
             // Completed default replacements stay in the existing traversal.
             // Only a genuinely pending callback retains continuation state.
             while (true)
@@ -559,7 +577,7 @@ internal sealed partial class LythonRuntime
                         var replacement = JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value,
                             _context, _span, asynchronous);
                         if (!replacement.IsCompleted)
-                            return CompleteDefaultAsync(replacement, depth, builder, asynchronous, defaultDepth + 1);
+                            return CompleteDefaultAsync(replacement, depth, asynchronous, defaultDepth + 1);
                         value = replacement.GetAwaiter().GetResult();
                         defaultDepth++;
                         break;
@@ -581,8 +599,8 @@ internal sealed partial class LythonRuntime
         }
 
         private async ValueTask<bool> CompleteDefaultAsync(ValueTask<object> pending,
-            int depth, GovernedByteBuilder builder, bool asynchronous, int defaultDepth)
-            => await AdvanceValueAsync(await pending.ConfigureAwait(false), depth, builder, asynchronous, defaultDepth).ConfigureAwait(false);
+            int depth, bool asynchronous, int defaultDepth)
+            => await AdvanceValueAsync(await pending.ConfigureAwait(false), depth, asynchronous, defaultDepth).ConfigureAwait(false);
 
         private ValueTask PushDictFrameAsync(PyDict dict, int depth, bool asynchronous)
         {

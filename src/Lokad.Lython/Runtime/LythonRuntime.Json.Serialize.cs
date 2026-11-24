@@ -39,25 +39,6 @@ internal sealed partial class LythonRuntime
             return entries;
         }
 
-        internal static async ValueTask<PyString> SerializeJsonTextCoreAsync(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
-        {
-            try
-            {
-                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-                try
-                {
-                    await JsonEncodeIterator.WriteRootToBuilderAsync(value, options, builder, context, span, asynchronous)
-                        .ConfigureAwait(false);
-                    return builder.ToPyStringAndRelease();
-                }
-                finally { builder.Release(); }
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new LythonRuntimeException("TypeError", ex.Message, span);
-            }
-        }
-
         internal static string JsonValueTypeName(object value)
             => value switch
             {
