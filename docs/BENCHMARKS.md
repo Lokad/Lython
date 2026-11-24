@@ -2,6 +2,7 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration manifest | Two input files / 833 B | 0.19838–0.20052 ms | 0.16458–0.16692 ms | 1.188–1.218× | Diagnostic. [B1614]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
 | Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89693–0.97136 ms | 0.93726–0.94026 ms | 0.954–1.036× | Diagnostic. Near parity with 8.30% Lython worker spread. [B1609]. |
@@ -14,7 +15,8 @@
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The short report and warm defaulted rules use
+two workers per engine. The manifest and sparse validator use
+`0bf516c79`. The short report and warm defaulted rules use
 frozen `46c967257`, matching `675900142`. Captured rules and warm
 postponed rules use `d6437c26f`, matching `0400f185c`. Warm quoted
 invoice uses `642c8f957`, matching `c40540135`. The defaulted compilation
@@ -22,7 +24,7 @@ lanes use `67be15bd0`, matching `70b04c0af`.
 Eager annotated rules and the postponed compilation lanes use `4eb8c9559`,
 matching `5313f9e71`. JSON export uses `ccdf43a59`, matching `2cf721f73`.
 The two CSV meters use `95aa40601`, matching `8aef89b09`. These
-collections ran on November 24, 2026 UTC. [B1609] · [B1604] · [B1600] · [B1597] · [B1593] · [B1587] · [B1568].
+collections ran on November 24, 2026 UTC. [B1614] · [B1609] · [B1604] · [B1600] · [B1597] · [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -38,6 +40,10 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration manifest, 1,877 B of source | Compilation only | 0.11208–0.11333 ms | 0.16582–0.16676 ms | 0.672–0.683× | Diagnostic. [B1614]. |
+| Configuration manifest | Compile-to-result | 0.38400–0.38449 ms | 0.46215–0.46551 ms | 0.825–0.832× | Diagnostic. [B1614]. |
+| Sparse generated validator, 23,555 B of source | Compilation only | 1.27724–1.28559 ms | 1.81308–1.82159 ms | 0.701–0.709× | Diagnostic compiler workload. [B1614]. |
+| Sparse generated validator, 96 guards / 1,714 B input | Compile-to-result | 1.50615–1.52170 ms | 1.99316–2.00943 ms | 0.750–0.763× | Diagnostic compiler workload. [B1614]. |
 | Typed Unicode CSV meter | Compile-to-result | 3.151–3.295 ms | 3.480–3.556 ms | 0.886–0.947× | Diagnostic. [B1568]. |
 | Short Unicode word-count report with a nonlocal helper | Compile-to-result | 0.98993–0.99296 ms | 1.07912–1.08041 ms | 0.916–0.920× | Diagnostic. [B1609]. |
 | Short Unicode word-count report with a nonlocal helper, 615 B | Compilation only | 0.02881–0.02892 ms | 0.05577–0.05597 ms | 0.515–0.518× | Diagnostic. [B1609]. |
@@ -82,6 +88,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Reuse compiler collection facts | The sparse validator's invalidation scans visit 14 bindings, down from 1,170. Immutable tuple diagnostics survive unrelated mutations. | Representative allocations match and CPU ranges span zero. [B1613](../benchmarks/results/2026-11-24-abstract-collection-graphs/README.md). |
 | Share statement parsing and use its existing source spans | The sparse generated validator compiles in 3.10–5.04% less elapsed time and reaches its result 1.69–3.52% sooner, with lower CPU. | Compilation allocation and retained admission match. Manifest time-to-result CPU rises 0.79–2.98% while elapsed spans zero. [B1612](../benchmarks/results/2026-11-24-shared-parser-statements/README.md). |
 | Complete cased text helpers before workspace setup | The short Unicode report takes 24.78–27.37% less warm elapsed and 19.01–25.68% less time through result with lower CPU. Mixed-width warm elapsed falls 6.62–11.94%. | Target allocations and admission match. Distinct-word CPU and the inlined control are inconclusive. [B1608](../benchmarks/results/2026-11-24-closed-line-helper/README.md). |
 | Complete captured pairs before the outer activation | Captured rules take 19.60–29.07% less warm elapsed and 27.18–31.68% less time through result, with lower CPU and matching allocation and admission. | Warm worker spread is 5.95–6.99%. Postponed warm elapsed rises 2.58–7.56% with higher CPU. Other control elapsed ranges cross zero. [B1603](../benchmarks/results/2026-11-24-closed-capture-pair/seeded/README.md). |
@@ -116,3 +123,4 @@ document reproduction.
 [B1609]: ../benchmarks/results/2026-11-24-closed-line-helper-cpython/README.md
 [B1604]: ../benchmarks/results/2026-11-24-closed-capture-cpython/README.md
 [B1600]: ../benchmarks/results/2026-11-24-private-calls-cpython/README.md
+[B1614]: ../benchmarks/results/2026-11-24-abstract-compiler-cpython/README.md

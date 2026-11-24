@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1614](results/2026-11-24-abstract-compiler-cpython/README.md) compares
+`0bf516c79` with stock CPython 3.13.16. The manifest takes
+1.188–1.218× warm and 0.825–0.832× through result. The sparse
+validator takes 0.750–0.763× through result. The archive also preserves
+eight independent repros of incorrect builtin assumptions after rebinding.
+
 [B1613](results/2026-11-24-abstract-collection-graphs/README.md) reuses
 compiler collection facts to avoid binding scans and preserve the known
 shape of immutable tuple branches. Sparse validator invalidation visits
