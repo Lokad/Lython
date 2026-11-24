@@ -77,6 +77,24 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             && KeywordDefaultStorage is null or { SupportsNativeStringReads: true };
     }
 
+    // Complete directly from established operands before either driver
+    // prepares an unpack window or enters the zeroed callee workspace.
+    internal bool TryCompleteNativeCall(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
+        object? receiver, LythonRuntime.ExecutionContext context, bool completePositional,
+        out LythonRuntime.ExecutableSlot result, out bool suppliedInteger)
+    {
+        result = default;
+        suppliedInteger = completePositional &&
+            TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result);
+        if (suppliedInteger) return true;
+        if (receiver is not null) return false;
+
+        return completePositional
+            ? arguments.Length == 1 && CodeObject.DirectDefinitionReturn is { } definition &&
+                !Closure.IsTypeParameterScope && TryReturnDefinition(definition, arguments[0], call.CallSpan, out result)
+            : CodeObject.HasDirectIntegerReturn && TryStartPreparedIntegerReturn(call, arguments, context, call.CallSpan, out result);
+    }
+
     [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
     private struct NativeValues { private LythonRuntime.ExecutableSlot _first; }
 
@@ -86,23 +104,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
-        if (receiver is null && completePositional && arguments.Length == 1 &&
-            CodeObject.DirectDefinitionReturn is { } definition && !Closure.IsTypeParameterScope &&
-            TryReturnDefinition(definition, arguments[0], span, out result))
-        {
-            unpacked = false;
-            frame = null;
-            return;
-        }
-
-        if (!completePositional && receiver is null && CodeObject.HasDirectIntegerReturn &&
-            TryStartPreparedIntegerReturn(call, arguments, context, span, out result))
-        {
-            unpacked = false;
-            frame = null;
-            return;
-        }
-
         // Both executable callers select eligibility before entry. Starting a
         // selected call completes or transfers its exact work; it never declines
         // after binding and asks the caller to try another execution route.

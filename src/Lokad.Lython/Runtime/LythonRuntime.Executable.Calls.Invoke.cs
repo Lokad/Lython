@@ -39,18 +39,19 @@ internal sealed partial class LythonRuntime
                     callEntered = true;
                     scope.CheckExecution(call.CallSpan);
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
-                    if (completePositional &&
-                        function.TryStartSuppliedIntegerReturn(arguments, functionReceiver, call.CallSpan, out var scalar))
+                    if (function.TryCompleteNativeCall(call, arguments, functionReceiver, scope, completePositional,
+                        out var value, out var suppliedInteger))
                     {
                         scope.LeaveInterpreterFrame();
                         callEntered = false;
-                        PublishDirectIntegerCall(ref execution, scope, invocation, scalar);
+                        if (suppliedInteger) PublishDirectIntegerCall(ref execution, scope, invocation, value);
+                        else PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], value);
                         return true;
                     }
                     var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
                     function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
                         CallResultConsumedByIteration(in execution, call), completePositional, unpackedReturn,
-                        out var unpacked, out var value, out var frame);
+                        out var unpacked, out value, out var frame);
                     if (!unpacked) execution.Stack.RestoreNativeExtent(originalExtent);
                     if (frame is not null)
                     {

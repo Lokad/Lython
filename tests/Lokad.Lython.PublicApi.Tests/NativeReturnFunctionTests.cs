@@ -102,6 +102,29 @@ public sealed class NativeReturnFunctionTests
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {
+        { "completed-native-return-unpack",
+            """
+            def make(value):
+                return lambda: value
+            def amount(value, offset=5):
+                return value + offset
+            def unpack_factory(factory):
+                left, right = factory('shared')
+            def unpack_scalar(calculate):
+                left, right = calculate(4)
+            try:
+                unpack_factory(make)
+            except TypeError:
+                print('factory unpack rejected')
+            try:
+                unpack_scalar(amount)
+            except TypeError:
+                print('scalar unpack rejected')
+            first = make('shared')
+            second = make('shared')
+            print(first is second, first(), second(), amount(4))
+            """,
+            "factory unpack rejected\nscalar unpack rejected\nFalse shared shared 9\n" },
         { "negated-branches", "events=[]\ndef double(value):\n    if not not value: return 'full'\n    return 'empty'\ndef triple(value):\n    if not not not value: return 'empty'\n    return 'full'\nclass Flag:\n    def __bool__(self):\n        events.append('bool')\n        return True\nfor value in (None,False,0,1,'','x',[],[1]):\n    print(double(value),triple(value))\nfor operation in (double,triple):\n    print(operation(Flag()),events)\n    events.clear()\n", "empty empty\nempty empty\nempty empty\nfull full\nempty empty\nfull full\nempty empty\nfull full\nfull ['bool']\nfull ['bool']\n" },
         { "unary-values", "def state(value):\n    if not value:\n        return 'empty'\n    return 'full'\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\nprint([state(value) for value in (None, False, 0, 0.0, '', b'', [], (), {}, set(), range(0), True, 3, 'x')])\nfor value in (False, True, -3, 0, 1, 1 << 80):\n    print(positive(value) is value, positive(value), negative(value), invert(value))\nfor value in (-0.0, 2.5):\n    print(positive(value) is value, positive(value), negative(value))\nfor operation in (positive, negative, invert):\n    try: operation('text')\n    except TypeError: print('bad')\n", "['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'full', 'full', 'full']\nFalse 0 0 -1\nFalse 1 -1 -2\nTrue -3 3 2\nTrue 0 0 -1\nTrue 1 -1 -2\nTrue 1208925819614629174706176 -1208925819614629174706176 -1208925819614629174706177\nTrue -0.0 0.0\nTrue 2.5 -2.5\nbad\nbad\nbad\n" },
         { "unary-protocols", "events=[]\nclass Value:\n    def __bool__(self):\n        events.append('bool')\n        return False\n    def __pos__(self):\n        events.append('plus')\n        return 11\n    def __neg__(self):\n        events.append('minus')\n        return 12\n    def __invert__(self):\n        events.append('invert')\n        return 13\ndef state(value):\n    if not value: return 'empty'\n    return value.upper()\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\ndef wanted(value, *, prefix='N\u00e9'):\n    if not value: return False\n    return value.startswith(prefix)\nvalue=Value()\nprint(state(value),positive(value),negative(value),invert(value),events)\nprint(wanted('',prefix=value),wanted('N\u00e9x'),wanted('no'))\n", "empty 11 12 13 ['bool', 'plus', 'minus', 'invert']\nFalse True False\n" },
