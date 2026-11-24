@@ -65,7 +65,9 @@ public sealed class JsonEncoderIterationLifetimeTests
                     seen.append(str(error))
                 return text
             chunks = json.JSONEncoder(default=fallback).iterencode([{1}, 2])
-            parts = list(chunks)
+            first = next(chunks)
+            assert first == '[' and not seen
+            parts = [first] + list(chunks)
             assert ''.join(parts) == '["v", 2]', repr((parts, seen))
             assert seen == ['generator already executing'], repr((parts, seen))
             return ''.join(parts)
@@ -89,12 +91,14 @@ public sealed class JsonEncoderIterationLifetimeTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DictionaryEncoderChecksLiveItemsAfterDefaultCallback(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DictionaryEncoderChecksLiveItemsAfterDefaultCallback(bool asynchronous, bool eager)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile("""
+        using (var script = new LythonEngine().Compile($$"""
             import json
             def encode(change_size):
                 record = {'first': {1}, 'next': 1}
@@ -106,14 +110,15 @@ public sealed class JsonEncoderIterationLifetimeTests
                     else:
                         record['next'] = 2
                     return text
-                return ''.join(json.JSONEncoder(default=fallback).iterencode(record))
+                return {{(eager ? "json.dumps(record, default=fallback)" : "''.join(json.JSONEncoder(default=fallback).iterencode(record))")}}
             assert encode(False) == '{"first": "v", "next": 2}'
-            try:
-                encode(True)
-            except RuntimeError as error:
-                assert 'dictionary changed size' in str(error)
-            else:
-                raise AssertionError('encoder accepted a change to the key set')
+            if {{(eager ? "False" : "True")}}:
+                try:
+                    encode(True)
+                except RuntimeError as error:
+                    assert 'dictionary changed size' in str(error)
+                else:
+                    raise AssertionError('encoder accepted a change to the key set')
             """, budget))
         {
             Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));

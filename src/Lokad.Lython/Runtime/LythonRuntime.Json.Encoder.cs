@@ -301,16 +301,10 @@ internal sealed partial class LythonRuntime
                         if (_finished) return PyIterationResult.End;
                         var builder = _builder ??= new GovernedByteBuilder(_context.MemoryGovernor, _span);
                         builder.Clear();
-                        while (true)
+                        if (!await EmitAsync(builder, asynchronous, stopAtChunk: true).ConfigureAwait(false))
                         {
-                            _context.CheckExecution(_span);
-                            var (advanced, chunkReady) = await AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
-                            if (!advanced)
-                            {
-                                Finish();
-                                return PyIterationResult.End;
-                            }
-                            if (chunkReady && builder.Length != 0) break;
+                            Finish();
+                            return PyIterationResult.End;
                         }
 
                         // Public/custom chunks must survive later advances independently.
@@ -347,12 +341,7 @@ internal sealed partial class LythonRuntime
                 var iterator = new JsonEncodeIterator(value, options, context, span);
                 try
                 {
-                    while (true)
-                    {
-                        context.CheckExecution(span);
-                        var (advanced, _) = await iterator.AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
-                        if (!advanced) return;
-                    }
+                    await iterator.EmitAsync(builder, asynchronous, stopAtChunk: false).ConfigureAwait(false);
                 }
                 finally { iterator.Finish(); }
             }
@@ -419,59 +408,61 @@ internal sealed partial class LythonRuntime
             _context.MemoryGovernor.Release(bytes);
         }
 
-        // Advances the machine; true means more work remains (with a complete
-        // chunk when chunkReady). Structural order mirrors the eager renderer
-        // exactly: separators, indent prefixes, keys and values concatenate to
-        // the same text encode() produces.
-        private ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(GovernedByteBuilder builder, bool asynchronous)
+        // Produce the next public chunk or drain the same traversal into the
+        // eager builder. Frame pushes and completed tokens stay in this loop.
+        private async ValueTask<bool> EmitAsync(GovernedByteBuilder builder, bool asynchronous, bool stopAtChunk)
         {
-            if (_rootValue is { } root)
+            while (true)
             {
-                _rootValue = null;
-                return AdvanceValueAsync(root, 0, builder, asynchronous);
-            }
-
-            while (_frameCount != 0)
-            {
-                var frameIndex = _frameCount - 1;
-                ref var frame = ref FrameAt(frameIndex);
-                if (frame.IsDefault) { CloseFrame(); continue; }
-                if (!frame.Opened)
+                _context.CheckExecution(_span);
+                var chunkReady = true;
+                if (_rootValue is { } root)
                 {
-                    OpenFrame(ref frame, frameIndex);
-                    builder.Append(frame.Sequence is not null ? (byte)'[' : (byte)'{');
-                    return new((true, true));
+                    _rootValue = null;
+                    chunkReady = await AdvanceValueAsync(root, 0, builder, asynchronous).ConfigureAwait(false);
                 }
-
-                if (frame.Sequence is { } sequence)
+                else
                 {
-                    var depth = frame.Depth;
-                    var index = frame.Index;
-                    if (index >= sequence.Count)
+                    if (_frameCount == 0) return false;
+                    var frameIndex = _frameCount - 1;
+                    ref var frame = ref FrameAt(frameIndex);
+                    if (frame.IsDefault) { CloseFrame(); continue; }
+                    if (!frame.Opened)
                     {
-                        CloseFrame();
-                        if (index > 0)
-                            JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth, _context, _span);
-                        builder.Append((byte)']');
-                        return new((true, true));
+                        OpenFrame(ref frame, frameIndex);
+                        builder.Append(frame.Sequence is not null ? (byte)'[' : (byte)'{');
                     }
-
-                    var element = sequence[index];
-                    if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-                    JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
-                    frame.Index++;
-                    return AdvanceValueAsync(element, depth + 1, builder, asynchronous);
+                    else if (frame.Sequence is { } sequence)
+                    {
+                        var depth = frame.Depth;
+                        var index = frame.Index;
+                        if (index >= sequence.Count)
+                        {
+                            CloseFrame();
+                            if (index > 0)
+                                JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth, _context, _span);
+                            builder.Append((byte)']');
+                        }
+                        else
+                        {
+                            var element = sequence[index];
+                            if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
+                            JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
+                            frame.Index++;
+                            chunkReady = await AdvanceValueAsync(element, depth + 1, builder, asynchronous).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        var pair = await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
+                        chunkReady = await AdvancePairAsync(frameIndex, pair, builder, asynchronous).ConfigureAwait(false);
+                    }
                 }
-
-                var pending = TryTakePairAsync(frameIndex, asynchronous);
-                return pending.IsCompleted
-                    ? AdvancePairAsync(frameIndex, pending.GetAwaiter().GetResult(), builder, asynchronous)
-                    : CompletePairAsync(pending, frameIndex, builder, asynchronous);
+                if (stopAtChunk && chunkReady && builder.Length != 0) return true;
             }
-            return new((false, false));
         }
 
-        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairAsync(int frameIndex,
+        private ValueTask<bool> AdvancePairAsync(int frameIndex,
             (bool Found, object Key, object Value) pair, GovernedByteBuilder builder, bool asynchronous)
         {
             ref var frame = ref FrameAt(frameIndex);
@@ -483,7 +474,7 @@ internal sealed partial class LythonRuntime
                 if (index > 0)
                     JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth, _context, _span);
                 builder.Append((byte)'}');
-                return new((true, true));
+                return new(true);
             }
 
             if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
@@ -494,7 +485,7 @@ internal sealed partial class LythonRuntime
             return AdvancePairValueAsync(frameIndex, pair.Value, builder, asynchronous);
         }
 
-        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairValueAsync(int frameIndex,
+        private ValueTask<bool> AdvancePairValueAsync(int frameIndex,
             object value, GovernedByteBuilder builder, bool asynchronous)
         {
             JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
@@ -503,19 +494,14 @@ internal sealed partial class LythonRuntime
             return AdvanceValueAsync(value, frame.Depth + 1, builder, asynchronous);
         }
 
-        private async ValueTask<(bool Advanced, bool ChunkReady)> CompletePairAsync(
-            ValueTask<(bool Found, object Key, object Value)> pending, int frameIndex,
-            GovernedByteBuilder builder, bool asynchronous)
-            => await AdvancePairAsync(frameIndex, await pending.ConfigureAwait(false), builder, asynchronous).ConfigureAwait(false);
-
-        private async ValueTask<(bool Advanced, bool ChunkReady)> CompleteKeyAsync(ValueTask pending,
+        private async ValueTask<bool> CompleteKeyAsync(ValueTask pending,
             int frameIndex, object value, GovernedByteBuilder builder, bool asynchronous)
         {
             await pending.ConfigureAwait(false);
             return await AdvancePairValueAsync(frameIndex, value, builder, asynchronous).ConfigureAwait(false);
         }
 
-        private ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth,
+        private ValueTask<bool> AdvanceValueAsync(object value, int depth,
             GovernedByteBuilder builder, bool asynchronous, int defaultDepth = 0)
         {
             // Completed default replacements stay in the existing traversal.
@@ -532,28 +518,28 @@ internal sealed partial class LythonRuntime
                 {
                     case PyNone:
                         builder.Append("null"u8);
-                        return new((true, true));
+                        return new(true);
                     case PyString text:
                         JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, _context, _span);
-                        return new((true, true));
+                        return new(true);
                     case bool boolean:
                         builder.Append(boolean ? "true"u8 : "false"u8);
-                        return new((true, true));
+                        return new(true);
                     case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                         _context.CheckExecution(_span);
                         JsonModule.AppendJsonInteger(builder, integer, _context, _span);
-                        return new((true, true));
+                        return new(true);
                     case double floating:
                         return CompleteValue(JsonModule.AppendJsonDoubleAsync(builder, floating, _options,
                             _context, _span, asynchronous), chunkReady: true);
                     case PyList list:
                         EnsureFrameSlot();
                         PushFrame(new EmitFrame(list, depth) { Sequence = list });
-                        return new((true, false));
+                        return new(false);
                     case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
                         EnsureFrameSlot();
                         PushFrame(new EmitFrame(tupleLike, depth) { Sequence = tuple });
-                        return new((true, false));
+                        return new(false);
                     case PyDict dict:
                         return CompleteValue(PushDictFrameAsync(dict, depth, asynchronous), chunkReady: false);
                     case PyCounter counter:
@@ -581,20 +567,20 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static ValueTask<(bool Advanced, bool ChunkReady)> CompleteValue(ValueTask pending, bool chunkReady)
+        private static ValueTask<bool> CompleteValue(ValueTask pending, bool chunkReady)
         {
             if (!pending.IsCompleted) return AwaitValueAsync(pending, chunkReady);
             pending.GetAwaiter().GetResult();
-            return new((true, chunkReady));
+            return new(chunkReady);
         }
 
-        private static async ValueTask<(bool Advanced, bool ChunkReady)> AwaitValueAsync(ValueTask pending, bool chunkReady)
+        private static async ValueTask<bool> AwaitValueAsync(ValueTask pending, bool chunkReady)
         {
             await pending.ConfigureAwait(false);
-            return (true, chunkReady);
+            return chunkReady;
         }
 
-        private async ValueTask<(bool Advanced, bool ChunkReady)> CompleteDefaultAsync(ValueTask<object> pending,
+        private async ValueTask<bool> CompleteDefaultAsync(ValueTask<object> pending,
             int depth, GovernedByteBuilder builder, bool asynchronous, int defaultDepth)
             => await AdvanceValueAsync(await pending.ConfigureAwait(false), depth, builder, asynchronous, defaultDepth).ConfigureAwait(false);
 

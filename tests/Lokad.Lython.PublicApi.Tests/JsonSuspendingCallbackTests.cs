@@ -88,6 +88,7 @@ public sealed class JsonSuspendingCallbackTests
     [InlineData("json.loads(b'{\"x\":1}', object_hook=read)")]
     [InlineData("json.loads('1.5', parse_float=read)")]
     [InlineData("json.loads('NaN', parse_constant=read)")]
+    [InlineData("json.dumps([0, {1}, {'nested': [{2}]}], default=read)")]
     [InlineData("''.join(json.JSONEncoder(default=read).iterencode([{1}]))")]
     [InlineData("json.loads('{\"x\":[true,false,null]}', object_hook=read)")]
     public async Task SuspendedCallbacksCancelAndCompiledScriptsRemainReusable(string expression)
