@@ -1,0 +1,56 @@
+{
+  "verifiedSources": 5,
+  "codeObjects": 23,
+  "instructions": 593,
+  "matchedTapeAndRetainedAdmission": true,
+  "direct": [
+    {
+      "case": "diagnostic.shipment-routing-report",
+      "name": "choose",
+      "referenceDirect": true,
+      "candidateDirect": true
+    },
+    {
+      "case": "diagnostic.shipment-routing-report",
+      "name": "choose_policy",
+      "referenceDirect": true,
+      "candidateDirect": true
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "name": "apply",
+      "referenceDirect": true,
+      "candidateDirect": true
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "name": "<lambda>",
+      "referenceDirect": true,
+      "candidateDirect": true
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "name": "rounded_basis_points",
+      "referenceDirect": true,
+      "candidateDirect": true
+    },
+    {
+      "case": "short-return-shapes",
+      "name": "identity",
+      "referenceDirect": false,
+      "candidateDirect": true
+    },
+    {
+      "case": "short-return-shapes",
+      "name": "literal",
+      "referenceDirect": false,
+      "candidateDirect": true
+    },
+    {
+      "case": "short-return-shapes",
+      "name": "select",
+      "referenceDirect": true,
+      "candidateDirect": true
+    }
+  ]
+}

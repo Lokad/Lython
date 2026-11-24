@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
         if (target.OpCode == ExecutableOpCode.LoadLocal) callable = values[target.LocalSlot].Reference;
         else if (!TryResolveExecutableGlobal(code, target.NameIndex, scope, out callable)) return false;
         var call = code.CallSites[code.Instructions[callIndex].CallSiteIndex];
-        if (callable is not PyExecutableFunction { CodeObject.HasDirectIntegerReturn: true } function ||
+        if (callable is not PyExecutableFunction { CodeObject.HasDirectOperandReturn: true } function ||
             !function.TrySelectNativeCall(call, null, out var complete) ||
             !complete && !function.HasPreparedOmittedArguments(call.ArgumentCount)) return false;
 
@@ -108,8 +108,8 @@ internal sealed partial class LythonRuntime
             try
             {
                 var completed = complete
-                    ? function.TryStartSuppliedIntegerReturn(arguments, null, call.CallSpan, out returned)
-                    : function.TryStartPreparedIntegerReturn(call, arguments, scope, call.CallSpan, out returned);
+                    ? function.TryStartSuppliedOperandReturn(arguments, null, call.CallSpan, out returned)
+                    : function.TryStartPreparedOperandReturn(call, arguments, scope, call.CallSpan, out returned);
                 if (!completed) return false;
             }
             finally { scope.LeaveInterpreterFrame(); }

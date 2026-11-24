@@ -76,7 +76,7 @@ public sealed class ExecutableArchitectureTests
         var factory = Assert.Single(module.FunctionBindings()).CodeObject;
         var helper = Assert.Single(factory.FunctionBindings()).CodeObject;
 
-        Assert.True(helper.HasDirectIntegerReturn);
+        Assert.True(helper.HasDirectOperandReturn);
         Assert.Equal([ExecutableOpCode.Binary, ExecutableOpCode.Binary, ExecutableOpCode.Return],
             helper.Instructions.Select(instruction => instruction.OpCode));
         var captured = ~helper.Instructions[0].SecondInput - helper.CaptureOperandBase;

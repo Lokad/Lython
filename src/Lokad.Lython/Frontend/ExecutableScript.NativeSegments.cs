@@ -290,9 +290,9 @@ internal sealed partial class ExecutableCodeObject
             (uint)~source < (uint)Constants.Length && Constants[~source] is BigInteger);
     }
 
-    private bool HasClosedIntegerReturn(CancellationToken cancellationToken)
+    private bool HasClosedOperandReturn(CancellationToken cancellationToken)
     {
-        if (Instructions.Length < 2 || EntryIndex != 0 || ExceptionRegions.Count != 0 || CapturedLocalSlots.Count != 0)
+        if (Instructions.Length == 0 || EntryIndex != 0 || ExceptionRegions.Count != 0 || CapturedLocalSlots.Count != 0)
             return false;
 
         // Returned conditional expressions already have their own terminal
@@ -302,8 +302,8 @@ internal sealed partial class ExecutableCodeObject
         if (first.OpCode == ExecutableOpCode.JumpIfFalse)
         {
             var alternative = first.TargetIndex;
-            return Instructions[1] is { OpCode: ExecutableOpCode.Jump, TargetIndex: 2 } &&
-                alternative > 2 && alternative < Instructions.Length && IsInput(first.InputStart) &&
+            return alternative > 2 && alternative < Instructions.Length &&
+                Instructions[1] is { OpCode: ExecutableOpCode.Jump, TargetIndex: 2 } && IsInput(first.InputStart) &&
                 HasClosedPath(2, alternative - 1) && HasClosedPath(alternative, Instructions.Length - 1);
         }
         return HasClosedPath(0, Instructions.Length - 1);

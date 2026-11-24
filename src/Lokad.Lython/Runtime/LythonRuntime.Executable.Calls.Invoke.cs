@@ -46,11 +46,11 @@ internal sealed partial class LythonRuntime
                         : forwardedArgument is not null ? new Span<ExecutableSlot>(ref argument)
                         : execution.Stack.Values.AsSpan(start + call.ArgumentOffset, call.ArgumentCount);
                     if (function.TryCompleteNativeCall(call, arguments, functionReceiver, scope, completePositional, borrowedArgument >= 0,
-                        out var value, out var suppliedInteger))
+                        out var value, out var suppliedReturn))
                     {
                         scope.LeaveInterpreterFrame();
                         callEntered = false;
-                        if (suppliedInteger) PublishDirectIntegerCall(ref execution, scope, invocation, value);
+                        if (suppliedReturn) PublishSuppliedOperandReturn(ref execution, scope, invocation, value);
                         else PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], value);
                         return true;
                     }
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
             catch { execution.Stack.RetireTo(start); throw; }
         }
 
-        private static void PublishDirectIntegerCall(ref ExecutableWorkState execution,
+        private static void PublishSuppliedOperandReturn(ref ExecutableWorkState execution,
             ExecutionContext scope, ExecutionContext invocation, ExecutableSlot value)
         {
             var index = execution.InstructionIndex;

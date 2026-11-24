@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal static bool TryEvaluateDirectIntegerReturn<T>(ExecutableCodeObject code, T operands,
+    internal static bool TryEvaluateDirectOperandReturn<T>(ExecutableCodeObject code, T operands,
         ExecutionContext scope, ExecutableCaptures captures, out ExecutableSlot value)
         where T : IIntegerOperands, allows ref struct
     {
@@ -23,10 +23,10 @@ internal sealed partial class LythonRuntime
         scope.CheckExecution(first.Span);
         if (first.OpCode == ExecutableOpCode.Return)
         {
-            // Move the selected slot so an already published integer or tuple
-            // borrow keeps its identity. Wider values use ordinary evaluation.
+            // Return an existing value without creating a callee workspace.
+            // Preserve its identity, including the owner of a borrowed integer.
             value = ReadDirectInput(code, operands, captures, first.InputStart);
-            return value.TryGetInteger(out _);
+            return value.HasMaterializedValue || value.TryGetInteger(out _);
         }
         if (!operands.TryRead(code, first.InputStart, scope, out var left) ||
             !operands.TryRead(code, first.SecondInput, scope, out var right) ||

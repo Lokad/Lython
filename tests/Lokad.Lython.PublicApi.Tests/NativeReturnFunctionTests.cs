@@ -237,6 +237,25 @@ public sealed class NativeReturnFunctionTests
         { "all-native-string-methods", "def helper_strip(value):return value.strip()\ndef helper_lower(value):return value.lower()\ndef helper_upper(value):return value.upper()\ndef helper_islower(value):return value.islower()\ndef helper_isupper(value):return value.isupper()\ndef helper_istitle(value):return value.istitle()\ndef helper_isalpha(value):return value.isalpha()\ndef helper_isdigit(value):return value.isdigit()\ndef helper_isalnum(value):return value.isalnum()\ndef helper_isascii(value):return value.isascii()\ndef helper_isdecimal(value):return value.isdecimal()\ndef helper_isidentifier(value):return value.isidentifier()\ndef helper_isnumeric(value):return value.isnumeric()\ndef helper_isprintable(value):return value.isprintable()\ndef helper_isspace(value):return value.isspace()\nfor value in [' aÉ2 ', 'é', '²', '\\x1c', 'ÉLAN', 'Élan']:\n print([helper_strip(value),helper_lower(value),helper_upper(value),helper_islower(value),helper_isupper(value),helper_istitle(value),helper_isalpha(value),helper_isdigit(value),helper_isalnum(value),helper_isascii(value),helper_isdecimal(value),helper_isidentifier(value),helper_isnumeric(value),helper_isprintable(value),helper_isspace(value)])\n", "['aÉ2', ' aé2 ', ' AÉ2 ', False, False, False, False, False, False, False, False, False, False, True, False]\n['é', 'é', 'É', True, False, False, True, False, True, False, False, True, False, True, False]\n['²', '²', '²', False, False, False, False, True, True, False, False, False, True, True, False]\n['', '\\x1c', '\\x1c', False, False, False, False, False, False, True, False, False, False, False, True]\n['ÉLAN', 'élan', 'ÉLAN', False, True, False, True, False, True, False, False, True, False, True, False]\n['Élan', 'élan', 'ÉLAN', False, False, True, True, False, True, False, False, True, False, True, False]\n" },
         { "native-conversions", "def integer(v):return int(v)\ndef floating(v):return float(v)\ndef text(v):return str(v)\ndef length(v):return len(v)\ndef absolute(v):return abs(v)\nprint(integer(' 42 '), integer(b'-3'), floating('1.25'))\nprint(text(123), length({'a':1}), absolute(-7))\n", "42 -3 1.25\n123 1 7\n" },
         { "dictionary-alias", "def pick(row):return row['value']\nitems=[]\nrow={'value':items}\npicked=pick(row)\npicked.append('ok')\nprint(picked is items, row['value'])\n", "True ['ok']\n" },
+        { "conditional-operand-aliases", """
+            left, right = [], []
+            def pick(flag, first, second=right):
+                return first if flag else second
+            class Router:
+                def pick(self, flag, value):
+                    return value if flag else self
+            class Flag:
+                def __bool__(self):
+                    print('truth')
+                    return False
+            router = Router()
+            bound = router.pick
+            print(pick(True, left) is left, pick(False, left) is right)
+            print(router.pick(False, left) is router, bound(True, left) is left)
+            print(pick(Flag(), left) is right)
+            pick.__defaults__ = (left,)
+            print(pick(False, right) is left)
+            """, "True True\nTrue True\ntruth\nTrue\nTrue\n" },
         { "key-error-context", "def pick(row):return row['value']\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:pick({})\n except KeyError as error:print(error.args, error.__context__ is outer)\n", "('value',) True\n" },
         { "conversion-error-context", "def convert(v):return int(v)\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:convert('bad')\n except ValueError as error:print(type(error).__name__, error.__context__ is outer)\n", "ValueError True\n" },
         { "builtin-rebinding", "def convert(v):return int(v)\noriginal=int\nint=lambda value:value+'!'\nprint(convert('4'))\nint=original\nprint(convert('4'))\n", "4!\n4\n" },

@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
     private static bool CanBorrowForwardedInteger(object target, Span<ExecutableSlot> values, int source)
         => source >= 0 && values[source].IsUnpublishedInteger && target is PyExecutableFunction
         {
-            CodeObject: { HasDirectIntegerReturn: true } or { DirectDefinitionReturn.InputCount: > 0 } or
+            CodeObject: { HasDirectOperandReturn: true } or { DirectDefinitionReturn.InputCount: > 0 } or
                 { HasDirectDefinitionPair: true },
         };
 

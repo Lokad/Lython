@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1659](results/2026-11-24-direct-operand-return/README.md) returns stable
+aliases and literals through the existing direct path. The shipment report
+improves warm, through result and warm async with matched admission. The
+invoice slowdown does not repeat. Defaulted-rule time-to-result CPU rises
+1.39–1.89% in the longer block and stays open for the next call checkpoint.
+
 [B1657](results/2026-11-24-current-default-call-cpu/README.md) locates defaulted
 rule costs on the CPython comparison image. Construction remains in 544 of
 1,192 warm and 567 of 1,171 through-result runtime stacks. Explicit

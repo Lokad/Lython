@@ -81,17 +81,17 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // prepares an unpack window or enters the zeroed callee workspace.
     internal bool TryCompleteNativeCall(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments,
         object? receiver, LythonRuntime.ExecutionContext context, bool completePositional, bool borrowedArgument,
-        out LythonRuntime.ExecutableSlot result, out bool suppliedInteger)
+        out LythonRuntime.ExecutableSlot result, out bool suppliedReturn)
     {
         result = default;
-        suppliedInteger = completePositional &&
-            TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result, borrowedArgument);
-        if (suppliedInteger) return true;
+        suppliedReturn = completePositional &&
+            TryStartSuppliedOperandReturn(arguments, receiver, call.CallSpan, out result, borrowedArgument);
+        if (suppliedReturn) return true;
         if (receiver is not null) return false;
 
         if (!completePositional)
-            return CodeObject.HasDirectIntegerReturn &&
-                TryStartPreparedIntegerReturn(call, arguments, context, call.CallSpan, out result, borrowedArgument);
+            return CodeObject.HasDirectOperandReturn &&
+                TryStartPreparedOperandReturn(call, arguments, context, call.CallSpan, out result, borrowedArgument);
         if (arguments.Length != 1 || CodeObject.DirectDefinitionReturn is not { } definition) return false;
         // A captured value can outlive this call. A computed definition
         // consumes only the integer extracted before its admission callback.
@@ -212,7 +212,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
     }
 
-    internal bool TryStartPreparedIntegerReturn(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments,
+    internal bool TryStartPreparedOperandReturn(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result,
         bool borrowedArgument = false)
     {
@@ -222,21 +222,21 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (!call.IsPositionalOnly || ParameterCount != CodeObject.FirstTemporarySlot ||
             !HasPreparedOmittedArguments(arguments.Length)) return false;
         context.CheckExecution(span);
-        return TryStartDirectIntegerReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this, _closureCells, borrowedArgument), span, out result);
+        return TryStartDirectOperandReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this, _closureCells, borrowedArgument), span, out result);
     }
 
-    internal bool TryStartSuppliedIntegerReturn(Span<LythonRuntime.ExecutableSlot> arguments,
+    internal bool TryStartSuppliedOperandReturn(Span<LythonRuntime.ExecutableSlot> arguments,
         object? receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result, bool borrowedArgument = false)
     {
         result = default;
-        if (!CodeObject.HasDirectIntegerReturn ||
+        if (!CodeObject.HasDirectOperandReturn ||
             arguments.Length + (receiver is null ? 0 : 1) != CodeObject.FirstTemporarySlot) return false;
         return receiver is null
-            ? TryStartDirectIntegerReturn(new LythonRuntime.SlotIntegerOperands(arguments, _closureCells, borrowedArgument), span, out result)
-            : TryStartDirectIntegerReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments, _closureCells), span, out result);
+            ? TryStartDirectOperandReturn(new LythonRuntime.SlotIntegerOperands(arguments, _closureCells, borrowedArgument), span, out result)
+            : TryStartDirectOperandReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments, _closureCells), span, out result);
     }
 
-    private bool TryStartDirectIntegerReturn<T>(T operands, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+    private bool TryStartDirectOperandReturn<T>(T operands, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
         where T : LythonRuntime.IIntegerOperands, allows ref struct
     {
         try
@@ -244,7 +244,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             Closure.EnterFunctionCall(span);
             try
             {
-                return LythonRuntime.TryEvaluateDirectIntegerReturn(CodeObject, operands, Closure, _closureCells, out result);
+                return LythonRuntime.TryEvaluateDirectOperandReturn(CodeObject, operands, Closure, _closureCells, out result);
             }
             catch (LythonRuntimeException error)
             {

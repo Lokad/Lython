@@ -650,7 +650,7 @@ internal sealed partial class ExecutableCodeObject
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && EntryIndex < NativePrefixEnd
             && (capturedLocalSlots.Count == 0 ||
                 usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);
-        HasDirectIntegerReturn = CanRunNativeInstructions && HasClosedIntegerReturn(cancellationToken);
+        HasDirectOperandReturn = CanRunNativeInstructions && HasClosedOperandReturn(cancellationToken);
         if (CanRunNativeInstructions)
         {
             PrepareImmediatelyCalledDefinition(cancellationToken);
@@ -765,7 +765,7 @@ internal sealed partial class ExecutableCodeObject
 
     public bool CanRunNativeInstructions { get; }
 
-    internal bool HasDirectIntegerReturn { get; }
+    internal bool HasDirectOperandReturn { get; }
 
     public int NativePrefixEnd { get; }
 

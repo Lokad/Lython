@@ -452,12 +452,12 @@ internal sealed partial class LythonRuntime
                 : forwardedArgument is not null ? new Span<ExecutableSlot>(ref argument)
                 : Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
             var result = default(ExecutableSlot);
-            var directInteger = false;
+            var suppliedReturn = false;
             try
             {
                 if (!call.IsPositionalOnly)
                 {
-                    if (!CallFunction(call, start, target, arguments, false, out result, out directInteger)) goto Declined;
+                    if (!CallFunction(call, start, target, arguments, false, out result, out suppliedReturn)) goto Declined;
                 }
                 else if (!call.HasReceiver && ExecutionContext.IsRangeBuiltin(target))
                 {
@@ -496,7 +496,7 @@ internal sealed partial class LythonRuntime
                             return false;
                         }
                     }
-                    else if (!CallFunction(call, start, target, arguments, borrowedArgument >= 0, out result, out directInteger)) goto Declined;
+                    else if (!CallFunction(call, start, target, arguments, borrowedArgument >= 0, out result, out suppliedReturn)) goto Declined;
                 }
             }
             catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
@@ -512,7 +512,7 @@ internal sealed partial class LythonRuntime
             {
                 ref readonly var producer = ref Code.Instructions[Index];
                 var next = Index + 1;
-                if (directInteger && !producer.HasResultConsumer && next < Code.NativePrefixEnd &&
+                if (suppliedReturn && !producer.HasResultConsumer && next < Code.NativePrefixEnd &&
                     TryCombineCallAugmentation(Code, Values, producer, next, result, _scope.State, out var updated))
                 {
                     ref readonly var update = ref Code.Instructions[next];
@@ -545,10 +545,10 @@ internal sealed partial class LythonRuntime
         }
 
         private bool CallFunction(ExecutableCallSite call, int start, object target,
-            scoped Span<ExecutableSlot> arguments, bool borrowedArgument, out ExecutableSlot result, out bool directInteger)
+            scoped Span<ExecutableSlot> arguments, bool borrowedArgument, out ExecutableSlot result, out bool suppliedReturn)
         {
             result = ExecutableSlot.FromObject(PyNone.Instance);
-            directInteger = false;
+            suppliedReturn = false;
             if (_scope.State.CurrentRecursionDepth >= NativeCallDepth) return false;
             var function = target as PyExecutableFunction;
             object? receiver = call.HasReceiver && Values[start].Object is not PyNone ? Values[start].Object : null;
@@ -564,7 +564,7 @@ internal sealed partial class LythonRuntime
             {
                 if (borrowedArgument) _scope.CheckExecution(call.CallSpan);
                 if (function.TryCompleteNativeCall(call, arguments, receiver, _scope, completePositional, borrowedArgument,
-                    out result, out directInteger))
+                    out result, out suppliedReturn))
                     return true;
                 var consumedByIteration = call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly;
                 ExecutionContext? child;

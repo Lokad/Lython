@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-report",
+    "allocationBytes": [
+      1074816,
+      1075028
+    ],
+    "peakAdmission": [
+      2272767,
+      2272767
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      803512,
+      803512
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281502,
+      3281558
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      96312,
+      96536
+    ],
+    "peakAdmission": [
+      56399,
+      56399
+    ]
+  }
+]

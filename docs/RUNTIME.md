@@ -418,13 +418,14 @@ callables and annotation records in reverse construction order. A captured
 pair likewise refunds its unpublished functions, private cells and capture
 arrays before a catchable failure returns to its caller. Shared module
 storage keeps its existing owner.
-An eligible native call can complete an exact integer return or return a
-closed lexical definition before preparing callee workspace or a tuple-unpack
-destination. Both executable drivers use the same completion check. Exact
-operands can come from supplied arguments, prepared defaults and live
-captures. A conditional return can use the selected arm directly and
-preserve an existing integer alias. The same function-call and stack
-admission apply. Wide arithmetic and protocols use the ordinary activation.
+An eligible native call can return a bound operand, finish exact integer
+arithmetic or return a closed lexical definition before preparing callee
+workspace or a tuple-unpack destination. Both executable drivers use the same
+completion check. A literal or an operand from supplied arguments, prepared
+defaults or live captures can pass straight to the caller with its alias
+intact. A Boolean condition can select either operand directly. Function-call
+and stack admission still apply. Wide arithmetic and guest protocols use the
+ordinary activation.
 An eligible private zero-argument definition in a terminal callable pair
 can run its closed arithmetic at the definition boundary. The nested call
 keeps managed stack admission and cancellation. The returned lambda and
