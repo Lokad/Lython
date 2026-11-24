@@ -59,7 +59,7 @@ public sealed class BoundBoxCleanupTests
             var before = budget.ReservedBytes;
 
             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.BindFunctionArgumentsInto(slots,
-                [CallArgumentValue.Positional(alias), CallArgumentValue.Positional(alias)], Span, plan, context));
+                [CallArgumentValue.Positional(alias), CallArgumentValue.Positional(alias)], Span, plan, context, out _));
             Assert.Equal("TypeError", error.ExceptionType);
             Assert.Equal(before, budget.ReservedBytes);
 
@@ -67,7 +67,7 @@ public sealed class BoundBoxCleanupTests
             // expanded positionals. All tuple items retain the original alias.
             LythonRuntime.BindFunctionArgumentsInto(slots,
                 [CallArgumentValue.Positional(alias), CallArgumentValue.Keyword("key", PyNone.Instance),
-                    CallArgumentValue.Positional(alias)], Span, plan, context, receiver: alias);
+                    CallArgumentValue.Positional(alias)], Span, plan, context, out _, receiver: alias);
             var tuple = Assert.IsType<PyTuple>(slots[plan.VariadicListIndex].Object);
             Assert.Equal(3, tuple.Count);
             for (var i = 0; i < tuple.Count; i++) Assert.Same(alias, tuple[i]);
@@ -96,7 +96,7 @@ public sealed class BoundBoxCleanupTests
             else hook.RefuseGrowth = _ => true;
 
             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.BindFunctionArgumentsInto(slots,
-                [CallArgumentValue.Positional(PyNone.Instance)], Span, plan, context));
+                [CallArgumentValue.Positional(PyNone.Instance)], Span, plan, context, out _));
             if (cancelOnAdmission) Assert.Equal("execution canceled", error.Message);
             else
             {
@@ -132,7 +132,7 @@ public sealed class BoundBoxCleanupTests
             if (duplicate) supplied = [.. supplied, CallArgumentValue.Keyword("extra", PyNone.Instance)];
 
             var error = Assert.Throws<LythonRuntimeException>(() =>
-                LythonRuntime.BindFunctionArgumentsInto(slots, supplied, Span, plan, context));
+                LythonRuntime.BindFunctionArgumentsInto(slots, supplied, Span, plan, context, out _));
             Assert.Equal("TypeError", error.ExceptionType);
             Assert.Contains(duplicate ? "multiple values" : "missing argument", error.Message);
             Assert.Null(slots[plan.VariadicDictionaryIndex].Object);
@@ -162,7 +162,7 @@ public sealed class BoundBoxCleanupTests
             else hook.RefuseGrowth = _ => true;
 
             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.BindFunctionArgumentsInto(slots,
-                [CallArgumentValue.Keyword("extra", PyNone.Instance)], Span, plan, context));
+                [CallArgumentValue.Keyword("extra", PyNone.Instance)], Span, plan, context, out _));
             if (cancelOnAdmission) Assert.Equal("execution canceled", error.Message);
             else
             {

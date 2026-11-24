@@ -48,13 +48,13 @@ internal sealed partial class LythonRuntime
         ReadOnlySpan<ExecutableSlot> operands = default,
         int? storageCapacity = null)
         => BindOwnedFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
-            storageCapacity, deferProtocolDefaults: false, out _);
+            storageCapacity, deferProtocolDefaults: false, out _, out _);
 
     private static BoundFunctionArguments BindOwnedFunctionArguments(
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
         ReadOnlySpan<ExecutableSlot> operands, int? storageCapacity, bool deferProtocolDefaults,
-        out int firstProtocolDefault)
+        out int firstProtocolDefault, out long syntheticKeyBytes)
     {
         // Values travel in plan layout order (positional, keyword-only, then
         // variadic names). The layout lives on the shared plan; the final value
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
         try
         {
             firstProtocolDefault = BindFunctionArgumentsInto(storage.Values, arguments, span, plan, context,
-                deferProtocolDefaults, receiver, callSite, operands);
+                out syntheticKeyBytes, deferProtocolDefaults, receiver, callSite, operands);
             return storage;
         }
         catch
@@ -86,14 +86,14 @@ internal sealed partial class LythonRuntime
         // defaults. Inspect their live storage at lookup, after owning borrowed
         // operands, rather than saving a pre-admission protocol decision.
         var bound = BindOwnedFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
-            storageCapacity, deferProtocolDefaults: true, out var firstProtocolDefault);
+            storageCapacity, deferProtocolDefaults: true, out var firstProtocolDefault, out var syntheticKeyBytes);
         return firstProtocolDefault < 0 ? new(bound)
-            : CompleteProtocolDefaultsAsync(bound, span, plan, context, firstProtocolDefault);
+            : CompleteProtocolDefaultsAsync(bound, span, plan, context, firstProtocolDefault, syntheticKeyBytes);
     }
 
     private static async ValueTask<BoundFunctionArguments> CompleteProtocolDefaultsAsync(
         BoundFunctionArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
-        int firstProtocolDefault)
+        int firstProtocolDefault, long syntheticKeyBytes)
     {
         var values = bound.Values;
         try
@@ -114,7 +114,15 @@ internal sealed partial class LythonRuntime
         }
         catch
         {
-            ReturnBoundArguments(bound);
+            // Binding never published its variadic containers. The callback can
+            // retain supplied values and original keyword keys through aliases.
+            var bytes = syntheticKeyBytes;
+            if (plan.VariadicListIndex >= 0)
+                bytes = checked(bytes + ((PyTuple)values[plan.VariadicListIndex].Reference!).CommittedStorageBytes);
+            if (plan.VariadicDictionaryIndex >= 0)
+                bytes = checked(bytes + ((PyDict)values[plan.VariadicDictionaryIndex].Reference!).CommittedStorageBytes);
+            try { ReturnBoundArguments(bound); }
+            finally { context.MemoryGovernor.Release(bytes); }
             throw;
         }
     }
@@ -128,6 +136,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         FunctionBindingPlan plan,
         ExecutionContext context,
+        out long syntheticKeyBytes,
         bool deferProtocolDefaults = false,
         object? receiver = null,
         ExecutableCallSite? callSite = null,
@@ -136,7 +145,7 @@ internal sealed partial class LythonRuntime
         var firstExtraPositional = 0;
         var extraPositionalCount = 0;
         PyDict? extraKeywords = null;
-        long syntheticKeyBytes = 0;
+        syntheticKeyBytes = 0;
         try
         {
             var positionalIndex = 0;

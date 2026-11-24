@@ -1131,7 +1131,9 @@ supplied positional prefix. Native and owned calls share that binder. Completed
 binding enters the body directly. Genuinely pending keyword-default lookup
 resumes at its first unresolved parameter and reads live defaults in order. It
 retains call admission, caller operands and bound storage until completion or
-failure, then uses the same body transition.
+failure. A failed lookup releases its private variadic containers and newly
+created overflow keyword names. Supplied keys and values keep their original
+owners. A successful lookup enters the body with the bound storage.
 Eligible functions and ordinary methods defer lexical contexts independently of
 signature shape. Slot-only factories can construct closures from standalone
 cells in the admitted work state. The compiled parent slot map supplies both

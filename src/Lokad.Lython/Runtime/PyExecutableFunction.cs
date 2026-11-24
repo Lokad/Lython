@@ -155,7 +155,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             arguments.CopyTo(values[first..]);
         }
         else LythonRuntime.BindFunctionArgumentsInto(values[..ParameterCount],
-            [], span, this, context, receiver: receiver, callSite: call, operands: arguments);
+            [], span, this, context, out _, receiver: receiver, callSite: call, operands: arguments);
         StartInline(values, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame, out _);
     }

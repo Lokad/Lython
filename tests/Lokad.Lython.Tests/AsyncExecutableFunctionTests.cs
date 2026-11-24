@@ -146,6 +146,55 @@ public sealed class AsyncExecutableFunctionTests
         Assert.Equal(0, context.State.CurrentRecursionDepth);
     }
 
+    [Fact]
+    public async Task FailedSuspendingDefaultLookupRefundsUnpublishedVariadicArguments()
+    {
+        const string source = """
+            class Key:
+                def __hash__(self): return hash('required')
+                def __eq__(self, other): return tap(other)
+            def f(*items, required, **options): return required
+            f.__kwdefaults__ = {Key(): 0}
+            record(f)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var scope = budget.CreateScope())
+        {
+            var (code, context, capture) = Prepare(source, new LythonRunOptions { MemoryBudget = scope });
+            var tap = new SuspendedTap(fail: true);
+            context.Variables["tap"] = tap;
+            await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+            var function = Assert.Single(capture.Functions);
+            CallArgumentValue[] arguments =
+            [CallArgumentValue.Positional(BigInteger.One), CallArgumentValue.Keyword("overflow", BigInteger.One)];
+            var pending = function.InvokeAsync(arguments, Span, context).AsTask();
+            try
+            {
+                await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.False(pending.IsCompleted);
+                tap.Release.TrySetResult();
+                var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
+                Assert.Equal("ValueError", error.ExceptionType);
+
+                // The first call also warms reusable binding and callback storage.
+                var admitted = budget.ReservedBytes;
+                error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                    await function.InvokeAsync(arguments, Span, context));
+                Assert.Equal("ValueError", error.ExceptionType);
+                Assert.Equal(admitted, budget.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally
+            {
+                tap.Release.TrySetResult();
+                try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+                catch (LythonRuntimeException) { }
+                finally { context.State.CloseResources(); }
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData("g=42\ndef g(x=tap(1)):\n    return x")]
     [InlineData("g=42\n@tap\ndef g():\n    return 1")]
