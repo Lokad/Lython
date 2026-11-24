@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1612](results/2026-11-24-shared-parser-statements/README.md) shares
+statement parsing and reuses source spans for separation. Sparse validator
+compile elapsed falls 3.10–5.04% and time to result falls 1.69–3.52% with
+lower CPU. Manifest time-to-result CPU rises at near-flat elapsed. The
+same archive records why the earlier declaration-discovery trial stayed private.
+
 [B1610](results/2026-11-24-callable-singleton-defaults/README.md) and
 [B1611](results/2026-11-24-callable-singleton-defaults/isolated/README.md)
 remove singleton-default tuple allocation from the defaulted factory pair.

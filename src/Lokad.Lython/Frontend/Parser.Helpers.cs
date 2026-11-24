@@ -126,36 +126,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        var statements = new List<StatementSyntax>();
-        SkipEndOfLines();
-
-        StatementSyntax? previousStatement = null;
-        var previousEndTokenIndex = 0;
-        while (CurrentToken is not Token.Dedent and not Token.End)
-        {
-            var gapStartTokenIndex = _position;
-            var pendingBeforeParse = _pendingStatements.Count;
-            var statement = ParseStatement();
-            if (statement is null)
-            {
-                Synchronize();
-                previousStatement = null;
-            }
-            else
-            {
-                statements.Add(statement);
-                if (previousStatement is not null)
-                {
-                    CheckStatementSeparation(previousStatement.Span, statement.Span, previousEndTokenIndex, gapStartTokenIndex);
-                }
-
-                previousStatement = statement;
-                previousEndTokenIndex = SeparationGapEnd(previousEndTokenIndex, gapStartTokenIndex, pendingBeforeParse);
-            }
-
-            SkipEndOfLines();
-        }
-
+        var statements = ParseStatements(stopAtDedent: true);
         if (statements.Count == 0)
         {
             AddDiagnostic(code, "Expected at least one statement in block.", _position);

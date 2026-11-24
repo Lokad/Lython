@@ -20,6 +20,8 @@ public sealed class StatementSeparationScenarioTests
             "f = print\nf(1)f(2)\n",
             "def f():\n    return [1]return f()\n",
             "def f():\n    a = 1 b = 2\n    return a\n",
+            "a = '''multiline\nvalue''' b = 2\n",
+            "def f():\n\ta = (\n\t    1\n\t) b = 2\n",
         };
         foreach (var source in cases)
         {
@@ -132,7 +134,9 @@ public sealed class StatementSeparationScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import os, sys
-            a = 1; b = 2
+            a = (
+                1
+            ); b = 2
             def f(x):
                 if x:
                     return x

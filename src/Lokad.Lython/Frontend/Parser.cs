@@ -33,8 +33,6 @@ internal sealed partial class Parser
     public FrontendResult Parse()
     {
         CheckCancellation();
-        var statements = new List<StatementSyntax>();
-
         var gluedNumbers = _tokens.GluedNumbers;
         for (var index = 0; index < gluedNumbers.Count; index++)
         {
@@ -42,12 +40,27 @@ internal sealed partial class Parser
             var start = gluedNumbers[index];
             AddDiagnostic("LA1009", "Invalid number literal.", Merge(start, start + 1));
         }
-        SkipEndOfLines();
+        var statements = ParseStatements(stopAtDedent: false);
 
+        CheckCancellation();
+        if (_diagnostics.Count > 0)
+        {
+            return new FrontendResult(null, _diagnostics);
+        }
+
+        return new FrontendResult(new ScriptSyntax(statements), Array.Empty<LythonDiagnostic>());
+    }
+
+    private List<StatementSyntax> ParseStatements(bool stopAtDedent)
+    {
+        var statements = new List<StatementSyntax>();
+        SkipEndOfLines();
         StatementSyntax? previousStatement = null;
         var previousEndTokenIndex = 0;
-        while (CurrentToken != Token.End)
+        while (true)
         {
+            var token = CurrentToken;
+            if (token == Token.End || stopAtDedent && token == Token.Dedent) break;
             var gapStartTokenIndex = _position;
             var pendingBeforeParse = _pendingStatements.Count;
             var statement = ParseStatement();
@@ -70,14 +83,7 @@ internal sealed partial class Parser
 
             SkipEndOfLines();
         }
-
-        CheckCancellation();
-        if (_diagnostics.Count > 0)
-        {
-            return new FrontendResult(null, _diagnostics);
-        }
-
-        return new FrontendResult(new ScriptSyntax(statements), Array.Empty<LythonDiagnostic>());
+        return statements;
     }
 
     // Statements on the same source line must be separated by a semicolon.
@@ -94,9 +100,10 @@ internal sealed partial class Parser
             return;
         }
 
-        _tokens.LineOfPosition(previousEnd, out var previousLine, out _);
-        _tokens.LineOfPosition(currentSpan.Start, out var currentLine, out _);
-        if (currentLine != previousLine)
+        // The current span already locates the physical line. The previous
+        // endpoint cannot be after its start, so only the lower bound matters.
+        var currentLineStart = currentSpan.Start - (currentSpan.Column - 1);
+        if (previousEnd < currentLineStart)
         {
             return;
         }

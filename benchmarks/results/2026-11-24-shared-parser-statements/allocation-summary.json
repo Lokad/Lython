@@ -1,0 +1,35 @@
+[
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      217728,
+      217728
+    ],
+    "retainedAdmission": [
+      212960,
+      212960
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "allocationBytes": [
+      44688,
+      44688
+    ],
+    "retainedAdmission": [
+      67040,
+      67040
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      2170816,
+      2170816
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  }
+]

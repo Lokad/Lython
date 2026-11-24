@@ -322,6 +322,8 @@ token endpoints to create each final source span directly. Diagnostic offsets
 and lengths count UTF-16 code units after Lython strips a leading byte-order
 mark and normalizes CRLF and CR line endings to LF. Formatted fields map their
 offsets to that same source. Lines and columns are one-based.
+Module and indented suites share statement parsing and recovery. Separator
+checks use the next statement's existing span to locate its physical line.
 Abstract statement and expression checks use the same binding state. Their
 branch, short-circuit and diagnostic order remains explicit.
 Name-binding diagnostics use the prepared local-name sets and check each
