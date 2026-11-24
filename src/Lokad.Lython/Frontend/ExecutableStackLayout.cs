@@ -604,7 +604,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             ExecutableOpCode.ApplyOperation => constants[instruction.ConstantIndex] is
                 ExecutableStartDisplay or ExecutableFinishComprehension or ExecutableFinishTuple or
                 ExecutableFinishCall or ExecutableCallWithKeywordMapping or ExecutableCreateGeneratorExpression or
-                ExecutableCreateFunction or ExecutableCreateLambda,
+                ExecutableCreateFunction,
             _ => false,
         };
 
@@ -701,7 +701,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         ExecutableBindTypeAlias => (0, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
         ExecutableCreateFunction function => (function.InputCount, 1),
-        ExecutableCreateLambda lambda => (lambda.InputCount, 1),
         ExecutableCreateClass type => (checked(type.Syntax.Decorators.Count +
             (type.ExpandedHeader ? 1 : type.DirectHeaderCount)), 0),
         _ => throw new InvalidOperationException($"Unknown prepared operand effect: {operation.GetType().Name}.")

@@ -3,21 +3,18 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
+internal enum ExecutableDefinitionKind : byte { Statement, Lambda, NamespaceLambda }
+
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations,
-    ExecutableInstruction[]? EagerAnnotationReads, bool DirectKeywordDefault = false) : ExecutableOperation
+    ExecutableInstruction[]? EagerAnnotationReads, bool DirectKeywordDefault = false,
+    ExecutableDefinitionKind Kind = ExecutableDefinitionKind.Statement) : ExecutableOperation
 {
     internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
+    internal bool IsLambda => Kind != ExecutableDefinitionKind.Statement;
 }
-internal readonly record struct ExecutableLambdaBinding(
-    ExecutableCodeObject CodeObject, FunctionParameterLayout Layout, bool IsGenerator, bool NamespaceClosure);
 
-internal sealed record ExecutableCreateLambda(ExecutableLambdaBinding Binding) : ExecutableOperation
-{
-    internal ExecutableCodeObject CodeObject => Binding.CodeObject;
-    internal int InputCount => Binding.Layout.DefaultStorageCount;
-}
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(ClassDefinitionStatementSyntax Syntax, ExecutableCodeObject Body,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters, IReadOnlyList<LoweredCallArgument> GenericHeaderArguments,
@@ -165,13 +162,13 @@ internal sealed partial class ExecutableScript
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
             block = CompileFunctionDefaults(lambda.Lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false, out _);
-            if (lambda.PreparedCode is null && _classBody)
+            if (lambda.PreparedDefinition is null && _classBody)
                 CompileNamespaceLambda(lambda, _compilation);
-            else if (lambda.PreparedCode is null)
+            else if (lambda.PreparedDefinition is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     [], lambda.ScopeFacts, generator: lambda.IsGenerator,
                     qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda));
-            EmitDefinition(new ExecutableCreateLambda(lambda.Binding), lambda.Span, block);
+            EmitDefinition(lambda.Definition, lambda.Span, block);
             return block;
         }
 

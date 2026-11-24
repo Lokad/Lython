@@ -24,7 +24,7 @@ internal sealed partial class ExecutableCodeObject
         if (Instructions[createIndex].OpCode != ExecutableOpCode.ApplyOperation ||
             Constants[Instructions[createIndex].ConstantIndex] is not ExecutableCreateFunction
             {
-                DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
+                IsLambda: false, DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
                 TypeParameters: null, DirectKeywordDefault: false,
             } definition) return null;
 
@@ -84,7 +84,7 @@ internal sealed partial class ExecutableCodeObject
             Instructions[nested] is not { OpCode: ExecutableOpCode.ApplyOperation, ImmediatelyCalledDefinitionCapture: 0 } ||
             Constants[Instructions[creation].ConstantIndex] is not ExecutableCreateFunction
             {
-                InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
+                IsLambda: false, InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
                 EagerAnnotationReads: null, PostponedAnnotations: null,
             } left ||
             left.CodeObject is not { UsesOnlyLexicalSlots: true, ScopeFacts.RequiresClassCell: false,
@@ -146,7 +146,7 @@ internal sealed partial class ExecutableCodeObject
             Instructions[start] is not { OpCode: ExecutableOpCode.ApplyOperation } create ||
             Constants[create.ConstantIndex] is not ExecutableCreateFunction
             {
-                InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
+                IsLambda: false, InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
                 EagerAnnotationReads: null, PostponedAnnotations: null, ParameterLayout.ParameterCount: 0,
             } definition ||
             !TryReadDefinitionStore(start, out var target) || CapturedLocalSlots.Contains(target) ||
@@ -194,8 +194,8 @@ internal sealed partial class ExecutableCodeObject
             Instructions[storeIndex] is not { OpCode: ExecutableOpCode.StoreLocal, StoresCapturedLocal: true } store ||
             Instructions[^2] is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: false } create ||
             create.InputStart != store.LiveExtent ||
-            Constants[create.ConstantIndex] is not ExecutableCreateLambda { InputCount: 0,
-                Binding: { NamespaceClosure: false, IsGenerator: false } } lambda ||
+            Constants[create.ConstantIndex] is not ExecutableCreateFunction
+                { Kind: ExecutableDefinitionKind.Lambda, InputCount: 0, IsGenerator: false } lambda ||
             !lambda.CodeObject.UsesOnlyLexicalSlots || lambda.CodeObject.ScopeFacts.RequiresClassCell ||
             lambda.CodeObject.CaptureSources is not { Slots.Length: 1 } capture ||
             !ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) || capture.Slots[0] != store.LocalSlot ||
@@ -275,16 +275,12 @@ internal sealed partial class ExecutableCodeObject
 
         if (index >= Instructions.Length || Instructions[index] is not { OpCode: ExecutableOpCode.ApplyOperation } create ||
             create.InputStart != start.ResultSlot) return false;
-        var body = Constants[create.ConstantIndex] switch
-        {
-            ExecutableCreateFunction { DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
-                TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0 } definition
-                when ReferenceEquals(definition.ParameterLayout, layout) => definition.CodeObject,
-            ExecutableCreateLambda { Binding: { IsGenerator: false, NamespaceClosure: false } binding }
-                when ReferenceEquals(binding.Layout, layout) => binding.CodeObject,
-            _ => null,
-        };
-        if (body is not { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false }) return false;
+        if (Constants[create.ConstantIndex] is not ExecutableCreateFunction
+            {
+                Kind: not ExecutableDefinitionKind.NamespaceLambda, DecoratorCount: 0, IsGenerator: false,
+                DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0,
+                CodeObject: { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false },
+            } definition || !ReferenceEquals(definition.ParameterLayout, layout)) return false;
         creationIndex = index;
         return true;
 

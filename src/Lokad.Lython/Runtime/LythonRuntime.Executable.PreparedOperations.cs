@@ -156,34 +156,6 @@ internal sealed partial class LythonRuntime
                     }
                     else pending = CreateExecutableFunction(ref execution, invocation, function, instruction, asynchronous);
                     break;
-                case ExecutableCreateLambda lambda:
-                    {
-                        var binding = lambda.Binding;
-                        int[]? lambdaCaptures = null;
-                        if (invocation is null && (binding.NamespaceClosure || !CanDefineWithoutInvocation(
-                            lambda.CodeObject, execution.Code, execution.Captures, scope, span, out lambdaCaptures)))
-                            return false;
-                        var first = instruction.InputStart;
-                        PyFunctionBase function;
-                        try
-                        {
-                            if (invocation is null)
-                            {
-                                var cells = CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures);
-                                function = CreateLexicalFunctionValue(binding.Layout, binding.CodeObject, cells, binding.IsGenerator,
-                                    context, span, execution.Stack.Slice(first, lambda.InputCount).Span);
-                            }
-                            else
-                            {
-                                var defaults = execution.Stack.Slice(first, lambda.InputCount).Span;
-                                function = CreateLambdaFunction(binding, ReadExecutableDefaults(binding.Layout, defaults), invocation, span);
-                                defaults.Clear();
-                            }
-                        }
-                        finally { execution.Stack.RetireTo(instruction.ResultSlot); }
-                        PublishInstructionResult(ref execution, invocation, instruction, function);
-                    }
-                    break;
                 case ExecutableStartClassHeader header when invocation is not null:
                     PublishInstructionResult(ref execution, invocation, instruction, new CallExpansion.CallArgumentAccumulator(header.Count, context, ClassHeaderExpansionTarget));
                     break;

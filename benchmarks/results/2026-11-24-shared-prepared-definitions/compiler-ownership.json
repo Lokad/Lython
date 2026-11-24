@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.captured-rule-closures",
+    "compileAllocationBytes": [
+      72936,
+      72976
+    ],
+    "retainedAdmission": [
+      76567,
+      76567
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "compileAllocationBytes": [
+      65760,
+      65800
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "compileAllocationBytes": [
+      46008,
+      46008
+    ],
+    "retainedAdmission": [
+      63610,
+      63610
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "compileAllocationBytes": [
+      81064,
+      81064
+    ],
+    "retainedAdmission": [
+      92127,
+      92127
+    ]
+  }
+]

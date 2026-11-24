@@ -363,7 +363,7 @@ internal sealed partial class LythonRuntime
     {
         var defaults = EvaluateFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, context, lambda.Span, false)
             .GetAwaiter().GetResult();
-        return CreateLambdaWithUnpublishedDefaults(lambda.Binding, defaults, context, lambda.Span);
+        return CreateLambdaWithUnpublishedDefaults(lambda.Definition, defaults, context, lambda.Span);
     }
 
     private static object EvaluateLoweredAssignmentExpression(LoweredAssignmentExpression assignment, ExecutionContext context)

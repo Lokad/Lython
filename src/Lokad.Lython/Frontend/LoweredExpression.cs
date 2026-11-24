@@ -324,14 +324,11 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
     public bool IsGenerator { get; }
-    internal ExecutableCodeObject? PreparedCode { get; private set; }
-    public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
-    private bool NamespaceClosure { get; set; }
-    internal ExecutableLambdaBinding Binding => new(Code, ParameterLayout, IsGenerator, NamespaceClosure);
+    internal ExecutableCreateFunction? PreparedDefinition { get; private set; }
+    internal ExecutableCreateFunction Definition => PreparedDefinition.RequireNotNull();
 
     internal void CompleteCompilation(ExecutableCodeObject code, bool namespaceClosure = false)
-    {
-        PreparedCode = code;
-        NamespaceClosure = namespaceClosure;
-    }
+        => PreparedDefinition = new ExecutableCreateFunction(code, ParameterLayout, 0, IsGenerator, 0,
+            [], null, null, null,
+            Kind: namespaceClosure ? ExecutableDefinitionKind.NamespaceLambda : ExecutableDefinitionKind.Lambda);
 }

@@ -34,7 +34,7 @@ internal sealed partial class ExecutableScript
             {
                 case LambdaExpressionSyntax lambdaSyntax:
                     var lambda = lambdaSyntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerExpression(lambdaSyntax);
-                    if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda, compilation);
+                    if (lambda.PreparedDefinition is null) CompileNamespaceLambda(lambda, compilation);
                     break;
                 case GeneratorExpressionSyntax generatorSyntax:
                     var generator = generatorSyntax.PreparedCallable ?? (LoweredGeneratorExpression)LoweredScript.LowerExpression(generatorSyntax);
@@ -310,9 +310,6 @@ internal sealed partial class ExecutableScript
                     case ExecutableBindTypeAlias:
                         needsMirroring = true;
                         break;
-                    case ExecutableCreateLambda lambda:
-                        PrepareChild(lambda.CodeObject);
-                        break;
                     case ExecutableCreateGeneratorExpression generator:
                         completeChildren = false;
                         PrepareChild(generator.CodeObject);
@@ -380,7 +377,7 @@ internal sealed partial class ExecutableScript
                 if (instruction.OpCode != ExecutableOpCode.ApplyOperation ||
                     code.Constants[instruction.ConstantIndex] is not ExecutableCreateFunction
                     {
-                        InputCount: 0, IsGenerator: false, TypeParameters: null,
+                        IsLambda: false, InputCount: 0, IsGenerator: false, TypeParameters: null,
                         DeferredAnnotations.Length: 0, EagerAnnotationReads: null, PostponedAnnotations: null,
                         CodeObject:
                         {

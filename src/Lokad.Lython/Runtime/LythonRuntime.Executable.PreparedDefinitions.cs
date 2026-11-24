@@ -213,14 +213,11 @@ internal sealed partial class LythonRuntime
 
             ref readonly var create = ref instructions[index++];
             scope.CheckExecution(create.Span);
-            var operation = factory.Constants[create.ConstantIndex];
-            var result = operation is ExecutableCreateFunction definition
-                ? definition.EagerAnnotationReads is { } reads
-                    ? CreateClosedEagerDefinition(definition, factory, reads, scope, create.Span, defaults)
-                    : CreateFunctionValue(layout, definition.CodeObject, GetGlobalContext(scope),
-                        default, defaults, false, scope, create.Span, postponedAnnotations: definition.PostponedAnnotations)
-                : CreateFunctionValue(layout, ((ExecutableCreateLambda)operation!).CodeObject, GetGlobalContext(scope),
-                    default, defaults, false, scope, create.Span);
+            var definition = (ExecutableCreateFunction)factory.Constants[create.ConstantIndex]!;
+            var result = definition.EagerAnnotationReads is { } reads
+                ? CreateClosedEagerDefinition(definition, factory, reads, scope, create.Span, defaults)
+                : CreateFunctionValue(layout, definition.CodeObject, GetGlobalContext(scope),
+                    default, defaults, false, scope, create.Span, postponedAnnotations: definition.PostponedAnnotations);
             privateDefaults = defaults;
             defaults = default;
             return result;
@@ -314,7 +311,8 @@ internal sealed partial class LythonRuntime
         => code.UsesOnlyLexicalSlots && !code.ScopeFacts.RequiresClassCell;
 
     private static bool NeedsDefinitionContext(ExecutableCreateFunction operation, ExecutionContext scope)
-        => operation.DecoratorCount != 0 || operation.DeferredAnnotations.Length != 0 ||
+        => operation.IsLambda ? operation.Kind == ExecutableDefinitionKind.NamespaceLambda :
+            operation.DecoratorCount != 0 || operation.DeferredAnnotations.Length != 0 ||
             operation.TypeParameters is not null || HasTypeParameterScope(scope);
 
     // Inline and array-backed lexical calls have the same owner and operand
@@ -415,6 +413,19 @@ internal sealed partial class LythonRuntime
         {
             var span = instruction.Span;
             var first = instruction.InputStart;
+            if (operation.IsLambda)
+            {
+                PyFunctionBase lambda;
+                try
+                {
+                    var values = execution.Stack.Slice(first, operation.InputCount).Span;
+                    lambda = CreateLambdaFunction(operation, ReadExecutableDefaults(operation.ParameterLayout, values), context, span);
+                    values.Clear();
+                }
+                finally { execution.Stack.RetireTo(instruction.ResultSlot); }
+                PublishInstructionResult(ref execution, context, instruction, lambda);
+                return ValueTask.CompletedTask;
+            }
             context.EnterInterpreterFrame(span);
             PyFunctionBase function;
             var transferred = false;

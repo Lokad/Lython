@@ -125,7 +125,7 @@ internal sealed partial class LythonRuntime
         catch { prepared.RefundUnpublished(context.MemoryGovernor); throw; }
     }
 
-    private static PyFunctionBase CreateLambdaWithUnpublishedDefaults(ExecutableLambdaBinding binding,
+    private static PyFunctionBase CreateLambdaWithUnpublishedDefaults(ExecutableCreateFunction binding,
         FunctionDefaults defaults, ExecutionContext context, LythonSourceSpan span)
     {
         try { return CreateLambdaFunction(binding, defaults, context, span); }

@@ -1,5 +1,4 @@
 using Lokad.Lython.Frontend;
-using Lokad.Lython.Runtime.Text;
 using PreparedFunctionAnnotations = (object? Values, int Capacity, bool Repeated);
 
 namespace Lokad.Lython.Runtime;
@@ -69,9 +68,9 @@ internal sealed partial class LythonRuntime
                     var value = EvaluateClosedIntegerSequence<CaptureIntegerSource>(body, argument, scope, ref inner);
                     scope.CheckExecution(body.Instructions[inner++].Span); // The lambda's private capture.
                     ref readonly var create = ref body.Instructions[inner];
-                    var lambda = ((ExecutableCreateLambda)body.Constants[create.ConstantIndex]!).Binding;
+                    var lambda = (ExecutableCreateFunction)body.Constants[create.ConstantIndex]!;
                     scope.CheckExecution(create.Span);
-                    var function = CreateFunctionValue(lambda.Layout, lambda.CodeObject, GetGlobalContext(scope), default,
+                    var function = CreateFunctionValue(lambda.ParameterLayout, lambda.CodeObject, GetGlobalContext(scope), default,
                         default, false, scope, create.Span, uncapturedLocal: new Span<ExecutableSlot>(ref value));
                     scope.CheckExecution(body.Instructions[^1].Span);
                     return function;
@@ -102,30 +101,15 @@ internal sealed partial class LythonRuntime
         private bool ApplyDefinition(in ExecutableInstruction instruction)
         {
             var span = instruction.Span;
-            switch (Code.Constants[instruction.ConstantIndex])
-            {
-                case ExecutableCreateFunction function
-                    when !NeedsDefinitionContext(function, _scope) && CanDefineWithoutInvocation(function.CodeObject,
-                        Code, _cells, _scope, span, out var functionCaptures):
-                    if (instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue &&
-                        TryCompleteImmediatelyCalledDefinition(function.CodeObject, instruction.ImmediatelyCalledDefinitionCapture))
-                        return true;
-                    // Defaults have executed and these direct annotation reads
-                    // need no child evaluator. Like a lambda, construction
-                    // finishes in the current admitted body.
-                    Publish(instruction, CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
-                        function.IsGenerator, function.InputCount, functionCaptures,
-                        function.PostponedAnnotations, function.EagerAnnotationReads, function.DirectKeywordDefault));
-                    return true;
-                case ExecutableCreateLambda { Binding.NamespaceClosure: false } lambda
-                    when CanDefineWithoutInvocation(lambda.CodeObject, Code, _cells, _scope, span, out var lambdaCaptures):
-                    var binding = lambda.Binding;
-                    Publish(instruction, CreateInlineDefinition(instruction, binding.CodeObject, binding.Layout,
-                        binding.IsGenerator, lambda.InputCount, lambdaCaptures));
-                    return true;
-                default:
-                    return false;
-            }
+            if (Code.Constants[instruction.ConstantIndex] is not ExecutableCreateFunction definition ||
+                NeedsDefinitionContext(definition, _scope) || !CanDefineWithoutInvocation(definition.CodeObject,
+                    Code, _cells, _scope, span, out var captures)) return false;
+            if (instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue &&
+                TryCompleteImmediatelyCalledDefinition(definition.CodeObject, instruction.ImmediatelyCalledDefinitionCapture))
+                return true;
+
+            Publish(instruction, CreateInlineDefinition(instruction, definition, captures));
+            return true;
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
@@ -152,11 +136,11 @@ internal sealed partial class LythonRuntime
         }
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,
-            ExecutableCodeObject code, FunctionParameterLayout layout, bool generator,
-            int inputCount, int[]? captures, PyString[]? postponedAnnotations = null,
-            ExecutableInstruction[]? eagerReads = null, bool directKeywordDefault = false)
+            ExecutableCreateFunction definition, int[]? captures)
         {
             var first = instruction.InputStart;
+            var code = definition.CodeObject;
+            var eagerReads = definition.EagerAnnotationReads;
             PreparedFunctionAnnotations preparedAnnotations = default;
             try
             {
@@ -167,8 +151,9 @@ internal sealed partial class LythonRuntime
                     uncapturedLocal = Values.Slice(captures[0], 1);
                 ExecutableCaptures cells = captures is null || !uncapturedLocal.IsEmpty ? default :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
-                var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span,
-                    Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);
+                var function = CreateLexicalFunctionValue(definition.ParameterLayout, code, cells, definition.IsGenerator,
+                    _scope, instruction.Span, Values.Slice(first, definition.InputCount), definition.PostponedAnnotations,
+                    preparedAnnotations, definition.DirectKeywordDefault, uncapturedLocal);
                 preparedAnnotations = default;
                 return function;
             }

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1635–B1636](results/2026-11-24-shared-prepared-definitions/README.md)
+share the prepared `def` and `lambda` operation, removing a duplicate
+stack and runtime path. Execution allocation and admission match.
+Two rule scripts allocate 40 B more to compile. Their first adverse
+time-to-result lanes do not establish a repeatable change on confirmation.
+The warm captured-rule CPU range and the defaulted-rule timings remain
+inconclusive. Keep the simplification and both sets of observations.
+
 [B1634](results/2026-11-24-forwarded-rule-cpu/README.md) places
 45–46% of resolved defaulted-rule runtime ancestry and 42% of eager
 through-result ancestry under definition construction. Compiler work

@@ -478,18 +478,19 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static PyFunctionBase CreateLambdaFunction(in ExecutableLambdaBinding lambda,
+    private static PyFunctionBase CreateLambdaFunction(ExecutableCreateFunction lambda,
         FunctionDefaults defaults, ExecutionContext context, LythonSourceSpan span)
     {
         var code = lambda.CodeObject;
+        var namespaceClosure = lambda.Kind == ExecutableDefinitionKind.NamespaceLambda;
         var cells = CaptureExecutableClosures(code,
-            lambda.NamespaceClosure ? context.FunctionClosureContext : context, span);
+            namespaceClosure ? context.FunctionClosureContext : context, span);
         var closure = SelectDefinitionClosure(code, context, cells);
-        var function = CreateFunctionValue(lambda.Layout, code, closure, cells, defaults,
+        var function = CreateFunctionValue(lambda.ParameterLayout, code, closure, cells, defaults,
             lambda.IsGenerator, context, span);
         // Module lambdas expose their globals after the executable slots leave.
         // Retain the existing namespace once, without lowering a compiled body.
-        if (lambda.NamespaceClosure || code.RequiresLocalVariableMirroring ||
+        if (namespaceClosure || code.RequiresLocalVariableMirroring ||
             context.FunctionClosureContext.ParentContext is null && !context.FunctionClosureContext.MirrorLocalStores)
             RetainLocalsForLambda(context.FunctionClosureContext);
         return function;

@@ -369,7 +369,7 @@ internal sealed partial class LythonRuntime
     {
         var defaults = await EvaluateFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, context, lambda.Span, true)
             .ConfigureAwait(false);
-        return CreateLambdaWithUnpublishedDefaults(lambda.Binding, defaults, context, lambda.Span);
+        return CreateLambdaWithUnpublishedDefaults(lambda.Definition, defaults, context, lambda.Span);
     }
 
     private static async ValueTask<object> InvokeLoweredCallAsync(LoweredCallExpression call, ExecutionContext context)
