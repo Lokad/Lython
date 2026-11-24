@@ -297,7 +297,8 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(matchStatement.Subject, names);
                 foreach (var matchCase in matchStatement.Cases)
                 {
-                    CollectPatternNames(matchCase.Pattern, names);
+                    if (matchCase.PreparedBindings is { } captures)
+                        foreach (var entry in captures) names.Add(entry.Value);
                     if (matchCase.Guard is not null) CollectSeenNames(matchCase.Guard, names);
                     AnalyzeNestedSeen(matchCase.Body, names, validateDirective, validateAnnotation);
                 }
@@ -441,34 +442,4 @@ internal static class StaticScopeDirectiveDiagnostics
         }
     }
 
-    private static void CollectPatternNames(PatternSyntax pattern, HashSet<string> names)
-    {
-        switch (pattern)
-        {
-            case MatchCapturePatternSyntax capture:
-                names.Add(capture.Name);
-                break;
-            case MatchSequencePatternSyntax sequence:
-                foreach (var item in sequence.Items) CollectPatternNames(item, names);
-                break;
-            case MatchMappingPatternSyntax mapping:
-                foreach (var item in mapping.Items) CollectPatternNames(item.Pattern, names);
-                if (mapping.RestName is not null) names.Add(mapping.RestName);
-                break;
-            case MatchClassPatternSyntax classPattern:
-                foreach (var item in classPattern.PositionalPatterns) CollectPatternNames(item, names);
-                foreach (var item in classPattern.KeywordPatterns) CollectPatternNames(item.Pattern, names);
-                break;
-            case MatchStarPatternSyntax { Name: { } name }:
-                names.Add(name);
-                break;
-            case MatchAsPatternSyntax asPattern:
-                CollectPatternNames(asPattern.Pattern, names);
-                names.Add(asPattern.Name);
-                break;
-            case MatchOrPatternSyntax orPattern:
-                foreach (var item in orPattern.Patterns) CollectPatternNames(item, names);
-                break;
-        }
-    }
 }

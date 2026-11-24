@@ -239,7 +239,8 @@ internal static class ScopeDirectiveFactsCollector
                         CollectExpressionBindings(matchStatement.Subject, names);
                         foreach (var matchCase in matchStatement.Cases)
                         {
-                            CollectPatternBindings(matchCase.Pattern, names);
+                            if (matchCase.PreparedBindings is { } bindings)
+                                foreach (var entry in bindings) names.Add(entry.Value);
                             if (matchCase.Guard is not null) CollectExpressionBindings(matchCase.Guard, names);
                             CollectSuite(matchCase.Body);
                         }
@@ -326,40 +327,6 @@ internal static class ScopeDirectiveFactsCollector
                 break;
             case LoopTupleTargetSyntax tuple:
                 foreach (var item in tuple.Items) CollectLoopTargetBindings(item, names);
-                break;
-        }
-    }
-
-    internal static void CollectPatternBindings(PatternSyntax pattern, ICollection<string> names)
-        => CollectPatternBindings(pattern, names, static (collection, name) => collection.Add(name));
-
-    internal static void CollectPatternBindings<TState>(PatternSyntax pattern, TState state, Action<TState, string> add)
-    {
-        switch (pattern)
-        {
-            case MatchCapturePatternSyntax capture:
-                add(state, capture.Name);
-                break;
-            case MatchSequencePatternSyntax sequence:
-                foreach (var item in sequence.Items) CollectPatternBindings(item, state, add);
-                break;
-            case MatchMappingPatternSyntax mapping:
-                foreach (var item in mapping.Items) CollectPatternBindings(item.Pattern, state, add);
-                if (mapping.RestName is not null) add(state, mapping.RestName);
-                break;
-            case MatchClassPatternSyntax classPattern:
-                foreach (var item in classPattern.PositionalPatterns) CollectPatternBindings(item, state, add);
-                foreach (var item in classPattern.KeywordPatterns) CollectPatternBindings(item.Pattern, state, add);
-                break;
-            case MatchStarPatternSyntax star when star.Name is not null:
-                add(state, star.Name);
-                break;
-            case MatchAsPatternSyntax asPattern:
-                CollectPatternBindings(asPattern.Pattern, state, add);
-                add(state, asPattern.Name);
-                break;
-            case MatchOrPatternSyntax orPattern:
-                foreach (var item in orPattern.Patterns) CollectPatternBindings(item, state, add);
                 break;
         }
     }

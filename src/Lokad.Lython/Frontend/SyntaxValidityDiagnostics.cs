@@ -116,7 +116,7 @@ internal static class SyntaxValidityDiagnostics
             var needsLexicalExpressions = statement is MatchStatementSyntax;
             if (statement is MatchStatementSyntax match)
             {
-                foreach (var matchCase in match.Cases) PatternNames(matchCase.Pattern);
+                foreach (var matchCase in match.Cases) matchCase.PreparedBindings = ReadPatternBindings(matchCase.Pattern);
             }
             if (statement is ClassDefinitionStatementSyntax type)
             {
@@ -294,28 +294,33 @@ internal static class SyntaxValidityDiagnostics
             if (calls is not null) calls.Reverse(first, calls.Count - first);
         }
 
-        HashSet<string> PatternNames(PatternSyntax pattern)
+        OrderedDictionary<string, string>? ReadPatternBindings(PatternSyntax pattern)
         {
-            var names = new HashSet<string>(StringComparer.Ordinal);
-            void Add(string? name)
+            PythonTokenization.CheckCancellation(cancellationToken, 0);
+            OrderedDictionary<string, string>? bindings = null;
+            void Add(string? source, string? name)
             {
-                if (name is not null && !names.Add(name)) Error("Pattern captures a name more than once.", pattern.Span);
+                if (name is not null && !(bindings ??= new(StringComparer.Ordinal)).TryAdd(source ?? name, name))
+                    Error("Pattern captures a name more than once.", pattern.Span);
             }
             void Merge(PatternSyntax child)
             {
-                foreach (var name in PatternNames(child)) Add(name);
+                var captures = ReadPatternBindings(child);
+                if (bindings is null) bindings = captures;
+                else if (captures is not null)
+                    foreach (var (source, name) in captures) Add(source, name);
             }
             switch (pattern)
             {
-                case MatchCapturePatternSyntax capture: Add(capture.OriginalBindingName ?? capture.Name); break;
-                case MatchStarPatternSyntax star: Add(star.OriginalBindingName ?? star.Name); break;
-                case MatchAsPatternSyntax alias: Merge(alias.Pattern); Add(alias.OriginalBindingName ?? alias.Name); break;
+                case MatchCapturePatternSyntax capture: Add(capture.OriginalBindingName, capture.Name); break;
+                case MatchStarPatternSyntax star: Add(star.OriginalBindingName, star.Name); break;
+                case MatchAsPatternSyntax alias: Merge(alias.Pattern); Add(alias.OriginalBindingName, alias.Name); break;
                 case MatchSequencePatternSyntax sequence:
                     foreach (var child in sequence.Items) Merge(child);
                     break;
                 case MatchMappingPatternSyntax mapping:
                     foreach (var child in mapping.Items) Merge(child.Pattern);
-                    Add(mapping.OriginalBindingName ?? mapping.RestName);
+                    Add(mapping.OriginalBindingName, mapping.RestName);
                     break;
                 case MatchClassPatternSyntax type:
                     Unique(type.KeywordPatterns.Select(p => p.Name), type.Span, "Repeated class pattern keyword.");
@@ -323,17 +328,26 @@ internal static class SyntaxValidityDiagnostics
                     foreach (var child in type.KeywordPatterns) Merge(child.Pattern);
                     break;
                 case MatchOrPatternSyntax alternatives:
-                    HashSet<string>? first = null;
-                    foreach (var child in alternatives.Patterns)
+                    bindings = ReadPatternBindings(alternatives.Patterns[0]);
+                    for (var i = 1; i < alternatives.Patterns.Count; i++)
                     {
-                        var captures = PatternNames(child);
-                        if (first is null) first = captures;
-                        else if (!first.SetEquals(captures)) Error("OR-pattern alternatives must capture the same names.", child.Span);
+                        var child = alternatives.Patterns[i];
+                        var captures = ReadPatternBindings(child);
+                        if (!HaveSameCaptureNames(bindings, captures))
+                            Error("OR-pattern alternatives must capture the same names.", child.Span);
                     }
-                    if (first is not null) names.UnionWith(first);
                     break;
             }
-            return names;
+            return bindings;
+        }
+
+        static bool HaveSameCaptureNames(OrderedDictionary<string, string>? first, OrderedDictionary<string, string>? next)
+        {
+            if (first is null || next is null) return first is null && next is null;
+            if (first.Count != next.Count) return false;
+            foreach (var entry in first)
+                if (!next.ContainsKey(entry.Key)) return false;
+            return true;
         }
     }
 }

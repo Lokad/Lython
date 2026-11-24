@@ -189,8 +189,8 @@ internal static class StaticNameBindingDiagnostics
                     foreach (var matchCase in matchStatement.Cases)
                     {
                         var branch = maybeAssigned.BeginBranch();
-                        ScopeDirectiveFactsCollector.CollectPatternBindings(matchCase.Pattern, maybeAssigned,
-                            static (facts, name) => facts.Add(name));
+                        if (matchCase.PreparedBindings is { } captures)
+                            foreach (var entry in captures) maybeAssigned.Add(entry.Value);
                         if (matchCase.Guard is not null)
                         {
                             AnalyzeExpression(matchCase.Guard, context, localNames, maybeAssigned);

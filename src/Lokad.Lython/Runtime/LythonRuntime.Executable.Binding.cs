@@ -261,7 +261,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < pattern.Bindings.Length; i++)
             {
                 var value = storage[i].Object.RequireNotNull();
-                StoreName(pattern.Bindings[i].Name, value, context, matchCase.Span);
+                StoreName(pattern.Bindings[i], value, context, matchCase.Span);
                 var slot = matchCase.LocalBindingSlots[i];
                 if (slot < 0) continue;
                 WriteLocalValue(locals, slot, value);

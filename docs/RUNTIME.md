@@ -356,7 +356,10 @@ It preserves ordinary source-order bindings, prepares nested declarations and
 canonical postponed-annotation text, and revisits expressions that require
 lexical facts. Validation and both execution paths share each comprehension's
 iteration names in binding order. Lazy type expressions prepare those facts in
-their own lexical scope. Analysis, lowering and class creation reuse the
+their own lexical scope. Match validation records each case's capture slots once.
+Scope and flow analysis use the same names as lowering, ordered by the first
+OR-pattern alternative. Source spellings distinguish slots even when they mangle
+to the same store destination. Analysis, lowering and class creation reuse the
 function/class/lambda facts as part of the compiled program. A function
 declaration also owns one flat parameter name/slot table, role counts and
 generator classification, shared by analysis,

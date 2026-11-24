@@ -35,4 +35,19 @@ public sealed class PreparedPatternTests
         }
         Assert.Equal(baseline, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData("[[0, value] | [1, value], value]", "[[0, value] | [1, value], value]",
+        "Pattern captures a name more than once.")]
+    [InlineData("[[0] | [1, value]]", "[1, value]", "OR-pattern alternatives must capture the same names.")]
+    public void NestedCaptureDiagnosticsKeepTheFailingPatternSpan(string pattern, string marked, string message)
+    {
+        var source = $"match []:\n case {pattern}: pass\n";
+        using var script = new LythonEngine().Compile(source);
+        Assert.False(script.IsValid);
+        var diagnostic = Assert.Single(script.Diagnostics);
+        Assert.Equal(message, diagnostic.Message);
+        var span = Assert.IsType<LythonSourceSpan>(diagnostic.Span);
+        Assert.Equal(marked, source.Substring(span.Start, span.Length));
+    }
 }

@@ -2,13 +2,10 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
-// One compile-owned representation for executable and lowered consumers. All
-// capture slots are private until the entire pattern succeeds. Validated OR
-// branches bind the same names, so a successful branch overwrites every slot it
-// owns; failed branches need neither a binding dictionary nor a rollback copy.
-internal sealed record LoweredPatternBinding(string Name);
-
-internal sealed record LoweredRootPattern(LoweredPattern Root, LoweredPatternBinding[] Bindings)
+// Capture slots are private until the entire pattern succeeds. Validated OR
+// branches bind the same names, so a successful branch overwrites every slot
+// it owns. Failed branches need no binding dictionary or rollback copy.
+internal sealed record LoweredRootPattern(LoweredPattern Root, string[] Bindings)
 {
     public int StorageCount => checked(Bindings.Length + Root.WorkspaceCount);
 }
@@ -48,45 +45,23 @@ internal static class LoweredPatternPreparation
     internal static int MaximumWorkspace(IEnumerable<LoweredPattern> patterns)
         => patterns.Select(pattern => pattern.WorkspaceCount).DefaultIfEmpty(0).Max();
 
-    internal static LoweredRootPattern Prepare(PatternSyntax syntax)
+    internal static LoweredRootPattern Prepare(MatchCaseSyntax matchCase, CancellationToken cancellationToken)
     {
-        var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
-        var bindings = new List<LoweredPatternBinding>();
-        Collect(syntax);
-        return new(Lower(syntax), bindings.ToArray());
-
-        void Add(PatternSyntax pattern, string? name)
+        var bindings = matchCase.PreparedBindings;
+        var names = bindings is null ? [] : new string[bindings.Count];
+        if (bindings is not null)
         {
-            if (name is null) return;
-            var source = pattern.OriginalBindingName ?? name;
-            indexes.Add(source, bindings.Count);
-            bindings.Add(new(name));
+            var index = 0;
+            foreach (var entry in bindings) names[index++] = entry.Value;
         }
-
-        void Collect(PatternSyntax pattern)
-        {
-            switch (pattern)
-            {
-                case MatchCapturePatternSyntax capture: Add(pattern, capture.Name); break;
-                case MatchStarPatternSyntax star: Add(pattern, star.Name); break;
-                case MatchAsPatternSyntax alias: Collect(alias.Pattern); Add(pattern, alias.Name); break;
-                case MatchSequencePatternSyntax sequence:
-                    foreach (var child in sequence.Items) Collect(child);
-                    break;
-                case MatchMappingPatternSyntax mapping:
-                    foreach (var child in mapping.Items) Collect(child.Pattern);
-                    Add(pattern, mapping.RestName);
-                    break;
-                case MatchClassPatternSyntax type:
-                    foreach (var child in type.PositionalPatterns) Collect(child);
-                    foreach (var child in type.KeywordPatterns) Collect(child.Pattern);
-                    break;
-                case MatchOrPatternSyntax alternatives: Collect(alternatives.Patterns[0]); break;
-            }
-        }
+        return new(Lower(matchCase.Pattern), names);
 
         int Slot(PatternSyntax pattern, string? name)
-            => name is null ? -1 : indexes[pattern.OriginalBindingName ?? name];
+        {
+            if (name is null) return -1;
+            var slot = bindings.RequireNotNull().IndexOf(pattern.OriginalBindingName ?? name);
+            return slot >= 0 ? slot : throw new InvalidOperationException("Capture missing from validated pattern.");
+        }
 
         LoweredSequencePattern Sequence(PatternSyntax pattern, IEnumerable<PatternSyntax> children)
         {
@@ -97,6 +72,7 @@ internal static class LoweredPatternPreparation
 
         LoweredPattern Lower(PatternSyntax pattern)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, 0);
             switch (pattern)
             {
                 case MatchValuePatternSyntax value:

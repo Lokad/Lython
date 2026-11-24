@@ -312,7 +312,11 @@ internal sealed record MatchCaseSyntax(
     PatternSyntax Pattern,
     ExpressionSyntax? Guard,
     IReadOnlyList<StatementSyntax> Body,
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    // Source spelling identifies the slot. The value is the name to store.
+    internal OrderedDictionary<string, string>? PreparedBindings { get; set; }
+}
 
 internal sealed record PassStatementSyntax(
     LythonSourceSpan Span) : StatementSyntax(Span);

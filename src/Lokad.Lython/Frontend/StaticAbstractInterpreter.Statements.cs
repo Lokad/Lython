@@ -145,8 +145,8 @@ internal static partial class StaticAbstractInterpreter
                 foreach (var matchCase in matchStatement.Cases)
                 {
                     var caseBindings = bindings.Clone();
-                    ScopeDirectiveFactsCollector.CollectPatternBindings(matchCase.Pattern, caseBindings,
-                        static (state, name) => state.BindUnknown(name));
+                    if (matchCase.PreparedBindings is { } captures)
+                        foreach (var entry in captures) caseBindings.BindUnknown(entry.Value);
                     if (matchCase.Guard is not null)
                     {
                         AnalyzeExpression(matchCase.Guard, diagnostics, caseBindings);

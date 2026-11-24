@@ -563,7 +563,8 @@ internal sealed partial class ExecutableScript
                 var failBlock = i == statement.Cases.Count - 1 ? afterBlock : CreateBlock();
 
                 AddInstruction(nextCaseBlock, ExecutableInstruction.LoadLocal(subjectSlot, matchCase.Span));
-                AddInstruction(nextCaseBlock, ExecutableInstruction.MatchCase(InternMatchCase(LoweredPatternPreparation.Prepare(matchCase.Pattern), matchCase.Span), failBlock, matchCase.Span));
+                var pattern = LoweredPatternPreparation.Prepare(matchCase, _compilation.CancellationToken);
+                AddInstruction(nextCaseBlock, ExecutableInstruction.MatchCase(InternMatchCase(pattern, matchCase.Span), failBlock, matchCase.Span));
                 var successBlock = nextCaseBlock;
                 if (matchCase.Guard is { } guard)
                 {

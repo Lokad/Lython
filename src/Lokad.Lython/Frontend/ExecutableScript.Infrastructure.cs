@@ -261,8 +261,8 @@ internal sealed partial class ExecutableScript
 
         private int InternMatchCase(LoweredRootPattern pattern, LythonSourceSpan span)
         {
-            var localBindings = pattern.Bindings.Select(binding =>
-                _localIndexes.TryGetValue(binding.Name, out var slot) ? slot : -1).ToArray();
+            var localBindings = pattern.Bindings.Select(name =>
+                _localIndexes.TryGetValue(name, out var slot) ? slot : -1).ToArray();
             _buffers.MatchCases.Add(new ExecutableMatchCaseBinding(pattern, span, localBindings));
             return _buffers.MatchCases.Count - 1;
         }

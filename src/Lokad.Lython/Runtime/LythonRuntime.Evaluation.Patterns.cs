@@ -173,21 +173,6 @@ internal sealed partial class LythonRuntime
         => TryMatchPattern(pattern.Root, subject, context, storage[..pattern.Bindings.Length],
             storage[pattern.Bindings.Length..]);
 
-    private static bool TryExecuteLoweredPattern(LoweredRootPattern pattern, object subject,
-        ExecutionContext context)
-    {
-        using var admission = context.MemoryGovernor.ReserveTemporary(ExecutableSlotsBytes(pattern.StorageCount), pattern.Root.Span);
-        var storage = new ExecutableSlot[pattern.StorageCount];
-        try
-        {
-            if (!TryMatchRootPattern(pattern, subject, context, storage)) return false;
-            for (var i = 0; i < pattern.Bindings.Length; i++)
-                StoreName(pattern.Bindings[i].Name, storage[i].Object!, context, pattern.Root.Span);
-            return true;
-        }
-        finally { Array.Clear(storage); }
-    }
-
     private static bool TryMatchClassPattern(
         LoweredClassPattern pattern,
         object subject,
