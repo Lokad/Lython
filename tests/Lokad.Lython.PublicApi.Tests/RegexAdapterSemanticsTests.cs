@@ -161,7 +161,10 @@ public sealed class RegexAdapterSemanticsTests
     [InlineData("re.compile('é').search('aéz',Index('pos')).group()", "pos\né")]
     [InlineData("re.compile(',').split('a,b,c',Index('maxsplit'))", "maxsplit\n['a', 'b,c']")]
     [InlineData("re.compile(',').sub('/', 'a,b,c',Index('count'),pos=Index('pos'),endpos=Index('endpos',4))", "count\npos\nendpos\na/b,c")]
-    public async Task CompiledBoundsAwaitGuestIndexIo(string expression, string expected)
+    [InlineData("re.search('é','aéz',pos=Index('pos')).group()", "pos\né")]
+    [InlineData("re.split(',','a,b,c',Index('maxsplit'))", "maxsplit\n['a', 'b,c']")]
+    [InlineData("re.sub(',','/','a,b,c',Index('count'))", "count\na/b,c")]
+    public async Task RegexBoundsAwaitGuestIndexIo(string expression, string expected)
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import re
@@ -190,17 +193,19 @@ public sealed class RegexAdapterSemanticsTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task CancellingACompiledBoundAwaitsFileCleanupAndRefunds()
+    [Theory]
+    [InlineData("re.compile('é').search('aéz', Index())")]
+    [InlineData("re.search('é', 'aéz', pos=Index())")]
+    public async Task CancellingARegexBoundAwaitsFileCleanupAndRefunds(string expression)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import re
             class Index:
                 def __index__(self):
                     with open('index.txt') as source:
                         return int(source.read())
-            print(re.compile('é').search('aéz', Index()).group())
+            print({expression}.group())
             """, budget);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
         var baseline = budget.ReservedBytes;
