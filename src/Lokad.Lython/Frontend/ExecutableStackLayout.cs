@@ -164,7 +164,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 if (instruction.OpCode == ExecutableOpCode.MakeTuple && hasNoExceptionRegions &&
                     code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring &&
                     code.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity)
-                    PrepareIntegerTupleReturn(code, instructions, source, position.Offset, j);
+                    PrepareTupleReturn(code, instructions, source, position.Offset, j);
             }
             // Stored blocks never fell through. Preserve implicit completion
             // distinctly from a guest top-level return (not legal in imports).
@@ -232,7 +232,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
     }
 
-    private static void PrepareIntegerTupleReturn(ExecutableCodeObject code, ExecutableInstruction[] tape,
+    private static void PrepareTupleReturn(ExecutableCodeObject code, ExecutableInstruction[] tape,
         List<ExecutableInstruction> block, int offset, int index)
     {
         var tuple = block[index];
@@ -259,7 +259,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             else if (producer.OpCode != ExecutableOpCode.Binary ||
                 !IsPrivateInput(producer.InputStart) || !IsPrivateInput(producer.SecondInput)) return;
         }
-        tape[offset + first] = block[first].WithIntegerTupleReturn(offset + index);
+        tape[offset + first] = block[first].WithPreparedTupleReturn(offset + index);
 
         bool IsPrivateInput(int source) => source >= 0 ? source < code.FirstTemporarySlot : ~source < code.Constants.Length;
     }

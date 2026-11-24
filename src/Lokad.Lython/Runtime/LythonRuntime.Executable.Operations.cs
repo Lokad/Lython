@@ -116,10 +116,12 @@ internal sealed partial class LythonRuntime
     }
 
     private static void AdmitUnpackedReturnScalars(ReadOnlySpan<ExecutableSlot> items, ExecutionContext scope, LythonSourceSpan span)
+        => AdmitUnpackedReturnScalars(PyTuple.EstimateScalarSlots(items, scope, span), scope, span);
+
+    private static void AdmitUnpackedReturnScalars(long bytes, ExecutionContext scope, LythonSourceSpan span)
     {
         // Only scalar publication needs new funding. The caller owns the
         // operand window, and a fixed unpack constructs no tuple.
-        var bytes = PyTuple.EstimateScalarSlots(items, scope, span);
         if (bytes == 0) return;
         var governor = scope.MemoryGovernor;
         governor.Reserve(bytes, span);

@@ -58,10 +58,12 @@ public sealed class NativeReturnFunctionTests
         var targets = string.Join(',', Enumerable.Range(0, count).Select(index => "item" + index));
         var objects = string.Join(',', Enumerable.Repeat("value", count));
         var scalars = string.Join(',', Enumerable.Range(0, count).Select(index => $"value + {index}"));
+        var prepared = "value," + string.Join(',', Enumerable.Range(1, count - 1).Select(index => $"value + {index}"));
         foreach (var (values, argument, resultExpression, scalar) in new[]
         {
             (objects, "['kept']", "item0 is item7", false),
-            (scalars, "1000", "item7", true)
+            (scalars, "1000", "item7", true),
+            (prepared, "1000", "item7", true)
         })
         {
             using var script = new LythonEngine().Compile($"""
@@ -102,6 +104,20 @@ public sealed class NativeReturnFunctionTests
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {
+        { "fixed-return-callable-and-object-aliases",
+            """
+            def make(value):
+                def first():
+                    return value
+                second = first
+                retained = value
+                return first, second, retained
+            values = ['kept']
+            first, second, returned = make(values)
+            print(first is second, first() is values, returned is values)
+            saved = make(values)
+            print(saved[0] is saved[1], saved[0] is first, saved[2] is returned)
+            """, "True True True\nTrue False True\n" },
         { "completed-native-return-unpack",
             """
             def make(value):

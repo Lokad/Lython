@@ -38,6 +38,11 @@ internal sealed partial class LythonRuntime
         internal readonly object? Reference => _value;
 
         internal readonly bool IsUnpublishedInteger => ReferenceEquals(_value, UnpublishedInteger);
+        // A direct local return may copy an existing guest value without
+        // changing either its identity or the lifetime of private storage.
+        internal readonly bool HasMaterializedValue => _integer == 0
+            && _value is not (null or PyIteration.Cursor or ExecutableTemporaryValue)
+            && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         private readonly bool HasPrivateDefault => _integer == PrivateDefault && _value is PyTuple or object?[] or PyDict;
         internal readonly bool HasPrivateKeywordDefault => _integer == PrivateKeywordDefault &&
             !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);

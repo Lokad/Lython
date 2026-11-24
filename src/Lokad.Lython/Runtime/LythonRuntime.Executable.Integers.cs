@@ -139,35 +139,43 @@ internal sealed partial class LythonRuntime
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static bool TryPrepareIntegerTuple(ExecutableCodeObject code, Span<ExecutableSlot> values,
-        int index, int liveExtent, int unpackCount, ExecutionContext scope, out int tupleIndex)
+    private static bool TryPrepareFixedTupleReturn(ExecutableCodeObject code, Span<ExecutableSlot> values,
+        ref int index, int liveExtent, int unpackCount, ExecutionContext scope)
     {
-        tupleIndex = code.Instructions[index].IntegerTupleIndex;
+        var tupleIndex = code.Instructions[index].PreparedTupleIndex;
         ref readonly var tuple = ref code.Instructions[tupleIndex];
         if (unpackCount != tuple.ItemCount || liveExtent != tuple.InputStart) return false;
 
         var items = values.Slice(liveExtent, unpackCount);
         var completed = false;
+        long scalarBytes = 0;
         try
         {
             for (var i = 0; i < items.Length; i++)
             {
                 ref readonly var producer = ref code.Instructions[index + i];
                 scope.CheckExecution(producer.Span);
+                ExecutableSlot item;
                 if (producer.OpCode == ExecutableOpCode.Binary)
                 {
                     if (!TryEvaluatePreparedBinary(code, values, producer, scope, out var result)) return false;
-                    items[i].SetInteger(result);
+                    item = ExecutableSlot.FromInteger(result);
                 }
                 else
                 {
-                    var local = values[producer.LocalSlot];
-                    if (!local.TryGetInteger(out _)) return false;
+                    item = values[producer.LocalSlot];
+                    if (!item.HasMaterializedValue && !item.TryGetInteger(out _)) return false;
                     // Preserve an already published identity or an existing
                     // tuple borrow. A fresh local has one returned position.
-                    items[i] = local;
                 }
+                items[i] = item;
+                scalarBytes = checked(scalarBytes + item.ScalarStorageBytes);
             }
+            // Until admission succeeds the slots are private to this helper.
+            // Keep the tuple's source position for a refusal or cancellation.
+            index = tupleIndex;
+            scope.State.CheckExecution(tuple.Span);
+            AdmitUnpackedReturnScalars(scalarBytes, scope, tuple.Span);
             return completed = true;
         }
         finally

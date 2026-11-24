@@ -83,7 +83,7 @@ internal enum ExecutableOpCode
     CheckLocal,
     ReverseAssignmentValues,
     IntegerCallUpdate,
-    IntegerTupleReturn,
+    PreparedTupleReturn,
     LoadCasedSplit,
     LoadDictionaryGetKey,
 }
@@ -187,7 +187,7 @@ internal readonly record struct ExecutableInstruction
     internal int DefaultValueIndex => _secondaryOperand;
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadDictionaryGetKey or
             ExecutableOpCode.StoreLocal or ExecutableOpCode.CheckLocal
-            or ExecutableOpCode.IntegerCallUpdate or ExecutableOpCode.IntegerTupleReturn
+            or ExecutableOpCode.IntegerCallUpdate or ExecutableOpCode.PreparedTupleReturn
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     // Before layout assigns a result slot, a LoadLocal can name its
     // same-block consumer in that field. No hint survives in the final tape.
@@ -204,9 +204,9 @@ internal readonly record struct ExecutableInstruction
     internal bool IntegerUpdateChecksLocal => LiveExtent == ResultSlot;
     internal ExecutableInstruction WithIntegerUpdateCall(int callIndex)
         => new(ExecutableOpCode.IntegerCallUpdate, Span, _primaryOperand, callIndex, _inputStart, _resultSlot, _liveExtent);
-    internal int IntegerTupleIndex => _secondaryOperand;
-    internal ExecutableInstruction WithIntegerTupleReturn(int tupleIndex)
-        => new(ExecutableOpCode.IntegerTupleReturn, Span, _primaryOperand, tupleIndex, _inputStart, _resultSlot, _liveExtent);
+    internal int PreparedTupleIndex => _secondaryOperand;
+    internal ExecutableInstruction WithPreparedTupleReturn(int tupleIndex)
+        => new(ExecutableOpCode.PreparedTupleReturn, Span, _primaryOperand, tupleIndex, _inputStart, _resultSlot, _liveExtent);
     // StoreLocal has only one input, leaving its second operand field free.
     internal bool StoresCapturedLocal => _secondaryOperand != int.MaxValue;
     internal ExecutableInstruction WithCapturedLocalStore()

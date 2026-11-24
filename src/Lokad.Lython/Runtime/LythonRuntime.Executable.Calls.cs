@@ -488,10 +488,16 @@ internal sealed partial class LythonRuntime
         {
             var items = execution.Stack.Values.AsSpan(tuple.InputStart, tuple.ItemCount);
             AdmitUnpackedReturnScalars(items, scope, tuple.Span);
+            PublishFixedReturn(ref execution, scope, tuple, destination);
+        }
+
+        private static void PublishFixedReturn(ref ExecutableWorkState execution, ExecutionContext scope,
+            in ExecutableInstruction tuple, Span<ExecutableSlot> destination)
+        {
             execution.InstructionIndex++;
             scope.CheckExecution(execution.Code.Instructions[execution.InstructionIndex].Span);
             // Both arrays are live. Publication follows the callee's cleanup.
-            WriteUnpackOperands(items, destination);
+            WriteUnpackOperands(execution.Stack.Values.AsSpan(tuple.InputStart, tuple.ItemCount), destination);
         }
 
         private void AttachPreparedCall(ExecutionContext frame, ExecutableCallSite? site,
