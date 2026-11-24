@@ -1,0 +1,10 @@
+{
+  "bytes": 31720436,
+  "sha256": "d4464b98c83166dc81f434430da463a78007cb62e0f36b8bfabe6abad33ae904",
+  "relative": "call-construction-b113-20261102/upload.tar.gz",
+  "retiredOnlyRemoteUpload": true,
+  "freeBefore": 4734976,
+  "freeAfter": 36458496,
+  "stagedBytesNeeded": 7806976,
+  "verifiedRetainedLocalCopy": true
+}

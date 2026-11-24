@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
                         break;
                     case ExecutableOpCode.StartFunctionDefaults:
                         System.Diagnostics.Debug.Assert(LiveExtent == instruction.ResultSlot);
-                        StartExecutableDefaults((FunctionParameterLayout)Code.Constants[instruction.ConstantIndex]!,
+                        StartExecutableDefaults(((ExecutableCreateFunction)Code.Constants[instruction.ConstantIndex]!).ParameterLayout,
                             Values.Slice(instruction.ResultSlot, instruction.LiveExtent - instruction.ResultSlot),
                             instruction.StartsKeywordDefaultsOnly, _scope, instruction.Span);
                         LiveExtent = instruction.LiveExtent;

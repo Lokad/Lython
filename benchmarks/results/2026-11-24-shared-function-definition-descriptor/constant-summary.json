@@ -1,0 +1,50 @@
+{
+  "checks": {
+    "windows-public.log": 1151,
+    "ubuntu-white.log": 921,
+    "windows-net10.log": 59,
+    "ubuntu-net10.log": 59
+  },
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "codeObjects": 99,
+      "retainedConstants": [
+        326,
+        230
+      ],
+      "starts": 96,
+      "opcodeCountsMatch": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "codeObjects": 4,
+      "retainedConstants": [
+        13,
+        11
+      ],
+      "starts": 2,
+      "opcodeCountsMatch": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures",
+      "codeObjects": 3,
+      "retainedConstants": [
+        8,
+        7
+      ],
+      "starts": 1,
+      "opcodeCountsMatch": true
+    },
+    {
+      "id": "scripts.config-manifest.small",
+      "codeObjects": 7,
+      "retainedConstants": [
+        57,
+        57
+      ],
+      "starts": 0,
+      "opcodeCountsMatch": true
+    }
+  ]
+}

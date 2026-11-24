@@ -283,8 +283,8 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
 
-    internal static ExecutableInstruction StartFunctionDefaults(int layout, bool keywordsOnly, LythonSourceSpan span)
-        => new(ExecutableOpCode.StartFunctionDefaults, span, layout, keywordsOnly ? 1 : 0);
+    internal static ExecutableInstruction StartFunctionDefaults(int definition, bool keywordsOnly, LythonSourceSpan span)
+        => new(ExecutableOpCode.StartFunctionDefaults, span, definition, keywordsOnly ? 1 : 0);
 
     internal static ExecutableInstruction StoreFunctionDefault(int depth, int index, LythonSourceSpan span)
         => new(ExecutableOpCode.StoreFunctionDefault, span, depth, index);

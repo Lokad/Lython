@@ -226,8 +226,13 @@ internal sealed partial class ExecutableCodeObject
     {
         creationIndex = -1;
         if (Instructions[startIndex] is not { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start ||
-            Constants[start.ConstantIndex] is not FunctionParameterLayout { Defaults.Length: > 0 } layout ||
-            start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
+            Constants[start.ConstantIndex] is not ExecutableCreateFunction
+            {
+                Kind: not ExecutableDefinitionKind.NamespaceLambda, DecoratorCount: 0, IsGenerator: false,
+                DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0,
+                CodeObject: { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false },
+                ParameterLayout: { Defaults.Length: > 0 } layout,
+            } || start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
 
         var index = startIndex + 1;
         for (var i = 0; i < layout.Defaults.Length; i++)
@@ -275,13 +280,7 @@ internal sealed partial class ExecutableCodeObject
         }
 
         if (index >= Instructions.Length || Instructions[index] is not { OpCode: ExecutableOpCode.ApplyOperation } create ||
-            create.InputStart != start.ResultSlot) return false;
-        if (Constants[create.ConstantIndex] is not ExecutableCreateFunction
-            {
-                Kind: not ExecutableDefinitionKind.NamespaceLambda, DecoratorCount: 0, IsGenerator: false,
-                DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0,
-                CodeObject: { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false },
-            } definition || !ReferenceEquals(definition.ParameterLayout, layout)) return false;
+            create.InputStart != start.ResultSlot || create.ConstantIndex != start.ConstantIndex) return false;
         creationIndex = index;
         return true;
 

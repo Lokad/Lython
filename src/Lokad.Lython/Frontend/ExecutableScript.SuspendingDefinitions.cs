@@ -30,8 +30,12 @@ internal sealed partial class ExecutableScript
     {
         // Each declaration owns its prepared body or deferred binding.
         // Intern guest values and reusable operations elsewhere.
-        private void EmitDefinition(ExecutableOperation operation, LythonSourceSpan span, int block)
-            => AddInstruction(block, ExecutableInstruction.ApplyOperation(AppendConstant(operation), span));
+        private void EmitDefinition(ExecutableOperation operation, LythonSourceSpan span, int block, int constantIndex = -1)
+        {
+            if (constantIndex < 0) constantIndex = AppendConstant(operation);
+            else _buffers.Constants[constantIndex] = operation;
+            AddInstruction(block, ExecutableInstruction.ApplyOperation(constantIndex, span));
+        }
 
         private int CompileFunctionDefinition(FunctionDefinitionStatementSyntax definition, int block, bool yielding)
         {
@@ -52,7 +56,7 @@ internal sealed partial class ExecutableScript
             block = CompileFunctionDefaults(definition.Parameters,
                 definition.ParameterLayout, definition.Span, block,
                 allowDirectKeyword: emitAnnotations && (annotations.Length == 0 || annotations[0].Expression.PostponedAnnotation is not null),
-                out var directKeywordDefault);
+                out var directKeywordDefault, out var definitionIndex);
             PyString[]? postponed = null;
             ExecutableInstruction[]? reads = null;
             // Lexical preparation attaches postponed text to every annotation in the declaration.
@@ -86,7 +90,7 @@ internal sealed partial class ExecutableScript
             // it still evaluates them in the definition's type scope.
             EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
                 definition.IsGenerator, postponed is null && reads is null ? annotations.Length : 0,
-                deferredAnnotations, typeParameters, postponed, reads, directKeywordDefault), definition.Span, block);
+                deferredAnnotations, typeParameters, postponed, reads, directKeywordDefault), definition.Span, block, definitionIndex);
             // Module declarations update their live namespace and optional slot.
             var name = definition.Name;
             if (_parameterLayout is null)
@@ -161,21 +165,24 @@ internal sealed partial class ExecutableScript
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            block = CompileFunctionDefaults(lambda.Lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false, out _);
+            block = CompileFunctionDefaults(lambda.Lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false,
+                out _, out var definitionIndex);
             if (lambda.PreparedDefinition is null && _classBody)
                 CompileNamespaceLambda(lambda, _compilation);
             else if (lambda.PreparedDefinition is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     [], lambda.ScopeFacts, generator: lambda.IsGenerator,
                     qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda));
-            EmitDefinition(lambda.Definition, lambda.Span, block);
+            EmitDefinition(lambda.Definition, lambda.Span, block, definitionIndex);
             return block;
         }
 
         private int CompileFunctionDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
-            FunctionParameterLayout layout, LythonSourceSpan span, int block, bool allowDirectKeyword, out bool directKeyword)
+            FunctionParameterLayout layout, LythonSourceSpan span, int block, bool allowDirectKeyword, out bool directKeyword,
+            out int definitionIndex)
         {
             directKeyword = false;
+            definitionIndex = -1;
             if (layout.Defaults.Length == 0) return block;
             var literals = PrepareLiteralPositionalDefaults(parameters, layout, span);
             if (literals is not null)
@@ -194,7 +201,10 @@ internal sealed partial class ExecutableScript
                 directKeyword = true;
                 return CompileExpression(name, block);
             }
-            AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(AppendConstant(layout),
+            // Finalize this constant when annotation emission has determined
+            // the complete descriptor. The start and creation use one entry.
+            definitionIndex = AppendConstant(layout);
+            AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(definitionIndex,
                 keywordsOnly: literals is not null, span));
             for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < layout.Defaults.Length; i++)
             {

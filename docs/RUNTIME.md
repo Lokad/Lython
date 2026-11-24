@@ -444,7 +444,8 @@ into the callable. For a proved pair of defaulted definitions, the compiler
 records the first creation boundary. Each member reads its own existing
 descriptor, evaluates defaults and admits its callable in that order.
 Other executable definitions keep unfinished defaults in
-frame operands through evaluation and suspension. Prepared eager
+frame operands through evaluation and suspension. Their start and creation
+instructions refer to one compiled function descriptor. Prepared eager
 annotations read their live bindings after defaults and use the same admitted
 annotation storage as general definitions. General arithmetic and annotation
 expressions use the ordinary executable activation.
