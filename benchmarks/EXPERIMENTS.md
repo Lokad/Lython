@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1604](results/2026-11-24-closed-capture-cpython/README.md)
+compares the delivered captured-pair path with CPython 3.13.16. Captured
+rules take 1.210–1.295× warm and 1.155–1.172× through result. Postponed
+rules take 1.088–1.124× warm. All 112 batches passed the comparison checks.
+
 [B1603](results/2026-11-24-closed-capture-pair/seeded/README.md)
 ships the captured pair after restoring the shared operand evaluator.
 Captured elapsed falls 19.60–29.07% warm and 27.18–31.68% through result
