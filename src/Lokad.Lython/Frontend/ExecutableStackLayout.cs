@@ -344,15 +344,126 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             }
 
             var instructions = blocks[blockIndex];
-            // Forwarding removes only reads that feed an operand. It leaves
-            // jump-only blocks and the already resolved successors intact.
             positions[blockIndex].Offset = reads.Count;
-            ForwardBlock(code, blockIndex, instructions, calls, reads, canForwardReturn, token);
-            for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
+            var kept = 0;
+            for (var index = 0; index < instructions.Count; index++)
             {
-                PythonTokenization.CheckCancellation(token, instructionIndex);
-                var instruction = instructions[instructionIndex];
-                var (pop, push, minimum) = Effect(instruction, constants, calls, firstTemporarySlot);
+                PythonTokenization.CheckCancellation(token, index);
+                var instruction = instructions[index];
+                if (instruction.OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or
+                    ExecutableOpCode.LoadClosure or ExecutableOpCode.LoadLocal)
+                {
+                    if (instruction.OpCode == ExecutableOpCode.LoadLocal && instruction.CheckedLocalConsumer >= 0 &&
+                        code.UsesOnlyLexicalSlots && !code.CapturedLocalSlots.Contains(instruction.LocalSlot) &&
+                        CanReuseCheckedLocal(instructions, index, instruction.CheckedLocalConsumer, instruction.LocalSlot, token))
+                    {
+                        var consumer = instruction.CheckedLocalConsumer;
+                        instructions[consumer] = instructions[consumer].WithValueInputs(instruction.LocalSlot, int.MaxValue);
+                        instruction = instruction.AsCheckLocal();
+                    }
+                    else
+                    {
+                        var slot = checked(firstTemporarySlot + depth++);
+                        instructions[kept++] = instruction.WithStorageSlots(slot, slot, checked(slot + 1));
+                        continue;
+                    }
+                }
+
+                // Site facts use original adjacency, before forwarding can
+                // remove or rewrite the instructions supplying operands.
+                if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
+                    instruction = code.PrepareCallSite(instructions, index, instruction, calls);
+                if (instruction.OpCode == ExecutableOpCode.Call && kept >= 2 &&
+                    !code.RequiresLocalVariableMirroring &&
+                    calls[instruction.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 } &&
+                    instructions[kept - 1] is { OpCode: ExecutableOpCode.LoadLocal } argument &&
+                    !code.CapturedLocalSlots.Contains(argument.LocalSlot) &&
+                    (instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadGlobal } target &&
+                        (code.IsFunctionScope || code.Names[target.NameIndex] == "float") ||
+                     instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadLocal } localTarget &&
+                        !code.CapturedLocalSlots.Contains(localTarget.LocalSlot) &&
+                        // The following augmented integer update has its own proof over the input loads.
+                        (index + 1 == instructions.Count || instructions[index + 1].OpCode != ExecutableOpCode.Augmented)))
+                    instruction = instruction.WithForwardedCallOperands();
+                if (instruction.OpCode == ExecutableOpCode.StoreLocal)
+                {
+                    var captured = code.CapturedLocalSlots.Count != 0 && code.CapturedLocalSlots.Contains(instruction.LocalSlot);
+                    if (captured) instruction = instruction.WithCapturedLocalStore();
+                    else if (canForwardReturn && index == instructions.Count - 3 &&
+                        instructions[index + 1].OpCode == ExecutableOpCode.LoadLocal &&
+                        instruction.LocalSlot == instructions[index + 1].LocalSlot &&
+                        instructions[index + 2].OpCode == ExecutableOpCode.Return)
+                    {
+                        // This private assignment has no user after the read.
+                        // The existing return consumes the evaluated operand.
+                        index++;
+                        continue;
+                    }
+                }
+                var count = instruction.ValueInputCount;
+                var first = instruction.InputStart;
+                var second = instruction.SecondInput;
+                var third = count == 3 ? instruction.ThirdInput : int.MaxValue;
+                LythonSourceSpan? firstSpan = null, secondSpan = null, thirdSpan = null;
+                var beforeForwarding = kept;
+                for (var input = count - 1; input >= 0 && kept != 0; input--)
+                {
+                    var leaf = instructions[kept - 1];
+                    int source;
+                    LythonSourceSpan? span = null;
+                    if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
+                    else if (leaf.OpCode == ExecutableOpCode.LoadGlobal)
+                    {
+                        // Negative sources address immutable constants followed
+                        // by names. Resolve the name at consumption; never retain
+                        // its value or move a read across an intervening effect.
+                        source = ~checked(code.Constants.Length + leaf.NameIndex);
+                        span = leaf.Span;
+                    }
+                    else if (leaf.OpCode == ExecutableOpCode.LoadClosure &&
+                        instruction.OpCode is (ExecutableOpCode.Binary or ExecutableOpCode.JumpIfFalse) && code.IsFunctionScope &&
+                        code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring)
+                    {
+                        source = ~checked(code.CaptureOperandBase + leaf.ClosureSlot);
+                        span = leaf.Span;
+                    }
+                    else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
+                        && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
+                    {
+                        source = leaf.LocalSlot;
+                        span = leaf.Span;
+                    }
+                    else break;
+                    if (input == 0) { first = source; firstSpan = span; }
+                    else if (input == 1) { second = source; secondSpan = span; }
+                    else { third = source; thirdSpan = span; }
+                    kept--;
+                }
+                // Keep the consumer as the pending-cleanup continuation and for its
+                // own guard/span. Direct sources do not consume a producer result.
+                if (kept > 0 &&
+                    (((instruction.OpCode is ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreFunctionDefault) &&
+                        first == int.MaxValue
+                        && CanForwardResult(instructions[kept - 1], code.Constants))
+                    || (instruction.OpCode == ExecutableOpCode.StoreClosure && first == int.MaxValue
+                        && instructions[kept - 1].OpCode == ExecutableOpCode.Binary)
+                    || (instruction.OpCode == ExecutableOpCode.PopTop
+                        && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
+                    instructions[kept - 1] = instructions[kept - 1].WithResultConsumer();
+                if (firstSpan is not null) reads.Add(new(blockIndex, kept, 0, firstSpan));
+                if (secondSpan is not null) reads.Add(new(blockIndex, kept, 1, secondSpan));
+                if (thirdSpan is not null) reads.Add(new(blockIndex, kept, 2, thirdSpan));
+
+                // Every removed leaf pushed one provisional operand. A run of
+                // leaves monotonically increases depth, so record its peak only
+                // after the next consumer has forwarded everything it can.
+                depth -= beforeForwarding - kept;
+                maximum = Math.Max(maximum, depth);
+                var directFirst = count != 0 && first < firstTemporarySlot;
+                var directSecond = count > 1 && second < firstTemporarySlot;
+                var directThird = count == 3 && third < firstTemporarySlot;
+                var forwarded = (directFirst ? 1 : 0) + (directSecond ? 1 : 0) + (directThird ? 1 : 0);
+                var (pop, push, minimum) = Effect(in instruction, constants, calls, forwarded);
                 if (depth < minimum)
                     throw new InvalidOperationException($"Executable operand underflow in block {blockIndex}: {instruction.OpCode}, depth {depth}, required {minimum}.");
                 // A raw __class_getitem__ descriptor getter temporarily retains
@@ -364,22 +475,16 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 var resultSlot = depth - pop;
                 var inputStart = depth - minimum;
                 depth = checked(resultSlot + push);
-                // Prepare the owned instruction array in this existing shape
-                // pass; linearization preserves these facts while retargeting.
-                var prepared = instruction.WithStorageSlots(
-                    checked(firstTemporarySlot + inputStart), checked(firstTemporarySlot + resultSlot),
-                    checked(firstTemporarySlot + depth));
-                if (instruction.ValueInputCount != 0)
+                var physical = checked(firstTemporarySlot + inputStart);
+                if (count == 0) first = physical;
+                else
                 {
-                    var physical = checked(firstTemporarySlot + inputStart);
-                    var first = instruction.InputStart < firstTemporarySlot ? instruction.InputStart : physical++;
-                    var second = instruction.ValueInputCount > 1
-                        ? instruction.SecondInput < firstTemporarySlot ? instruction.SecondInput : physical++ : int.MaxValue;
-                    var third = instruction.ValueInputCount == 3
-                        ? instruction.ThirdInput < firstTemporarySlot ? instruction.ThirdInput : physical++ : int.MaxValue;
-                    prepared = prepared.WithValueInputs(first, second, third);
+                    if (!directFirst) first = physical++;
+                    if (count > 1 && !directSecond) second = physical++;
+                    if (count == 3 && !directThird) third = physical;
                 }
-                instructions[instructionIndex] = prepared;
+                instructions[kept++] = instruction.WithStorageSlots(first, checked(firstTemporarySlot + resultSlot),
+                    checked(firstTemporarySlot + depth), count, second, third);
                 var ownedSlot = instruction.OpCode switch
                 {
                     ExecutableOpCode.GetIter => inputStart,
@@ -399,7 +504,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 };
                 if (ownedSlot >= 0)
                     lastOwnedTemporarySlot = Math.Max(lastOwnedTemporarySlot, checked(firstTemporarySlot + ownedSlot));
-                maximum = Math.Max(maximum, depth);
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.ForNext:
@@ -414,22 +518,16 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                         break;
                     case ExecutableOpCode.AbruptJump:
                         Enter(instruction.TargetIndex, depth - (instruction.DiscardIterator ? 1 : 0));
-                        goto CompleteBlock;
+                        break;
                     case ExecutableOpCode.Jump:
                     case ExecutableOpCode.EndFinally:
                         Enter(ResolveTarget(blocks, positions, instruction.TargetIndex, token), depth);
-                        goto CompleteBlock;
-                    case ExecutableOpCode.Return:
-                    case ExecutableOpCode.ReturnNone:
-                    case ExecutableOpCode.ReraiseException:
-                        goto CompleteBlock;
-                    case ExecutableOpCode.Raise or ExecutableOpCode.FailAssertion:
-                        goto CompleteBlock;
+                        break;
                 }
             }
-            // An unterminated executable block completes its invocation; the
-            // existing interpreter never falls through to the next stored block.
-        CompleteBlock:;
+            maximum = Math.Max(maximum, depth);
+            if (kept != instructions.Count)
+                instructions.RemoveRange(kept, instructions.Count - kept);
         } while (pending is not null && pending.TryDequeue(out blockIndex));
         return new(maximum, positions, firstTemporarySlot, lastOwnedTemporarySlot, reads);
 
@@ -461,115 +559,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             else end = middle;
         }
         return start;
-    }
-
-    // Forward adjacent pure leaf inputs before assigning physical positions.
-    // Checked locals keep their original spans in cold metadata; neither branch
-    // initialization facts nor their invalidation inventories are needed.
-    private static void ForwardBlock(ExecutableCodeObject code, int block, List<ExecutableInstruction> instructions,
-        ExecutableCallSite[] calls, List<OperandRead> reads, bool canForwardReturn, CancellationToken token)
-    {
-        var kept = 0;
-        for (var index = 0; index < instructions.Count; index++)
-        {
-            PythonTokenization.CheckCancellation(token, index);
-            var instruction = instructions[index];
-            // Site facts use original adjacency, before forwarding can
-            // remove or rewrite the instructions supplying operands.
-            if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
-                instruction = code.PrepareCallSite(instructions, index, instruction, calls);
-            if (instruction.OpCode == ExecutableOpCode.Call && kept >= 2 &&
-                !code.RequiresLocalVariableMirroring &&
-                calls[instruction.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 } &&
-                instructions[kept - 1] is { OpCode: ExecutableOpCode.LoadLocal } argument &&
-                !code.CapturedLocalSlots.Contains(argument.LocalSlot) &&
-                (instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadGlobal } target &&
-                    (code.IsFunctionScope || code.Names[target.NameIndex] == "float") ||
-                 instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadLocal } localTarget &&
-                    !code.CapturedLocalSlots.Contains(localTarget.LocalSlot) &&
-                    // The following augmented integer update has its own proof over the input loads.
-                    (index + 1 == instructions.Count || instructions[index + 1].OpCode != ExecutableOpCode.Augmented)))
-                instruction = instruction.WithForwardedCallOperands();
-            if (instruction.OpCode == ExecutableOpCode.StoreLocal)
-            {
-                var captured = code.CapturedLocalSlots.Count != 0 && code.CapturedLocalSlots.Contains(instruction.LocalSlot);
-                if (captured) instruction = instruction.WithCapturedLocalStore();
-                else if (canForwardReturn && index == instructions.Count - 3 &&
-                    instructions[index + 1].OpCode == ExecutableOpCode.LoadLocal &&
-                    instruction.LocalSlot == instructions[index + 1].LocalSlot &&
-                    instructions[index + 2].OpCode == ExecutableOpCode.Return)
-                {
-                    // This private assignment has no user after the read.
-                    // The existing return consumes the evaluated operand.
-                    index++;
-                    continue;
-                }
-            }
-            if (instruction.OpCode == ExecutableOpCode.LoadLocal && instruction.CheckedLocalConsumer >= 0 &&
-                code.UsesOnlyLexicalSlots && !code.CapturedLocalSlots.Contains(instruction.LocalSlot) &&
-                CanReuseCheckedLocal(instructions, index, instruction.CheckedLocalConsumer, instruction.LocalSlot, token))
-            {
-                var consumer = instruction.CheckedLocalConsumer;
-                instructions[consumer] = instructions[consumer].WithValueInputs(instruction.LocalSlot, int.MaxValue);
-                instruction = instruction.AsCheckLocal();
-            }
-            var count = instruction.ValueInputCount;
-            var first = instruction.InputStart;
-            var second = instruction.SecondInput;
-            var third = count == 3 ? instruction.ThirdInput : int.MaxValue;
-            LythonSourceSpan? firstSpan = null, secondSpan = null, thirdSpan = null;
-            for (var input = count - 1; input >= 0 && kept != 0; input--)
-            {
-                var leaf = instructions[kept - 1];
-                int source;
-                LythonSourceSpan? span = null;
-                if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
-                else if (leaf.OpCode == ExecutableOpCode.LoadGlobal)
-                {
-                    // Negative sources address immutable constants followed
-                    // by names. Resolve the name at consumption; never retain
-                    // its value or move a read across an intervening effect.
-                    source = ~checked(code.Constants.Length + leaf.NameIndex);
-                    span = leaf.Span;
-                }
-                else if (leaf.OpCode == ExecutableOpCode.LoadClosure &&
-                    instruction.OpCode is (ExecutableOpCode.Binary or ExecutableOpCode.JumpIfFalse) && code.IsFunctionScope &&
-                    code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring)
-                {
-                    source = ~checked(code.CaptureOperandBase + leaf.ClosureSlot);
-                    span = leaf.Span;
-                }
-                else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
-                    && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
-                {
-                    source = leaf.LocalSlot;
-                    span = leaf.Span;
-                }
-                else break;
-                if (input == 0) { first = source; firstSpan = span; }
-                else if (input == 1) { second = source; secondSpan = span; }
-                else { third = source; thirdSpan = span; }
-                kept--;
-            }
-            if (count != 0) instruction = instruction.WithValueInputs(first, second, third);
-            // Keep the consumer as the pending-cleanup continuation and for its
-            // own guard/span. Direct sources do not consume a producer result.
-            if (kept > 0 &&
-                (((instruction.OpCode is ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreFunctionDefault) &&
-                    first == int.MaxValue
-                    && CanForwardResult(instructions[kept - 1], code.Constants))
-                || (instruction.OpCode == ExecutableOpCode.StoreClosure && first == int.MaxValue
-                    && instructions[kept - 1].OpCode == ExecutableOpCode.Binary)
-                || (instruction.OpCode == ExecutableOpCode.PopTop
-                    && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
-                instructions[kept - 1] = instructions[kept - 1].WithResultConsumer();
-            if (firstSpan is not null) reads.Add(new(block, kept, 0, firstSpan));
-            if (secondSpan is not null) reads.Add(new(block, kept, 1, secondSpan));
-            if (thirdSpan is not null) reads.Add(new(block, kept, 2, thirdSpan));
-            instructions[kept++] = instruction;
-        }
-        if (kept != instructions.Count)
-            instructions.RemoveRange(kept, instructions.Count - kept);
     }
 
     // A private lexical local remains authoritative during a call. A
@@ -606,8 +595,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             _ => false,
         };
 
-    private static (int Pop, int Push, int Minimum) Effect(ExecutableInstruction instruction,
-        IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls, int firstTemporarySlot)
+    private static (int Pop, int Push, int Minimum) Effect(in ExecutableInstruction instruction,
+        object?[] constants, ExecutableCallSite[] calls, int forwarded)
     {
         var (pop, push) = instruction.OpCode switch
         {
@@ -676,15 +665,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 _ => pop
             };
         }
-        if (instruction.ValueInputCount != 0)
-        {
-            var forwarded = instruction.InputStart < firstTemporarySlot ? 1 : 0;
-            if (instruction.ValueInputCount > 1 && instruction.SecondInput < firstTemporarySlot) forwarded++;
-            if (instruction.ValueInputCount == 3 && instruction.ThirdInput < firstTemporarySlot) forwarded++;
-            pop -= forwarded;
-            minimum -= forwarded;
-        }
-        return (pop, push, minimum);
+        return (pop - forwarded, push, minimum - forwarded);
     }
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch

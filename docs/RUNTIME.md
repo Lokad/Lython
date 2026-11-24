@@ -566,9 +566,10 @@ Adjacent plain local and constant reads can feed fixed-arity arithmetic, unary
 operations, subscript reads/stores, member/receiver loads, iterator acquisition,
 truth branches, local stores and returns directly. Captured or
 mirrored locals keep their ordinary lookup. Missing direct locals retain their
-original read spans in cold metadata. One shape pass after forwarding prepares
-physical positions, live temporary extents, maximum workspace and exception-entry
-depths. Calls can still determine the workspace capacity.
+original read spans in cold metadata. Forwarding assigns the retained instructions
+their physical positions and live extents in the same block traversal. The compiler
+measures workspace depth after settling direct loads. It records exception-entry
+depths before retargeting branches with the final block offsets.
 The builder ends a suite at an unconditional raise. An assertion's failure
 block ends at the assertion error. Lexical analysis still visits the whole
 source, including locals and generator yields in unreachable suites.

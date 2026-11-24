@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.generated-record-classifier",
+    "allocationBytes": [
+      954640,
+      954640
+    ],
+    "retainedAdmission": [
+      703904,
+      703904
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      2170208,
+      2170208
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      215968,
+      215968
+    ],
+    "retainedAdmission": [
+      212960,
+      212960
+    ]
+  }
+]

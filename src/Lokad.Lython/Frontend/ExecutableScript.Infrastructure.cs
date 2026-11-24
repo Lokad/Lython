@@ -21,6 +21,7 @@ internal sealed partial class ExecutableScript
         private void AddInstruction(int blockIndex, ExecutableInstruction instruction)
         {
             var instructions = _buffers.Blocks[blockIndex];
+            System.Diagnostics.Debug.Assert(instructions.Count == 0 || !instructions[^1].TerminatesBlock);
             if (instruction.OpCode == ExecutableOpCode.JumpIfFalse && instructions.Count != 0
                 && instructions[^1] is { OpCode: ExecutableOpCode.Binary } previous
                 && LythonRuntime.IsScalarComparison(previous.BinaryOperator) && previous.Span == instruction.Span)

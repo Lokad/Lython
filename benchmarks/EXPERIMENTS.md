@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1653](results/2026-11-24-terminal-backed-operand-layout/README.md) combines
+forwarding and final slot assignment after removing dead block suffixes.
+Compilation and time-to-result elapsed fall in three workloads with identical
+tape and admission. Classifier and validator CPU through result cross zero.
+
 [B1651–B1652](results/2026-11-24-single-pass-operand-layout/README.md) combine
 operand forwarding and layout with identical tapes and storage bounds. The
 initial classifier improves and two other CPU ranges regress. The refinement

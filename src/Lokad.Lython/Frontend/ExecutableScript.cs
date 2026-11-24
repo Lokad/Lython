@@ -163,11 +163,12 @@ internal readonly record struct ExecutableInstruction
     public int LiveExtent => HasResultConsumer ? ~_liveExtent : _liveExtent;
     public bool HasResultConsumer => _liveExtent < 0;
 
-    internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
+    internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent,
+        int inputCount = 0, int secondInput = int.MaxValue, int thirdInput = int.MaxValue)
         => new(OpCode, Span, _primaryOperand,
-            ValueInputCount > 1 ? checked(inputStart + 1) : _secondaryOperand,
+            inputCount > 1 ? secondInput : _secondaryOperand,
             inputStart, OpCode == ExecutableOpCode.CompareJumpIfFalse ? _resultSlot
-                : ValueInputCount == 3 ? checked(inputStart + 2) : resultSlot,
+                : inputCount == 3 ? thirdInput : resultSlot,
             HasResultConsumer ? ~liveExtent : liveExtent);
 
     internal ExecutableInstruction WithValueInputs(int first, int second, int third = int.MaxValue)
