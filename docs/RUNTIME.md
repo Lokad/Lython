@@ -2526,6 +2526,9 @@ and evaluated arguments. Reading a method as a value binds that pattern
 as its `__self__`. Keyword calls distinguish omitted parameters from an
 explicit `None`, including when a later parameter such as `endpos` is supplied
 by name.
+During `RunAsync`, compiled pattern bounds and counts can call guest
+`__index__` methods that await host I/O. Count, start and end coercion
+complete before the provider opens the subject.
 Module regex calls distinguish omitted flags from an explicit `None`.
 Text patterns raise `TypeError` for `flags=None`, and compiled patterns
 accept it as a false flag value.

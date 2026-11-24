@@ -157,6 +157,85 @@ public sealed class RegexAdapterSemanticsTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("re.compile('é').search('aéz',Index('pos')).group()", "pos\né")]
+    [InlineData("re.compile(',').split('a,b,c',Index('maxsplit'))", "maxsplit\n['a', 'b,c']")]
+    [InlineData("re.compile(',').sub('/', 'a,b,c',Index('count'),pos=Index('pos'),endpos=Index('endpos',4))", "count\npos\nendpos\na/b,c")]
+    public async Task CompiledBoundsAwaitGuestIndexIo(string expression, string expected)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
+            import re
+            class Index:
+                def __init__(self, name, offset=0):
+                    self.name = name
+                    self.offset = offset
+                def __index__(self):
+                    with open('index.txt') as source:
+                        value = int(source.read())
+                    print(self.name)
+                    return value + self.offset
+            print('entry')
+            print({expression})
+            """);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/index.txt", "1");
+        using (var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal($"entry\n{expected}\n", result.StandardOutput);
+            Assert.True(host.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task CancellingACompiledBoundAwaitsFileCleanupAndRefunds()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            class Index:
+                def __index__(self):
+                    with open('index.txt') as source:
+                        return int(source.read())
+            print(re.compile('é').search('aéz', Index()).group())
+            """, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/index.txt", "1");
+        var reading = host.PauseReadUntilCancellation("/index.txt");
+        var closing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        host.BeforeFileClose = () =>
+        {
+            closing.TrySetResult();
+            return new ValueTask(release.Task);
+        };
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            Assert.Same(reading, await Task.WhenAny(reading, pending).WaitAsync(TimeSpan.FromSeconds(10)));
+            cancellation.Cancel();
+            Assert.Same(closing.Task, await Task.WhenAny(closing.Task, pending).WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            release.TrySetResult();
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     // Independent frozen CPython 3.13.2 output, not backend-derived expectations.
     public static IEnumerable<object[]> Cases()
     {

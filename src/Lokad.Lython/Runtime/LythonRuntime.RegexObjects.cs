@@ -305,29 +305,28 @@ internal sealed partial class LythonRuntime
 
     internal static class RePatternMembers
     {
-        private static readonly ReceiverMethod SearchMethod = CreateMatchMethod("pattern.search", LythonRegexMatchMode.Search);
-        private static readonly ReceiverMethod MatchMethod = CreateMatchMethod("pattern.match", LythonRegexMatchMode.Match);
-        private static readonly ReceiverMethod FullMatchMethod = CreateMatchMethod("pattern.fullmatch", LythonRegexMatchMode.FullMatch);
-        private static readonly ReceiverMethod FindAllMethod = new(
-            LythonCallableSignature.Create("pattern.findall", ["string", "pos", "endpos"], 1),
-            static (receiver, arguments, span, context) => ExecuteFindAll((RePatternObject)receiver, arguments, span, context));
-        private static readonly ReceiverMethod FindIterMethod = new(
-            LythonCallableSignature.Create("pattern.finditer", ["string", "pos", "endpos"], 1),
-            static (receiver, arguments, span, context) => ExecuteFindIter((RePatternObject)receiver, arguments, span, context));
-        private static readonly ReceiverMethod SubMethod = CreateSubMethod("pattern.sub", RegexSubstitutionMode.TextOnly);
-        private static readonly ReceiverMethod SubCountMethod = CreateSubMethod("pattern.subn", RegexSubstitutionMode.TextAndCount);
-        private static readonly ReceiverMethod SplitMethod = new(
-            LythonCallableSignature.Create("pattern.split", ["string", "maxsplit", "pos", "endpos"], 1),
-            static (receiver, arguments, span, context) => ExecuteSplit((RePatternObject)receiver, arguments, span, context));
+        private enum PatternOperation { Search, Match, FullMatch, FindAll, FindIter, Split, Sub, SubCount }
 
-        private static ReceiverMethod CreateMatchMethod(string name, LythonRegexMatchMode mode)
-            => new(LythonCallableSignature.Create(name, ["string", "pos", "endpos"], 1),
-                (receiver, arguments, span, context) => ExecuteMatch((RePatternObject)receiver, arguments, span, context, mode));
+        private static readonly ReceiverMethod SearchMethod = CreateWindowMethod("pattern.search", PatternOperation.Search);
+        private static readonly ReceiverMethod MatchMethod = CreateWindowMethod("pattern.match", PatternOperation.Match);
+        private static readonly ReceiverMethod FullMatchMethod = CreateWindowMethod("pattern.fullmatch", PatternOperation.FullMatch);
+        private static readonly ReceiverMethod FindAllMethod = CreateWindowMethod("pattern.findall", PatternOperation.FindAll);
+        private static readonly ReceiverMethod FindIterMethod = CreateWindowMethod("pattern.finditer", PatternOperation.FindIter);
+        private static readonly ReceiverMethod SubMethod = CreateMethod(
+            "pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2, PatternOperation.Sub);
+        private static readonly ReceiverMethod SubCountMethod = CreateMethod(
+            "pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2, PatternOperation.SubCount);
+        private static readonly ReceiverMethod SplitMethod = CreateMethod(
+            "pattern.split", ["string", "maxsplit", "pos", "endpos"], 1, PatternOperation.Split);
 
-        private static ReceiverMethod CreateSubMethod(string name, RegexSubstitutionMode mode)
-            => new(LythonCallableSignature.Create(name, ["repl", "string", "count", "pos", "endpos"], 2),
-                (receiver, arguments, span, context) => ExecuteSub((RePatternObject)receiver, arguments, span, context, mode, false).GetAwaiter().GetResult(),
-                (receiver, arguments, span, context) => ExecuteSub((RePatternObject)receiver, arguments, span, context, mode, true));
+        private static ReceiverMethod CreateWindowMethod(string name, PatternOperation operation)
+            => CreateMethod(name, ["string", "pos", "endpos"], 1, operation);
+
+        private static ReceiverMethod CreateMethod(string name, string[] parameters, int required, PatternOperation operation)
+            => new(LythonCallableSignature.Create(name, parameters, required),
+                (receiver, arguments, span, context) => Execute((RePatternObject)receiver, arguments, span, context, name, operation, false)
+                    .GetAwaiter().GetResult(),
+                (receiver, arguments, span, context) => Execute((RePatternObject)receiver, arguments, span, context, name, operation, true));
 
         internal static ReceiverMethod? GetMethod(string name) => name switch
         {
@@ -366,95 +365,80 @@ internal sealed partial class LythonRuntime
                 : new PyMappingProxy(pattern.NamedGroups, context.MemoryGovernor, span);
         }
 
-        private static object ExecuteMatch(
-            RePatternObject pattern,
-            ReceiverArguments arguments,
-            LythonSourceSpan span,
-            ExecutionContext context,
-            LythonRegexMatchMode operation)
+        private static ValueTask<object> Execute(RePatternObject pattern, ReceiverArguments arguments, LythonSourceSpan span,
+            ExecutionContext context, string name, PatternOperation operation, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0]!, out var text))
+            var substitution = operation is PatternOperation.Sub or PatternOperation.SubCount;
+            var subjectIndex = substitution ? 1 : 0;
+            if (!PyStringOps.TryAsString(arguments[subjectIndex]!, out var text))
+                throw RuntimeErrors.Type(SubjectError(operation), span);
+
+            object? replacement = null;
+            if (substitution)
             {
-                throw new LythonRuntimeException("TypeError", "Compiled regex method expects string, optional pos, and optional endpos.", span);
+                replacement = arguments[0]!;
+                if (!PyStringOps.TryAsString(replacement, out _) && replacement is not ICallable)
+                    throw RuntimeErrors.Type($"{name}(...) replacement must be a string or callable.", span);
             }
 
-            var range = ReadWindow(text, arguments, 1, span, context);
-            return RegexMatcher.Match(pattern, range, operation, span, context);
-        }
-
-        private static object ExecuteFindAll(RePatternObject pattern, ReceiverArguments arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0]!, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "pattern.findall(string[, pos[, endpos]]) expects a string argument.", span);
-            }
-
-            var range = ReadWindow(text, arguments, 1, span, context);
-            return RegexMatcher.CreateFindAllResult(pattern, range, span, context);
-        }
-
-        private static object ExecuteFindIter(RePatternObject pattern, ReceiverArguments arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0]!, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "pattern.finditer(string[, pos[, endpos]]) expects a string argument.", span);
-            }
-
-            var range = ReadWindow(text, arguments, 1, span, context);
-            return PyRegexFindIterator.Create(pattern, range, context, span);
-        }
-
-        private static ValueTask<object> ExecuteSub(RePatternObject pattern, ReceiverArguments arguments, LythonSourceSpan span,
-            ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
-        {
-            context.CheckExecution(span);
-            var operationName = mode == RegexSubstitutionMode.TextAndCount ? "pattern.subn" : "pattern.sub";
-            if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1]!, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", mode == RegexSubstitutionMode.TextAndCount
-                    ? "pattern.subn(replacement, string[, count[, pos[, endpos]]]) expects replacement, text string, and optional count/pos/endpos."
-                    : "pattern.sub(replacement, string[, count[, pos[, endpos]]]) expects replacement, text string, and optional count/pos/endpos.", span);
-            }
-
-            var replacement = arguments[0]!;
-            if (!PyStringOps.TryAsString(replacement, out _) && replacement is not ICallable)
-            {
-                throw new LythonRuntimeException("TypeError", mode == RegexSubstitutionMode.TextAndCount
-                    ? "pattern.subn(...) replacement must be a string or callable."
-                    : "pattern.sub(...) replacement must be a string or callable.", span);
-            }
-
-            var count = arguments.Optional(2) is { } suppliedCount ? RegexCompiler.ParseExplicitInt(suppliedCount, "count", operationName, span, context) : 0;
-            var range = ReadWindow(text, arguments, 3, span, context);
-            return asynchronous ? RegexMatcher.ExecuteSubstituteAsync(pattern, replacement, range, count, span, context, mode)
-                : new ValueTask<object>(RegexMatcher.ExecuteSubstitute(pattern, replacement, range, count, span, context, mode));
-        }
-
-        private static object ExecuteSplit(RePatternObject pattern, ReceiverArguments arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            if (arguments.Length is < 1 or > 4 || !PyStringOps.TryAsString(arguments[0]!, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects a string and optional maxsplit/pos/endpos.", span);
-            }
-
-            var maxSplit = arguments.Optional(1) is { } suppliedCount ? RegexCompiler.ParseExplicitInt(suppliedCount, "maxsplit", "pattern.split", span, context) : 0;
-            var range = ReadWindow(text, arguments, 2, span, context);
-            return RegexMatcher.Split(pattern, range, maxSplit, span, context);
-        }
-
-        private static RegexSubjectRange ReadWindow(PyString text, ReceiverArguments arguments, int positionIndex,
-            LythonSourceSpan span, ExecutionContext context)
-        {
+            var counted = substitution || operation == PatternOperation.Split;
+            var countName = substitution ? "count" : "maxsplit";
+            var count = counted ? arguments.Optional(subjectIndex + 1) : null;
+            var positionIndex = subjectIndex + (counted ? 2 : 1);
             var pos = arguments.Optional(positionIndex);
             var end = arguments.Optional(positionIndex + 1);
-            return RegexCompiler.CreateSubjectRange(text,
-                pos is null ? 0 : RegexCompiler.ParsePosition(pos, span, context),
-                end is null ? int.MaxValue : RegexCompiler.ParsePosition(end, span, context), span, context);
+            if (asynchronous && (count is PyInstance || pos is PyInstance || end is PyInstance))
+                return ExecuteWithIndexProtocols(pattern, text, replacement, count, pos, end, countName, name, operation, context, span);
+
+            var limit = count is null ? 0 : RegexCompiler.ParseExplicitInt(count, countName, name, span, context);
+            var start = pos is null ? 0 : RegexCompiler.ParsePosition(pos, span, context);
+            var stop = end is null ? int.MaxValue : RegexCompiler.ParsePosition(end, span, context);
+            return ExecutePrepared(pattern, text, replacement, limit, start, stop, operation, context, span, asynchronous);
         }
+
+        // Only actual guest coercion needs an asynchronous continuation. The
+        // already evaluated subject and optional arguments survive the callback.
+        private static async ValueTask<object> ExecuteWithIndexProtocols(RePatternObject pattern, PyString text, object? replacement,
+            object? count, object? pos, object? end, string countName, string name, PatternOperation operation,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            var limit = count is null ? 0
+                : await RegexCompiler.ParseExplicitIntAsync(count, countName, name, span, context).ConfigureAwait(false);
+            var start = pos is null ? 0 : await RegexCompiler.ParsePositionAsync(pos, span, context).ConfigureAwait(false);
+            var stop = end is null ? int.MaxValue : await RegexCompiler.ParsePositionAsync(end, span, context).ConfigureAwait(false);
+            return await ExecutePrepared(pattern, text, replacement, limit, start, stop, operation, context, span, true).ConfigureAwait(false);
+        }
+
+        private static ValueTask<object> ExecutePrepared(RePatternObject pattern, PyString text, object? replacement,
+            int count, int pos, int end, PatternOperation operation, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            var range = RegexCompiler.CreateSubjectRange(text, pos, end, span, context);
+            switch (operation)
+            {
+                case PatternOperation.Search: return new(RegexMatcher.Match(pattern, range, LythonRegexMatchMode.Search, span, context));
+                case PatternOperation.Match: return new(RegexMatcher.Match(pattern, range, LythonRegexMatchMode.Match, span, context));
+                case PatternOperation.FullMatch: return new(RegexMatcher.Match(pattern, range, LythonRegexMatchMode.FullMatch, span, context));
+                case PatternOperation.FindAll: return new(RegexMatcher.CreateFindAllResult(pattern, range, span, context));
+                case PatternOperation.FindIter: return new(PyRegexFindIterator.Create(pattern, range, context, span));
+                case PatternOperation.Split: return new(RegexMatcher.Split(pattern, range, count, span, context));
+                case PatternOperation.Sub or PatternOperation.SubCount:
+                    var mode = operation == PatternOperation.Sub ? RegexSubstitutionMode.TextOnly : RegexSubstitutionMode.TextAndCount;
+                    return asynchronous ? RegexMatcher.ExecuteSubstituteAsync(pattern, replacement!, range, count, span, context, mode)
+                        : new(RegexMatcher.ExecuteSubstitute(pattern, replacement!, range, count, span, context, mode));
+                default: throw new InvalidOperationException("Unknown compiled regex operation.");
+            }
+        }
+
+        private static string SubjectError(PatternOperation operation) => operation switch
+        {
+            PatternOperation.FindAll => "pattern.findall(string[, pos[, endpos]]) expects a string argument.",
+            PatternOperation.FindIter => "pattern.finditer(string[, pos[, endpos]]) expects a string argument.",
+            PatternOperation.Split => "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects a string and optional maxsplit/pos/endpos.",
+            PatternOperation.Sub => "pattern.sub(replacement, string[, count[, pos[, endpos]]]) expects replacement, text string, and optional count/pos/endpos.",
+            PatternOperation.SubCount => "pattern.subn(replacement, string[, count[, pos[, endpos]]]) expects replacement, text string, and optional count/pos/endpos.",
+            _ => "Compiled regex method expects string, optional pos, and optional endpos.",
+        };
     }
 
 }

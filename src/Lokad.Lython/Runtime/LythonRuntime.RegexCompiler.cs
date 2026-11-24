@@ -500,8 +500,14 @@ internal sealed partial class LythonRuntime
         }
 
         internal static int ParseExplicitInt(object value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
+            => CheckExplicitInt(ParseBoundInteger(value, span, context), name, signature, span);
+
+        internal static async ValueTask<int> ParseExplicitIntAsync(object value, string name, string signature,
+            LythonSourceSpan span, ExecutionContext context)
+            => CheckExplicitInt(await ParseBoundIntegerAsync(value, span, context).ConfigureAwait(false), name, signature, span);
+
+        private static int CheckExplicitInt(long integer, string name, string signature, LythonSourceSpan span)
         {
-            var integer = ParseBoundInteger(value, span, context);
             if (integer < int.MinValue || integer > int.MaxValue)
                 throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span);
             return (int)integer;
@@ -510,12 +516,23 @@ internal sealed partial class LythonRuntime
         internal static int ParsePosition(object value, LythonSourceSpan span, ExecutionContext context)
             => (int)Math.Clamp(ParseBoundInteger(value, span, context), 0, int.MaxValue);
 
+        internal static async ValueTask<int> ParsePositionAsync(object value, LythonSourceSpan span, ExecutionContext context)
+            => (int)Math.Clamp(await ParseBoundIntegerAsync(value, span, context).ConfigureAwait(false), 0, int.MaxValue);
+
         private static int ParseOptionalPosition(object value, int fallback, LythonSourceSpan span, ExecutionContext context)
             => ReferenceEquals(value, PyNone.Instance) ? fallback : ParsePosition(value, span, context);
 
-        private static long ParseBoundInteger(object? value, LythonSourceSpan span, ExecutionContext context)
+        private static long ParseBoundInteger(object value, LythonSourceSpan span, ExecutionContext context)
+            => ReadBoundInteger(value, LythonRuntime.CoerceIndexProtocol(value, context, span), span, context);
+
+        private static async ValueTask<long> ParseBoundIntegerAsync(object value, LythonSourceSpan span, ExecutionContext context)
         {
-            var coerced = value is null ? null : LythonRuntime.CoerceIndexProtocol(value, context, span);
+            var coerced = await CoerceTypeIndexAsync(value, context, span, asynchronous: true).ConfigureAwait(false);
+            return ReadBoundInteger(value, coerced, span, context);
+        }
+
+        private static long ReadBoundInteger(object value, object? coerced, LythonSourceSpan span, ExecutionContext context)
+        {
             BigInteger integer;
             if (coerced is bool flag)
             {
