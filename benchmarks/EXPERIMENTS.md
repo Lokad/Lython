@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1660](results/2026-11-25-defaulted-rule-phase-split/README.md) retests
+the B1659 images with separate defaulted-rule phases. Compile and warm
+ranges cross zero. The combined lane varies more than the earlier adverse
+CPU result. The manifest compile control rises 0.67–0.97% in process CPU.
+The phase responsible for the earlier slowdown remains unresolved.
+
 [B1659](results/2026-11-24-direct-operand-return/README.md) returns stable
 aliases and literals through the existing direct path. The shipment report
 improves warm, through result and warm async with matched admission. The
