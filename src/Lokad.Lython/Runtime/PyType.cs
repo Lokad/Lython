@@ -18,6 +18,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
     internal static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     internal static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
+    internal static readonly PyBuiltinRuntimeType CallableIteratorType = CreateOpaqueRuntimeType("callable_iterator");
     internal static readonly PyBuiltinRuntimeType GeneratorType = CreateOpaqueRuntimeType("generator");
     internal static readonly PyBuiltinRuntimeType FunctionType = CreateOpaqueRuntimeType("function");
     internal static readonly PyBuiltinRuntimeType MethodType = CreateOpaqueRuntimeType("method");
@@ -431,8 +432,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PyBytes => GetBuiltinTypeObject(context, "bytes", span),
             PyPath path => LythonRuntime.PathClass(path),
             PyModule => ModuleType,
-            LythonRuntime.RePatternObject => RegexPatternType,
-            LythonRuntime.ReMatchObject => RegexMatchType,
             LythonRuntime.ElementTreeModule.Element => LythonRuntime.ElementTreeModule.ElementType,
             PyTimedelta => PyDateTimeOps.TimedeltaType,
             PyDate => PyDateTimeOps.DateType,

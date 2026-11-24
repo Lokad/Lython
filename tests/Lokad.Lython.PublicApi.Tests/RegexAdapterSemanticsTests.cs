@@ -5,6 +5,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexAdapterSemanticsTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FindIteratorSharesTheCallableIteratorType(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            matches = re.finditer('é', 'xé')
+            stopped = iter(lambda: None, None)
+            kind = type(matches)
+            print(kind.__name__, kind is matches.__class__, kind is type(stopped))
+            print(next(matches).span(), next(matches, None), next(stopped, None))
+            print(type(matches) is kind)
+            """, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("callable_iterator True True\n(1, 2) None None\nTrue\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ReplacementGroupScanPreservesEscapesAndPositionsAcrossChunks()
     {

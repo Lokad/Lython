@@ -945,6 +945,7 @@ internal sealed partial class LythonRuntime
             PyTyping.NewTypeIdentityCallable => PyTyping.NewTypeType,
             LythonRuntime.RePatternObject => PyType.RegexPatternType,
             LythonRuntime.ReMatchObject => PyType.RegexMatchType,
+            PyRegexFindIterator or PyCallableSentinelIterator => PyType.CallableIteratorType,
             PyStaticMethod => TryGetBuiltinOrNull(context, "staticmethod"),
             PyClassMethod => TryGetBuiltinOrNull(context, "classmethod"),
             PyProperty => TryGetBuiltinOrNull(context, "property"),

@@ -110,6 +110,7 @@ internal static class RuntimeErrors
         LythonRuntime.RandomModule.PyRandom => "Random",
         LythonRuntime.RePatternObject => "re.Pattern",
         LythonRuntime.ReMatchObject => "re.Match",
+        LythonRuntime.PyRegexFindIterator or PyCallableSentinelIterator => "callable_iterator",
         LythonRuntime.ElementTreeModule.Element => "xml.etree.ElementTree.Element",
         PyInstance instance => instance.Type.Name,
         _ => LythonRuntime.CallableOperandTypeName(value),
