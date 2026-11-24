@@ -2029,6 +2029,7 @@ JSON resolves guest writers for each chunk; CSV captures a guest write callable
 at construction. Native file handles have immutable methods and can be retained
 directly. Native text output copies the producer's admitted UTF-8 range into file
 staging before its scratch can be reused, avoiding an intermediate Python string.
+Native `json.dump` discards the completed write's character count before boxing.
 Public/custom chunks remain independent values. One codec/newline/BOM algorithm
 serves both routes; an encoding error owns its input, and ordinary writes preserve
 the original string identity. A native consumer error leaves an escaped encoder

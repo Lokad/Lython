@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
                     }
                     // Consumer failure leaves the iterator resumable. The guard and
                     // admitted builder remain live until this native copy finishes.
-                    await InvokeFileWriteAsync(target, _builder!.WrittenMemory, writeSpan ?? _span, _context, asynchronous).ConfigureAwait(false);
+                    await InvokeFileWriteChunkAsync(target, _builder!.WrittenMemory, writeSpan ?? _span, _context, asynchronous).ConfigureAwait(false);
                 }
             }
             finally { Volatile.Write(ref _advancing, 0); }

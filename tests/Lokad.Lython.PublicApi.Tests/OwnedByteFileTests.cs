@@ -495,7 +495,7 @@ public sealed class OwnedByteFileTests
             "exposed" => "method=target.write\n method(value)",
             "writelines" => "target.writelines([value])",
             "csv" => "csv.writer(target).writerow([value])",
-            _ => "json.dump(value,target)",
+            _ => "json.dump([value,{1}],target,default=lambda value:print('unexpected callback'))",
         };
         var source = "import csv,json\nvalue='x'*70000\nwith open('target','w',newline='') as target:\n " + statement + "\nprint('after')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

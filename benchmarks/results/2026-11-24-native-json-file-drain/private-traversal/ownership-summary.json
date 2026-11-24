@@ -1,0 +1,119 @@
+{
+  "reference": "07f6326abda3b976c7a679d50867e565239bb0e482aa8a4c6d8fa5302afff814",
+  "candidate": "fcb682dc756c4594bbc7665b59305045f735a378e85b2b1cca6925af44fe248b",
+  "sourcePatch": "9300e61e373865c38c07ecc72aa5651e8fdd2a2ae46e44d7856212ac4eebea64",
+  "executionPeakBytes": [
+    {
+      "case": "callback",
+      "asynchronous": false,
+      "bytes": [
+        11601,
+        11377
+      ]
+    },
+    {
+      "case": "callback",
+      "asynchronous": true,
+      "bytes": [
+        11601,
+        11377
+      ]
+    },
+    {
+      "case": "json-64",
+      "asynchronous": false,
+      "bytes": [
+        16702,
+        2572
+      ]
+    },
+    {
+      "case": "json-64",
+      "asynchronous": true,
+      "bytes": [
+        16702,
+        2572
+      ]
+    },
+    {
+      "case": "control-64",
+      "asynchronous": false,
+      "bytes": [
+        2548,
+        2548
+      ]
+    },
+    {
+      "case": "control-64",
+      "asynchronous": true,
+      "bytes": [
+        2548,
+        2548
+      ]
+    },
+    {
+      "case": "json-256",
+      "asynchronous": false,
+      "bytes": [
+        59903,
+        2788
+      ]
+    },
+    {
+      "case": "json-256",
+      "asynchronous": true,
+      "bytes": [
+        59903,
+        2788
+      ]
+    },
+    {
+      "case": "control-256",
+      "asynchronous": false,
+      "bytes": [
+        2548,
+        2548
+      ]
+    },
+    {
+      "case": "control-256",
+      "asynchronous": true,
+      "bytes": [
+        2548,
+        2548
+      ]
+    },
+    {
+      "case": "json-1024",
+      "asynchronous": false,
+      "bytes": [
+        232704,
+        3940
+      ]
+    },
+    {
+      "case": "json-1024",
+      "asynchronous": true,
+      "bytes": [
+        232704,
+        3940
+      ]
+    },
+    {
+      "case": "control-1024",
+      "asynchronous": false,
+      "bytes": [
+        3524,
+        3524
+      ]
+    },
+    {
+      "case": "control-1024",
+      "asynchronous": true,
+      "bytes": [
+        3524,
+        3524
+      ]
+    }
+  ]
+}

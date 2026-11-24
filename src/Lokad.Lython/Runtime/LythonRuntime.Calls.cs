@@ -198,6 +198,15 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    internal static async ValueTask InvokeFileWriteChunkAsync(ExecutionContext.TextFileHandle receiver, ReadOnlyMemory<byte> utf8,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    {
+        context.EnterInterpreterFrame(span);
+        try { await receiver.WriteUtf8Async(utf8, asynchronous).ConfigureAwait(false); }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     internal static async ValueTask<object> InvokeFileWriteAsync(ExecutionContext.TextFileHandle receiver, object value,
         LythonSourceSpan span, ExecutionContext context)
     {

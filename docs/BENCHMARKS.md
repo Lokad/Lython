@@ -88,6 +88,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Discard native JSON file write results before boxing | The configuration manifest allocates 3,104 fewer bytes per run, down 3.12%. The file-backed JSON summary saves 128 bytes. | Peak admission matches. Manifest and default JSON Lines timing span zero. [B1619](../benchmarks/results/2026-11-24-native-json-file-drain/typed-result/README.md). |
 | Reuse compiler collection facts | The sparse validator's invalidation scans visit 14 bindings, down from 1,170. Immutable tuple diagnostics survive unrelated mutations. | Representative allocations match and CPU ranges span zero. [B1613](../benchmarks/results/2026-11-24-abstract-collection-graphs/README.md). |
 | Share statement parsing and use its existing source spans | The sparse generated validator compiles in 3.10–5.04% less elapsed time and reaches its result 1.69–3.52% sooner, with lower CPU. | Compilation allocation and retained admission match. Manifest time-to-result CPU rises 0.79–2.98% while elapsed spans zero. [B1612](../benchmarks/results/2026-11-24-shared-parser-statements/README.md). |
 | Complete cased text helpers before workspace setup | The short Unicode report takes 24.78–27.37% less warm elapsed and 19.01–25.68% less time through result with lower CPU. Mixed-width warm elapsed falls 6.62–11.94%. | Target allocations and admission match. Distinct-word CPU and the inlined control are inconclusive. [B1608](../benchmarks/results/2026-11-24-closed-line-helper/README.md). |

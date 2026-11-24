@@ -10,7 +10,17 @@ original conditions retained. Current comparisons belong in
 per-chunk traversal reentry and discarded write counts together.
 The manifest uses 3,104 fewer managed bytes per run, while default
 JSON Lines takes 1.43–4.54% longer on the quiet VM. The combined
-prototype stays private while the write-result change is isolated.
+prototype stays private. [B1618](results/2026-11-24-native-json-file-drain/isolated/README.md)
+restores the original traversal and retains the allocation reduction.
+Default JSON Lines still takes 2.24–2.87% longer with higher CPU.
+[B1619](results/2026-11-24-native-json-file-drain/typed-result/README.md)
+keeps the original counted writer and discards its typed result before
+boxing. The manifest saves 3,104 bytes per run. Its timing and the
+default JSON Lines timing both span zero.
+
+[Private traversal ownership](results/2026-11-24-native-json-file-drain/private-traversal/README.md)
+reproduces admission growing with repeated small dumps. The prototype
+reduces peak admission from 232,704 to 3,940 bytes for 1,024 dumps.
 
 [B1616](results/2026-11-24-file-script-attribution/README.md) samples
 the delivered manifest and JSON summary on WSL. Host methods account

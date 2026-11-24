@@ -7,6 +7,44 @@ public sealed class JsonEncoderIterationLifetimeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task NativeFileStagesCompletedChunksBeforeTheNextDefaultCallback(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile("""
+            import json
+            offsets = []
+            def fallback(value):
+                offsets.append(target.tell())
+                if len(offsets) == 1:
+                    return 'kept'
+                raise TypeError('stop encoding')
+            with open('/output', 'w', encoding='utf-8', newline='') as target:
+                try:
+                    json.dump([1, {2}, {3}], target, default=fallback)
+                except TypeError as error:
+                    assert str(error) == 'stop encoding'
+                else:
+                    raise AssertionError('missing encoding error')
+            assert len(offsets) == 2 and offsets[0] >= 2 and offsets[1] >= 10, repr(offsets)
+            with open('/output', encoding='utf-8') as source:
+                return source.read()
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            using (var result = asynchronous ? await script.RunAsync(new DelayedLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Contains(Assert.IsType<string>(result.ReturnValue), new[] { "[1, \"kept\"", "[1, \"kept\", " });
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task NativeWriterFailureLeavesCapturedEncoderResumable(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

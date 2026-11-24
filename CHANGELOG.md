@@ -2,6 +2,7 @@
 
 ## 0.11.0 - Unreleased
 
+- Discard the native file write count from `json.dump` before boxing it.
 - Resolve shadowed builtin names through their actual bindings during static
   call analysis. Infer a singleton unpacking target from the unpacked element.
 - Preserve compile-time diagnostics for immutable tuple values across
