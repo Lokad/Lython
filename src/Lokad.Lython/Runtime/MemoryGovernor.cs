@@ -137,9 +137,11 @@ internal sealed class MemoryGovernor
 
     public long CurrentReservedBytes { get; private set; }
 
-    public long CurrentCommittedBytes { get; private set; }
+    public long CurrentCommittedBytes => CurrentAccountedBytes - CurrentReservedBytes;
 
-    public long CurrentAccountedBytes => checked(CurrentReservedBytes + CurrentCommittedBytes);
+    // Only a change to ownership changes this total. Commit changes the
+    // partition between pending and published storage inside the same lease.
+    public long CurrentAccountedBytes { get; private set; }
 
     public long PeakAccountedBytes { get; private set; }
 
@@ -191,6 +193,7 @@ internal sealed class MemoryGovernor
         // Publish pending ownership before external code. Callback allocations
         // and refunds must include this operation when resizing the shared lease.
         CurrentReservedBytes += bytes;
+        CurrentAccountedBytes = next;
         try
         {
             var admitted = ResizeOwnership(next);
@@ -204,7 +207,7 @@ internal sealed class MemoryGovernor
         }
         catch
         {
-            CurrentReservedBytes = Math.Max(0, CurrentReservedBytes - bytes);
+            RemovePending(bytes);
             // A callback can fail before changing the host estimate. Do not
             // invoke arbitrary host code again for a refund that changes nothing.
             if (_ownership.Bytes != CurrentAccountedBytes)
@@ -241,10 +244,7 @@ internal sealed class MemoryGovernor
         }
 #endif
 
-        var committed = Math.Min(bytes, CurrentReservedBytes);
-        CurrentReservedBytes -= committed;
-        CurrentCommittedBytes = checked(CurrentCommittedBytes + committed);
-
+        CurrentReservedBytes -= Math.Min(bytes, CurrentReservedBytes);
     }
 
     /// <summary>
@@ -268,7 +268,7 @@ internal sealed class MemoryGovernor
 
         var released = Math.Min(bytes, CurrentCommittedBytes);
         if (released == 0) return;
-        CurrentCommittedBytes -= released;
+        CurrentAccountedBytes -= released;
         ResizeOwnership(CurrentAccountedBytes);
     }
 
@@ -279,10 +279,15 @@ internal sealed class MemoryGovernor
             return;
         }
 
-        var released = Math.Min(bytes, CurrentReservedBytes);
-        if (released == 0) return;
-        CurrentReservedBytes -= released;
-        ResizeOwnership(CurrentAccountedBytes);
+        if (RemovePending(bytes) != 0) ResizeOwnership(CurrentAccountedBytes);
+    }
+
+    private long RemovePending(long bytes)
+    {
+        var removed = Math.Min(bytes, CurrentReservedBytes);
+        CurrentReservedBytes -= removed;
+        CurrentAccountedBytes -= removed;
+        return removed;
     }
 
     // Every host resize sees its pending logical change. Reentry is allowed

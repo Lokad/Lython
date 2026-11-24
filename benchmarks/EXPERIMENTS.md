@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1628](results/2026-11-24-accounted-memory-total/README.md) derives the
+committed balance from the admitted total and pending bytes. Admitted
+peaks agree and nested-refusal cleanup preserves published storage. Rule
+timings span zero. Quoted invoice elapsed falls slightly with flat or
+higher wider CPU.
+
 [B1627](results/2026-11-24-current-rule-attribution/README.md) places
 562 of 1,196 defaulted-rule runtime samples under definition construction.
 The eager comparison fails to isolate the previously measured CPU cost.

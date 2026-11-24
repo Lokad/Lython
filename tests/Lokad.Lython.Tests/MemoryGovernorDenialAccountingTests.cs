@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
@@ -39,5 +40,33 @@ public sealed class MemoryGovernorDenialAccountingTests
         governor.Reserve(1000000, null);
         governor.Commit(1000000);
         Assert.Equal(0, governor.LastDeniedReservationBytes);
+    }
+
+    [Fact]
+    public void NestedRefusalRefundsOuterGrowthButKeepsPublishedStorage()
+    {
+        var budget = new LythonMemoryBudget(100);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var governor = new MemoryGovernor(hook);
+        governor.Reserve(24, null);
+        governor.Commit(24);
+        hook.AfterGrowth = growth =>
+        {
+            if (growth != 40) return;
+            governor.Reserve(8, null);
+            governor.Commit(8);
+            governor.Reserve(36, null);
+        };
+
+        var failure = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(40, null));
+        Assert.Same(governor.AdmissionFailure, failure);
+        Assert.Equal(36, failure.Attribution?.Requested);
+        Assert.Equal(72, failure.Attribution?.Observed);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(32, governor.CurrentCommittedBytes);
+        Assert.Equal(32, budget.ReservedBytes);
+        governor.Release(32);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }
