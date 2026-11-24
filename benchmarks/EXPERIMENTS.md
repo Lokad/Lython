@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1586](results/2026-11-24-json-traversal/README.md) drains eager JSON within
+the shared traversal. All three JSON Lines elapsed ranges fall. Default
+options also use less process CPU across worker pairings. Text and CSV
+controls span zero. Keep the traversal and the independent CPython evidence
+for eager dictionary size changes inside a default hook.
+
 [B1585](results/2026-11-24-json-ascii-runs/README.md) compares bounded run
 searches in the JSON string emitter. The expanded-options script is slightly
 slower, default-options elapsed spans zero and the unchanged CSV control

@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "allocatedBytes": [
+      5523740,
+      5523740
+    ],
+    "peakAdmission": [
+      6157312,
+      6157312
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.default-options.large",
+    "allocatedBytes": [
+      4938966,
+      4939010
+    ],
+    "peakAdmission": [
+      6228493,
+      6228493
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.escaped-options.large",
+    "allocatedBytes": [
+      7102648,
+      7102642
+    ],
+    "peakAdmission": [
+      7503356,
+      7503356
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      323144,
+      322920
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3280586,
+      3280550
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]
