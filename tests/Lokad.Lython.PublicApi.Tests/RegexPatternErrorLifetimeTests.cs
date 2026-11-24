@@ -44,17 +44,24 @@ public sealed class RegexPatternErrorLifetimeTests
     }
 
     [Theory]
-    [InlineData(LythonRegexFailure.Pattern, LythonFailureReason.Cancelled)]
-    [InlineData(LythonRegexFailure.Capability, LythonFailureReason.Cancelled)]
-    [InlineData(LythonRegexFailure.MemoryAdmission, LythonFailureReason.SharedMemoryAllowance)]
-    public async Task FailureTranslationPreservesCancellationAndAdmission(LythonRegexFailure failure, LythonFailureReason expected)
+    [InlineData(LythonRegexFailure.Pattern, LythonFailureReason.Cancelled, false)]
+    [InlineData(LythonRegexFailure.Capability, LythonFailureReason.Cancelled, false)]
+    [InlineData(LythonRegexFailure.MemoryAdmission, LythonFailureReason.SharedMemoryAllowance, false)]
+    [InlineData(LythonRegexFailure.MemoryAdmission, LythonFailureReason.SharedMemoryAllowance, true)]
+    public async Task FailureTranslationPreservesCancellationAndAdmission(LythonRegexFailure failure,
+        LythonFailureReason expected, bool substitute)
     {
         using var cancellation = new CancellationTokenSource();
         var provider = new ErrorProvider("compile") { BeforeError = cancellation.Cancel, Failure = failure };
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using (var script = new LythonEngine(provider).Compile("""
+        var operation = substitute ? "re.sub(pattern, 'x', 'a', count=Index())" : "re.compile(pattern)";
+        using (var script = new LythonEngine(provider).Compile($$"""
             import re
-            try: re.compile(pattern)
+            class Index:
+                def __index__(self):
+                    print('index')
+                    return 1
+            try: {{operation}}
             except BaseException: pass
             print('later')
             """, budget))

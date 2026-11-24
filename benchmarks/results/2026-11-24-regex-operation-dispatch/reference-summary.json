@@ -1,0 +1,51 @@
+{
+  "core": "d1440aad206919af2f57ec99b3f41cf4f0e42105ee06e133acf39a54959836cb",
+  "results": {
+    "sync": {
+      "matches": 4,
+      "total": 21,
+      "mismatches": [
+        "re.search(bad, subject)",
+        "re.match(bad, subject)",
+        "re.fullmatch(bad, subject)",
+        "re.findall(bad, subject)",
+        "re.finditer(bad, subject)",
+        "re.sub(bad, None, subject, count=Index())",
+        "re.subn(bad, 'x', 'a', count=Index())",
+        "re.split(bad, subject, maxsplit=Index())",
+        "pattern.search(subject, Index())",
+        "pattern.findall(subject, endpos=Index())",
+        "pattern.sub(None, subject, Index())",
+        "pattern.split(subject, Index())",
+        "re.sub(pattern, 'x', 'a', count=missing)",
+        "re.subn(pattern, 'x', 'a', count=missing)",
+        "re.split(pattern, 'a', maxsplit=missing)",
+        "pattern.sub(NotCallable(), '', -1)",
+        "pattern.sub(r'\\9', subject, 0)"
+      ]
+    },
+    "async": {
+      "matches": 4,
+      "total": 21,
+      "mismatches": [
+        "re.search(bad, subject)",
+        "re.match(bad, subject)",
+        "re.fullmatch(bad, subject)",
+        "re.findall(bad, subject)",
+        "re.finditer(bad, subject)",
+        "re.sub(bad, None, subject, count=Index())",
+        "re.subn(bad, 'x', 'a', count=Index())",
+        "re.split(bad, subject, maxsplit=Index())",
+        "pattern.search(subject, Index())",
+        "pattern.findall(subject, endpos=Index())",
+        "pattern.sub(None, subject, Index())",
+        "pattern.split(subject, Index())",
+        "re.sub(pattern, 'x', 'a', count=missing)",
+        "re.subn(pattern, 'x', 'a', count=missing)",
+        "re.split(pattern, 'a', maxsplit=missing)",
+        "pattern.sub(NotCallable(), '', -1)",
+        "pattern.sub(r'\\9', subject, 0)"
+      ]
+    }
+  }
+}

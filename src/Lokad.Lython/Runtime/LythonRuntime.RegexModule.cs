@@ -217,16 +217,14 @@ internal sealed partial class LythonRuntime
                 "re.compile(pattern[, flags])", span, context, false).GetAwaiter().GetResult(),
             static async (arguments, span, context) => await RegexCompiler.CreatePattern(arguments,
                 "re.compile(pattern[, flags])", span, context, true).ConfigureAwait(false));
-        private static readonly BuiltinCallable SearchMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.Search, ModuleMatchOperation.Search);
-        private static readonly BuiltinCallable MatchMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.Match, ModuleMatchOperation.Match);
-        private static readonly BuiltinCallable FullMatchMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.FullMatch, ModuleMatchOperation.FullMatch);
-        private static readonly BuiltinCallable FindAllMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.FindAll, ModuleMatchOperation.FindAll);
-        private static readonly BuiltinCallable FindIterMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.FindIter, ModuleMatchOperation.FindIter);
-        private static readonly BuiltinCallable SubMethod = CreateSubstituteBuiltin(LythonKnownCallableSignatures.Regex.Sub, RegexSubstitutionMode.TextOnly);
-        private static readonly BuiltinCallable SubCountMethod = CreateSubstituteBuiltin(LythonKnownCallableSignatures.Regex.Subn, RegexSubstitutionMode.TextAndCount);
-        private static readonly BuiltinCallable SplitMethod = BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Regex.Split,
-            static (arguments, span, context) => ExecuteSplit(arguments, span, context, false).GetAwaiter().GetResult(),
-            static (arguments, span, context) => ExecuteSplit(arguments, span, context, true));
+        private static readonly BuiltinCallable SearchMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Search, RegexPatternOperation.Search);
+        private static readonly BuiltinCallable MatchMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Match, RegexPatternOperation.Match);
+        private static readonly BuiltinCallable FullMatchMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.FullMatch, RegexPatternOperation.FullMatch);
+        private static readonly BuiltinCallable FindAllMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.FindAll, RegexPatternOperation.FindAll);
+        private static readonly BuiltinCallable FindIterMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.FindIter, RegexPatternOperation.FindIter);
+        private static readonly BuiltinCallable SubMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Sub, RegexPatternOperation.Sub);
+        private static readonly BuiltinCallable SubCountMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Subn, RegexPatternOperation.SubCount);
+        private static readonly BuiltinCallable SplitMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Split, RegexPatternOperation.Split);
 
         private ReModule() : base("re")
         {
@@ -266,85 +264,11 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private enum ModuleMatchOperation { Search, Match, FullMatch, FindAll, FindIter }
-
-        private static BuiltinCallable CreateMatchBuiltin(LythonCallableSignature signature, ModuleMatchOperation operation)
-        {
-            var call = $"{signature.Name}(pattern, string[, flags][, pos][, endpos])";
-            return BuiltinCallable.CreateWithPresence(signature,
-                (arguments, span, context) => ExecuteMatch(arguments, call, operation, span, context, false).GetAwaiter().GetResult(),
-                (arguments, span, context) => ExecuteMatch(arguments, call, operation, span, context, true));
-        }
-
-        private static ValueTask<object> ExecuteMatch(BoundBuiltinArguments arguments, string call, ModuleMatchOperation operation,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            context.CheckExecution(span);
-            var inputs = RegexCompiler.CreatePatternAndRange(arguments, call, span, context, asynchronous);
-            return inputs.IsCompletedSuccessfully ? new(MatchPrepared(inputs.Result, operation, span, context))
-                : AwaitMatch(inputs, operation, span, context);
-        }
-
-        private static async ValueTask<object> AwaitMatch(ValueTask<RegexCompiler.RegexPatternRange> inputs,
-            ModuleMatchOperation operation, LythonSourceSpan span, ExecutionContext context)
-            => MatchPrepared(await inputs.ConfigureAwait(false), operation, span, context);
-
-        private static object MatchPrepared(RegexCompiler.RegexPatternRange inputs, ModuleMatchOperation operation,
-            LythonSourceSpan span, ExecutionContext context) => operation switch
-        {
-            ModuleMatchOperation.Search => RegexMatcher.Match(inputs.Pattern, inputs.Range, LythonRegexMatchMode.Search, span, context),
-            ModuleMatchOperation.Match => RegexMatcher.Match(inputs.Pattern, inputs.Range, LythonRegexMatchMode.Match, span, context),
-            ModuleMatchOperation.FullMatch => RegexMatcher.Match(inputs.Pattern, inputs.Range, LythonRegexMatchMode.FullMatch, span, context),
-            ModuleMatchOperation.FindAll => RegexMatcher.CreateFindAllResult(inputs.Pattern, inputs.Range, span, context),
-            ModuleMatchOperation.FindIter => PyRegexFindIterator.Create(inputs.Pattern, inputs.Range, context, span),
-            _ => throw new InvalidOperationException("Unknown regex match operation."),
-        };
-
-        private static ValueTask<object> ExecuteSplit(BoundBuiltinArguments arguments, LythonSourceSpan span,
-            ExecutionContext context, bool asynchronous)
-        {
-            context.CheckExecution(span);
-            var inputs = RegexCompiler.CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])",
-                span, context, asynchronous);
-            if (!inputs.IsCompletedSuccessfully) return AwaitSplit(inputs, span, context);
-            var prepared = inputs.Result;
-            return new(RegexMatcher.Split(prepared.Pattern, prepared.Range, prepared.MaxSplit, span, context));
-        }
-
-        private static async ValueTask<object> AwaitSplit(ValueTask<RegexCompiler.RegexSplitInputs> inputs,
-            LythonSourceSpan span, ExecutionContext context)
-        {
-            var prepared = await inputs.ConfigureAwait(false);
-            return RegexMatcher.Split(prepared.Pattern, prepared.Range, prepared.MaxSplit, span, context);
-        }
-
-        private static BuiltinCallable CreateSubstituteBuiltin(LythonCallableSignature signature, RegexSubstitutionMode mode)
-        {
-            var call = $"{signature.Name}(pattern, replacement, string[, count][, flags][, pos][, endpos])";
-            return BuiltinCallable.CreateWithPresence(signature,
-                (arguments, span, context) => ExecuteSubstitute(arguments, call, mode, span, context, false).GetAwaiter().GetResult(),
-                (arguments, span, context) => ExecuteSubstitute(arguments, call, mode, span, context, true));
-        }
-
-        private static ValueTask<object> ExecuteSubstitute(BoundBuiltinArguments arguments, string call, RegexSubstitutionMode mode,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            context.CheckExecution(span);
-            var inputs = RegexCompiler.CreateSubstituteInputs(arguments, call, span, context, asynchronous);
-            if (!inputs.IsCompletedSuccessfully) return AwaitSubstitute(inputs, span, context, mode);
-            var prepared = inputs.Result;
-            return asynchronous ? RegexMatcher.ExecuteSubstituteAsync(prepared.Pattern, prepared.Replacement,
-                prepared.Range, prepared.Count, span, context, mode)
-                : new(RegexMatcher.ExecuteSubstitute(prepared.Pattern, prepared.Replacement, prepared.Range, prepared.Count, span, context, mode));
-        }
-
-        private static async ValueTask<object> AwaitSubstitute(ValueTask<RegexCompiler.RegexSubstituteInputs> inputs,
-            LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
-        {
-            var prepared = await inputs.ConfigureAwait(false);
-            return await RegexMatcher.ExecuteSubstituteAsync(prepared.Pattern, prepared.Replacement,
-                prepared.Range, prepared.Count, span, context, mode).ConfigureAwait(false);
-        }
+        private static BuiltinCallable CreatePatternBuiltin(LythonCallableSignature signature, RegexPatternOperation operation)
+            => BuiltinCallable.CreateWithPresence(signature,
+                (arguments, span, context) => RePatternMembers.ExecuteModule(arguments, span, context, signature.Name, operation, false)
+                    .GetAwaiter().GetResult(),
+                (arguments, span, context) => RePatternMembers.ExecuteModule(arguments, span, context, signature.Name, operation, true));
 
         private object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

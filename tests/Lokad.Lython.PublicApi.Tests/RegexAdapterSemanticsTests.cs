@@ -281,6 +281,7 @@ public sealed class RegexAdapterSemanticsTests
     [Theory]
     [InlineData("re.compile('é').search('aéz', Index())")]
     [InlineData("re.search('é', 'aéz', pos=Index())")]
+    [InlineData("re.sub('é', 'x', 'aéz', count=Index())")]
     [InlineData("re.compile('é', Flag())")]
     [InlineData("re.compile(re.compile('é'), Flag())")]
     [InlineData("re.compile(Pattern(), UnreachableFlag())")]
@@ -339,6 +340,62 @@ public sealed class RegexAdapterSemanticsTests
         }
         Assert.Equal(1, host.ClosedFileCount);
         Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task ModuleAndCompiledRegexCallsUsePythonArgumentOrder()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            class BadPattern:
+                def __hash__(self):
+                    print('pattern hash')
+                    raise RuntimeError('pattern')
+            class Index:
+                def __index__(self):
+                    print('index')
+                    raise ValueError('index')
+            class NotCallable:
+                pass
+            def check(action):
+                try:
+                    print(action())
+                except Exception as error:
+                    print(type(error).__name__)
+            bad = BadPattern()
+            pattern = re.compile('a')
+            check(lambda: re.search(bad, subject))
+            check(lambda: re.sub(bad, missing, subject, count=Index()))
+            check(lambda: re.split(bad, subject, maxsplit=Index()))
+            check(lambda: pattern.search(subject, Index()))
+            check(lambda: pattern.sub(missing, subject, Index()))
+            check(lambda: re.split(pattern, 'a', maxsplit=missing))
+            check(lambda: re.sub(pattern, 'x', 'a', count=missing))
+            check(lambda: pattern.sub(NotCallable(), '', -1))
+            check(lambda: pattern.sub(r'\9', subject, 0))
+            check(lambda: re.sub(pattern, 'x', 'aba'))
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var expected = string.Concat(Enumerable.Repeat("pattern hash\nRuntimeError\n", 3)) +
+                "index\nValueError\nindex\nValueError\nTypeError\nTypeError\nTypeError\nPatternError\nxbx\n";
+            var options = new LythonRunOptions
+            {
+                Globals = new Dictionary<string, object?> { ["subject"] = 23, ["missing"] = null }
+            };
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(expected, result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     // Independent frozen CPython 3.13.2 output, not backend-derived expectations.

@@ -219,16 +219,6 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        internal readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);
-
-        internal readonly record struct RegexSubstituteInputs(
-            RePatternObject Pattern,
-            object Replacement,
-            RegexSubjectRange Range,
-            long Count);
-
-        internal readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, long MaxSplit);
-
         internal static int ReadCaptureSlotCount(ILythonRegexPattern pattern, MemoryGovernor? governor,
             CancellationToken token, LythonSourceSpan? span)
         {
@@ -390,7 +380,7 @@ internal sealed partial class LythonRuntime
             => PyStringOps.TryAsString(value, out var pattern) ? pattern
                 : throw RuntimeErrors.Type("first argument must be string or compiled pattern", span);
 
-        private static ValueTask<RePatternObject> ResolvePattern(object value, object? flags, LythonSourceSpan span,
+        internal static ValueTask<RePatternObject> ResolvePattern(object value, object? flags, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
             var requested = PrepareRequestKey(value, flags, span, context, asynchronous);
@@ -580,149 +570,11 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static ValueTask<RegexPatternRange> CreatePatternAndRange(BoundBuiltinArguments bound, string signature,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            var arguments = bound.Values;
-            if (!PyStringOps.TryAsString(arguments[1], out var text))
-                throw RuntimeErrors.Type($"{signature} expects pattern, string, optional flags, pos, and endpos.", span);
-
-            var flags = bound.Assigned[2] ? arguments[2] : null;
-            var requested = PrepareRequestKey(arguments[0], flags, span, context, asynchronous);
-            var pos = arguments[3];
-            var endPos = arguments[4];
-            if (asynchronous && (!requested.IsCompletedSuccessfully || pos is PyInstance || endPos is PyInstance))
-                return AwaitPatternArguments(arguments[0], text, requested, pos, endPos, span, context);
-
-            var prepared = requested.GetAwaiter().GetResult();
-            var range = CreateSubjectRange(text, ParseOptionalPosition(pos, 0, span, context),
-                ParseOptionalPosition(endPos, int.MaxValue, span, context), span, context);
-            var pending = ResolvePreparedPattern(arguments[0], prepared, span, context, asynchronous);
-            return pending.IsCompletedSuccessfully ? new(new RegexPatternRange(pending.Result, range))
-                : AwaitRangePattern(pending, range);
-
-            static async ValueTask<RegexPatternRange> AwaitRangePattern(
-                ValueTask<RePatternObject> pending, RegexSubjectRange range)
-                => new(await pending.ConfigureAwait(false), range);
-        }
-
-        private static async ValueTask<RegexPatternRange> AwaitPatternArguments(object pattern, PyString text,
-            ValueTask<RequestedFlags> requested,
-            object pos, object end, LythonSourceSpan span, ExecutionContext context)
-        {
-            var prepared = await requested.ConfigureAwait(false);
-            var start = await ParseOptionalPositionAsync(pos, 0, span, context).ConfigureAwait(false);
-            var stop = await ParseOptionalPositionAsync(end, int.MaxValue, span, context).ConfigureAwait(false);
-            var range = CreateSubjectRange(text, start, stop, span, context);
-            return new(await ResolvePreparedPattern(pattern, prepared, span, context, asynchronous: true).ConfigureAwait(false), range);
-        }
-
-        internal static ValueTask<RegexSubstituteInputs> CreateSubstituteInputs(BoundBuiltinArguments bound, string signature,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            var arguments = bound.Values;
-            if (!PyStringOps.TryAsString(arguments[2], out var text))
-                throw RuntimeErrors.Type($"{signature} expects pattern, replacement, text, optional count, flags, pos, and endpos.", span);
-
-            var replacement = arguments[1];
-            if (!PyStringOps.TryAsString(replacement, out _) && replacement is not ICallable)
-                throw RuntimeErrors.Type($"{signature} expects replacement to be a string or callable.", span);
-
-            var count = arguments[3];
-            var flags = bound.Assigned[4] ? arguments[4] : null;
-            var pos = arguments[5];
-            var endPos = arguments[6];
-            if (asynchronous && (count is PyInstance || pos is PyInstance || endPos is PyInstance))
-                return AwaitSubstituteArguments(arguments[0], text, replacement, flags, count, pos, endPos, span, context);
-
-            return FinishSubstituteInputs(arguments[0], text, replacement, flags,
-                ParseOptionalCount(count, span, context),
-                ParseOptionalPosition(pos, 0, span, context),
-                ParseOptionalPosition(endPos, int.MaxValue, span, context), span, context, asynchronous);
-        }
-
-        private static async ValueTask<RegexSubstituteInputs> AwaitSubstituteArguments(object pattern, PyString text, object replacement,
-            object? flags, object count, object pos, object end, LythonSourceSpan span, ExecutionContext context)
-        {
-            var limit = await ParseOptionalCountAsync(count, span, context).ConfigureAwait(false);
-            var start = await ParseOptionalPositionAsync(pos, 0, span, context).ConfigureAwait(false);
-            var stop = await ParseOptionalPositionAsync(end, int.MaxValue, span, context).ConfigureAwait(false);
-            return await FinishSubstituteInputs(pattern, text, replacement, flags, limit, start, stop, span, context,
-                asynchronous: true).ConfigureAwait(false);
-        }
-
-        private static ValueTask<RegexSubstituteInputs> FinishSubstituteInputs(object sourcePattern, PyString text, object replacement,
-            object? flags, long count, int pos, int end, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            var pending = ResolvePattern(sourcePattern, flags, span, context, asynchronous);
-            return pending.IsCompletedSuccessfully
-                ? new(new RegexSubstituteInputs(pending.Result, replacement, CreateSubjectRange(text, pos, end, span, context), count))
-                : AwaitSubstitutePattern(pending, text, replacement, count, pos, end, span, context);
-
-            static async ValueTask<RegexSubstituteInputs> AwaitSubstitutePattern(ValueTask<RePatternObject> pending,
-                PyString text, object replacement, long count, int pos, int end, LythonSourceSpan span, ExecutionContext context)
-                => new(await pending.ConfigureAwait(false), replacement, CreateSubjectRange(text, pos, end, span, context), count);
-        }
-
-        internal static ValueTask<RegexSplitInputs> CreateSplitInputs(BoundBuiltinArguments bound, string signature,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            var arguments = bound.Values;
-            if (!PyStringOps.TryAsString(arguments[1], out var text))
-                throw RuntimeErrors.Type($"{signature} expects pattern, string, optional maxsplit, flags, pos, and endpos.", span);
-
-            var count = arguments[2];
-            var flags = bound.Assigned[3] ? arguments[3] : null;
-            var pos = arguments[4];
-            var endPos = arguments[5];
-            if (asynchronous && (count is PyInstance || pos is PyInstance || endPos is PyInstance))
-                return AwaitSplitArguments(arguments[0], text, flags, count, pos, endPos, span, context);
-
-            var start = ParseOptionalPosition(pos, 0, span, context);
-            var stop = ParseOptionalPosition(endPos, int.MaxValue, span, context);
-            var pending = ResolvePattern(arguments[0], flags, span, context, asynchronous);
-            if (!pending.IsCompletedSuccessfully)
-                return AwaitSplitPattern(pending, text, count, start, stop, span, context);
-            var limit = ParseOptionalCount(count, span, context);
-            return new(new RegexSplitInputs(pending.Result, CreateSubjectRange(text, start, stop, span, context), limit));
-        }
-
-        private static async ValueTask<RegexSplitInputs> AwaitSplitArguments(object sourcePattern, PyString text, object? flags,
-            object count, object pos, object end, LythonSourceSpan span, ExecutionContext context)
-        {
-            var start = await ParseOptionalPositionAsync(pos, 0, span, context).ConfigureAwait(false);
-            var stop = await ParseOptionalPositionAsync(end, int.MaxValue, span, context).ConfigureAwait(false);
-            return await AwaitSplitPattern(ResolvePattern(sourcePattern, flags, span, context, asynchronous: true),
-                text, count, start, stop, span, context).ConfigureAwait(false);
-        }
-
-        private static async ValueTask<RegexSplitInputs> AwaitSplitPattern(ValueTask<RePatternObject> pending, PyString text,
-            object count, int start, int stop, LythonSourceSpan span, ExecutionContext context)
-        {
-            var pattern = await pending.ConfigureAwait(false);
-            var limit = await ParseOptionalCountAsync(count, span, context).ConfigureAwait(false);
-            return new(pattern, CreateSubjectRange(text, start, stop, span, context), limit);
-        }
-
-        // The module binder uses None to mark omitted values. Compiled
-        // methods distinguish a missing argument from explicit None.
-        private static long ParseOptionalCount(object value, LythonSourceSpan span, ExecutionContext context)
-            => ReferenceEquals(value, PyNone.Instance) ? 0 : ParseIndex(value, span, context);
-
         internal static int ParsePosition(object value, LythonSourceSpan span, ExecutionContext context)
             => (int)Math.Clamp(ParseIndex(value, span, context), 0, int.MaxValue);
 
         internal static async ValueTask<int> ParsePositionAsync(object value, LythonSourceSpan span, ExecutionContext context)
             => (int)Math.Clamp(await ParseIndexAsync(value, span, context).ConfigureAwait(false), 0, int.MaxValue);
-
-        private static int ParseOptionalPosition(object value, int fallback, LythonSourceSpan span, ExecutionContext context)
-            => ReferenceEquals(value, PyNone.Instance) ? fallback : ParsePosition(value, span, context);
-
-        private static ValueTask<int> ParseOptionalPositionAsync(object value, int fallback, LythonSourceSpan span, ExecutionContext context)
-            => value is PyInstance ? ParsePositionAsync(value, span, context) : new(ParseOptionalPosition(value, fallback, span, context));
-
-        private static ValueTask<long> ParseOptionalCountAsync(object value, LythonSourceSpan span, ExecutionContext context)
-            => value is PyInstance ? ParseIndexAsync(value, span, context) : new(ParseOptionalCount(value, span, context));
 
         internal static long ParseIndex(object value, LythonSourceSpan span, ExecutionContext context)
             => ReadBoundInteger(value, LythonRuntime.CoerceIndexProtocol(value, context, span), span, context);

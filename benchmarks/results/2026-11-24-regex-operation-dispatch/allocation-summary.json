@@ -1,0 +1,35 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "allocationBytes": [
+      14082122,
+      14082122
+    ],
+    "peakAdmission": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "allocationBytes": [
+      14278714,
+      14278888
+    ],
+    "peakAdmission": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3280886,
+      3281558
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

@@ -2612,6 +2612,12 @@ An invalid pattern's hash runs before the flag hash and before provider
 work. Guest hashing can suspend in `RunAsync`. Lython uses one request-key
 preparation, so the number of guest hash calls can differ from CPython's
 two-cache lookup.
+Module operations resolve the pattern before processing the compiled method's
+arguments. Both entry points convert numeric bounds and counts before matching
+or validating the subject. Omitted `count` and `maxsplit` default to zero,
+and explicit `None` raises `TypeError`. Lython's module window extension
+accepts `None` for an omitted bound. An invalid replacement template keeps its
+error ahead of an invalid subject.
 Global inline ASCII can replace implicit Unicode. A conflict with
 explicit Unicode raises `ValueError`, and scoped modes remain local.
 For runtime string patterns, providers report syntax errors before

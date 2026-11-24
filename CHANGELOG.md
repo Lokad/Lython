@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve a module regex pattern before checking operation arguments. Share
+  argument processing with compiled patterns, preserve Python error order,
+  and reject explicit `None` for substitution and split counts.
 - Forward evaluated local positional operands to native calls before staging
   them in the caller's stack. Ordinary dispatch and suspended children retain
   their own inputs.

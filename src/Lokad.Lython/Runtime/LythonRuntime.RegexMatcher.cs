@@ -380,27 +380,22 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        internal static object ExecuteSubstitute(RePatternObject pattern, object replacement, RegexSubjectRange range,
-            long count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
-            => SubstituteCoreAsync(pattern, replacement, range, count, span, context, mode, false).GetAwaiter().GetResult();
-
-        internal static ValueTask<object> ExecuteSubstituteAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
-            long count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
-            => SubstituteCoreAsync(pattern, replacement, range, count, span, context, mode, true);
-
-        private static async ValueTask<object> SubstituteCoreAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
-            long count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
+        internal static async ValueTask<object> Substitute(RePatternObject pattern, object replacement, object subject,
+            long count, int pos, int end, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode,
+            string name, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (!range.IsValid)
+            var hasText = PyStringOps.TryAsString(subject, out var input);
+            var range = hasText ? RegexCompiler.CreateSubjectRange(input, pos, end, span, context) : default;
+            if (hasText && !range.IsValid)
                 throw new LythonRuntimeException("ValueError", "Regex substitution endpos must not precede pos.", span);
             var isTemplate = PyStringOps.TryAsString(replacement, out var template);
-            if (!isTemplate && replacement is not ICallable)
+            if (!isTemplate && !IsCallable(replacement))
                 throw RuntimeErrors.Type("Regex replacement must be a string or callable.", span);
-            // Python validates templates even with no matches or negative count.
-            // The private plan lives through matching and all actual cleanup; no
-            // provider template dialect or retained replacement cache is involved.
+            // Python validates templates even with no matches, negative count
+            // or an invalid subject. The private plan lives through cleanup.
             using var plan = isTemplate ? ReMatchMembers.CompileReplacementTemplate(pattern, template!, context, span) : null;
+            if (!hasText) throw RuntimeErrors.Type(RePatternMembers.SubjectError(name), span);
             if (count < 0)
                 return mode == RegexSubstitutionMode.TextAndCount
                     ? new PyTuple([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;

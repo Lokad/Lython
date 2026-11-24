@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1626](results/2026-11-24-regex-operation-dispatch/README.md) shares
+regex module and compiled-method dispatch. Both execution modes match
+all 21 CPython argument-order probes. The pinned adapter's compiled
+log scan takes 0.71–1.95% longer. Module and quote ranges cross zero.
+
 [B1625](results/2026-11-24-forwarded-positional-cpython/README.md)
 refreshes five scripts against stock CPython on `6466fbb52`. Defaulted
 rules take 1.379–1.394× warm and 1.284–1.309× through result. The
