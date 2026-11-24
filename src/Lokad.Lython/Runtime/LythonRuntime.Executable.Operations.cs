@@ -131,6 +131,13 @@ internal sealed partial class LythonRuntime
         catch { governor.ReleaseReserved(bytes); throw; }
     }
 
+    private static void WriteUnpackOperands(ReadOnlySpan<ExecutableSlot> items, Span<ExecutableSlot> destination)
+    {
+        // Caller and callee own separate slots. The first target consumes
+        // the top slot, so write each element directly in its final position.
+        for (var i = 0; i < items.Length; i++) destination[^(i + 1)] = items[i];
+    }
+
     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
         => EvaluateUnaryOperator(MapExecutableUnary(op), operand, context, span);
 

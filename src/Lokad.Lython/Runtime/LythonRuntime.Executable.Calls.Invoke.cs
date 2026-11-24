@@ -212,7 +212,6 @@ internal sealed partial class LythonRuntime
             ref readonly var unpack = ref execution.Code.Instructions[execution.InstructionIndex + 1];
             scope.CheckExecution(unpack.Span);
             execution.Stack.RetireTo(start + count);
-            execution.Stack.Values.AsSpan(start, count).Reverse();
             execution.InstructionIndex++;
         }
 

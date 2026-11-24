@@ -488,7 +488,7 @@ internal static partial class PyStringOps
                     resultBytes = checked(resultBytes + bytes);
                 }
                 var destination = scan.Reverse ? count - index - 1 : index;
-                if (parts is null) unpacked[destination] = LythonRuntime.ExecutableSlot.FromObject(fragment);
+                if (parts is null) unpacked[^(destination + 1)] = LythonRuntime.ExecutableSlot.FromObject(fragment);
                 else parts[destination] = fragment;
                 index++;
             }

@@ -491,7 +491,7 @@ internal sealed partial class LythonRuntime
             execution.InstructionIndex++;
             scope.CheckExecution(execution.Code.Instructions[execution.InstructionIndex].Span);
             // Both arrays are live. Publication follows the callee's cleanup.
-            items.CopyTo(destination);
+            WriteUnpackOperands(items, destination);
         }
 
         private void AttachPreparedCall(ExecutionContext frame, ExecutableCallSite? site,

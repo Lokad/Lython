@@ -1117,8 +1117,9 @@ the same, including rebinding and admission callbacks.
 An exact tuple returned immediately to a fixed unpack can transfer its elements
 into the caller's admitted operand slots. Native helpers, borrowed functions
 and eligible executable frames share the tuple shape check and admit retained
-scalar elements. The direct result uses the caller's existing capacity. An
-eligible frame can stage elements after resuming from host I/O.
+scalar elements. The direct result fills the caller's existing slots in assignment
+operand order. An eligible frame can stage elements after resuming
+from host I/O.
 Publication waits for child
 cleanup, and preserves element aliases and assignment order. Protected framed
 returns, escaping tuples, starred targets and mismatched counts keep ordinary

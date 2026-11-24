@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
                     RecordFailure(returned, previous, entrySpan);
                 if (completed && ReturnedUnpacked)
                 {
-                    Values.Slice(_unpackedTupleStart, _unpackedReturnCount).CopyTo(unpackedReturn);
+                    WriteUnpackOperands(Values.Slice(_unpackedTupleStart, _unpackedReturnCount), unpackedReturn);
                     Trim(Code.FirstTemporarySlot);
                     _scope.CheckExecution(Code.Instructions[Index + 1].Span);
                 }
@@ -519,7 +519,6 @@ internal sealed partial class LythonRuntime
             {
                 _scope.CheckExecution(Code.Instructions[Index].Span);
                 Trim(start + call.UnpackedReturnCount);
-                Values.Slice(start, call.UnpackedReturnCount).Reverse();
             }
             else
             {
