@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Key regex wrappers by the originally requested Python flags. Await guest
+  hash and equality before flag normalization and reuse wrappers on cache hits.
 - Reuse immutable ASCII characters for single-byte text reads, including
   blank lines and translated newline characters.
 - Await guest flag operators and compiled-pattern flag truth checks

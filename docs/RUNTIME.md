@@ -2628,9 +2628,14 @@ Replacement group references scan bounded UTF-8 chunks and check
 cancellation between chunks and escaped characters. A quoted closing
 delimiter stays part of the group name.
 
-The per-execution 512-entry pattern cache compares immutable UTF-8 content and
-complete compilation options, including the separate parsing-time verbose bit.
-Lookup uses the original UTF-8 bytes. A cached key reuses pattern identity.
+The per-execution pattern cache keeps up to 512 wrappers keyed by immutable
+UTF-8 pattern content and the originally requested flag value. Guest flag
+hashing and equality use the current execution and can suspend. A cache hit
+reuses the wrapper and skips normalization and provider compilation. Callback
+counts and eviction follow this single execution-local cache. The frontend
+artifact key uses normalized compilation options, including parsing-time verbose.
+After a guest comparison, lookup verifies that the entry survived any reentrant
+cache changes. The pending comparison keeps only its execution-owned values.
 Eviction reuses funded capacity. Purge relinquishes the old table and capacity
 balance before calling the host refund, so entries admitted during that callback
 keep their funding. Retained patterns and matches keep their existing owners.

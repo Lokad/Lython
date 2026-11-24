@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1581](results/2026-11-24-regex-wrapper-cache/README.md) separates
+requested Python flags from normalized provider options at the wrapper lookup.
+Guest hash and equality can suspend. Module log elapsed and CPU fall, and
+saved-bound and quoted-invoice elapsed span zero. Admitted peaks match.
+
 [B1580](results/2026-11-24-decoded-ascii-file-values/README.md) reuses
 immutable ASCII results for complete one-byte text reads. Two scripts
 each avoid 1,024 string allocations and reduce admitted peak by 129 KiB.
