@@ -7,6 +7,42 @@ public sealed class NativeReturnFunctionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ComputedDefinitionAdmitsDefaultsBeforeFailingArithmetic(bool asynchronous)
+    {
+        const string source = """
+            import time
+            def make(seed):
+                def choose(value: int = 7 // seed, *, step: int = seed % 7 + 1) -> int:
+                    return value + step
+                return choose
+            time.time()
+            return make(0)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new AdmissionGateBudget();
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        foreach (var refuse in new[] { true, false })
+        {
+            budget.Gate(64L * 1024 * 1024);
+            var host = new AdmissionGateHost(budget, refuse ? 32L : 1024L * 1024);
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(budget.AtGate > 0);
+                Assert.False(result.Success);
+                var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+                Assert.Equal(refuse ? "MemoryError" : "ZeroDivisionError", failure.ExceptionType);
+                Assert.Equal(3, failure.Span?.Line);
+                if (refuse) Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                else Assert.Equal(source.ReplaceLineEndings("\n").IndexOf("7 // seed", StringComparison.Ordinal), failure.Span?.Start);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task FixedReturnKeepsIntegerAliasesAndResumesArithmeticOnce(bool asynchronous)
     {
         const string source = """

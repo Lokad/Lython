@@ -130,6 +130,20 @@ public sealed class AnnotatedHelperTests
     // Expected stdout checked independently with isolated CPython 3.13.
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "computed-defaults-overflow-and-aliases", """
+            Kind = int
+            def make(seed):
+                def choose(value: Kind = seed + 1, *, width: Kind = seed % 5 + 2) -> Kind:
+                    return value, width
+                return choose
+            first = make(9223372036854775807)
+            Kind = str
+            second = make(9)
+            print(first(), second(), first.__annotations__['value'] is int, second.__annotations__['value'] is str)
+            print(first.__defaults__[0] is first()[0], first is second)
+            first.__kwdefaults__['width'] = 20
+            print(first(), second())
+            """, "(9223372036854775808, 4) (10, 6) True True\nTrue False\n(9223372036854775808, 20) (10, 6)\n" },
         { "simple", "def f(value:int)->int:return value+1\nprint(f(2),f.__annotations__['value'] is int,f.__annotations__['return'] is int)", "3 True True\n" },
         { "eager_binding", "Kind=int\ndef f(value:Kind)->Kind:return value\nKind=str\nprint(f(2),f.__annotations__['value'] is int)", "2 True\n" },
         { "definition_order", "events=[]\ndef annotation():\n events.append('annotation')\n return int\ndef default():\n events.append('default')\n return 2\ndef decorator():\n events.append('decorator')\n def apply(function):\n  events.append('apply')\n  return function\n return apply\n@decorator()\ndef f(value:annotation()=default())->annotation():return value+1\nprint(f(),events)", "3 ['decorator', 'default', 'annotation', 'annotation', 'apply']\n" },

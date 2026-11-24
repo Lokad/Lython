@@ -117,31 +117,26 @@ internal sealed partial class LythonRuntime
             default, default, false, scope, span, uncapturedLocal: new Span<ExecutableSlot>(ref argument));
     }
 
-    internal static bool TryReadClosedDefinitionDefault(ExecutableCodeObject factory, ExecutableSlot argument, out long value)
-    {
-        ref readonly var binary = ref factory.Instructions[1];
-        value = default;
-        return argument.TryGetInteger(out var left) &&
-            TryMachineInteger(factory.Constants[~binary.SecondInput], out var right) &&
-            TryMachineBinary(binary.BinaryOperator, left, right, out value);
-    }
-
     internal static PyFunctionBase CreateClosedComputedDefinition(ExecutableCreateFunction definition,
-        ExecutableCodeObject factory, ExecutionContext scope, long positional, object keyword)
+        ExecutableCodeObject factory, ExecutionContext scope, ExecutableSlot argument, object? keywordCapture)
     {
         var instructions = factory.Instructions;
         var defaults = AllocateExecutableDefaults(definition.ParameterLayout, false, scope, instructions[0].Span);
         try
         {
-            // Admission and all original execution checks retain their order.
-            // The probed exact integer arithmetic and immutable binding read
-            // have no guest effects before this funded construction.
-            scope.CheckExecution(instructions[1].Span);
-            defaults.Positional!.SetPrivateDefault(0, ExecutableSlot.FromInteger(positional), scope.State, instructions[2].Span);
-            scope.CheckExecution(instructions[3].Span);
-            scope.CheckExecution(instructions[4].Span);
-            defaults = defaults with { Keywords = RuntimeValue(keyword) };
-            var span = instructions[5].Span;
+            var index = 1;
+            var positional = EvaluateClosedDefault(factory, argument, scope, ref index);
+            defaults.Positional!.SetPrivateDefault(0, positional, scope.State, instructions[index++].Span);
+            ExecutableSlot keyword;
+            if (keywordCapture is not null)
+            {
+                scope.CheckExecution(instructions[index++].Span);
+                keyword = ExecutableSlot.FromObject(keywordCapture);
+            }
+            else keyword = EvaluateClosedDefault(factory, argument, scope, ref index);
+            scope.CheckExecution(instructions[index++].Span);
+            defaults = defaults with { Keywords = RuntimeValue(keyword.Object) };
+            var span = instructions[index].Span;
             scope.CheckExecution(span);
             var result = definition.EagerAnnotationReads is { } reads
                 ? CreateClosedEagerDefinition(definition, factory, reads, scope, span, defaults)
@@ -151,6 +146,27 @@ internal sealed partial class LythonRuntime
             return result;
         }
         finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
+    }
+
+    private static ExecutableSlot EvaluateClosedDefault(ExecutableCodeObject factory, ExecutableSlot argument,
+        ExecutionContext scope, ref int index)
+    {
+        var result = default(ExecutableSlot);
+        while (factory.Instructions[index].OpCode == ExecutableOpCode.Binary)
+        {
+            ref readonly var instruction = ref factory.Instructions[index++];
+            scope.CheckExecution(instruction.Span);
+            var left = Read(instruction.InputStart, result);
+            var right = Read(instruction.SecondInput, result);
+            if (left.TryGetInteger(out var a) && right.TryGetInteger(out var b) &&
+                TryMachineBinary(instruction.BinaryOperator, a, b, out var integer))
+                result.SetInteger(integer);
+            else result.Object = EvaluateBinaryOperator(instruction.BinaryOperator, left.Object!, right.Object!, scope, instruction.Span);
+        }
+        return result;
+
+        ExecutableSlot Read(int source, ExecutableSlot prior) => source == 0 ? argument : source < 0
+            ? ExecutableSlot.FromObject(factory.Constants[~source]!) : prior;
     }
 
     // Keep the eager-only annotation owner out of the default producer's frame.

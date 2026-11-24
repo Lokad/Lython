@@ -149,19 +149,18 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         result = default;
         object? keyword = null;
-        long positional = 0;
         if (definition.InputCount != 0 &&
-            ((keyword = _closureCells.FixedValue) is null ||
-             !LythonRuntime.TryReadClosedDefinitionDefault(CodeObject, argument, out positional))) return false;
+            (!argument.TryGetInteger(out _) || (CodeObject.ClosureNames.Count != 0 && (keyword = _closureCells.FixedValue) is null)))
+            return false;
         try
         {
             Closure.EnterFunctionCall(span);
             var previous = Closure.State.CurrentException;
             try
             {
-                var function = keyword is null
+                var function = definition.InputCount == 0
                     ? LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument, CodeObject.Instructions[0].Span)
-                    : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, positional, keyword);
+                    : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, argument, keyword);
                 Closure.CheckExecution(CodeObject.Instructions[^1].Span);
                 result = LythonRuntime.ExecutableSlot.FromObject(function);
                 return true;

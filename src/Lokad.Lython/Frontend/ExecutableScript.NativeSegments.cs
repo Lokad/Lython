@@ -4,11 +4,11 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
-    private ExecutableCreateFunction? PrepareDirectDefinitionReturn()
+    private ExecutableCreateFunction? PrepareDirectDefinitionReturn(CancellationToken cancellationToken)
     {
         var createIndex = Instructions.Length - 2;
         if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
-            createIndex is not (0 or 5) || Instructions[createIndex].OpCode != ExecutableOpCode.ApplyOperation ||
+            createIndex < 0 || Instructions[createIndex].OpCode != ExecutableOpCode.ApplyOperation ||
             Instructions[^1].OpCode != ExecutableOpCode.Return || Instructions[^1].InputStart != Instructions[createIndex].ResultSlot ||
             Constants[Instructions[createIndex].ConstantIndex] is not ExecutableCreateFunction
             {
@@ -19,7 +19,7 @@ internal sealed partial class ExecutableCodeObject
         var body = definition.CodeObject;
         if (!body.UsesOnlyLexicalSlots || body.ScopeFacts.RequiresClassCell) return null;
         if (createIndex != 0)
-            return HasClosedDefinitionDefaults(definition) ? definition : null;
+            return HasClosedDefinitionDefaults(definition, createIndex, cancellationToken) ? definition : null;
 
         // The declaration captures the factory's only bound argument by value.
         // Its code still owns live function metadata and allocates a fresh callable.
@@ -29,27 +29,55 @@ internal sealed partial class ExecutableCodeObject
             ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
     }
 
-    private bool HasClosedDefinitionDefaults(ExecutableCreateFunction definition)
+    private bool HasClosedDefinitionDefaults(ExecutableCreateFunction definition, int createIndex, CancellationToken cancellationToken)
     {
         if (definition.InputCount != 2 || definition.CodeObject.ClosureNames.Count != 0 ||
             definition.ParameterLayout is not { PositionalDefaultCount: 1, Defaults.Length: 2 } ||
-            ClosureNames.Count != 1) return false;
+            ClosureNames.Count > 1 || createIndex < 5 ||
+            Instructions[0] is not { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start ||
+            !ReferenceEquals(Constants[start.ConstantIndex], definition.ParameterLayout) ||
+            start.ResultSlot != Instructions[createIndex].InputStart || start.LiveExtent != start.ResultSlot + 2) return false;
 
-        // The two producers write the ordinary final default objects. Keep
-        // their layout and original spans on the existing executable tape.
-        return Instructions is
-        [
-            { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start,
-            { OpCode: ExecutableOpCode.Binary, InputStart: 0, SecondInput: < 0, HasResultConsumer: true } binary,
-            { OpCode: ExecutableOpCode.StoreFunctionDefault, DefaultValueIndex: 0 } positional,
-            { OpCode: ExecutableOpCode.LoadClosure, ClosureSlot: 0, HasResultConsumer: true } load,
-            { OpCode: ExecutableOpCode.StoreFunctionDefault, DefaultValueIndex: 0 } keyword,
-            var create, _,
-        ] && ReferenceEquals(Constants[start.ConstantIndex], definition.ParameterLayout) &&
-            (uint)~binary.SecondInput < (uint)Constants.Length && Constants[~binary.SecondInput] is BigInteger &&
-            start.ResultSlot == create.InputStart && positional.InputStart == start.ResultSlot &&
-            keyword.InputStart == start.ResultSlot + 1 && binary.ResultSlot == positional.ResultSlot &&
-            load.ResultSlot == keyword.ResultSlot;
+        var index = 1;
+        return MatchesDefault(start.ResultSlot, fixedCapture: false) &&
+            MatchesDefault(start.ResultSlot + 1, fixedCapture: ClosureNames.Count != 0) && index == createIndex;
+
+        bool MatchesDefault(int destination, bool fixedCapture)
+        {
+            if (index >= createIndex) return false;
+            var result = -1;
+            if (fixedCapture)
+            {
+                ref readonly var read = ref Instructions[index++];
+                if (read is not { OpCode: ExecutableOpCode.LoadClosure, ClosureSlot: 0, HasResultConsumer: true }) return false;
+                result = read.ResultSlot;
+            }
+            else
+            {
+                while (index < createIndex && Instructions[index].OpCode == ExecutableOpCode.Binary)
+                {
+                    PythonTokenization.CheckCancellation(cancellationToken, index);
+                    ref readonly var binary = ref Instructions[index++];
+                    if (binary.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
+                        BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo) ||
+                        !IsInput(binary.InputStart, result) || !IsInput(binary.SecondInput, result) ||
+                        binary.ResultSlot < start.LiveExtent ||
+                        binary.HasResultConsumer != (index < createIndex && Instructions[index].OpCode == ExecutableOpCode.StoreFunctionDefault))
+                        return false;
+                    result = binary.ResultSlot;
+                }
+            }
+
+            if (index >= createIndex || result < 0) return false;
+            ref readonly var store = ref Instructions[index++];
+            return store is { OpCode: ExecutableOpCode.StoreFunctionDefault, DefaultValueIndex: 0 } &&
+                store.InputStart == destination && store.ResultSlot == result;
+        }
+
+        // Each expression may only read the bound argument, an exact integer
+        // literal or its immediately preceding result.
+        bool IsInput(int source, int previous) => source == 0 || (source >= 0 ? source == previous :
+            (uint)~source < (uint)Constants.Length && Constants[~source] is BigInteger);
     }
 
     private bool HasClosedIntegerReturn(CancellationToken cancellationToken)

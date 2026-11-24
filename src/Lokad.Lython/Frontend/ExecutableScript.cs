@@ -640,7 +640,7 @@ internal sealed partial class ExecutableCodeObject
             && (capturedLocalSlots.Count == 0 ||
                 usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);
         HasDirectIntegerReturn = CanRunNativeInstructions && HasClosedIntegerReturn(cancellationToken);
-        if (CanRunNativeInstructions) DirectDefinitionReturn = PrepareDirectDefinitionReturn();
+        if (CanRunNativeInstructions) DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken);
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
     }
