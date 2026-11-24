@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1561](results/2026-11-24-rule-closures-cpython/README.md) refreshes
+three generated rule scripts against CPython. Captured rules take
+2.214–2.318× warm, 2.218–2.295× through result and 0.565–0.566×
+to compile. Capture cells and arrays account for 37.07% of sampled
+allocation weight.
+
 [B1560](results/2026-11-24-exact-unicode-float/README.md) avoids
 normalization and general decimal parsing for eligible short Unicode
 tokens. Both typed meter variants take 12–17% less warm time. The

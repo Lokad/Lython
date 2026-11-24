@@ -13,6 +13,7 @@
 | Fully supplied arithmetic helper, function scope | 2,048 calls | 0.1658–0.1666 ms | 0.1304–0.1312 ms | 1.264–1.278× | Diagnostic. [B1527]. |
 | Mixed-width word histogram | 3,072 lines / 107,520 B | 1.5676–1.6514 ms | 1.7181–1.7210 ms | 0.911–0.961× | Diagnostic. Lython worker spread 5.34%. [B1539]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.177–5.331 ms | 6.718–6.789 ms | 0.762–0.794× | Diagnostic. [B1555]. |
+| Generated rules with captured locals | 2,048 rule groups | 1.738–1.780 ms | 0.7679–0.7853 ms | 2.214–2.318× | Diagnostic. [B1561]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
@@ -23,9 +24,10 @@ The supplied helper measures `faf86299e` at module scope and `be20f34fc`
 inside a function. Factories measure `b04e371c0`, and the earlier invoice phase
 measurements use `0112138c1`. The mixed report measures `43688c753`.
 The short report and expanded JSON export measure `eabbf02ed`, with the
-same runtime source as `000ab0632`. The matched Lython comparisons below
-attribute changes to specific source pairs.
-[B1555] · [B1551] · [B1549] · [B1539] · [B1534] · [B1530] · [B1525] · [B1527] · [B1518].
+same runtime source as `000ab0632`. Generated rules measure
+`5d54f7afb`, with the runtime source in `566259ebc`. The matched Lython
+comparisons below attribute changes to specific source pairs.
+[B1561] · [B1555] · [B1551] · [B1549] · [B1539] · [B1534] · [B1530] · [B1525] · [B1527] · [B1518].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -46,6 +48,8 @@ measurements cover the wider request.
 | Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
 | Short nonlocal word report, 615 B | Compilation only | 0.02846–0.02850 ms | 0.05509–0.05557 ms | 0.512–0.517× | Diagnostic. [B1555]. |
 | Short nonlocal word report | Compile-to-result | 1.3563–1.3914 ms | 1.0891–1.0926 ms | 1.241–1.278× | Diagnostic. [B1555]. |
+| Generated rules with captured locals, 446 B | Compilation only | 0.02651–0.02658 ms | 0.04693–0.04695 ms | 0.565–0.566× | Diagnostic. [B1561]. |
+| Generated rules with captured locals | Compile-to-result | 1.8229–1.8730 ms | 0.8160–0.8218 ms | 2.218–2.295× | Diagnostic. [B1561]. |
 | Configuration edit, 181 B | Compile-to-result | 0.1070–0.1073 ms | 0.1232–0.1246 ms | 0.859–0.871× | Diagnostic. [B1478]. |
 | Eager nested factories, 430 B | Compile-to-result | 0.7566–0.7898 ms | 0.6070–0.6196 ms | 1.221–1.301× | Earlier diagnostic. [B1516]. |
 | Postponed nested factories, 465 B | Compile-to-result | 0.6112–0.6321 ms | 0.5743–0.5782 ms | 1.057–1.101× | Diagnostic. [B1530]. |
@@ -277,6 +281,7 @@ Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1503]: ../benchmarks/results/2026-11-23-computed-factory-cpython/README.md
+[B1561]: ../benchmarks/results/2026-11-24-rule-closures-cpython/README.md
 [B1555]: ../benchmarks/results/2026-11-24-json-text-cpython/README.md
 [B1551]: ../benchmarks/results/2026-11-24-typed-csv-cpython/README.md
 [B1549]: ../benchmarks/results/2026-11-24-combined-csv-cpython/README.md
