@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1566](results/2026-11-24-fixed-return-ownership/README.md) admits
+actual scalar storage for fixed unpack. Captured and default rules
+use 128 KiB less peak admitted memory and the quoted invoice uses
+384 KiB less. CLR allocation matches. Captured rules slow slightly.
+
 [B1565](results/2026-11-24-generated-rule-cpu/README.md) attributes
 three whole-rule scripts. Instruction dispatch and call entry exceed
 nearest lexical binding work. Repeated callable, annotation and
