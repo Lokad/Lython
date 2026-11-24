@@ -59,7 +59,7 @@ internal sealed partial class PyDict
     internal sealed class RecordKeys
     {
         private readonly NativeKey[] _keys;
-        // A compiled layout is funded by its code owner. Dynamic layouts
+        // Signature layouts have separate funding. Dynamic dictionary layouts
         // stay with the execution that established them.
         private readonly MemoryGovernor? _owner;
         private readonly long _sequence;
@@ -81,10 +81,10 @@ internal sealed partial class PyDict
         // Definition names are distinct native strings in their final insertion order.
         // Build the shared table directly, with no first record to freeze or detach.
         internal static RecordKeys? PrepareDefinition<T>(int count, T names, Func<T, int, PyString> nameAt,
-            CancellationToken token, LythonSourceSpan span)
+            CancellationToken token, LythonSourceSpan? span)
         {
             if (count == 0) return null;
-            // The enclosing compilation was admitted before preparing code.
+            // The compiler or generated signature owner has admitted this layout.
             var keys = new NativeKey[NativeCapacity(count)];
             for (var i = 0; i < count; i++)
             {
@@ -118,26 +118,19 @@ internal sealed partial class PyDict
             catch { owner.ReleaseReserved(bytes); throw; }
         }
 
-        internal int PreparedValueCapacity => NativeCapacity(Count);
+        internal int PreparedValueCapacity
+        {
+            get
+            {
+                System.Diagnostics.Debug.Assert(_owner is null);
+                return _keys.Length;
+            }
+        }
 
         internal static readonly long SinglePreparedValueBytes = RecordBytes(NativeCapacity(1));
 
-        internal object?[] CreatePreparedValues(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        {
-            System.Diagnostics.Debug.Assert(_owner is null);
-            var capacity = PreparedValueCapacity;
-            var bytes = RecordBytes(capacity);
-            var owner = context.MemoryGovernor;
-            owner.Reserve(bytes, span);
-            try
-            {
-                context.CheckExecution(span);
-                var values = new object?[capacity];
-                owner.Commit(bytes);
-                return values;
-            }
-            catch { owner.ReleaseReserved(bytes); throw; }
-        }
+        internal static long EstimateDefinitionStorage(int count)
+            => count == 0 ? 0 : checked(96L + NativeKeyBytes * (long)NativeCapacity(count));
 
         internal PyDict? TryCreateDisplay(Span<LythonRuntime.ExecutableSlot> inputs,
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)

@@ -33,18 +33,12 @@ public sealed class FunctionDefaultConstructionTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
-            var layout = FunctionParameterLayout.Create(
-                [new("first", FunctionParameterKind.KeywordOnly, 1),
-                 new("required", FunctionParameterKind.KeywordOnly),
-                 new("last", FunctionParameterKind.KeywordOnly, 3)]);
-            layout.PrepareKeywordDefaultKeys(default, Span);
-            var before = budget.ReservedBytes;
-            var values = layout.PreparedKeywordDefaultKeys!.CreatePreparedValues(context, Span);
             object first = new BigInteger(1);
             object last = new BigInteger(3);
-            values[0] = first;
-            values[1] = last;
-            var plan = new GeneratedFunctionBindingPlan("f", layout, new(null, values));
+            GeneratedFunctionParameter[] parameters = [new("first", FunctionParameterKind.KeywordOnly, first),
+                new("required", FunctionParameterKind.KeywordOnly), new("last", FunctionParameterKind.KeywordOnly, last)];
+            var before = budget.ReservedBytes + FunctionParameterLayout.EstimateBytes(parameters);
+            var plan = LythonRuntime.CreateGeneratedBindingPlan("f", parameters, context, Span);
             var admitted = budget.ReservedBytes;
             Assert.True(admitted > before);
             LythonRuntime.ExecutableSlot[] bound = [default, LythonRuntime.ExecutableSlot.FromInteger(2), default];
@@ -63,7 +57,7 @@ public sealed class FunctionDefaultConstructionTests
             Assert.False(plan.TryFillPreparedKeywordDefaults(bound, context, Span));
             Assert.Null(plan.KeywordDefaultStorage);
             Assert.Equal(observe ? admitted : before, budget.ReservedBytes);
-            if (alias is not null) Assert.Same(first, alias.GetItem(layout.KeywordDefaultName(0)));
+            if (alias is not null) Assert.Same(first, alias.GetItem(plan.KeywordDefaultName(0)));
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
@@ -91,7 +85,8 @@ public sealed class FunctionDefaultConstructionTests
                     context, Span);
                 Assert.True(plan.TryGetPositionalDefault(0, out var positional));
                 Assert.Same(supplied, positional.Object);
-                Assert.True(plan.KeywordDefaultStorage!.TryGetValue(plan.KeywordDefaultName(0), out var keyword));
+                Assert.True(plan.TryGetDefaultMetadata("__kwdefaults__", context, out var metadata));
+                Assert.True(Assert.IsType<PyDict>(metadata).TryGetValue(plan.KeywordDefaultName(0), out var keyword));
                 Assert.Same(supplied, keyword);
                 completed++;
             }
@@ -120,7 +115,10 @@ public sealed class FunctionDefaultConstructionTests
         var governor = context.MemoryGovernor;
         var baseline = budget.ReservedBytes;
         var span = new LythonSourceSpan(0, 1, 1, 1);
-        var tuple = PyTuple.CreateDefaultStorage(2, context, span);
+        var bytes = PyTuple.EstimateDefaultStorage(2);
+        governor.Reserve(bytes, span);
+        var tuple = PyTuple.CreateAdmittedDefaultStorage(2, governor, span, bytes);
+        governor.Commit(bytes);
         var alias = new PyList([], governor, span);
         tuple.SetPrivateDefault(0, LythonRuntime.ExecutableSlot.FromObject(alias), context.State, span);
         var beforeRefusal = budget.ReservedBytes;

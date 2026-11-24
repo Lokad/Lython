@@ -10,7 +10,6 @@ internal readonly record struct FunctionDefaults(PyTuple? Positional, object? Ke
         if (Positional is not null) governor.RefundUnpublishedValue(Positional);
         if (InlineKeyword) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
         else if (Keywords is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
-        else if (Keywords is not null) governor.RefundUnpublishedValue(Keywords);
     }
 }
 

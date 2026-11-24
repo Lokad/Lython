@@ -73,6 +73,26 @@ public sealed class DataclassesModuleFunctionTests
         await AssertBothModes(source, "{'value': 1, 'keyword': 8, 'cached': 9, 'items': []}\n(1, 8, 9, [])\n");
     }
 
+    [Fact]
+    public async Task InterleavedFieldsUseTheirOwnDefaultsAndFactories()
+    {
+        await AssertBothModes("""
+            from dataclasses import dataclass, field
+            @dataclass
+            class Request:
+                retries: int = field(kw_only=True, default=3)
+                path: str = '/input'
+                timeout: int = field(kw_only=True)
+                labels: list = field(kw_only=True, default_factory=list)
+                mode: str = 'read'
+            first = Request(timeout=7)
+            first.labels.append('seen')
+            second = Request('/other', 'write', timeout=12, retries=1)
+            print(first.path, first.mode, first.retries, first.timeout, first.labels)
+            print(second.path, second.mode, second.retries, second.timeout, second.labels)
+            """, "/input read 3 7 ['seen']\n/other write 1 12 []\n");
+    }
+
     [Theory]
     [InlineData("from dataclasses import asdict as to_dict", "to_dict(None, dict_factory=1)", "LA3039")]
     [InlineData("import dataclasses as dc", "dc.astuple(None, tuple_factory=1)", "LA3042")]

@@ -139,21 +139,6 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
         => count == 1 ? new SingletonDefault(governor, span, bytes)
             : new PyTuple(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
 
-    internal static PyTuple CreateDefaultStorage(int count, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var bytes = EstimateDefaultStorage(count);
-        var governor = context.MemoryGovernor;
-        governor.Reserve(bytes, span);
-        try
-        {
-            context.CheckExecution(span);
-            var tuple = CreateAdmittedDefaultStorage(count, governor, span, bytes);
-            governor.Commit(bytes);
-            return tuple;
-        }
-        catch { governor.ReleaseReserved(bytes); throw; }
-    }
-
     internal void SetPrivateDefault(int index, LythonRuntime.ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
     {
         var extra = Math.Max(0, value.ScalarStorageBytes - RuntimeMemoryEstimates.ScalarStorageBytes);

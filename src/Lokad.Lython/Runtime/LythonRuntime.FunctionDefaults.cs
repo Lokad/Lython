@@ -5,43 +5,22 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        context.CheckExecution(span);
-        var positional = layout.PositionalDefaultCount == 0
-            ? null : PyTuple.CreateDefaultStorage(layout.PositionalDefaultCount, context, span);
-        try
-        {
-            var keywordCount = layout.Defaults.Length - layout.PositionalDefaultCount;
-            object? keywords = keywordCount == 0 ? null : layout.PreparedKeywordDefaultKeys is { } keys
-                ? keys.CreatePreparedValues(context, span) : new PyDict(keywordCount, context.MemoryGovernor, span);
-            return new(positional, keywords);
-        }
-        catch
-        {
-            if (positional is not null) context.MemoryGovernor.RefundUnpublishedValue(positional);
-            throw;
-        }
-    }
-
     private static void StartExecutableDefaults(FunctionParameterLayout layout, Span<ExecutableSlot> operands,
         bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
     {
-        var defaults = AllocateExecutableDefaults(layout, keywordsOnly, context, span);
+        var defaults = AllocateFunctionDefaults(layout, keywordsOnly, context, span);
         if (defaults.Positional is { } positional) operands[0] = ExecutableSlot.OwnPrivateDefault(positional);
         if (defaults.Keywords is { } keyword)
             operands[^1] = defaults.InlineKeyword
                 ? ExecutableSlot.OwnPrivateKeywordDefault(keyword) : ExecutableSlot.OwnPrivateDefault(keyword);
     }
 
-    // Both executable paths admit their final containers before the first
-    // default expression. Only interpreted definitions need operand owners.
-    private static FunctionDefaults AllocateExecutableDefaults(FunctionParameterLayout layout, bool keywordsOnly,
+    // Admit the final containers before evaluating any default expression.
+    private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, bool keywordsOnly,
         ExecutionContext context, LythonSourceSpan span)
     {
         var positionalCount = keywordsOnly ? 0 : layout.PositionalDefaultCount;
-        var keys = layout.HasKeywordDefaults ? layout.PreparedKeywordDefaultKeys.RequireNotNull() : null;
+        var keys = layout.PreparedKeywordDefaultKeys;
         var positionalBytes = positionalCount == 0 ? 0 : PyTuple.EstimateDefaultStorage(positionalCount);
         var keywordCapacity = keys?.PreparedValueCapacity ?? 0;
         var bytes = checked(positionalBytes + (keys is null ? 0 : PyDict.RecordKeys.RecordBytes(keywordCapacity)));
@@ -78,14 +57,17 @@ internal sealed partial class LythonRuntime
         values[index] = RuntimeValue(value.Object);
     }
 
-    private static void AddFunctionDefault(FunctionDefaults defaults, FunctionParameterLayout layout,
-        FunctionParameterLayout.DefaultSlot slot, ref int positional, ExecutableSlot value, ExecutionContext context,
-        LythonSourceSpan span)
+    private static void StoreFunctionDefault(ref FunctionDefaults defaults, int index, bool positional,
+        ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
     {
-        if (slot.KeywordIndex < 0) defaults.Positional!.SetPrivateDefault(positional++, value, context.State, span);
+        if (positional) defaults.Positional!.SetPrivateDefault(index, value, state, span);
         else if (defaults.Keywords is object?[] values)
-            StorePreparedKeywordDefault(values, layout.KeywordDefaultAt(slot.KeywordIndex).RecordPosition, value, context.State, span);
-        else ((PyDict)defaults.Keywords!).AddDefinitionValue(layout.KeywordDefaultName(slot.KeywordIndex), RuntimeValue(value.Object), context, span);
+            StorePreparedKeywordDefault(values, index, value, state, span);
+        else
+        {
+            state.CheckExecution(span);
+            defaults = defaults with { Keywords = RuntimeValue(value.Object) };
+        }
     }
 
     internal static FunctionBindingPlan CreateGeneratedBindingPlan(string name,
@@ -94,13 +76,17 @@ internal sealed partial class LythonRuntime
         var bytes = FunctionParameterLayout.EstimateBytes(parameters);
         using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
         context.CheckExecution(span);
-        var layout = FunctionParameterLayout.Create(parameters, context.State.CancellationToken);
-        var defaults = layout.Defaults.Length == 0 ? default : AllocateFunctionDefaults(layout, context, span);
+        var layout = FunctionParameterLayout.Create(parameters, context.State.CancellationToken, span);
+        var defaults = layout.Defaults.Length == 0 ? default : AllocateFunctionDefaults(layout, false, context, span);
         try
         {
-            var positional = 0;
-            foreach (var slot in layout.Defaults)
-                AddFunctionDefault(defaults, layout, slot, ref positional, ExecutableSlot.FromObject(parameters[slot.ParameterIndex].DefaultValue), context, span);
+            for (var i = 0; i < layout.Defaults.Length; i++)
+            {
+                var positional = i < layout.PositionalDefaultCount;
+                var value = ExecutableSlot.FromObject(parameters[layout.Defaults[i].ParameterIndex].DefaultValue);
+                StoreFunctionDefault(ref defaults, positional ? i : i - layout.PositionalDefaultCount,
+                    positional, value, context.State, span);
+            }
             var plan = new GeneratedFunctionBindingPlan(name, layout, defaults);
             storage.Commit(bytes);
             return plan;
@@ -121,17 +107,18 @@ internal sealed partial class LythonRuntime
         LoweredExpression[] defaults, FunctionParameterLayout layout,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var prepared = AllocateFunctionDefaults(layout, context, span);
+        var prepared = AllocateFunctionDefaults(layout, false, context, span);
         try
         {
-            var positional = 0;
             for (var i = 0; i < defaults.Length; i++)
             {
                 var expression = defaults[i];
                 context.CheckExecution(expression.Span);
                 var value = asynchronous ? await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)
                     : EvaluateLoweredExpression(expression, context);
-                AddFunctionDefault(prepared, layout, layout.Defaults[i], ref positional, ExecutableSlot.FromObject(value), context, expression.Span);
+                var positional = i < layout.PositionalDefaultCount;
+                StoreFunctionDefault(ref prepared, positional ? i : i - layout.PositionalDefaultCount,
+                    positional, ExecutableSlot.FromObject(value), context.State, expression.Span);
             }
             return prepared;
         }

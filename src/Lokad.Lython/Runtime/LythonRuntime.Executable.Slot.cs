@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
         internal readonly bool HasMaterializedValue => _integer == 0
             && _value is not (null or PyIteration.Cursor or ExecutableTemporaryValue)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
-        private readonly bool HasPrivateDefault => _integer == PrivateDefault && _value is PyTuple or object?[] or PyDict;
+        private readonly bool HasPrivateDefault => _integer == PrivateDefault && _value is PyTuple or object?[];
         internal readonly bool HasPrivateKeywordDefault => _integer == PrivateKeywordDefault &&
             !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue ||

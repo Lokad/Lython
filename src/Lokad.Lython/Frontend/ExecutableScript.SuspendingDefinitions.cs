@@ -186,7 +186,6 @@ internal sealed partial class ExecutableScript
                 AddInstruction(block, ExecutableInstruction.LoadConst(AppendConstant(literals), span));
                 if (!layout.HasKeywordDefaults) return block;
             }
-            layout.PrepareKeywordDefaultKeys(_compilation.CancellationToken, span);
             if (allowDirectKeyword && (literals is not null || layout.PositionalDefaultCount == 0) &&
                 layout.Defaults.Length == layout.PositionalDefaultCount + 1 &&
                 parameters[layout.Defaults[^1].ParameterIndex].DefaultValue is IdentifierExpressionSyntax name &&

@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject factory, ExecutionContext scope, long argument, object? keywordCapture)
     {
         var instructions = factory.Instructions;
-        var defaults = AllocateExecutableDefaults(definition.ParameterLayout, false, scope, instructions[0].Span);
+        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span);
         try
         {
             var index = 1;
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
         var instructions = factory.Instructions;
         ref readonly var start = ref instructions[index++];
         var layout = (FunctionParameterLayout)factory.Constants[start.ConstantIndex]!;
-        var defaults = AllocateExecutableDefaults(layout, false, scope, start.Span);
+        var defaults = AllocateFunctionDefaults(layout, false, scope, start.Span);
         try
         {
             for (var i = 0; i < layout.Defaults.Length; i++)
@@ -207,15 +207,8 @@ internal sealed partial class LythonRuntime
                 }
                 else value = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
                 ref readonly var store = ref instructions[index++];
-                if (i < layout.PositionalDefaultCount)
-                    defaults.Positional!.SetPrivateDefault(store.DefaultValueIndex, value, scope.State, store.Span);
-                else if (defaults.Keywords is object?[] values)
-                    StorePreparedKeywordDefault(values, store.DefaultValueIndex, value, scope.State, store.Span);
-                else
-                {
-                    scope.CheckExecution(store.Span);
-                    defaults = defaults with { Keywords = RuntimeValue(value.Object) };
-                }
+                StoreFunctionDefault(ref defaults, store.DefaultValueIndex, i < layout.PositionalDefaultCount,
+                    value, scope.State, store.Span);
             }
 
             ref readonly var create = ref instructions[index++];

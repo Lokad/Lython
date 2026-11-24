@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1629–B1630](results/2026-11-24-shared-function-defaults/README.md) share
+defaults allocation across executable, lowered and generated callables.
+Generated dataclass configuration allocates 1.73% less. Defaulted rules
+take 1.26–2.66% longer warm and 0.74–2.36% longer through result in the
+repeat. The first block's moving workers and all adverse observations remain.
+
 [B1628](results/2026-11-24-accounted-memory-total/README.md) derives the
 committed balance from the admitted total and pending bytes. Admitted
 peaks agree and nested-refusal cleanup preserves published storage. Rule

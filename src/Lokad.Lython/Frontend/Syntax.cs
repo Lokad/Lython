@@ -352,7 +352,7 @@ internal sealed record FunctionDefinitionStatementSyntax(
     internal bool IsGenerator { get; set; }
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
     internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)
-        => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken);
+        => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken, Span);
 }
 
 internal sealed record ClassDefinitionStatementSyntax(
@@ -816,7 +816,7 @@ internal sealed record LambdaExpressionSyntax(
     private FunctionParameterLayout? _parameterLayout;
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
     internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)
-        => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken);
+        => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken, Span);
 
     // The prepared callable points back to this syntax. It is compilation
     // metadata, not part of structural syntax equality or constant interning.
