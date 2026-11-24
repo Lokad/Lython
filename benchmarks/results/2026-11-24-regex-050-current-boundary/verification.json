@@ -1,0 +1,42 @@
+{
+  "lythonSource": "9d50a1b1f6f62dd9575e9671f2965d4975ea61aa",
+  "bridgePatchSHA256": "19181A87D02898D873E9543E5917849B25B1F67D1AB9FF94D723D181F1B507E1",
+  "producerSource": "61228b20fa7103910c7e247eb72b7c4592a4085f",
+  "producerVersion": "0.5.0",
+  "checks": [
+    {
+      "platform": "windows",
+      "target": "net11.0",
+      "passed": 157,
+      "packages": [
+        {
+          "package": "Lokad.Utf8Regex.0.5.0.nupkg",
+          "sha256": "C3D30646BB0A22559E0FE31EEEE882E4BBDAA145BBCC7F2706F4307B3691F8EA",
+          "assemblySHA256": "BDA1116F27B5369DDB71B381C9FFBDDF8BF92696637A9BCA44073506E15460AB"
+        },
+        {
+          "package": "Lokad.Utf8Regex.PythonRe.0.5.0.nupkg",
+          "sha256": "9E254963E01C1C6F0CD7749C48FEB396C4C70B1D9C396452AB0469F43760DFB8",
+          "assemblySHA256": "507F67E6218BD69A119BE4C3439A7667D445780D927C015B9755CA9DD0324AD7"
+        }
+      ]
+    },
+    {
+      "platform": "ubuntu",
+      "target": "net10.0",
+      "passed": 157,
+      "packages": [
+        {
+          "package": "Lokad.Utf8Regex.0.5.0.nupkg",
+          "sha256": "C3D30646BB0A22559E0FE31EEEE882E4BBDAA145BBCC7F2706F4307B3691F8EA",
+          "assemblySHA256": "8A1DDA6363C67AFFACE2B1F6D11597762428BE0F7D4E9B1CE61CEB58204D9312"
+        },
+        {
+          "package": "Lokad.Utf8Regex.PythonRe.0.5.0.nupkg",
+          "sha256": "9E254963E01C1C6F0CD7749C48FEB396C4C70B1D9C396452AB0469F43760DFB8",
+          "assemblySHA256": "F6AB04E34D1319B6E1AABDD7F7F186A4A3A0E70653ECD93CC9A5D25CA7916574"
+        }
+      ]
+    }
+  ]
+}
