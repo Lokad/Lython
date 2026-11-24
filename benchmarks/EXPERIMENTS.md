@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1576](results/2026-11-24-regex-flag-continuations/README.md) fixes
+suspending flag and truth callbacks before provider work. Module
+log-scan elapsed decreases. Direct compiled and saved-method elapsed
+increase with supporting CPU. Record the correctness fix and controls.
+
 [B1575](results/2026-11-24-rule-activation-cpython/README.md) refreshes
 four complete scripts against CPython on the shared capture-decoding
 checkpoint. Captured and defaulted rules still take about twice CPython's

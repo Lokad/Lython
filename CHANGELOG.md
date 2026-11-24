@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Await guest flag operators and compiled-pattern flag truth checks
+  during `RunAsync` before starting regex provider work.
+- Evaluate eligible captured and conditional integer helpers without
+  a native activation, preserving live bindings and retained values.
 - Parse short Unicode decimal strings directly into binary64 in `float()`
   and typed CSV. Preserve Python's underscore rules and signed zero.
 - Size `match.expand()` from its validated UTF-8 ranges and write into one

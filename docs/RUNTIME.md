@@ -2534,7 +2534,9 @@ can call guest `__index__` methods that await host I/O. Coercion
 completes before the provider opens the subject.
 Module regex calls distinguish omitted flags from an explicit `None`.
 Text patterns raise `TypeError` for `flags=None`, and compiled patterns
-accept it as a false flag value.
+accept it as a false flag value. Guest flag operators and the truth
+check for a compiled pattern can await host I/O during `RunAsync`.
+Flag handling completes before provider compilation or subject work.
 The per-execution cache preserves requested integer flag identity.
 Omitted flags and explicit `re.UNICODE` give distinct cached pattern
 objects when both compile. The provider receives the same flag inputs
