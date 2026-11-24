@@ -167,4 +167,54 @@ public sealed class ExecutableDefinitionPairTests
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 0)]
+    [InlineData(false, 2)]
+    [InlineData(true, 2)]
+    public async Task SecondCallableAdmissionFollowsItsDefaultArithmetic(bool asynchronous, int seed)
+    {
+        var source = $$"""
+            def make(seed):
+                def first(value=seed % 7):
+                    return value
+                other = lambda left=10 // seed, right=seed + 1: left + right
+                return first, other
+            first, other = make({{seed}})
+            """.ReplaceLineEndings("\n");
+        var module = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+        Assert.True(Assert.Single(module.FunctionBindings()).CodeObject!.HasDirectDefinitionPair);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
+            var defaultBytes = PyTuple.EstimateDefaultStorage(2);
+            var admittedDefaults = false;
+            hook.AfterGrowth = growth => admittedDefaults |= growth == defaultBytes;
+            hook.RefuseGrowth = growth => admittedDefaults && growth == 160;
+            try
+            {
+                var error = asynchronous
+                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(module, context))
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(module, context, default, null));
+                Assert.True(admittedDefaults);
+                if (seed == 0)
+                {
+                    Assert.Equal("ZeroDivisionError", error.ExceptionType);
+                    Assert.Null(context.MemoryGovernor.AdmissionFailure);
+                }
+                else
+                {
+                    Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                    Assert.Equal(source.IndexOf("lambda", StringComparison.Ordinal), error.Span?.Start);
+                }
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 }

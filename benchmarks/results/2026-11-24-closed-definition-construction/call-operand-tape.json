@@ -1,0 +1,39 @@
+{
+  "coreSHA256": "0871a57a26c443835d1a28326ad6bd939053d306a0eb6614fb9abcf38d28f1d3",
+  "callCountPerGroup": 3,
+  "groups": 2048,
+  "loadsPerGroup": 6,
+  "scope": "Static opcode census of the existing complete script. No dynamic route or timing claim.",
+  "calls": [
+    {
+      "index": 12,
+      "line": 9,
+      "forwarded": false,
+      "preceding": [
+        2,
+        2
+      ],
+      "following": 15
+    },
+    {
+      "index": 19,
+      "line": 10,
+      "forwarded": false,
+      "preceding": [
+        2,
+        2
+      ],
+      "following": 2
+    },
+    {
+      "index": 22,
+      "line": 10,
+      "forwarded": false,
+      "preceding": [
+        2,
+        2
+      ],
+      "following": 46
+    }
+  ]
+}

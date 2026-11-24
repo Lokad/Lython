@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1622](results/2026-11-24-closed-definition-construction/README.md) shares
+closed pair and single computed definition construction. It keeps the
+two admission stages in order. Allocation and admitted peaks match.
+Defaulted-rule timings span zero with moving workers. Both annotation
+scripts cost more elapsed time and CPU. Keep the prototype private and
+retain the regression that distinguishes default failure from a later
+callable admission refusal.
+
 [B1621](results/2026-11-24-json-default-prefix/README.md) stages JSON
 prefixes before default handling. Both modes match CPython on 30 prefix
 probes. The file checkpoint includes the private traversal refund.
