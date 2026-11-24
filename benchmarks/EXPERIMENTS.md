@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1605](results/2026-11-24-defaulted-report-cpu/README.md)
+locates 496 of 1,179 defaulted-rule runtime samples under definition
+construction and 514 of 1,130 report samples under the line helper's
+native workspace. Different stages dominate the two workloads.
+
 [B1604](results/2026-11-24-closed-capture-cpython/README.md)
 compares the delivered captured-pair path with CPython 3.13.16. Captured
 rules take 1.210–1.295× warm and 1.155–1.172× through result. Postponed
