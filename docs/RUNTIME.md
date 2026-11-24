@@ -2643,9 +2643,11 @@ Single matches use an existing subject scalar index to resolve UTF-8 window
 bounds directly. They keep capture scratch within the provider operation and
 result projection. Small capture sets use managed inline storage. Larger capture
 and coordinate buffers are admitted before allocation. Cursor operations keep
-the provider cursor, prepared subject and capture scratch under one owner.
-Cleanup closes the cursor before releasing the subject borrow and scratch.
-Escaping matches own their final ranges and retain the funded original subject.
+the original string and window with the provider cursor, prepared subject and
+capture scratch. Validation and projection use that same subject throughout.
+`finditer` opens its cursor on the first pull. Cleanup closes the cursor before
+releasing the subject borrow and scratch. Escaping matches own their final
+ranges and retain the funded original subject.
 
 Filename matching reads the original UTF-8 inputs with scalar cursors; it creates
 no whole-string rune arrays or per-character string cache. `?` and character

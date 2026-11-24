@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.regex-original-unicode-window",
+    "allocationBytes": [
+      1322320,
+      1322336
+    ],
+    "peakAdmission": [
+      1753237,
+      1753237
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "allocationBytes": [
+      14082178,
+      14082178
+    ],
+    "peakAdmission": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281502,
+      3281558
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

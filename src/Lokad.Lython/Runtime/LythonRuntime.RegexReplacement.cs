@@ -69,8 +69,8 @@ internal sealed partial class LythonRuntime
         private ReadOnlySpan<byte> ExpansionBytes(PyString template, ReMatchObject match, RegexReplacementPiece part)
             => part.Group < 0 ? LiteralBytes(template, part) : match.GroupBytes(part.Group);
 
-        internal void AppendTo(GovernedByteBuilder builder, PyString template, RegexSubjectRange range, ReadOnlySpan<LythonRegexCapture?> captures,
-            ExecutionContext context, LythonSourceSpan span)
+        internal void AppendTo(GovernedByteBuilder builder, PyString template, ReadOnlySpan<byte> original,
+            ReadOnlySpan<LythonRegexCapture?> captures, ExecutionContext context, LythonSourceSpan span)
         {
             for (var i = 0; i < count; i++)
             {
@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
                 var part = _parts[i];
                 if (part.Group < 0) AppendRegexBytes(builder, LiteralBytes(template, part), context, span);
                 else if (captures[part.Group] is { } capture)
-                    AppendRegexBytes(builder, range.Original.Utf8Span.Slice(capture.StartByte,
+                    AppendRegexBytes(builder, original.Slice(capture.StartByte,
                         capture.EndByte - capture.StartByte), context, span);
             }
         }

@@ -8,12 +8,11 @@ internal sealed partial class LythonRuntime
 {
     internal sealed class PyRegexFindIterator : PyIteratorBase, IDisposable
     {
-        private readonly RePatternObject _pattern;
-        private readonly RegexSubjectRange _range;
+        private RePatternObject? _pendingPattern;
+        private RegexSubjectRange _pendingRange;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private RegexMatcher.PreparedCursor? _cursor;
-        private bool _finished;
         internal PyRegexFindIterator? NextResource;
 
         internal static PyRegexFindIterator Create(RePatternObject pattern, RegexSubjectRange range,
@@ -25,34 +24,46 @@ internal sealed partial class LythonRuntime
 
         private PyRegexFindIterator(RePatternObject pattern, RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
-            _pattern = pattern; _range = range; _context = context; _span = span;
+            _context = context;
+            _span = span;
+            if (range.IsValid)
+            {
+                _pendingPattern = pattern;
+                _pendingRange = range;
+            }
         }
 
         public override PyIterationResult TryMoveNext()
         {
             _context.CheckExecution(_span);
 
-            if (_finished || !_range.IsValid) return PyIterationResult.End;
             try
             {
                 if (_cursor is null)
                 {
-                    _cursor = RegexMatcher.OpenCursor(_pattern, _range, _context, _span);
+                    if (_pendingPattern is not { } pattern) return PyIterationResult.End;
+                    _cursor = RegexMatcher.OpenCursor(pattern, _pendingRange, _context, _span);
+                    // The prepared cursor now retains the inputs through its
+                    // final provider operation and cleanup.
+                    _pendingPattern = null;
+                    _pendingRange = default;
                     _context.State.TrackRegexIterator(this);
                 }
-                if (!_cursor.Next(_range)) { Dispose(); return PyIterationResult.End; }
-                return PyIterationResult.Yield(RegexMatcher.CreateMatchObject(_pattern, _range, _cursor, _context, _span));
+                if (!_cursor.Next()) { Dispose(); return PyIterationResult.End; }
+                return PyIterationResult.Yield(_cursor.CreateMatch());
             }
             catch { Dispose(); throw; }
         }
 
         public void Dispose()
         {
-            if (_finished) return;
-            _finished = true;
+            _pendingPattern = null;
+            _pendingRange = default;
+            var cursor = _cursor;
+            if (cursor is null) return;
+            _cursor = null;
             _context.State.UntrackRegexIterator(this);
-            var cursor = _cursor; _cursor = null;
-            cursor?.Dispose();
+            cursor.Dispose();
         }
 
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<callable_iterator object>");
