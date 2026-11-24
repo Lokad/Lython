@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Pass integer matching flags from guest flag operators independently of
+  the bits reported by `Pattern.flags`.
 - Key regex wrappers by the originally requested Python flags. Await guest
   hash and equality before flag normalization and reuse wrappers on cache hits.
 - Reuse immutable ASCII characters for single-byte text reads, including
