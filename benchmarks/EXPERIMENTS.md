@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1648](results/2026-11-24-shared-match-bindings/README.md) removes repeated
+capture walks. The generated classifier allocates 10.47% less when compiling
+and reaches its result 8.05–8.84% sooner with lower CPU. The manifest control
+uses 0.33–1.00% more CPU, with inconclusive elapsed.
+
+[B1647](results/2026-11-24-shared-function-definition-descriptor/README.md)
+uses one descriptor for default admission and callable creation. The generated
+script retains 96 fewer constants and compiler allocation falls 4,888 B.
+Generated timing ranges span zero and the eager control varies.
+
 [B1640](results/2026-11-24-raw-expression-retirement/README.md) removes
 the orphaned raw expression evaluator and its argument selectors. The
 generic-class script allocates 16,896 B less with matching admission.
