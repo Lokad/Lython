@@ -199,8 +199,10 @@ aliases remain valid after later reads and close. The execution/result owner kee
 the full backing capacity charged, including unused prefix/tail. Closing the file
 or discarding one line does not refund shared backing; ownership ends with the
 bounded command/result. This can deny earlier than independent copies when only
-a small part of a window is retained. Small inline and accumulated reads keep
-independent storage. Use bounded host-driven commands for long streams.
+a small part of a window is retained. Single-byte text results reuse the same
+immutable ASCII values as string indexing and iteration. Other small inline
+and accumulated reads keep independent storage. Use bounded host-driven
+commands for long streams.
 Shared byte-line scanning uses managed bulk searches, selecting newline mode once;
 CRLF/window holdback and scalar read limits stay with the caller.
 Readline, file iteration and native CSV input share the same window scanner.

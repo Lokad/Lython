@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1580](results/2026-11-24-decoded-ascii-file-values/README.md) reuses
+immutable ASCII results for complete one-byte text reads. Two scripts
+each avoid 1,024 string allocations and reduce admitted peak by 129 KiB.
+CPython identity agrees. Warm elapsed remains inconclusive, with adverse
+pairings on the nonblank, distinct and quoted controls.
+
 [B1579](results/2026-11-24-native-callable-definition/confirmation/README.md)
 confirms 3.95–7.09% higher defaulted warm elapsed on the shared
 definition prototype with supporting CPU. First use and the size of

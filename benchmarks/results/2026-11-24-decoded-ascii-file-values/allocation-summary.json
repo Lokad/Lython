@@ -1,0 +1,57 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      380488,
+      323144
+    ],
+    "peakAdmission": [
+      735891,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.no-blank-lines",
+    "allocatedBytes": [
+      438968,
+      438968
+    ],
+    "peakAdmission": [
+      869586,
+      869586
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "allocatedBytes": [
+      454288,
+      396944
+    ],
+    "peakAdmission": [
+      806570,
+      674474
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.borrowed-cased-words.unique-medium",
+    "allocatedBytes": [
+      1650222,
+      1650222
+    ],
+    "peakAdmission": [
+      2105910,
+      2105910
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3280920,
+      3280914
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

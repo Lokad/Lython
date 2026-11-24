@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse immutable ASCII characters for single-byte text reads, including
+  blank lines and translated newline characters.
 - Await guest flag operators and compiled-pattern flag truth checks
   during `RunAsync` before starting regex provider work.
 - Use Python's `__index__` protocol for guest values produced by regex
