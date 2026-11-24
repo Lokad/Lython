@@ -140,6 +140,31 @@ public sealed class NativeReturnFunctionTests
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {
+        { "callback-direct-return-and-dynamic-operands",
+            """
+            def select(flag, current, fallback):
+                return current if flag else fallback
+            def increment(value, by=5):
+                return value + by
+            def identity(self, ignored):
+                return self
+            events = []
+            class Flag:
+                def __bool__(self):
+                    events.append('truth')
+                    return False
+            class Owner:
+                pass
+            Owner.identity = identity
+            owner = Owner()
+            current = ['current']
+            fallback = ['fallback']
+            yes, no, dynamic = map(select, [True, False, Flag()], [current] * 3, [fallback] * 3)
+            print(yes is current, no is fallback, dynamic is fallback, events)
+            print(next(map(owner.identity, [None])) is owner)
+            print(list(map(increment, [3, (1 << 63) - 1], [4, 1])))
+            print(list(map(increment, [3])))
+            """, "True True True ['truth']\nTrue\n[7, 9223372036854775808]\n[8]\n" },
         { "fixed-return-callable-and-object-aliases",
             """
             def make(value):

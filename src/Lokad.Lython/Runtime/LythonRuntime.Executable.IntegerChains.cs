@@ -74,6 +74,21 @@ internal sealed partial class LythonRuntime
         public ExecutableSlot ReadLocal(int slot) => slot == 0 ? ExecutableSlot.FromObject(receiver) : _arguments[slot - 1];
     }
 
+    internal readonly ref struct CallbackIntegerOperands(ReadOnlySpan<CallArgumentValue> arguments, object? receiver,
+        ExecutableCaptures captures) : IIntegerOperands
+    {
+        private readonly ReadOnlySpan<CallArgumentValue> _arguments = arguments;
+
+        public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
+            => slot >= 0 ? TryMachineInteger(Argument(slot), out value)
+                : TryReadMachineOperand(code, default, slot, scope, out value, captures);
+
+        public ExecutableSlot ReadLocal(int slot) => ExecutableSlot.FromObject(Argument(slot));
+
+        private object Argument(int slot) => receiver is null ? _arguments[slot].Value
+            : slot == 0 ? receiver : _arguments[slot - 1].Value;
+    }
+
     internal readonly ref struct DefaultIntegerOperands(Span<ExecutableSlot> supplied, FunctionBindingPlan plan,
         ExecutableCaptures captures, bool borrowedArgument) : IIntegerOperands
     {

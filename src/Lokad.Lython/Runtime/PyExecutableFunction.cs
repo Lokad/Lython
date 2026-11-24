@@ -265,7 +265,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // The short callback argument span has already been evaluated. A complete
     // positional supply needs no defaults, collection construction or binding
     // workspace. Only a transferred body needs independently owned slots.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal bool TryStartPositionalCallback(ReadOnlySpan<CallArgumentValue> arguments, object? receiver,
         LythonSourceSpan span, out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame,
         out BoundFunctionArguments owned)
@@ -275,6 +274,24 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         owned = default;
         if (!CanStartInline || !HasCompletePositionalSupply(arguments.Length, receiver)) return false;
 
+        if (CodeObject.HasDirectOperandReturn && ParameterCount == CodeObject.FirstTemporarySlot)
+        {
+            foreach (ref readonly var argument in arguments)
+                if (!argument.IsPositional) return false;
+            if (TryStartDirectOperandReturn(new LythonRuntime.CallbackIntegerOperands(arguments, receiver, _closureCells),
+                span, out result)) return true;
+        }
+        return StartPositionalCallbackWorkspace(arguments, receiver, span, out result, out frame, out owned);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private bool StartPositionalCallbackWorkspace(ReadOnlySpan<CallArgumentValue> arguments, object? receiver,
+        LythonSourceSpan span, out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame,
+        out BoundFunctionArguments owned)
+    {
+        result = default;
+        frame = null;
+        owned = default;
         NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
         var first = 0;

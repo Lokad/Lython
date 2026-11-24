@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1661](results/2026-11-25-direct-callback-return/README.md) returns
+directly from borrowed positional callback arguments. The full CSV report
+reaches its result 2.77–4.69% sooner and warm async takes 2.56–6.73% less
+time, with lower CPU in both lanes. Warm CPU and both controls span zero.
+Allocation and peak admission match.
+
 [B1660](results/2026-11-25-defaulted-rule-phase-split/README.md) retests
 the B1659 images with separate defaulted-rule phases. Compile and warm
 ranges cross zero. The combined lane varies more than the earlier adverse

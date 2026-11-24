@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1496456,
+      1496456
+    ],
+    "peakAdmission": [
+      2946636,
+      2946636
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      803512,
+      803512
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281558,
+      3281558
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]
