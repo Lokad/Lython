@@ -84,6 +84,13 @@ File-fed warm sync CPU falls 6.26–13.95%. Async has a wide reference
 spread. The two adverse controls reverse and ordinary through-result
 CPU remains slightly adverse. Retain the runtime change and both blocks.
 
+[B1709 current CPU attribution](results/2026-11-25-current-workspace-cpu/README.md)
+profiles exact `7d24cfe9a` after the workspace change. Defaulted rules
+still spend 499 of 1,158 runtime stacks in definition construction.
+Shipment has more nearest CSV construction and instruction samples than
+iterator routing samples. The original disk failure and successful
+same-image retry remain recorded.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
