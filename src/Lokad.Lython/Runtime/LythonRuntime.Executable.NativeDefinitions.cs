@@ -125,13 +125,67 @@ internal sealed partial class LythonRuntime
 
     internal ref partial struct NativeExecution
     {
+        private bool TryDeferDefinition(in ExecutableInstruction instruction)
+        {
+            var store = Code.Instructions[Index + 1];
+            var defaults = Values.Slice(instruction.InputStart, 2);
+            if ((!defaults[0].HasPrivatePositionalDefault && defaults[0].Reference is not PyTuple) ||
+                !defaults[1].HasPrepaidCallable || !defaults[1].HasPrivateKeywordDefault) return false;
+            _scope.CheckExecution(store.Span);
+            Values[store.LocalSlot] = defaults[0];
+            Values[instruction.DeferredKeywordSlot] = defaults[1];
+            defaults.Clear();
+            Trim(instruction.InputStart);
+            _hasDeferredDefinitions = true;
+            Index++;
+            return true;
+        }
+
+        private void MaterializeDeferredDefinitions()
+        {
+            foreach (var index in Code.DeferredDefinitionSites!)
+            {
+                ref readonly var create = ref Code.Instructions[index];
+                ref var keyword = ref Values[create.DeferredKeywordSlot];
+                if (keyword.IsUnassigned) continue;
+                ref var positional = ref Values[Code.Instructions[index + 1].LocalSlot];
+                var definition = (ExecutableCreateFunction)Code.Constants[create.ConstantIndex]!;
+                var callable = CreateFunctionValue(definition.ParameterLayout, definition.CodeObject,
+                    GetGlobalContext(_scope), default, new(positional, keyword), false, _scope, create.Span);
+                keyword = default;
+                positional.Object = callable;
+            }
+            _hasDeferredDefinitions = false;
+        }
+
+        private void RefundDeferredDefinitions()
+        {
+            var bytes = 0L;
+            foreach (var index in Code.DeferredDefinitionSites!)
+            {
+                ref var keyword = ref Values[Code.Instructions[index].DeferredKeywordSlot];
+                if (keyword.IsUnassigned) continue;
+                ref var positional = ref Values[Code.Instructions[index + 1].LocalSlot];
+                // A positional tuple loaded from the code pool stays funded
+                // by compilation. Only invocation-owned defaults retire here.
+                var positionalBytes = positional.HasPrivatePositionalDefault
+                    ? FunctionDefaults.InlinePositionalBytes(positional.ReadDefaultOperand()) : 0L;
+                bytes = checked(bytes + positionalBytes + FunctionValueBytes + PyDict.RecordKeys.SinglePreparedValueBytes);
+                keyword = default;
+                positional = default;
+            }
+            _hasDeferredDefinitions = false;
+            if (bytes != 0) _scope.MemoryGovernor.Release(bytes);
+        }
+
         private bool ApplyDefinition(in ExecutableInstruction instruction)
         {
             var span = instruction.Span;
             if (Code.Constants[instruction.ConstantIndex] is not ExecutableCreateFunction definition ||
                 NeedsDefinitionContext(definition, _scope) || !CanDefineWithoutInvocation(definition.CodeObject,
                     Code, _cells, _scope, span, out var captures)) return false;
-            if (instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue &&
+            if (instruction.OpCode == ExecutableOpCode.ApplyOperation &&
+                instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue &&
                 TryCompleteImmediatelyCalledDefinition(definition.CodeObject, instruction.ImmediatelyCalledDefinitionCapture))
                 return true;
 

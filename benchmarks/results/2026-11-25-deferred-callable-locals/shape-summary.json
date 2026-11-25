@@ -1,0 +1,19 @@
+{
+  "core": "03f54c14fc21f207b21cd9c40e390a09b18b004b608c1d88e90b45e35e07e937",
+  "sourceSHA256": "87f9ca6750a7a128c1edc612d3213dd29e96d529cfc95bf279fe7c0bf456b30e",
+  "valueSlots": 194,
+  "localCount": 97,
+  "definitions": 96,
+  "deferredSites": 93,
+  "defined": 48,
+  "assignedLambdas": 48,
+  "closureCount": 0,
+  "declaredLoadInstructions": {
+    "rule_0": 1,
+    "rule_48": 1,
+    "rule_95": 1
+  },
+  "defaultStartCount": 96,
+  "defaultStoreCount": 160,
+  "directScalarArgumentCount": 160
+}

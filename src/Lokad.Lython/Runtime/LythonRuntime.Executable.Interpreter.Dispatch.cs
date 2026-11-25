@@ -118,6 +118,7 @@ internal sealed partial class LythonRuntime
                             var defaultValue = execution.Stack.TakeSlotValue(instruction.ResultSlot, instruction.LiveExtent);
                             StoreDefaultResult(execution.Stack.Values, instruction, defaultValue, (invocation ?? scope).State);
                             break;
+                        case ExecutableOpCode.ApplyDeferredDefinition:
                         case ExecutableOpCode.ApplyOperation:
                             if (!TryExecutePreparedOperation(ref execution, scope, invocation, instruction, asynchronous, out var operationTask))
                                 return InstructionPause.ContextRequired;

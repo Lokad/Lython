@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Defer constructing eligible write-only local functions until their scope can
+  be observed. Evaluate defaults in order and release unpublished storage at exit.
 - Reuse admitted UTF-8 pattern bytes for directly analyzed regex literals.
   Store comprehension scope facts on comprehension syntax.
 - Pass an exact computed integer argument directly to an eligible global

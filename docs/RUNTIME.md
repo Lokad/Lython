@@ -434,6 +434,12 @@ callables and annotation records in reverse construction order. A captured
 pair likewise refunds its unpublished functions, private cells and capture
 arrays before a catchable failure returns to its caller. Shared module
 storage keeps its existing owner.
+In eligible straight-line functions, the lexical workspace can hold a write-only
+definition's evaluated defaults before constructing the callable. General calls
+and frame handoff materialize pending definitions before exposing local bindings.
+Private defaults and the prepaid callable charge return when a pending definition
+retires unpublished. Literal tuples keep their compilation owner. The extra
+workspace capacity is admitted up front and can lead to earlier refusal.
 An eligible native call can return a bound operand, finish exact integer
 arithmetic or return a closed lexical definition before preparing callee
 workspace or a tuple-unpack destination. Both executable drivers use the same

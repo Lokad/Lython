@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1735 deferred lexical functions](results/2026-11-25-deferred-callable-locals/README.md)
+stages eligible computed defaults. B1735c also stages compilation-owned tuples,
+eliminating 1,488 callable constructions per complete factory run. Retain the
+refinement. Warm CPU falls in both hosting modes and time through result falls
+5.03–7.75%. The extra admitted slots increase the observer's peak by 48 B.
+Shipment timing spans zero. [Refinement](results/2026-11-25-deferred-callable-locals/confirmation/README.md).
+
 [B1717 callable-owned rollback](results/2026-11-25-callable-owned-rollback/README.md)
 removes duplicate default slots from a closed pair and changes the success
 path for single computed definitions. The first block improves defaulted and

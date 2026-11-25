@@ -27,6 +27,7 @@ internal sealed partial class LythonRuntime
         internal int Index = function.CodeObject.EntryIndex;
         internal int LiveExtent = function.CodeObject.FirstTemporarySlot;
         private bool _entered;
+        private bool _hasDeferredDefinitions;
         internal bool OwnershipTransferred { get; private set; }
         private ExecutionContext? _preparedChild;
         private MemoryGovernor? _preparedChildOwner;
@@ -170,6 +171,7 @@ internal sealed partial class LythonRuntime
                         break;
                     }
                     case ExecutableOpCode.Call:
+                        if (_hasDeferredDefinitions) MaterializeDeferredDefinitions();
                         if (!Call(instruction)) return false;
                         break;
                     case ExecutableOpCode.StartFunctionDefaults:
@@ -186,6 +188,9 @@ internal sealed partial class LythonRuntime
                         Trim(instruction.LiveExtent);
                         StoreDefaultResult(Values, instruction, defaultValue, _scope.State);
                         break;
+                    case ExecutableOpCode.ApplyDeferredDefinition:
+                        if (TryDeferDefinition(instruction)) break;
+                        goto case ExecutableOpCode.ApplyOperation;
                     case ExecutableOpCode.ApplyOperation:
                         if (!ApplyDefinition(instruction)) return false;
                         break;
@@ -728,6 +733,7 @@ internal sealed partial class LythonRuntime
 
         internal void PrepareTransfer()
         {
+            if (_hasDeferredDefinitions) MaterializeDeferredDefinitions();
             // Final managed slots transfer directly; no borrowed side span remains.
             Values[LiveExtent..].Clear();
         }
@@ -756,7 +762,11 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                try { Trim(Code.FirstTemporarySlot); }
+                try
+                {
+                    try { Trim(Code.FirstTemporarySlot); }
+                    finally { if (_hasDeferredDefinitions) RefundDeferredDefinitions(); }
+                }
                 finally
                 {
                     if (_entered) _scope.LeaveFunctionCall();

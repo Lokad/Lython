@@ -87,6 +87,7 @@ internal enum ExecutableOpCode
     PreparedTupleReturn,
     LoadCasedSplit,
     LoadDictionaryGetKey,
+    ApplyDeferredDefinition,
 }
 
 internal enum ExecutableUnaryOperator
@@ -185,12 +186,18 @@ internal readonly record struct ExecutableInstruction
 
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
+        or ExecutableOpCode.ApplyDeferredDefinition
         or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
         or ExecutableOpCode.StartFunctionDefaults
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
     internal int ImmediatelyCalledDefinitionCapture => _secondaryOperand;
     internal ExecutableInstruction WithImmediatelyCalledDefinition(int capture)
         => new(OpCode, Span, _primaryOperand, capture, _inputStart, _resultSlot, _liveExtent);
+    internal int DeferredKeywordSlot => OpCode == ExecutableOpCode.ApplyDeferredDefinition
+        ? _secondaryOperand : throw InvalidOperand(nameof(DeferredKeywordSlot));
+    internal ExecutableInstruction WithDeferredDefinition(int keywordSlot)
+        => new(ExecutableOpCode.ApplyDeferredDefinition, Span, _primaryOperand, keywordSlot,
+            _inputStart, _resultSlot, _liveExtent);
     internal bool StartsKeywordDefaultsOnly => _secondaryOperand != 0;
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
@@ -609,6 +616,8 @@ internal sealed partial class ExecutableCodeObject
         // forms use this layout, including at a dynamic-operation transition.
         var regionsByEntry = exceptionRegions.Count == 0 ? [] :
             exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
+        var deferredCandidates = regionsByEntry.Length == 0 && blocks.Count == 1
+            ? FindDeferredDefinitionLocals(blocks[0], cancellationToken) : null;
         var operandLayout = ExecutableStackLayout.Prepare(this, blocks, callSites,
             regionsByEntry, entryBlockIndex, initialOperandDepth, cancellationToken);
         OperandCapacity = operandLayout.MaximumDepth;
@@ -660,6 +669,9 @@ internal sealed partial class ExecutableCodeObject
             PrepareImmediatelyCalledDefinition(cancellationToken);
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out _definitionPairFirstCreation);
             DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
+            DeferredDefinitionSites = PrepareDeferredDefinitions(deferredCandidates, cancellationToken);
+            if (DeferredDefinitionSites is { } deferred)
+                ValueStorageCapacity = checked(ValueStorageCapacity + deferred.Length);
         }
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
@@ -766,6 +778,7 @@ internal sealed partial class ExecutableCodeObject
     public int PatternStorageCount { get; }
     public int PatternStorageStart { get; }
     public int ValueStorageCapacity { get; }
+    internal int[]? DeferredDefinitionSites { get; }
 
     public bool CanRunNativeInstructions { get; }
 

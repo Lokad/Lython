@@ -5,6 +5,60 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class PreparedFunctionDefaultsTests
 {
     [Theory]
+    [InlineData(false, 10)]
+    [InlineData(true, 10)]
+    [InlineData(false, 0)]
+    [InlineData(true, 0)]
+    public async Task EarlierDefinitionsRemainVisibleToAnAliasedLocalsDefault(bool asynchronous, int offset)
+    {
+        const string source = """
+            lookup = locals
+
+            def step(value): return value + 1
+
+            def factory(offset):
+                def earlier(value=12, *, factor=step(offset + 2)):
+                    return value + factor
+                assigned = lambda value=step(offset + 3), *, factor=step(offset + 4): value + factor
+                a = 0; b = 0; c = 0; d = 0; e = 0; f = 0; g = 0; h = 0
+                i = 0; j = 0; k = 0; l = 0; m = 0; n = 0; o = 0; p = 0
+                guard = 1 // offset
+                def capture(snapshot=lookup()):
+                    return snapshot
+                return capture()
+
+            saved = factory(input_offset)
+            first = saved['earlier']
+            second = saved['assigned']
+            print(first(), second(), first.__defaults__, second.__kwdefaults__['factor'], 'capture' in saved)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var host = new MockLythonHost();
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["input_offset"] = offset } };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                if (offset != 0)
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("25 29 (12,) 15 False\n", result.StandardOutput);
+                }
+                else
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal("ZeroDivisionError", result.Failure?.ExceptionType);
+                    Assert.Empty(result.StandardOutput);
+                }
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LiteralTupleDefaultsShareIdentityAcrossDefinitions(bool asynchronous)
