@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1678](results/2026-11-25-shared-map-operands/README.md) passes live operand
+slots through nested `map` callbacks. The scalar report allocates 96.66%
+less and keeps the same peak admission. Its first timing run fails the final
+quiet check and has adverse native map and retained zip controls. The
+original batch values and source remain archived.
+
 [B1677](results/2026-11-25-ordinary-defaults-cpython/README.md) compares
 `2b1e8a6f2` with CPython 3.13.16. Ordinary definitions take 2.211–2.255×
 warm and 0.807–0.828× through result. Defaulted rules take 1.236–1.286×
