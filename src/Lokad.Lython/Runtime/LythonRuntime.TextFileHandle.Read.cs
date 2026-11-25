@@ -213,22 +213,48 @@ internal sealed partial class LythonRuntime
                 return CompleteReadAsync(pending);
             }
 
-            internal async ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous)
+            internal ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous)
             {
                 var buffer = source.NativeLineBuffer;
                 var before = buffer.Length;
                 BeginRead();
-                var failed = true;
+                ValueTask<PyString> pending = default;
+                int? borrowedFields = null;
+                var completed = false;
                 try
                 {
                     if (before == 0 && source.CanBorrowNativeLine && TryConsumeBufferedCsvLine(source, destination, out var fields))
+                        borrowedFields = fields;
+                    else
+                        pending = ReadLineCore(-1, asynchronous, buffer);
+
+                    if (pending.IsCompletedSuccessfully)
                     {
-                        failed = false;
-                        return fields;
+                        _ = pending.GetAwaiter().GetResult();
+                        pending = default;
+                        if (!_released)
+                        {
+                            // All consumers of the borrowed window are done.
+                            _reading = false;
+                            completed = true;
+                        }
                     }
-                    var read = ReadLineCore(-1, asynchronous, buffer);
-                    if (asynchronous) _ = await read.ConfigureAwait(false);
-                    else _ = read.GetAwaiter().GetResult();
+                }
+                catch (Exception error) { pending = ValueTask.FromException<PyString>(error); }
+
+                return completed
+                    ? new(FinishCsvLine(source, before, borrowedFields, destination))
+                    : CompleteCsvLineAsync(pending, source, before, borrowedFields, destination, asynchronous);
+            }
+
+            private async ValueTask<int> CompleteCsvLineAsync(ValueTask<PyString> pending, CsvRecordSource source,
+                int before, int? borrowedFields, Memory<ExecutableSlot>? destination, bool asynchronous)
+            {
+                var failed = true;
+                try
+                {
+                    if (asynchronous) _ = await pending.ConfigureAwait(false);
+                    else _ = pending.GetAwaiter().GetResult();
                     failed = false;
                 }
                 finally
@@ -237,8 +263,13 @@ internal sealed partial class LythonRuntime
                     else EndRead(failed);
                 }
 
-                return buffer.Length == before ? CsvRecordSource.EndOfNativeInput : source.ConsumeStagedNativeLine(before, destination);
+                return FinishCsvLine(source, before, borrowedFields, destination);
             }
+
+            private static int FinishCsvLine(CsvRecordSource source, int before, int? borrowedFields,
+                Memory<ExecutableSlot>? destination)
+                => borrowedFields ?? (source.NativeLineBuffer.Length == before
+                    ? CsvRecordSource.EndOfNativeInput : source.ConsumeStagedNativeLine(before, destination));
 
             private bool TryConsumeBufferedCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, out int fields)
             {

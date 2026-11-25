@@ -207,6 +207,71 @@ public sealed class TextReadBorrowLifetimeTests
     }
 
     [Fact]
+    public async Task BufferedCsvReadAwaitsCloseRequestedDuringRecordAdmission()
+    {
+        var host = new DelayedLythonHost();
+        host.SeedFile("/input", "first,value\nkept,tail\n");
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var closing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var finishClose = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var returned = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(host, new() { MemoryBudget = hook });
+            var file = new OpenedByteFile(context.State);
+            await file.OpenAsync("/input", new(LythonFileAccess.Read), null, true);
+            var reader = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
+                LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
+                LythonRuntime.TextNewlineMode.TranslateUniversal, 64);
+            var source = new LythonRuntime.CsvRecordSource(new PyList([]),
+                new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral, null, LythonRuntime.CsvQuotingMode.Minimal,
+                    true, null, false, PyString.FromString("\n"), false), new(0, 0, 1, 1), context);
+            await reader.ReadCsvLine(source, null, true);
+            Assert.True(source.TryMoveNext(out var first));
+            Assert.Equal("first", Assert.IsType<PyString>(first[0]).AsString());
+            Assert.True(source.CanBorrowNativeLine);
+
+            host.BeforeFileClose = async () => { closing.SetResult(); await finishClose.Task; };
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                var funded = budget.ReservedBytes;
+                reader.Release();
+                Assert.Equal(funded, budget.ReservedBytes);
+            };
+            var pending = Task.Run(async () =>
+            {
+                var read = reader.ReadCsvLine(source, null, true);
+                returned.SetResult();
+                return await read;
+            });
+            try
+            {
+                var next = await Task.WhenAny(closing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.Same(closing.Task, next);
+                await returned.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.False(pending.IsCompleted);
+                Assert.True(reader.OwnedBytes > LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes);
+                finishClose.SetResult();
+                await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.True(source.TryMoveNext(out var row));
+                Assert.Equal("kept", Assert.IsType<PyString>(row[0]).AsString());
+                Assert.Equal("tail", Assert.IsType<PyString>(row[1]).AsString());
+                Assert.Equal(1, host.ClosedFileCount);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally
+            {
+                finishClose.TrySetResult();
+                try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+                finally { hook.AfterGrowth = null; reader.Release(); context.State.CloseResources(); }
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task PendingHostReadKeepsItsBuffersAndTransportUntilCancellationUnwinds()
     {
         var host = new DelayedLythonHost();

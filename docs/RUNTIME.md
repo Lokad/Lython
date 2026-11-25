@@ -1501,6 +1501,8 @@ each boundary. The literal parser can borrow a complete line in the current
 decoded file window or an immutable input string. The active native read
 keeps the window funded through admission and row handoff, including when
 cleanup is requested. Retained fields own storage independent of the decoder.
+Completed reads finish inline when no release is pending. A pending refill
+or deferred host release remains with the read owner through completion.
 Cross-window reads use the admitted parser buffer. A borrowed parse that
 needs the general grammar copies its parsed prefix into that buffer. Raw
 line bytes and an unfinished multiline prefix can need more capacity than
