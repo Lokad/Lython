@@ -2790,9 +2790,9 @@ If compilation or admission reenters the cache for the same key, the first
 published wrapper keeps its identity. Discarded wrappers release their private
 storage and close any newly compiled provider handle.
 Successful public compilation retains the immutable provider programs used for
-constant validation under the compiled script's owner. Runs borrow exact UTF-8
-pattern/option matches; they retain their own Python wrappers and group-name
-strings. This avoids recompiling the same request when a freshly compiled script
+constant validation under the compiled script's owner. Private group-name
+facts release their allowance when analysis ends. Runs borrow exact UTF-8
+pattern/option matches and fund their own Python wrappers and group-name strings. This avoids recompiling the same request when a freshly compiled script
 runs once. Dispose the script only after all runs finish. Its retained reservation
 can be larger and admission can fail earlier than with analysis-only programs.
 Dynamic programs remain execution-owned until cleanup, including programs

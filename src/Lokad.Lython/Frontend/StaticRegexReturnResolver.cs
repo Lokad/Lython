@@ -271,7 +271,7 @@ internal static class StaticRegexReturnResolver
             {
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
                 regex = new(program, captureSlotCount,
-                    LythonRuntime.RegexCompiler.CopyNamedGroups(program, captureSlotCount, governor, token, span));
+                    analysis.ReadRegexGroupFacts(program, captureSlotCount, span));
                 analysis.RetainRegexProgram(encoded, options, program, captureSlotCount, span);
             }
             catch { program.Dispose(); throw; }

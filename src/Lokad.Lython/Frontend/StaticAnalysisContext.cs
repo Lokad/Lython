@@ -5,6 +5,7 @@ internal sealed class StaticAnalysisContext : IDisposable
     private readonly List<LythonDiagnostic> _diagnostics = new();
     private readonly CompiledRegexPrograms _regexPrograms;
     private readonly bool _ownsRegexPrograms;
+    private Runtime.MemoryGovernor.TemporaryMemoryReservation? _regexGroupFactsStorage;
     private readonly Dictionary<StatementSyntax, StatementFacts>? _statementFacts;
 
     public StaticAnalysisContext(ScriptSyntax script, ILythonRegexProvider? regexProvider = null,
@@ -31,6 +32,11 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal ILythonMemoryReservation ReserveRegexStorage(long bytes, LythonSourceSpan span)
         => _regexPrograms.Reserve(bytes, span);
 
+    internal IReadOnlyDictionary<Runtime.Text.PyString, int> ReadRegexGroupFacts(ILythonRegexPattern program,
+        int captureSlotCount, LythonSourceSpan span)
+        => Runtime.LythonRuntime.RegexCompiler.CopyAnalysisNamedGroups(program, captureSlotCount, MemoryGovernor,
+            _regexGroupFactsStorage ??= MemoryGovernor?.ReserveTemporary(0, span), CancellationToken, span);
+
     public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics;
 
     internal List<LythonDiagnostic> DiagnosticList => _diagnostics;
@@ -50,7 +56,8 @@ internal sealed class StaticAnalysisContext : IDisposable
     public void Dispose()
     {
         RegexPatterns.Clear();
-        if (_ownsRegexPrograms) _regexPrograms.Dispose();
+        try { _regexGroupFactsStorage?.Dispose(); }
+        finally { if (_ownsRegexPrograms) _regexPrograms.Dispose(); }
     }
 
     public void AddError(LythonDiagnosticCode code, string message, LythonSourceSpan span)

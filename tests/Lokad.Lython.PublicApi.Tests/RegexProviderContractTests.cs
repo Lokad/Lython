@@ -698,6 +698,31 @@ public sealed class RegexProviderContractTests
     }
 
     [Fact]
+    public void CompileOnlyGroupFactsReleaseTheirStorageBeforeTheProgramDisposes()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var retained = new List<long>();
+        foreach (var name in new[] { "x", new string('x', 128) })
+        {
+            using var provider = new CooperatingProvider
+            {
+                CaptureSlots = 2,
+                GroupNames = [new(Encoding.UTF8.GetBytes(name), 1)]
+            };
+            using (var script = new LythonEngine(provider).Compile("import re\np=re.compile('x')", budget))
+            {
+                Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+                Assert.Equal(1, provider.Compilations);
+                Assert.Equal(0, provider.ClosedPatterns);
+                retained.Add(budget.ReservedBytes);
+            }
+            Assert.Equal(1, provider.ClosedPatterns);
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        Assert.Equal(retained[0], retained[1]);
+    }
+
+    [Fact]
     public void PatternWithoutNamedGroupsReturnsIndependentEmptyDictionaries()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

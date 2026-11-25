@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -228,20 +229,21 @@ internal sealed partial class LythonRuntime
             return count;
         }
 
-        internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern, int captureSlotCount,
-            MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span, PyString? sourcePattern = null)
-            => ProviderCall((pattern, captureSlotCount, governor, token, span), static state =>
+        internal static IReadOnlyDictionary<PyString, int> CopyAnalysisNamedGroups(ILythonRegexPattern pattern,
+            int captureSlotCount, MemoryGovernor? governor, MemoryGovernor.TemporaryMemoryReservation? factsStorage,
+            CancellationToken token, LythonSourceSpan span)
+            => ProviderCall((pattern, captureSlotCount, governor, factsStorage, token, span), static state =>
             {
-                var (pattern, captureSlotCount, governor, token, span) = state;
+                var (pattern, captureSlotCount, governor, factsStorage, token, span) = state;
                 var (entries, count) = ReadNamedGroupEntries(pattern, captureSlotCount, governor, token, span);
-                var bytes = checked(64L + 96L * count);
-                using var storage = governor?.ReserveTemporary(bytes, span);
+                if (count == 0) return (IReadOnlyDictionary<PyString, int>)FrozenDictionary<PyString, int>.Empty;
+                factsStorage?.Grow(checked(64L + 96L * count), span);
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
                 var names = new Dictionary<PyString, int>(count);
                 PopulateNamedGroups(entries, count, captureSlotCount, governor, token, span, names,
-                    static (table, name, index) => table.TryAdd(name, index));
-                storage?.Commit(bytes);
+                    static (table, name, index) => table.TryAdd(name, index), factsStorage);
                 return names;
-            }, governor, token, span, sourcePattern);
+            }, governor, token, span);
 
         private static readonly PyDict EmptyRuntimeNamedGroups = new();
 
@@ -277,7 +279,7 @@ internal sealed partial class LythonRuntime
 
         private static void PopulateNamedGroups<T>(IReadOnlyList<LythonRegexNamedGroup> entries, int count,
             int captureSlotCount, MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span,
-            T table, Func<T, PyString, int, bool> add)
+            T table, Func<T, PyString, int, bool> add, MemoryGovernor.TemporaryMemoryReservation? factsStorage = null)
         {
             var previous = 0;
             for (var i = 0; i < count; i++)
@@ -297,7 +299,10 @@ internal sealed partial class LythonRuntime
                     offset += width;
                 }
                 // Provider metadata is borrowed until the compiled handle closes.
-                var name = PyString.CopyFromUtf8(input, governor, span, cancellationToken: token);
+                // Analysis names live only until their last compiler fact.
+                // Runtime names instead belong to the escaping pattern.
+                factsStorage?.Grow(PyString.EstimateApproximateBytes(input.Length), span);
+                var name = PyString.CopyFromUtf8(input, factsStorage is null ? governor : null, span, cancellationToken: token);
                 _ = name.GetHashCode(token, span);
                 if (!add(table, name, entry.Index))
                     throw RuntimeErrors.Runtime("Regex provider returned duplicate group names.", span);
