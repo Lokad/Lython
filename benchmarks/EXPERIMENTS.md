@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1717 callable-owned rollback](results/2026-11-25-callable-owned-rollback/README.md)
+removes duplicate default slots from a closed pair and changes the success
+path for single computed definitions. The first block improves defaulted and
+eager rule timings. Postponed compile-to-result uses 3.31–6.91% more CPU in
+confirmation. The combined prototype stays private. Isolate pair ownership
+while preserving the single-definition path to test whether the two outcomes
+can be separated.
+
 [B1699](results/2026-11-25-closed-default-evaluation/README.md) shares
 the closed single and paired default evaluator. Warm defaulted rules use
 0.46–2.59% less CPU, while postponed annotated rules use 7.48–13.43%
