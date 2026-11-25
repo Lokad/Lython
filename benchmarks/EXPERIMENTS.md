@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1676](results/2026-11-25-shared-call-entry/README.md) resolves executable
+call targets before probing builtins. Ordinary-definition CPU falls
+3.05–4.11%. Defaulted-rule CPU rises 0.16–6.01%, with wider same-image
+variation. Retain the observations and keep the source private.
+
 [B1675](results/2026-11-25-ordinary-default-operands/README.md) keeps the
 evaluated integer private through ordinary default construction. Ordinary
 definitions allocate 11.60% less and use 2.44–4.82% less warm CPU in the
