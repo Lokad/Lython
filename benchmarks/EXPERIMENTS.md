@@ -78,6 +78,12 @@ replaces all 2,048 private file-fed workspaces on both hosting modes.
 File-fed timing spans zero. Two workloads with no loans use more CPU.
 The first source stays private with its exact images and transfer checks.
 
+[B1708b iterator-owned workspace proof](results/2026-11-25-iteration-native-storage/prepared/README.md)
+removes the same 2,048 workspaces with proof at iterator creation.
+File-fed warm sync CPU falls 6.26–13.95%. Async has a wide reference
+spread. The two adverse controls reverse and ordinary through-result
+CPU remains slightly adverse. Retain the runtime change and both blocks.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

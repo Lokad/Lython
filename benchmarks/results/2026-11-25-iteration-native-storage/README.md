@@ -37,6 +37,7 @@ Neither takes a loan. These observations leave the cost of eager compiler
 proof and common callback argument handling unresolved. The prototype
 stays private. A useful follow-up can move the invariant footprint check
 to iterator creation and remove its cost from unrelated compilation.
+The prepared version is recorded in [B1708b](prepared/README.md).
 Compilation allocation, retained admission and execution peaks match.
 Execution allocation differences in the diagnostic are at most 56 B.
 
