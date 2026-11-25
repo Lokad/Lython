@@ -1,0 +1,161 @@
+{
+  "coreSHA256": "749acc0b4e1787ce7f0be762f9ba4f81df69ac65abfc960ff10e4333a5506638",
+  "rows": [
+    {
+      "name": "diagnostic.shipment-routing-callbacks",
+      "methods": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "capacity": 9,
+          "locals": [
+            "csv",
+            "repeat",
+            "choose",
+            "tally",
+            "report_shipments"
+          ],
+          "tempStart": 5,
+          "nativePrefix": 12,
+          "directReturn": false,
+          "instructionCount": 12,
+          "callCount": 1,
+          "eligibleLoads": 0,
+          "operationCounts": {
+            "ExecutableCreateFunction": 3
+          },
+          "opcodeCounts": {
+            "Import": 2,
+            "ApplyOperation": 3,
+            "StoreName": 3,
+            "LoadLocal": 1,
+            "Call": 1,
+            "PopTop": 1,
+            "Complete": 1
+          }
+        },
+        {
+          "name": "report_shipments",
+          "capacity": 16,
+          "locals": [
+            "policies",
+            "totals",
+            "reviewed",
+            "rows",
+            "input_file",
+            "row",
+            "name",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E"
+          ],
+          "tempStart": 9,
+          "nativePrefix": 62,
+          "directReturn": false,
+          "instructionCount": 79,
+          "callCount": 9,
+          "eligibleLoads": 0,
+          "operationCounts": {},
+          "opcodeCounts": {
+            "LoadConst": 9,
+            "MakeRecord": 3,
+            "MakeTuple": 1,
+            "StoreLocal": 12,
+            "MakeDict": 1,
+            "MakeList": 2,
+            "LoadGlobal": 4,
+            "Call": 9,
+            "ResolveContextManager": 1,
+            "Dup": 1,
+            "EnterContextManager": 1,
+            "Jump": 6,
+            "LoadCallMember": 2,
+            "LoadLocal": 10,
+            "GetIter": 2,
+            "ForNext": 2,
+            "PopTop": 3,
+            "CompareJumpIfFalse": 1,
+            "IntegerCallUpdate": 2,
+            "Augmented": 2,
+            "JumpIfFalse": 1,
+            "ExitContextManager": 1,
+            "EndFinally": 1,
+            "Subscript": 1,
+            "ReturnNone": 1
+          }
+        },
+        {
+          "name": "tally",
+          "capacity": 21,
+          "locals": [
+            "rows",
+            "totals",
+            "policies",
+            "priority",
+            "normal",
+            "review",
+            "late",
+            "held",
+            "primary",
+            "results",
+            "reviewed",
+            "row",
+            "policy",
+            "service"
+          ],
+          "tempStart": 14,
+          "nativePrefix": 73,
+          "directReturn": false,
+          "instructionCount": 73,
+          "callCount": 8,
+          "eligibleLoads": 0,
+          "operationCounts": {
+            "ExecutableStartComprehension": 2,
+            "ExecutableAppendDisplay": 2,
+            "ExecutableFinishComprehension": 2
+          },
+          "opcodeCounts": {
+            "LoadLocal": 10,
+            "UnpackValues": 2,
+            "StoreLocal": 12,
+            "ApplyOperation": 6,
+            "GetIter": 3,
+            "Jump": 6,
+            "ForNext": 2,
+            "StoreGlobal": 2,
+            "LoadName": 2,
+            "Subscript": 4,
+            "Binary": 4,
+            "LoadGlobal": 6,
+            "Call": 8,
+            "ForNextUnpack": 1,
+            "Augmented": 1,
+            "LoadCallMember": 1,
+            "LoadConst": 1,
+            "StoreSubscript": 1,
+            "Return": 1
+          }
+        },
+        {
+          "name": "choose",
+          "capacity": 7,
+          "locals": [
+            "flag",
+            "preferred",
+            "alternative"
+          ],
+          "tempStart": 3,
+          "nativePrefix": 4,
+          "directReturn": true,
+          "instructionCount": 4,
+          "callCount": 0,
+          "eligibleLoads": 0,
+          "operationCounts": {},
+          "opcodeCounts": {
+            "JumpIfFalse": 1,
+            "Jump": 1,
+            "Return": 2
+          }
+        }
+      ]
+    }
+  ]
+}

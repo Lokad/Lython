@@ -93,6 +93,14 @@ preserves the existing augmented result path. Ordinary-definition
 compile-to-result elapsed falls 4.68–6.62% and compile-only elapsed rises
 0.20–0.78%. The escaping-rule control remains inconclusive.
 
+[B1731 computed-argument CPython checkpoint](results/2026-11-25-arithmetic-call-cpython/README.md)
+measures `a420c3e05` against stock CPython 3.13.16. Ordinary definitions
+take 1.756–1.800× warm, 0.513–0.518× compile-only and 0.739–0.762×
+through result. Shipment takes 1.389–1.472× warm with 5.40% Lython worker
+spread. The original manifest failed before timing and the verified retry
+uses the same image. The shipment instruction inventory locates two eager
+comprehension binding and append scopes outside the direct chooser.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
