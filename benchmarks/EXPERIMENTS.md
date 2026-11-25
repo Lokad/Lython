@@ -30,6 +30,13 @@ isolates header completion. Both file-fed CPU ranges cross zero. The
 unaffected text and plain reader controls use less CPU, so the invoice
 improvement cannot be assigned to the changed stage. Keep the source private.
 
+[B1721 fixed admission for private definitions](results/2026-11-25-private-definition-admission/README.md)
+retains a single charge for fixed keyword-default and callable storage.
+The generated scripts make 1,536 and 4,096 fewer budget growth requests
+with matched admitted peaks. Warm elapsed is lower in both blocks.
+Compilation CPU reverses and unchanged controls also improve in confirmation.
+Retain the reduced request count and the earlier refusal before guest effects.
+
 [B1720 current CPython checkpoint](results/2026-11-25-direct-record-cpython/README.md)
 measures retained `7120ee55e` against stock CPython 3.13.16. Eleven phases and
 308 verified batches separate warm execution, compilation and time to result.

@@ -1,0 +1,146 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "asynchronous": false,
+    "resizeGrowths": [
+      3093,
+      1557
+    ],
+    "peakExecutionMemoryBytes": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "asynchronous": true,
+    "resizeGrowths": [
+      3093,
+      1557
+    ],
+    "peakExecutionMemoryBytes": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "asynchronous": false,
+    "resizeGrowths": [
+      8200,
+      4104
+    ],
+    "peakExecutionMemoryBytes": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "asynchronous": true,
+    "resizeGrowths": [
+      8200,
+      4104
+    ],
+    "peakExecutionMemoryBytes": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "asynchronous": false,
+    "resizeGrowths": [
+      4121,
+      4121
+    ],
+    "peakExecutionMemoryBytes": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "asynchronous": true,
+    "resizeGrowths": [
+      4121,
+      4121
+    ],
+    "peakExecutionMemoryBytes": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": false,
+    "resizeGrowths": [
+      4583,
+      4583
+    ],
+    "peakExecutionMemoryBytes": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": true,
+    "resizeGrowths": [
+      4583,
+      4583
+    ],
+    "peakExecutionMemoryBytes": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "asynchronous": false,
+    "resizeGrowths": [
+      6169,
+      6169
+    ],
+    "peakExecutionMemoryBytes": [
+      2902945,
+      2902945
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "asynchronous": true,
+    "resizeGrowths": [
+      6169,
+      6169
+    ],
+    "peakExecutionMemoryBytes": [
+      2902945,
+      2902945
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "asynchronous": false,
+    "resizeGrowths": [
+      4154,
+      4154
+    ],
+    "peakExecutionMemoryBytes": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "asynchronous": true,
+    "resizeGrowths": [
+      4154,
+      4154
+    ],
+    "peakExecutionMemoryBytes": [
+      603795,
+      603795
+    ]
+  }
+]

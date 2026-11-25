@@ -404,12 +404,14 @@ either. Refusal can arise from their combined estimate. A declaration with
 scalar literal positional defaults shares one immutable tuple owned by the
 compiled code. Reassigning `__defaults__` still affects only that function.
 Each definition admits its positional and keyword default backing before
-evaluation. Values complete into private storage that stays owned through
-suspension. Evaluated singleton positional and keyword integers stay in
-operand form through ordinary and prepared definitions. The slot carries its
-ownership tag and refunds private backing on failure. After the separate
-callable admission, that same slot belongs to the callable. Closed arithmetic
-can read the integer directly. Binding that can expose the value publishes
+evaluation. An executable definition with keyword defaults can admit the
+fixed callable shell at the same preflight when it has no captures,
+decorators or annotations. This can refuse the definition before a default
+expression runs. Values complete into private storage that stays funded
+through suspension. Evaluated singleton positional and keyword integers
+stay in operand form through ordinary and prepared definitions. The slot
+carries the private charge until the callable takes it and refunds it on
+failure. Closed arithmetic can read the integer directly. Binding that can expose the value publishes
 its canonical object in the owner. Reading `__defaults__` or `__kwdefaults__`
 materializes the canonical container with the existing admission. Replacing
 private keyword defaults refunds their mapping backing. For a singleton, the
@@ -465,8 +467,9 @@ integer arithmetic and a read-only capture supply its defaults. It uses the
 same admission and definition constructor, carrying the funded defaults directly
 into the callable. For a proved pair of defaulted definitions, the compiler
 records the first creation boundary. Each member reads its own existing
-descriptor, evaluates defaults and admits its callable in that order.
-Other executable definitions keep unfinished defaults in
+descriptor and evaluates its defaults in order. It takes the funded
+storage at callable construction, with a separate shell preflight when
+the defaults could not carry it. Other executable definitions keep unfinished defaults in
 frame operands through evaluation and suspension. Their start and creation
 instructions refer to one compiled function descriptor. Prepared eager
 annotations read their live bindings after defaults and use the same admitted

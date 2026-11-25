@@ -221,16 +221,19 @@ public sealed class ExecutableDefinitionPairTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ArithmeticFailureRefundsUnpublishedPairWhileItsScopeIsAlive(bool failFirst)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ArithmeticFailureRefundsUnpublishedPairWhileItsScopeIsAlive(bool failFirst, bool keywordOnly)
     {
         var firstDefault = failFirst ? "10 // seed" : "seed % 7";
+        var keywordMarker = keywordOnly ? "*, " : "";
         var module = ExecutableScript.Compile(LythonFrontend.Compile($$"""
             def make(seed):
-                def first(value={{firstDefault}}):
+                def first({{keywordMarker}}value={{firstDefault}}):
                     return value
-                other = lambda left=10 // seed, right=seed + 1: left + right
+                other = lambda {{keywordMarker}}left=10 // seed, right=seed + 1: left + right
                 return first, other
             first, other = make(0)
             """).Script!).EntryPoint;

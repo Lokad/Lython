@@ -49,12 +49,14 @@ public sealed class AsyncFunctionHostingTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CancellationDuringDefinitionDrainsTheOwnerBeforeRefund(bool decorator)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task CancellationDuringDefinitionDrainsTheOwnerBeforeRefund(bool decorator, bool keyword)
     {
         const string wait = "def wait(value=0):\n    with open('out.txt','w') as target:\n        target.write('pending')\n    return value\n";
-        var source = wait + (decorator ? "@wait\ndef f():\n    return 1" : "def f(value=wait()):\n    return value");
+        var parameter = keyword ? "*, value=wait()" : "value=wait()";
+        var source = wait + (decorator ? "@wait\ndef f():\n    return 1" : $"def f({parameter}):\n    return value");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;

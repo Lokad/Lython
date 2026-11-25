@@ -13,6 +13,13 @@ internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject,
 {
     internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
     internal bool IsLambda => Kind != ExecutableDefinitionKind.Statement;
+
+    // The existing keyword operand can own the fixed callable admission
+    // until both are published. Captures and annotation owners stay separate.
+    internal bool PrepaysCallable { get; } = ParameterLayout.HasKeywordDefaults && !DirectKeywordDefault &&
+        Kind != ExecutableDefinitionKind.NamespaceLambda && DecoratorCount == 0 && TypeParameters is null &&
+        CodeObject.ClosureNames.Count == 0 && AnnotationOperandCount == 0 && DeferredAnnotations.Length == 0 &&
+        PostponedAnnotations is null && EagerAnnotationReads is null;
 }
 
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;

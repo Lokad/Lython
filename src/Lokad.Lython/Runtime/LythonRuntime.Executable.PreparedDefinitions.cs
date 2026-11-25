@@ -74,7 +74,13 @@ internal sealed partial class LythonRuntime
             bytes = checked(bytes + InlineCaptureBytes(captureByValue));
         }
         var governor = context.MemoryGovernor;
-        if (preparedAnnotations.Values is null) governor.Reserve(bytes, span);
+        var prepaid = defaults.Keywords.HasPrepaidCallable;
+        if (prepaid)
+        {
+            System.Diagnostics.Debug.Assert(bytes == FunctionValueBytes && preparedAnnotations.Values is null);
+            defaults = defaults with { Keywords = defaults.Keywords.ReadPrepaidKeywordStorage() };
+        }
+        else if (preparedAnnotations.Values is null) governor.Reserve(bytes, span);
         try
         {
             context.CheckExecution(span);
@@ -95,7 +101,7 @@ internal sealed partial class LythonRuntime
             if (keys is not null)
                 function.AttachAdmittedAnnotations(preparedAnnotations.Values ?? postponedAnnotations ??
                     keys.CopyAnnotationValues(annotations, capacity, context, span), context, preparedAnnotations.Repeated);
-            governor.Commit(bytes);
+            if (!prepaid) governor.Commit(bytes);
             if (cell is not null)
             {
                 cell.RetentionCharged = true;
@@ -105,7 +111,7 @@ internal sealed partial class LythonRuntime
         }
         catch
         {
-            if (preparedAnnotations.Values is null) governor.ReleaseReserved(bytes);
+            if (!prepaid && preparedAnnotations.Values is null) governor.ReleaseReserved(bytes);
             throw;
         }
     }
@@ -125,7 +131,7 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject factory, ExecutionContext scope, long argument, object? keywordCapture)
     {
         var instructions = factory.Instructions;
-        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span);
+        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span, definition.PrepaysCallable);
         try
         {
             var index = 1;
@@ -135,7 +141,7 @@ internal sealed partial class LythonRuntime
             if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             else scope.CheckExecution(instructions[index++].Span);
             scope.CheckExecution(instructions[index++].Span);
-            defaults = defaults with { Keywords = ExecutableSlot.OwnPrivateKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
+            defaults = defaults with { Keywords = defaults.Keywords.WithInlineKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
             var span = instructions[index].Span;
             scope.CheckExecution(span);
             var result = definition.EagerAnnotationReads is { } reads
@@ -187,7 +193,7 @@ internal sealed partial class LythonRuntime
         try { defaults.RefundUnpublished(governor); }
         finally
         {
-            if (member is not null)
+            if (member is not null && !defaults.Keywords.HasPrepaidCallable)
                 governor.Release(member.CodeObject.DefinitionAnnotationKeys is { } keys
                     ? FunctionAndAnnotationBytes(keys.PreparedValueCapacity) : FunctionValueBytes);
         }
@@ -202,7 +208,7 @@ internal sealed partial class LythonRuntime
         var layout = definition.ParameterLayout;
         // The pair owns these defaults immediately, including when further
         // evaluation or callable construction fails before returning a member.
-        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span);
+        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span, definition.PrepaysCallable);
         var index = start + 1;
         for (var i = 0; i < layout.Defaults.Length; i++)
         {

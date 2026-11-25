@@ -5,23 +5,24 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static void StartExecutableDefaults(FunctionParameterLayout layout, Span<ExecutableSlot> operands,
+    private static void StartExecutableDefaults(ExecutableCreateFunction definition, Span<ExecutableSlot> operands,
         bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
     {
-        var defaults = AllocateFunctionDefaults(layout, keywordsOnly, context, span);
+        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, keywordsOnly, context, span, definition.PrepaysCallable);
         if (!defaults.Positional.IsUnassigned) operands[0] = defaults.Positional;
         if (!defaults.Keywords.IsUnassigned) operands[^1] = defaults.Keywords;
     }
 
     // Admit the final backing, even when a singleton tuple is still implicit.
     private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, bool keywordsOnly,
-        ExecutionContext context, LythonSourceSpan span)
+        ExecutionContext context, LythonSourceSpan span, bool prepayCallable = false)
     {
         var positionalCount = keywordsOnly ? 0 : layout.PositionalDefaultCount;
         var keys = layout.PreparedKeywordDefaultKeys;
         var positionalBytes = positionalCount == 0 ? 0 : PyTuple.EstimateDefaultStorage(positionalCount);
         var keywordCapacity = keys?.PreparedValueCapacity ?? 0;
-        var bytes = checked(positionalBytes + (keys is null ? 0 : PyDict.RecordKeys.RecordBytes(keywordCapacity)));
+        var bytes = checked(positionalBytes + (keys is null ? 0 : PyDict.RecordKeys.RecordBytes(keywordCapacity)) +
+            (prepayCallable ? FunctionValueBytes : 0));
         var governor = context.MemoryGovernor;
         context.CheckExecution(span);
         governor.Reserve(bytes, span);
@@ -35,8 +36,8 @@ internal sealed partial class LythonRuntime
                 _ => ExecutableSlot.OwnPrivateDefault(PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes)),
             };
             var keyword = keys is null ? default : keys.Count == 1
-                ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(PyNone.Instance))
-                : ExecutableSlot.OwnPrivateDefault(new object?[keywordCapacity]);
+                ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(PyNone.Instance), prepayCallable)
+                : ExecutableSlot.OwnPrivateKeywordStorage(new object?[keywordCapacity], prepayCallable);
             governor.Commit(bytes);
             return new(positional, keyword);
         }
@@ -75,7 +76,7 @@ internal sealed partial class LythonRuntime
         else
         {
             state.CheckExecution(span);
-            defaults = defaults with { Keywords = ExecutableSlot.OwnPrivateKeywordDefault(FunctionDefaults.PrepareInlineValue(value)) };
+            defaults = defaults with { Keywords = defaults.Keywords.WithInlineKeywordDefault(FunctionDefaults.PrepareInlineValue(value)) };
         }
     }
 

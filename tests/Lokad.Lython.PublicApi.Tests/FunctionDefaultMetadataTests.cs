@@ -754,6 +754,31 @@ finally:
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefusedPrivateDefinitionLeavesDefaultEffectsUnstarted(bool asynchronous, bool multiple)
+    {
+        var defaults = multiple ? "value=time.time(), other=0" : "value=time.time()";
+        using var script = new LythonEngine().Compile($"import time\ntime.time()\ndef target(*, {defaults}): return value\nprint('unreachable')");
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new AdmissionGateBudget();
+        // Room for the default mapping by itself, below the whole private definition.
+        var host = new AdmissionGateHost(budget, 448);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal(3, result.Failure?.Span?.Line);
+            Assert.Empty(result.StandardOutput);
+            Assert.True(budget.AtGate > 0);
+            Assert.Equal(0, host.AtSecondGate);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task FailedDefinitionRefundsDefaultStorageOnlyWhilePrivate(bool asynchronous)

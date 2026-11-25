@@ -20,12 +20,15 @@ internal sealed partial class LythonRuntime
         }
         private static readonly InlineDefaultInteger PrivatePositionalInteger = new(PrivatePositionalDefault);
         private static readonly InlineDefaultInteger PrivateKeywordInteger = new(PrivateKeywordDefault);
+        private static readonly InlineDefaultInteger PrepaidKeywordInteger = new(PrepaidKeywordDefault);
         private object? _value;
         // An integer, double bits, short UTF-8 with its existing owner, a tuple
         // item offset, or a private-default marker with its admitted storage.
         private const long PrivateDefaultContainer = -1;
         private const long PrivateKeywordDefault = -2;
         private const long PrivatePositionalDefault = -3;
+        private const long PrepaidKeywordStorage = -4;
+        private const long PrepaidKeywordDefault = -5;
         private long _integer;
 
         internal object? Object
@@ -51,17 +54,30 @@ internal sealed partial class LythonRuntime
             && _value is not (null or ExecutableTemporaryValue)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         private readonly long PrivateDefaultKind => _value is InlineDefaultInteger scalar ? scalar.Kind :
-            _integer is >= PrivatePositionalDefault and <= PrivateDefaultContainer &&
+            _integer is >= PrepaidKeywordDefault and <= PrivateDefaultContainer &&
                 !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble) ? _integer : 0;
         private readonly bool HasPrivateDefault => PrivateDefaultKind != 0;
-        internal readonly bool HasPrivateKeywordDefault => PrivateDefaultKind == PrivateKeywordDefault;
+        internal readonly bool HasPrivateKeywordDefault => PrivateDefaultKind is PrivateKeywordDefault or PrepaidKeywordDefault;
+        internal readonly bool HasPrepaidCallable => PrivateDefaultKind is PrepaidKeywordDefault or PrepaidKeywordStorage;
         internal readonly bool HasPrivatePositionalDefault => PrivateDefaultKind == PrivatePositionalDefault;
         internal readonly bool RequiresRetirement => _value is ExecutableTemporaryValue || HasPrivateDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefaultContainer };
 
-        internal static ExecutableSlot OwnPrivateKeywordDefault(ExecutableSlot value)
-            => OwnInlineDefault(value, PrivateKeywordInteger);
+        internal static ExecutableSlot OwnPrivateKeywordDefault(ExecutableSlot value, bool prepayCallable = false)
+            => OwnInlineDefault(value, prepayCallable ? PrepaidKeywordInteger : PrivateKeywordInteger);
+
+        internal static ExecutableSlot OwnPrivateKeywordStorage(object?[] values, bool prepayCallable)
+            => new() { _value = values, _integer = prepayCallable ? PrepaidKeywordStorage : PrivateDefaultContainer };
+
+        internal readonly ExecutableSlot WithInlineKeywordDefault(ExecutableSlot value)
+            => OwnPrivateKeywordDefault(value, PrivateDefaultKind == PrepaidKeywordDefault);
+
+        // The construction slot still owns both charges until publication.
+        // The function receives ordinary default storage it can expose or replace.
+        internal readonly ExecutableSlot ReadPrepaidKeywordStorage()
+            => PrivateDefaultKind == PrepaidKeywordDefault
+                ? OwnPrivateKeywordDefault(ReadDefaultOperand()) : OwnPrivateDefault(_value.RequireNotNull());
 
         internal static ExecutableSlot OwnPrivatePositionalDefault(ExecutableSlot value)
             => OwnInlineDefault(value, PrivatePositionalInteger);
@@ -109,7 +125,10 @@ internal sealed partial class LythonRuntime
                     return;
                 }
                 this = default;
-                if (kind == PrivateKeywordDefault) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
+                if (kind is PrivateKeywordDefault or PrepaidKeywordDefault)
+                    governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes + (kind == PrepaidKeywordDefault ? FunctionValueBytes : 0));
+                else if (kind == PrepaidKeywordStorage)
+                    governor.Release(PyDict.RecordKeys.RecordBytes(((object?[])storage!).Length) + FunctionValueBytes);
                 else if (storage is object?[] keywordValues) PyDict.RecordKeys.RefundPreparedValues(keywordValues, governor);
                 else governor.RefundUnpublishedValue(storage!);
             }

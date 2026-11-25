@@ -1,0 +1,68 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1444680,
+      1444680
+    ],
+    "retainedAdmission": [
+      883617,
+      883617
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      63768,
+      63768
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      44952,
+      44952
+    ],
+    "retainedAdmission": [
+      63610,
+      63610
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      152192,
+      152192
+    ],
+    "retainedAdmission": [
+      164576,
+      164576
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      59344,
+      59344
+    ],
+    "retainedAdmission": [
+      78622,
+      78622
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      80296,
+      80296
+    ],
+    "retainedAdmission": [
+      92127,
+      92127
+    ]
+  }
+]
