@@ -13,6 +13,12 @@ refinement. Warm CPU falls in both hosting modes and time through result falls
 5.03–7.75%. The extra admitted slots increase the observer's peak by 48 B.
 Shipment timing spans zero. [Refinement](results/2026-11-25-deferred-callable-locals/confirmation/README.md).
 
+[B1736 CPython checkpoint](results/2026-11-25-deferred-locals-cpython/README.md)
+measures retained `7f0c5b996`. The factory takes 1.443–1.509× warm and
+0.702–0.722× through result. Shipment takes 1.419–1.481× warm sync and
+1.569–1.655× warm async. The five diagnostic lanes keep both engines' raw
+worker spreads and the exact verified image.
+
 [B1717 callable-owned rollback](results/2026-11-25-callable-owned-rollback/README.md)
 removes duplicate default slots from a closed pair and changes the success
 path for single computed definitions. The first block improves defaulted and

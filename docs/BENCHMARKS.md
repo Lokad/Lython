@@ -3,8 +3,8 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration manifest | Two input files / 833 B | 0.18510–0.18554 ms | 0.15478–0.15563 ms | 1.189–1.199× | Diagnostic. [B1669]. |
-| Shipment callback report | 2,048 records / 27,350 B | 2.27304–2.39573 ms | 1.62761–1.63701 ms | 1.389–1.472× | Diagnostic. Lython worker spread is 5.40%. [B1731]. |
-| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.54592–2.55642 ms | 1.63596–1.64217 ms | 1.550–1.563× | Diagnostic. [B1720]. |
+| Shipment callback report | 2,048 records / 27,350 B | 2.32550–2.40626 ms | 1.62525–1.63851 ms | 1.419–1.481× | Diagnostic. [B1736]. |
+| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.74330–2.87713 ms | 1.73829–1.74817 ms | 1.569–1.655× | Diagnostic. Lython worker spread is 4.88%. [B1736]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.59234–0.62370 ms | 1.36880–1.37651 ms | 0.430–0.456× | Diagnostic. Worker spread up to 5.30%. [B1720]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.01119–3.04841 ms | 1.67604–1.69917 ms | 1.772–1.819× | Diagnostic. [B1694]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
@@ -14,7 +14,7 @@
 | Eager annotated rules | 2,048 rule groups | 0.43268–0.43905 ms | 0.40411–0.41482 ms | 1.043–1.086× | Diagnostic. [B1685]. |
 | Postponed nested annotated rules | 2,048 rule groups | 0.61825–0.66753 ms | 0.53118–0.53396 ms | 1.158–1.257× | Diagnostic. Worker spread up to 7.97%. [B1685]. |
 | Generated rules with captured locals | 2,048 rule groups | 0.89205–0.89483 ms | 0.76652–0.77553 ms | 1.150–1.167× | Diagnostic. [B1633]. |
-| Generated ordinary definitions | 96 definitions, built 16 times | 0.25959–0.26377 ms | 0.14653–0.14787 ms | 1.756–1.800× | Diagnostic. [B1731]. |
+| Generated ordinary definitions | 96 definitions, built 16 times | 0.22097–0.22361 ms | 0.14817–0.15315 ms | 1.443–1.509× | Diagnostic. [B1736]. |
 | Generated rules with defaults | 2,048 rule groups | 0.89580–0.90843 ms | 0.68316–0.69232 ms | 1.294–1.330× | Diagnostic. [B1694]. |
 | Formatted JSON report | 1,024 records / 189,441 B | 2.66299–2.77436 ms | 2.58657–2.58703 ms | 1.029–1.073× | Diagnostic. Worker spread up to 4.18%. [B1727]. |
 | JSON Lines export with default options | 3,072 records / 189,441 B | 4.27718–4.35394 ms | 5.06345–5.15320 ms | 0.830–0.860× | Diagnostic. [B1720]. |
@@ -22,8 +22,8 @@
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. B1731 measures `a420c3e05` and B1727 measures
-`857cc8001` on November 25, 2026 UTC.
+two workers per engine. B1736 measures `7f0c5b996` and B1727 measures
+`857cc8001` on November 25, 2026 UTC. Earlier B1731 measures `a420c3e05`.
 B1720 measures `7120ee55e` on November 25, 2026 UTC.
 B1713 and B1705 measure earlier revisions `75af75769` and `96d54066a` the same
 day. B1694 measures warm defaulted rules, the
@@ -38,7 +38,7 @@ use `6466fbb52`. The earlier manifest compile-only and sparse validator
 use `0bf516c79`. Postponed compilation and time to result use `5313f9e71`.
 The expanded-options JSON export uses `2cf721f73`, and the CSV meters
 use `8aef89b09`.
-[B1731] · [B1727] · [B1720] · [B1713] · [B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
+[B1736] · [B1731] · [B1727] · [B1720] · [B1713] · [B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -70,11 +70,11 @@ measurements cover the wider request.
 | Eager annotated rules | Compile-to-result | 0.48583–0.48941 ms | 0.43524–0.43622 ms | 1.114–1.124× | Diagnostic. [B1633]. |
 | Postponed nested annotated rules, 465 B | Compilation only | 0.02137–0.02188 ms | 0.03949–0.03962 ms | 0.539–0.554× | Diagnostic. [B1593]. |
 | Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
-| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.57053–0.57267 ms | 1.10525–1.11168 ms | 0.513–0.518× | Diagnostic. [B1731]. |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.57294–0.57500 ms | 1.10284–1.10975 ms | 0.516–0.521× | Diagnostic. [B1736]. |
 | Formatted JSON report, 454 B of source | Compilation only | 0.02121–0.02138 ms | 0.03710–0.03734 ms | 0.568–0.576× | Diagnostic. [B1727]. |
 | Formatted JSON report, 16 records / 2,961 B | Compile-to-result | 0.15713–0.15865 ms | 0.16563–0.17055 ms | 0.921–0.958× | Diagnostic. [B1727]. |
 | Generated rules with defaults, 427 B | Compilation only | 0.02210–0.02213 ms | 0.04138–0.04167 ms | 0.530–0.535× | Diagnostic. [B1705]. |
-| Generated ordinary definitions | Compile-to-result | 0.83433–0.84990 ms | 1.11491–1.12865 ms | 0.739–0.762× | Diagnostic. [B1731]. |
+| Generated ordinary definitions | Compile-to-result | 0.78635–0.80450 ms | 1.11361–1.12001 ms | 0.702–0.722× | Diagnostic. [B1736]. |
 | Generated rules with defaults | Compile-to-result | 0.91836–0.95004 ms | 0.73616–0.75183 ms | 1.221–1.291× | Diagnostic. Worker spread up to 3.45%. [B1720]. |
 | Generated rules with captured locals, 446 B | Compilation only | 0.02626–0.02666 ms | 0.04672–0.04684 ms | 0.561–0.571× | Diagnostic. [B1633]. |
 | Generated rules with captured locals | Compile-to-result | 0.96229–0.97110 ms | 0.87069–0.87170 ms | 1.104–1.115× | Diagnostic. [B1633]. |
@@ -181,6 +181,7 @@ document reproduction.
 [B1669]: ../benchmarks/results/2026-11-25-post-zip-cpython/README.md
 [B1677]: ../benchmarks/results/2026-11-25-ordinary-defaults-cpython/README.md
 [B1685]: ../benchmarks/results/2026-11-25-retained-defaults-cpython/README.md
+[B1736]: ../benchmarks/results/2026-11-25-deferred-locals-cpython/README.md
 [B1731]: ../benchmarks/results/2026-11-25-arithmetic-call-cpython/README.md
 [B1727]: ../benchmarks/results/2026-11-25-formatted-report-cpython/README.md
 [B1720]: ../benchmarks/results/2026-11-25-direct-record-cpython/README.md
