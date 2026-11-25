@@ -1,0 +1,116 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvLines": 4087,
+        "InlineCsvReads": 5122,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvLines": 4087,
+        "InlineCsvReads": 5122,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvLines": 2047,
+        "InlineCsvReads": 2050,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map.async",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvLines": 2047,
+        "InlineCsvReads": 2050,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-meter-report.explicit-float",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvLines": 4088,
+        "InlineCsvReads": 4098,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 5171785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-meter-report.explicit-float.async",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvLines": 4088,
+        "InlineCsvReads": 4098,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 5171785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-meter-report.typed-unicode",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvLines": 4083,
+        "InlineCsvReads": 4098,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 3552905,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-meter-report.typed-unicode.async",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvLines": 4083,
+        "InlineCsvReads": 4098,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 3552905,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvLines": 0,
+        "InlineCsvReads": 0,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large.async",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvLines": 0,
+        "InlineCsvReads": 0,
+        "DeferredCsvReads": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

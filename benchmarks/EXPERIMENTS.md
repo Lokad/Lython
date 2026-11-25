@@ -43,6 +43,13 @@ preserves route coverage and improves file-fed async CPU by 1.64–4.29%.
 The earlier invoice result does not repeat and ordinary definitions
 use 0.93–2.34% more CPU through result. Both variants stay private.
 
+[B1704 completed CSV line reads](results/2026-11-25-csv-completed-read/README.md)
+keeps real refill and deferred file release under the existing awaited
+owner. File-fed map warm async CPU falls 1.18–6.46% initially and
+1.37–3.29% in confirmation at matched admission. Invoice CPU is less
+conclusive and text-control signs reverse. Retain the targeted path
+and both blocks, including the original adverse control.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
