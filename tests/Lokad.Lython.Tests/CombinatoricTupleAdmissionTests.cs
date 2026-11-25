@@ -146,16 +146,20 @@ public sealed class CombinatoricTupleAdmissionTests
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    private sealed class SuspendedSource(CancellationToken cancellation) : IPyIterableValue, IPyAsyncIterableValue
+    private sealed class SuspendedSource(CancellationToken cancellation) : IPyAsyncIteratorValue
     {
+        private bool _started;
         public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public IEnumerable<object> Iterate() => [BigInteger.One];
-        public async IAsyncEnumerable<object> IterateAsync()
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+        public PyIterationResult TryMoveNext() => throw new InvalidOperationException("Expected asynchronous iteration.");
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
+            if (_started) return PyIterationResult.End;
+            _started = true;
             Entered.TrySetResult();
             await Resume.Task.WaitAsync(cancellation);
-            yield return BigInteger.One;
+            return PyIterationResult.Yield(BigInteger.One);
         }
     }
 }

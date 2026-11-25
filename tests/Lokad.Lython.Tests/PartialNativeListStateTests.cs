@@ -108,7 +108,7 @@ public sealed class PartialNativeListStateTests
         }
     }
 
-    private sealed class FailingSource(object alias, int count, bool cleanupFailure) : IPyAsyncIterableValue
+    private sealed class FailingSource(object alias, int count, bool cleanupFailure) : IPyIterableValue
     {
         internal bool Cleaned;
         public IEnumerable<object> Iterate()
@@ -125,14 +125,9 @@ public sealed class PartialNativeListStateTests
                 if (cleanupFailure) throw new InvalidOperationException("controlled construction failure");
             }
         }
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            await Task.Yield();
-            foreach (var item in Iterate()) yield return item;
-        }
     }
 
-    private sealed class AdmissionDeniedSource(LythonRuntime.ExecutionContext context) : IPyAsyncIterableValue
+    private sealed class AdmissionDeniedSource(LythonRuntime.ExecutionContext context) : IPyIterableValue
     {
         internal long Funding;
         internal bool Completed;
@@ -145,11 +140,6 @@ public sealed class PartialNativeListStateTests
             Funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes;
             context.MemoryGovernor.Reserve(Funding, Span);
             yield return new BigInteger(2);
-        }
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            await Task.Yield();
-            foreach (var item in Iterate()) yield return item;
         }
     }
 }

@@ -31,10 +31,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
         {
             // Preserve the original input retirement and its disposal order.
-            // Pending cleanup must finish before the consumer becomes visible;
-            // the unchanged driver and following consumer already implement that.
             if (instruction.LiveExtent < execution.Stack.LiveExtent) execution.Stack.RetireTo(instruction.LiveExtent);
-            if (execution.Stack.HasPendingDisposals || !execution.Stack.CanContinue)
+            if (!execution.Stack.CanContinue)
             {
                 // An interrupted execution reaches the unchanged consumer entry
                 // check, outside the producer's operation-exception handling.

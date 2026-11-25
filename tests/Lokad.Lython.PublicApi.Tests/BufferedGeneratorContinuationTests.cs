@@ -38,6 +38,68 @@ public sealed class BufferedGeneratorContinuationTests
         }
     }
 
+    [Fact]
+    public async Task GeneratorCloseAwaitsNestedFileOwnersBeforeReturning()
+    {
+        const string source = """
+            def scan():
+                with open('/outer') as outer:
+                    with open('/inner') as inner:
+                        yield outer.readline() + inner.readline()
+            g = scan()
+            assert next(g) == 'one two'
+            g.close()
+            print('closed')
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/outer", "one ");
+        host.SeedFile("/inner", "two");
+        var closing = new[] { new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) };
+        var release = new[] { new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) };
+        var output = 0;
+        host.OnStandardOutputWrite = () => Interlocked.Increment(ref output);
+        host.BeforeFileClose = async () =>
+        {
+            var index = host.ClosedFileCount;
+            closing[index].SetResult();
+            await release[index].Task;
+        };
+
+        var pending = script.RunAsync(host);
+        try
+        {
+            for (var index = 0; index < closing.Length; index++)
+            {
+                var first = await Task.WhenAny(closing[index].Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+                if (ReferenceEquals(first, pending))
+                {
+                    using var early = await pending;
+                    Assert.Fail(early.Failure?.Message ?? "Execution returned before its file cleanup.");
+                }
+                Assert.Equal(index, host.ClosedFileCount);
+                Assert.Equal(0, Volatile.Read(ref output));
+                Assert.True(budget.ReservedBytes > baseline);
+                release[index].SetResult();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(2, host.ClosedFileCount);
+            Assert.Equal("closed\n", result.StandardOutput);
+        }
+        finally
+        {
+            foreach (var gate in release) gate.TrySetResult();
+            using var joined = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, "success")]
     [InlineData(true, "success")]

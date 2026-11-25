@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
         {
             // This segment can keep the word binding private only while all
             // updates are callback-free and the cursor owns its prepared bytes.
-            if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals) return false;
+            if (execution.Stack.LiveExtent != head.ResultSlot) return false;
             var privateBindings = !execution.Code.RequiresLocalVariableMirroring &&
                 invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
             if (!privateBindings ||

@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
         // A direct local return may copy an existing guest value without
         // changing either its identity or the lifetime of private storage.
         internal readonly bool HasMaterializedValue => _integer == 0
-            && _value is not (null or PyIteration.Cursor or ExecutableTemporaryValue)
+            && _value is not (null or ExecutableTemporaryValue)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         private readonly long PrivateDefaultKind => _value is InlineDefaultInteger scalar ? scalar.Kind :
             _integer is >= PrivatePositionalDefault and <= PrivateDefaultContainer &&
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
         private readonly bool HasPrivateDefault => PrivateDefaultKind != 0;
         internal readonly bool HasPrivateKeywordDefault => PrivateDefaultKind == PrivateKeywordDefault;
         internal readonly bool HasPrivatePositionalDefault => PrivateDefaultKind == PrivatePositionalDefault;
-        internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue || HasPrivateDefault;
+        internal readonly bool RequiresRetirement => _value is ExecutableTemporaryValue || HasPrivateDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefaultContainer };
 

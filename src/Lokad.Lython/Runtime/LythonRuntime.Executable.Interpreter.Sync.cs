@@ -21,15 +21,7 @@ internal sealed partial class LythonRuntime
                     if (!ReferenceEquals(child, this)) return child;
                 }
             }
-            finally
-            {
-                if (!HasYield && !HasPendingCall)
-                {
-                    _preparedCallValue = null;
-                    AbandonFrame();
-                    if (!OwnsModuleNamespace) _execution.Stack.ReleaseStorage();
-                }
-            }
+            finally { RetireCompletedFrame(); }
         }
     }
 }

@@ -53,7 +53,7 @@ public sealed class IterationCancellationTests
         Assert.True(source.Disposed);
     }
 
-    private sealed class CancellingIterable(CancellationTokenSource cancellation) : IPyAsyncIterableValue
+    private sealed class CancellingIterable(CancellationTokenSource cancellation) : IPyIterableValue
     {
         public int Produced { get; private set; }
         public bool Disposed { get; private set; }
@@ -74,10 +74,5 @@ public sealed class IterationCancellationTests
             }
         }
 
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            await Task.CompletedTask;
-            foreach (var value in Iterate()) yield return value;
-        }
     }
 }

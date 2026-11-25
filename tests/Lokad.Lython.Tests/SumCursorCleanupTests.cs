@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
@@ -19,32 +20,17 @@ public sealed class SumCursorCleanupTests
 
     [Theory]
     [MemberData(nameof(Routes))]
-    public async Task SumAwaitsFundedCleanupExactlyOnce(string route, bool cleanupFails)
+    public async Task SumDisposesFundedCursorExactlyOnce(string route, bool cleanupFails)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024); using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
             { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
-        var source = new PausedSource(budget, context.MemoryGovernor, cancellation, route, cleanupFails);
+        var source = new OwnedSource(budget, context.MemoryGovernor, cancellation, route, cleanupFails);
         context.Variables["source"] = source;
         var code = ExecutableScript.Compile(LythonFrontend.Compile("return sum(source)",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
-        var baseline = budget.ReservedBytes;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
-        Exception? failure;
-        try
-        {
-            var first = await Task.WhenAny(source.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.Same(source.Disposing.Task, first);
-            Assert.False(pending.IsCompleted);
-            Assert.Equal(1, source.Disposals);
-            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 4096);
-            Assert.True(budget.ReservedBytes >= baseline + 4096);
-        }
-        finally
-        {
-            source.Release.TrySetResult();
-            failure = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
-        }
+        var failure = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
         if (route == "admission") Assert.Same(source.Refusal, context.MemoryGovernor.AdmissionFailure);
         if (cleanupFails)
         {
@@ -64,26 +50,26 @@ public sealed class SumCursorCleanupTests
         owner.Dispose(); Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class PausedSource(LythonMemoryBudget budget, MemoryGovernor governor, CancellationTokenSource cancellation, string route, bool cleanupFails)
-        : IPyAsyncIterableValue, IAsyncEnumerable<object>, IAsyncEnumerator<object>
+    private sealed class OwnedSource(LythonMemoryBudget budget, MemoryGovernor governor, CancellationTokenSource cancellation, string route, bool cleanupFails)
+        : IPyIterableValue, IEnumerable<object>, IEnumerator<object>
     {
         private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
         private MemoryGovernor.TemporaryMemoryReservation? _storage;
         private readonly PyString _invalid = PyString.FromString("bad", governor, Span);
-        internal readonly TaskCompletionSource Disposing = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal int Disposals;
         internal int Moves;
         internal LythonRuntimeException? Refusal;
         public object Current => route == "add-fault" ? _invalid : BigInteger.One;
-        public IEnumerable<object> Iterate() => [];
-        public IAsyncEnumerable<object> IterateAsync() => this;
-        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        object IEnumerator.Current => Current;
+        public IEnumerable<object> Iterate() => this;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<object> GetEnumerator()
         {
             _storage = governor.ReserveTemporary(4096, Span);
             return this;
         }
-        public ValueTask<bool> MoveNextAsync()
+        public void Reset() => throw new NotSupportedException();
+        public bool MoveNext()
         {
             Moves++;
             if (route == "pull-fault") throw new LythonRuntimeException("ValueError", "pull failed", Span);
@@ -93,13 +79,19 @@ public sealed class SumCursorCleanupTests
                 catch (LythonRuntimeException error) { Refusal = error; throw; }
             }
             if (route == "cancel") cancellation.Cancel();
-            return new(route != "exhaust" || Moves <= 2);
+            return route != "exhaust" || Moves <= 2;
         }
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
-            Disposals++; Disposing.TrySetResult();
-            try { await Release.Task.ConfigureAwait(false); }
-            finally { _storage?.Dispose(); _storage = null; }
+            Disposals++;
+            var storage = _storage;
+            _storage = null;
+            using (storage)
+            {
+                Assert.NotNull(storage);
+                Assert.True(governor.CurrentReservedBytes >= 4096);
+                Assert.True(budget.ReservedBytes >= 4096);
+            }
             if (cleanupFails) throw new InvalidOperationException("native cleanup failed");
         }
     }

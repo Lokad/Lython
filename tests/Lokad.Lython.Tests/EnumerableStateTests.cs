@@ -99,8 +99,6 @@ public sealed class EnumerableStateTests
         Assert.Equal(1, source.Disposed);
     }
 
-
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -195,7 +193,7 @@ public sealed class EnumerableStateTests
         }
     }
 
-    private sealed class OwnedSource(object payload) : IEnumerable<object>, IPyAsyncIterableValue
+    private sealed class OwnedSource(object payload) : IEnumerable<object>
     {
         internal int Acquired;
         internal int Disposed;
@@ -204,9 +202,6 @@ public sealed class EnumerableStateTests
         internal bool FailDispose;
         public IEnumerator<object> GetEnumerator() { Acquired++; return new Enumerator(this, payload); }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public IEnumerable<object> Iterate() => this;
-        public IAsyncEnumerable<object> IterateAsync() => new AsyncEnumerable(this, payload);
-
 
         private sealed class Enumerator(OwnedSource owner, object payload) : IEnumerator<object>
         {
@@ -219,29 +214,6 @@ public sealed class EnumerableStateTests
 
         }
 
-        private sealed class AsyncEnumerable(OwnedSource owner, object payload) : IAsyncEnumerable<object>
-        {
-            public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-            {
-                owner.Acquired++;
-                return new AsyncEnumerator(owner, payload);
-            }
-        }
-
-        private sealed class AsyncEnumerator(OwnedSource owner, object payload) : IAsyncEnumerator<object>
-        {
-            private bool _moved;
-            public object Current { get { owner.CurrentReads++; if (owner.FailCurrent) throw new InvalidOperationException("current failed"); return payload; } }
-            public async ValueTask<bool> MoveNextAsync()
-            {
-                await Task.Yield();
-                if (_moved) return false;
-                _moved = true;
-                return true;
-            }
-            public ValueTask DisposeAsync() { owner.Disposed++; if (owner.FailDispose) throw new InvalidOperationException("cleanup failed"); return ValueTask.CompletedTask; }
-
-        }
     }
 
     private sealed class OpaqueSource : IEnumerable<object>

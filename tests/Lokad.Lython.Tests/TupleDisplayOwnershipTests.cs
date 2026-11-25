@@ -31,7 +31,7 @@ public sealed class TupleDisplayOwnershipTests
             sequence.Resume.TrySetResult();
             if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(() => execution);
             else Assert.Same(PyNone.Instance, Assert.IsType<PyTuple>(await execution)[0]);
-            Assert.True(sequence.Disposed);
+            Assert.True(sequence.PullFinished);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             if (cancel) Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         }
@@ -129,25 +129,28 @@ public sealed class TupleDisplayOwnershipTests
         }
     }
 
-    private sealed class SuspendedSequence(CancellationToken cancellationToken) : IPyAsyncIterableValue
+    private sealed class SuspendedSequence(CancellationToken cancellationToken) : IPyAsyncIteratorValue
     {
+        private bool _yielded;
         internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly TaskCompletionSource Resume = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal bool Disposed;
-        public IEnumerable<object> Iterate()
+        internal bool PullFinished;
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+        public PyIterationResult TryMoveNext() => throw new InvalidOperationException("Expected asynchronous iteration.");
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
-            yield return PyNone.Instance;
-            throw new InvalidOperationException("Expected asynchronous iteration.");
-        }
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
+            if (!_yielded)
+            {
+                _yielded = true;
+                return PyIterationResult.Yield(PyNone.Instance);
+            }
             try
             {
-                yield return PyNone.Instance;
                 Entered.TrySetResult();
                 await Resume.Task.WaitAsync(cancellationToken);
+                return PyIterationResult.End;
             }
-            finally { Disposed = true; }
+            finally { PullFinished = true; }
         }
     }
 }

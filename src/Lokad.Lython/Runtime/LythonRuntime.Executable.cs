@@ -398,9 +398,6 @@ internal sealed partial class LythonRuntime
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
         private readonly int _lastOwnedTemporarySlot;
-        private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
-        internal bool DeferAsyncDisposal;
-        internal readonly bool HasPendingDisposals => _pendingDisposalHead is not null;
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, ExecutableSlot[]? borrowedValues,
@@ -470,16 +467,6 @@ internal sealed partial class LythonRuntime
         {
             if (_lookupStorage is PyExecutableFunction owner) owner.ClearLookupCache(index);
             else if (_lookupStorage is ExecutableLookupCache[] caches) caches[index] = default;
-        }
-
-        internal PyIteration.Cursor? TakePendingDisposal()
-        {
-            var cursor = _pendingDisposalHead;
-            if (cursor is null) return null;
-            _pendingDisposalHead = cursor.NextPendingDisposal;
-            cursor.NextPendingDisposal = null;
-            if (_pendingDisposalHead is null) _pendingDisposalTail = null;
-            return cursor;
         }
 
         public int LiveExtent { get; private set; }
@@ -591,7 +578,6 @@ internal sealed partial class LythonRuntime
 
         internal readonly bool CanRetireWithoutCleanup(int liveExtent)
         {
-            if (HasPendingDisposals) return false;
             for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= liveExtent; i--)
                 if (_items[i].RequiresRetirement) return false;
             return true;
@@ -607,21 +593,28 @@ internal sealed partial class LythonRuntime
             var newCount = liveExtent;
             // Compiler-owned values cannot occur above this conservative bound.
             // Still clear every retired guest reference after private cleanup.
-            for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
+            var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot);
+            try
             {
-                if (DeferAsyncDisposal && _items[i].Reference is PyIteration.Cursor cursor)
-                {
-                    if (_pendingDisposalTail is null) _pendingDisposalHead = cursor;
-                    else _pendingDisposalTail.NextPendingDisposal = cursor;
-                    _pendingDisposalTail = cursor;
-                    // Ownership moved to the pending chain. A later synchronous
-                    // disposal can fail; retrying the trim must not enqueue twice.
-                    _items[i].Object = null!;
-                }
-                else _items[i].RetireTemporary(_state.MemoryGovernor);
+                for (; i >= newCount; i--)
+                    _items[i].RetireTemporary(_state.MemoryGovernor);
             }
-            Array.Clear(_items, newCount, LiveExtent - newCount);
-            LiveExtent = newCount;
+            catch
+            {
+                // A failing cursor still relinquishes its slot. Retire the rest
+                // in order before surfacing the first cleanup failure.
+                while (--i >= newCount)
+                {
+                    try { _items[i].RetireTemporary(_state.MemoryGovernor); }
+                    catch { }
+                }
+                throw;
+            }
+            finally
+            {
+                Array.Clear(_items, newCount, LiveExtent - newCount);
+                LiveExtent = newCount;
+            }
         }
     }
 

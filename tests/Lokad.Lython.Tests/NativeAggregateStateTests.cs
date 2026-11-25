@@ -106,22 +106,8 @@ public sealed class NativeAggregateStateTests
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
             if (asynchronous)
             {
-                var pending = sum.InvokeAsync(arguments, Span, context).AsTask();
-                try
-                {
-                    await source.CleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-                    Assert.False(pending.IsCompleted);
-                    Assert.True(budget.ReservedBytes >= source.MinimumFunding);
-                    source.ReleaseCleanup.SetResult();
-                    if (fail) await Assert.ThrowsAsync<InvalidOperationException>(() => pending);
-                    else Assert.Equal(BigInteger.One, await pending);
-                }
-                finally
-                {
-                    source.ReleaseCleanup.TrySetResult();
-                    try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
-                    catch (InvalidOperationException) when (fail) { }
-                }
+                if (fail) await Assert.ThrowsAsync<InvalidOperationException>(async () => await sum.InvokeAsync(arguments, Span, context));
+                else Assert.Equal(BigInteger.One, await sum.InvokeAsync(arguments, Span, context));
             }
             else if (fail) Assert.Throws<InvalidOperationException>(() => sum.Invoke(arguments, Span, context));
             else Assert.Equal(BigInteger.One, sum.Invoke(arguments, Span, context));
@@ -182,8 +168,6 @@ public sealed class NativeAggregateStateTests
         return context;
     }
 
-
-
     private sealed class Probe : LythonRuntime.ICallable
     {
         internal bool Checked;
@@ -216,14 +200,12 @@ public sealed class NativeAggregateStateTests
         }
     }
 
-    private sealed class CleanupSource(LythonRuntime.ExecutionContext context, LythonMemoryBudget budget, bool fail) : IPyAsyncIterableValue
+    private sealed class CleanupSource(LythonRuntime.ExecutionContext context, LythonMemoryBudget budget, bool fail) : IPyIterableValue
     {
         internal bool Checked;
         internal int CleanupCalls;
         internal readonly PyString Retained = PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span);
         internal readonly long MinimumFunding = budget.ReservedBytes;
-        internal readonly TaskCompletionSource CleanupStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal readonly TaskCompletionSource ReleaseCleanup = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private void Check()
         {
             Assert.True(budget.ReservedBytes >= MinimumFunding);
@@ -236,24 +218,9 @@ public sealed class NativeAggregateStateTests
             try { yield return BigInteger.One; }
             finally { CleanupCalls++; Check(); }
         }
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            try
-            {
-                await Task.Yield();
-                yield return BigInteger.One;
-            }
-            finally
-            {
-                CleanupCalls++;
-                CleanupStarted.SetResult();
-                await ReleaseCleanup.Task.ConfigureAwait(false);
-                Check();
-            }
-        }
     }
 
-    private sealed class FailingSource(LythonRuntime.ExecutionContext context, LythonMemoryBudget budget) : IPyAsyncIterableValue
+    private sealed class FailingSource(LythonRuntime.ExecutionContext context, LythonMemoryBudget budget) : IPyIterableValue
     {
         internal bool Checked;
         internal readonly PyString Retained = PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span);
@@ -267,12 +234,6 @@ public sealed class NativeAggregateStateTests
         }
         public IEnumerable<object> Iterate()
         {
-            Check();
-            yield return BigInteger.One;
-        }
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            await Task.Yield();
             Check();
             yield return BigInteger.One;
         }

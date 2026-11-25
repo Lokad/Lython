@@ -10,7 +10,6 @@ namespace Lokad.Lython.Tests;
 
 public sealed class ListConstructionHandoffTests
 {
-    // Complete records frozen on19cd6654 before runtime changes.
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
         LythonFrontend.Compile("return list(source)",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
@@ -65,14 +64,14 @@ public sealed class ListConstructionHandoffTests
     [InlineData("success")]
     [InlineData("error")]
     [InlineData("cancel")]
-    public async Task PendingCleanupKeepsPrivateBackingFundedUntilTheHandoff(string completion)
+    public async Task PendingTailKeepsPrivateBackingFundedUntilTheHandoff(string completion)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var value = PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span);
-            var source = new PendingCleanup(value);
+            var source = new PendingTail(value);
             var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
             var before = budget.ReservedBytes;
@@ -100,7 +99,7 @@ public sealed class ListConstructionHandoffTests
                     Assert.Equal(before, budget.ReservedBytes);
                     Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
                 }
-                Assert.Equal(1, source.CleanupCalls);
+                Assert.Equal(1, source.TailCompletions);
                 Assert.Equal(new string('x', 4096), value.AsString());
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
@@ -146,7 +145,7 @@ public sealed class ListConstructionHandoffTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class Source(List<string> events, int count, bool moveFailure, bool cleanupFailure) : IPyAsyncIterableValue
+    private sealed class Source(List<string> events, int count, bool moveFailure, bool cleanupFailure) : IPyIterableValue
     {
         public IEnumerable<object> Iterate()
         {
@@ -163,38 +162,32 @@ public sealed class ListConstructionHandoffTests
                 if (cleanupFailure) throw new InvalidOperationException("cleanup");
             }
         }
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            await Task.CompletedTask;
-            foreach (var value in Iterate()) yield return value;
-        }
     }
 
-    private sealed class PendingCleanup(object value) : IPyAsyncIterableValue
+    private sealed class PendingTail(object value) : IPyAsyncIteratorValue
     {
-        internal int CleanupCalls;
+        private bool _yielded;
+        internal int TailCompletions;
         internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly TaskCompletionSource<bool> Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public IEnumerable<object> Iterate() { yield return value; }
-        public IAsyncEnumerable<object> IterateAsync() => new Sequence(this, value);
 
-        private sealed class Sequence(PendingCleanup owner, object value) : IAsyncEnumerable<object>, IAsyncEnumerator<object>
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+        public PyIterationResult TryMoveNext() => throw new InvalidOperationException("Expected an asynchronous pull.");
+
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
-            private bool _yielded;
-            public object Current => value;
-            public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this;
-            public ValueTask<bool> MoveNextAsync()
+            if (!_yielded)
             {
-                var next = !_yielded;
                 _yielded = true;
-                return ValueTask.FromResult(next);
+                return PyIterationResult.Yield(value);
             }
-            public async ValueTask DisposeAsync()
+            Entered.SetResult();
+            try
             {
-                owner.CleanupCalls++;
-                owner.Entered.SetResult();
-                if (await owner.Release.Task.ConfigureAwait(false)) throw new InvalidOperationException("cleanup");
+                if (await Release.Task.ConfigureAwait(false)) throw new InvalidOperationException("tail pull");
+                return PyIterationResult.End;
             }
+            finally { TailCompletions++; }
         }
     }
 }

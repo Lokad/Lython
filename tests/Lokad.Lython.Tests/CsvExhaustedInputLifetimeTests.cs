@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -116,63 +115,33 @@ public sealed class CsvExhaustedInputLifetimeTests
     }
 
     [Theory]
-    [InlineData(false, "none")]
-    [InlineData(true, "none")]
-    [InlineData(false, "sync")]
-    [InlineData(true, "sync")]
-    [InlineData(false, "async")]
-    [InlineData(true, "async")]
-    public async Task MixedCursorCleanupReleasesScratchEvenWhenDisposalFails(bool asynchronous, string failure)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task CursorCompletionReleasesScratchEvenWhenDisposalFails(bool asynchronous, bool cleanupFails)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var sync = new CleanupCursor(failure == "sync");
-        var asyncCursor = new AsyncCleanupCursor(failure == "async");
-        var (source, input) = EmptySource(context);
-        sync.Input = input;
-        asyncCursor.Input = input;
-        // Controlled white-box faults at EOF, after the source has selected
-        // completion. Exercise both native enumerators held by the shared cursor.
-        InjectCleanupCursor(source, input, sync, asyncCursor, context);
-        if (failure == "none")
-        {
-            if (asynchronous) Assert.Null(await source.TryMoveNextAsync());
-            else Assert.False(source.TryMoveNext(out _));
-        }
-        else
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(), regexProvider: Utf8RegexProvider.Instance);
+        var cursor = new CleanupCursor(cleanupFails);
+        var source = EmptySource(context, cursor);
+        if (cleanupFails)
         {
             var error = asynchronous
                 ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await source.TryMoveNextAsync(); })
                 : Assert.Throws<LythonRuntimeException>(() => source.TryMoveNext(out _));
-            Assert.Equal(failure + " cleanup", error.Message);
+            Assert.Equal("sync cleanup", error.Message);
         }
-        Assert.Equal(1, sync.Disposals);
-        Assert.Equal(1, asyncCursor.Disposals);
-        Assert.True(sync.InputAliveDuringDisposal);
-        Assert.True(asyncCursor.InputAliveDuringDisposal);
+        else if (asynchronous) Assert.Null(await source.TryMoveNextAsync());
+        else Assert.False(source.TryMoveNext(out _));
+
+        Assert.Equal(1, cursor.Disposals);
+        Assert.True(cursor.InputAliveDuringDisposal);
         Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        // Faulted async completion can leave CLR continuation temporaries on
-        // another thread's unwinding stack. Assert deterministic detachment,
-        // not immediate physical collection of those temporary references.
-        Assert.Null(typeof(LythonRuntime.CsvRecordSource).GetField("_cursor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source));
-        Assert.Null(typeof(LythonRuntime.CsvRecordSource).GetField("_indexed", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source));
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
-        Assert.Equal(1, sync.Disposals);
-        Assert.Equal(1, asyncCursor.Disposals);
+        Assert.Equal(1, cursor.Disposals);
         GC.KeepAlive(source);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void InjectCleanupCursor(LythonRuntime.CsvRecordSource source, WeakReference<object> input,
-        CleanupCursor sync, AsyncCleanupCursor asyncCursor, LythonRuntime.ExecutionContext context)
-    {
-        Assert.True(input.TryGetTarget(out var value));
-        var cursor = PyIteration.Cursor.Create(value, new(0,0,1,1), context);
-        typeof(PyIteration.Cursor).GetField("_syncEnumerator", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(cursor, sync);
-        typeof(PyIteration.Cursor).GetField("_asyncEnumerator", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(cursor, asyncCursor);
-        typeof(LythonRuntime.CsvRecordSource).GetField("_cursor", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(source, cursor);
-        typeof(LythonRuntime.CsvRecordSource).GetField("_indexed", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(source, null);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -185,10 +154,18 @@ public sealed class CsvExhaustedInputLifetimeTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (LythonRuntime.CsvRecordSource Source, WeakReference<object> Input) EmptySource(LythonRuntime.ExecutionContext context)
+    private static LythonRuntime.CsvRecordSource EmptySource(LythonRuntime.ExecutionContext context, CleanupCursor cursor)
     {
-        var input = new PyList([]);
-        return (new(input, Options(), new(0, 0, 0, 0), context), new(input));
+        var input = new CleanupInput(cursor);
+        cursor.Input = new(input);
+        return new(input, Options(), new(0, 0, 0, 0), context);
+    }
+
+    private sealed class CleanupInput(CleanupCursor cursor) : IPyIterableValue, IEnumerable<object>
+    {
+        public IEnumerable<object> Iterate() => this;
+        public IEnumerator<object> GetEnumerator() => cursor;
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     private sealed class CleanupCursor(bool fail) : IEnumerator<object>
@@ -206,23 +183,6 @@ public sealed class CsvExhaustedInputLifetimeTests
             InputAliveDuringDisposal = InputIsAlive(Input!);
             Disposals++;
             if (fail) throw new LythonRuntimeException("RuntimeError", "sync cleanup", null);
-        }
-    }
-
-    private sealed class AsyncCleanupCursor(bool fail) : IAsyncEnumerator<object>
-    {
-        public int Disposals { get; private set; }
-        public WeakReference<object>? Input { get; set; }
-        public bool InputAliveDuringDisposal { get; private set; }
-        public object Current => PyNone.Instance;
-        public ValueTask<bool> MoveNextAsync() => ValueTask.FromResult(false);
-        public async ValueTask DisposeAsync()
-        {
-            await Task.Delay(1).ConfigureAwait(false);
-            GC.Collect();
-            InputAliveDuringDisposal = InputIsAlive(Input!);
-            Disposals++;
-            if (fail) throw new LythonRuntimeException("RuntimeError", "async cleanup", null);
         }
     }
 
@@ -264,7 +224,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     }
 
     // Sampling a live weak target temporarily creates a strong local. Keep it
-    // outside an async completion frame whose inline continuation collects it.
+    // outside the cursor lifetime check.
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static bool InputIsAlive(WeakReference<object> input) => input.TryGetTarget(out _);
 }

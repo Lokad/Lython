@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
             var cursor = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
             var next = cursor.TryMoveNextAsync();
             return next.IsCompleted
-                ? CompleteForNextAsync(next.GetAwaiter().GetResult(), cursor, instruction)
+                ? new(CompleteForNext(next.GetAwaiter().GetResult(), cursor, instruction))
                 : AwaitForNextAsync(next, cursor, instruction);
         }
 
@@ -75,52 +75,30 @@ internal sealed partial class LythonRuntime
             {
                 var count = zip is not null ? zip.UnpackNext(destination) : csv!.UnpackNext(destination);
                 if (count < 0) _execution.Stack.RetireTo(iteration.ResultSlot);
-                pending = new(count < 0 ? CompleteForNext(cursor, iteration) : CompleteFixedUnpack(count));
+                pending = new(count < 0 ? CompleteForNext(PyIterationResult.End, cursor, iteration) : CompleteFixedUnpack(count));
                 return true;
             }
 
             var row = zip is not null ? zip.UnpackNextAsync(destination) : csv!.UnpackNextAsync(destination);
-            pending = row.IsCompleted ? CompleteIterationUnpackAsync(row.GetAwaiter().GetResult(), cursor, iteration)
+            pending = row.IsCompleted ? new(CompleteIterationUnpack(row.GetAwaiter().GetResult(), cursor, iteration))
                 : AwaitIterationUnpackAsync(row, cursor, iteration);
             return true;
         }
 
         private async ValueTask<bool> AwaitIterationUnpackAsync(ValueTask<int> pending, PyIteration.Cursor cursor,
             ExecutableInstruction instruction)
-            => await CompleteIterationUnpackAsync(await pending.ConfigureAwait(false), cursor, instruction).ConfigureAwait(false);
+            => CompleteIterationUnpack(await pending.ConfigureAwait(false), cursor, instruction);
 
-        private ValueTask<bool> CompleteIterationUnpackAsync(int count, PyIteration.Cursor cursor, ExecutableInstruction instruction)
+        private bool CompleteIterationUnpack(int count, PyIteration.Cursor cursor, ExecutableInstruction instruction)
         {
-            if (count >= 0) return new(CompleteFixedUnpack(count));
+            if (count >= 0) return CompleteFixedUnpack(count);
             _execution.Stack.RetireTo(instruction.ResultSlot);
-            return CompleteForNextAsync(PyIterationResult.End, cursor, instruction);
+            return CompleteForNext(PyIterationResult.End, cursor, instruction);
         }
 
         private async ValueTask<bool> AwaitForNextAsync(ValueTask<PyIterationResult> pending,
             PyIteration.Cursor cursor, ExecutableInstruction instruction)
-            => await CompleteForNextAsync(await pending.ConfigureAwait(false), cursor, instruction).ConfigureAwait(false);
-
-        private ValueTask<bool> CompleteForNextAsync(PyIterationResult next, PyIteration.Cursor cursor, ExecutableInstruction instruction)
-        {
-            if (next.HasValue)
-            {
-                PublishInstructionResult(instruction, next.TakeSlotValue());
-                return new(false);
-            }
-            _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
-            var disposal = cursor.DisposeAsync();
-            if (!disposal.IsCompleted) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
-            disposal.GetAwaiter().GetResult();
-            _execution.InstructionIndex = instruction.TargetIndex;
-            return new(true);
-        }
-
-        private async ValueTask<bool> AwaitCursorDisposalAsync(ValueTask pending, int targetIndex)
-        {
-            await pending.ConfigureAwait(false);
-            _execution.InstructionIndex = targetIndex;
-            return true;
-        }
+            => CompleteForNext(await pending.ConfigureAwait(false), cursor, instruction);
 
         private async ValueTask<bool> ExecuteConditionalJumpAsync(ExecutableInstruction instruction)
         {

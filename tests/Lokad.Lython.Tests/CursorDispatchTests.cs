@@ -198,12 +198,12 @@ public sealed class CursorDispatchTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CancellationStopsActivePullsWithoutSelectingAsyncIterable(bool asynchronous)
+    public async Task CancellationStopsActiveIteratorPulls(bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             { CancellationToken = cancellation.Token},regexProvider:Utf8RegexProvider.Instance);
-        var source = new SyncIteratorAndAsyncIterable();
+        var source = new SyncIterator();
         await using var cursor = PyIteration.Cursor.Create(source, Span, context);
         for (var i = 0; i < 3; i++) Assert.True((await Pull(cursor, asynchronous)).HasValue);
         cancellation.Cancel();
@@ -213,17 +213,15 @@ public sealed class CursorDispatchTests
         });
         Assert.Equal("execution canceled", error.Message);
         Assert.Same(Span, error.Span);
-        Assert.Equal(0, source.AsyncEnumerations);
     }
 
     [Fact]
-    public async Task SynchronousIteratorPrecedesAsynchronousIterable()
+    public async Task AsynchronousPullUsesTheSynchronousIteratorWhenNeeded()
     {
-        var source = new SyncIteratorAndAsyncIterable();
+        var source = new SyncIterator();
         await using var cursor = PyIteration.Cursor.Create(source, Span);
         Assert.Equal(BigInteger.One, Assert.IsType<BigInteger>((await cursor.TryMoveNextAsync()).Value));
         Assert.Equal(1, source.SyncMoves);
-        Assert.Equal(0, source.AsyncEnumerations);
     }
 
     [Fact]
@@ -239,35 +237,15 @@ public sealed class CursorDispatchTests
         Assert.Equal(new BigInteger(2), Assert.IsType<BigInteger>(next.Value));
         Assert.Equal(1, source.AsyncMoves);
         Assert.Equal(0, source.SyncMoves);
-        Assert.Equal(0, source.AsyncEnumerations);
-    }
-
-    [Fact]
-    public async Task AcquiredAsyncEnumeratorPrecedesIteratorAndIsDisposedOnce()
-    {
-        var source = new AsyncIterator();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var outer = new PyIteration.GeneratorOuter(source);
-        await using var cursor = PyIteration.Cursor.FromGeneratorOuter(outer, source, true, Span, context);
-        var next = await cursor.TryMoveNextAsync();
-        Assert.Equal(new BigInteger(3), Assert.IsType<BigInteger>(next.Value));
-        Assert.Equal(1, source.AsyncEnumerations);
-        Assert.Equal(0, source.AsyncMoves);
-        Assert.Equal(0, source.SyncMoves);
-        await cursor.DisposeAsync();
-        await cursor.DisposeAsync();
-        Assert.Equal(1, source.AsyncDisposals);
     }
 
     private static ValueTask<PyIterationResult> Pull(PyIteration.Cursor cursor, bool asynchronous)
         => asynchronous ? cursor.TryMoveNextAsync()
             : ValueTask.FromResult(cursor.TryMoveNext());
 
-    private class SyncIteratorAndAsyncIterable : IPyIteratorValue, IPyAsyncIterableValue
+    private class SyncIterator : IPyIteratorValue
     {
         internal int SyncMoves;
-        internal int AsyncEnumerations;
-        internal int AsyncDisposals;
 
         public PyIterationResult TryMoveNext()
         {
@@ -280,15 +258,9 @@ public sealed class CursorDispatchTests
             while ((TryMoveNext() is { HasValue: true, Value: var value })) yield return value;
         }
 
-        public async IAsyncEnumerable<object> IterateAsync()
-        {
-            AsyncEnumerations++;
-            try { await Task.CompletedTask; yield return new BigInteger(3); }
-            finally { AsyncDisposals++; }
-        }
     }
 
-    private sealed class AsyncIterator : SyncIteratorAndAsyncIterable, IPyAsyncIteratorValue
+    private sealed class AsyncIterator : SyncIterator, IPyAsyncIteratorValue
     {
         internal readonly TaskCompletionSource<PyIterationResult> Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal int AsyncMoves;

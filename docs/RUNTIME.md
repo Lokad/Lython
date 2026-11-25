@@ -1036,8 +1036,9 @@ The additional workspace can reject a tighter allowance earlier.
 Native cursors pull from the acquired Python iterator directly, including
 generator-expression outers. Iterators that can suspend implement the async
 pull protocol. Synchronous iterators return a completed result through
-the same cursor. An independently acquired CLR async enumerator retains
-its own position and awaited disposal.
+the same cursor. Retiring a private cursor releases its owned traversal
+state without closing a borrowed Python iterator. File close and generator
+cleanup await host operations at the owning resource.
 
 Dictionary, word and optional total bindings must be distinct for whole-loop
 fusion; overlapping names use ordinary executable operations and Python errors.

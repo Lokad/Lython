@@ -35,7 +35,7 @@ public sealed class CompiledGeneratorExpressionTests
     [InlineData("entry-refusal")]
     [InlineData("entry-cancel")]
     [InlineData("close-started")]
-    public async Task AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(string route)
+    public async Task TerminalEntryPreservesBorrowedOuter(string route)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -43,7 +43,7 @@ public sealed class CompiledGeneratorExpressionTests
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var operation = Assert.Single(Compile("result=(i for i in source)").Constants.OfType<ExecutableCreateGeneratorExpression>());
-        var outer = new PausedOuter();
+        var outer = new OwnedOuter();
         var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
             outer, operation.OuterSpan, operation.OuterSpan, true);
         Assert.Equal(1, outer.Acquisitions);
@@ -58,21 +58,8 @@ public sealed class CompiledGeneratorExpressionTests
             governor.Commit(fill);
             _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, operation.OuterSpan));
         }
-        var held = budget.ReservedBytes;
         var pending = Invoke().AsTask();
-        try
-        {
-            var first = await Task.WhenAny(outer.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.Same(outer.Disposing.Task, first);
-            Assert.False(pending.IsCompleted);
-            Assert.Equal(held, budget.ReservedBytes);
-            Assert.Equal(route == "close-started" ? 1 : 0, outer.Moves);
-        }
-        finally
-        {
-            outer.Release.TrySetResult();
-            _ = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
-        }
+        Assert.Equal(route == "close-started" ? 1 : 0, outer.Moves);
         if (route is "throw-before" or "entry-refusal" or "entry-cancel")
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
@@ -81,8 +68,10 @@ public sealed class CompiledGeneratorExpressionTests
             else Assert.Equal("ValueError", error.ExceptionType);
         }
         else await pending;
-        Assert.Equal(1, outer.Disposals);
         Assert.False((await generator.TryMoveNextAsync()).HasValue);
+        Assert.Equal(0, outer.Disposals);
+        Assert.True(outer.MoveNext());
+        Assert.Equal(route == "close-started" ? 2 : 1, outer.Moves);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
 
@@ -111,7 +100,7 @@ public sealed class CompiledGeneratorExpressionTests
         var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
         governor.Reserve(fill, operation.OuterSpan);
         governor.Commit(fill);
-        var outer = new PausedOuter();
+        var outer = new OwnedOuter();
         var held = budget.ReservedBytes;
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
@@ -132,25 +121,18 @@ public sealed class CompiledGeneratorExpressionTests
         return ExecutableScript.Compile(frontend.Script).EntryPoint;
     }
 
-    private sealed class PausedOuter : IPyAsyncIterableValue, IEnumerable<object>, IAsyncEnumerable<object>, IAsyncEnumerator<object>
+    private sealed class OwnedOuter : IPyIterableValue, IEnumerable<object>, IEnumerator<object>
     {
-        public TaskCompletionSource Disposing { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int Acquisitions { get; private set; }
         public int Moves { get; private set; }
         public int Disposals { get; private set; }
         public object Current => new BigInteger(7);
-        public IEnumerable<object> Iterate() => this;
-        public IEnumerator<object> GetEnumerator() => throw new InvalidOperationException("Unexpected synchronous traversal.");
+        object System.Collections.IEnumerator.Current => Current;
+        public IEnumerable<object> Iterate() { Acquisitions++; return this; }
+        public IEnumerator<object> GetEnumerator() => this;
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-        public IAsyncEnumerable<object> IterateAsync() => this;
-        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default) { Acquisitions++; return this; }
-        public ValueTask<bool> MoveNextAsync() { Moves++; return new(true); }
-        public async ValueTask DisposeAsync()
-        {
-            Disposals++;
-            Disposing.TrySetResult();
-            await Release.Task.ConfigureAwait(false);
-        }
+        public bool MoveNext() { Moves++; return true; }
+        public void Reset() => throw new NotSupportedException();
+        public void Dispose() => Disposals++;
     }
 }

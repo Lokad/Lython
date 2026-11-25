@@ -8,11 +8,11 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private enum InstructionPause { Continue, Boundary, UnpackedReturn, Call, Operation, Disposal, ContextRequired }
+        private enum InstructionPause { Continue, Boundary, UnpackedReturn, Call, Operation, ContextRequired }
 
         // Both APIs execute completed instructions here, outside an async state
         // machine. An incomplete operation leaves its instruction/span current.
-        // The async driver owns the pending value and all disposal until resume.
+        // The async driver owns the pending operation until resume.
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
             out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default)
@@ -36,7 +36,6 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.IntegerCallUpdate:
                             if (invocation is not null &&
                                 !invocation.MirrorLocalStores && invocation.GlobalNamespace is null &&
-                                !execution.Stack.HasPendingDisposals &&
                                 TryEvaluateIntegerCallUpdate(execution.Code, execution.Stack.Values,
                                     ref execution.InstructionIndex, execution.Stack.LiveExtent, scope, out var updated))
                             {
@@ -46,7 +45,7 @@ internal sealed partial class LythonRuntime
                             if (instruction.IntegerUpdateChecksLocal) goto case ExecutableOpCode.CheckLocal;
                             goto case ExecutableOpCode.LoadLocal;
                         case ExecutableOpCode.PreparedTupleReturn:
-                            if (!unpackedReturn.IsEmpty && execution.Stack.CanRetireWithoutCleanup(execution.Stack.LiveExtent) &&
+                            if (!unpackedReturn.IsEmpty &&
                                 TryPrepareFixedTupleReturn(execution.Code, execution.Stack.Values, ref execution.InstructionIndex,
                                     execution.Stack.LiveExtent, unpackedReturn.Length, scope))
                             {
@@ -67,7 +66,7 @@ internal sealed partial class LythonRuntime
                                 throw RuntimeErrors.UnboundLocalVariable(execution.Code.LocalNames[instruction.LocalSlot], instruction.Span);
                             break;
                         case ExecutableOpCode.LoadClosure:
-                            if (!execution.Stack.HasPendingDisposals && TryExecuteClosureArithmetic(execution.Code,
+                            if (TryExecuteClosureArithmetic(execution.Code,
                                 execution.Captures, execution.InstructionIndex, execution.Stack.LiveExtent, scope))
                             { execution.InstructionIndex += 2; break; }
                             if (!TryLoadClosure(in execution, invocation, instruction.ClosureSlot, instruction.Span, out var captured))
@@ -455,17 +454,7 @@ internal sealed partial class LythonRuntime
                             if (invocation is null && instruction.OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
                                 return InstructionPause.ContextRequired;
                             jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
-                            if (!execution.ReturnValue.IsUnassigned)
-                            {
-                                // Keep the returning instruction/span current and
-                                // finish queued native disposal before leaving.
-                                if (asynchronous && execution.Stack.HasPendingDisposals)
-                                {
-                                    pending = new(jumped);
-                                    return InstructionPause.Disposal;
-                                }
-                                return InstructionPause.Boundary;
-                            }
+                            if (!execution.ReturnValue.IsUnassigned) return InstructionPause.Boundary;
                             break;
                         default:
                             throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
@@ -483,11 +472,6 @@ internal sealed partial class LythonRuntime
                     jumped = true;
                 }
             FinishInstruction:
-                if (asynchronous && execution.Stack.HasPendingDisposals)
-                {
-                    pending = new(jumped);
-                    return InstructionPause.Disposal;
-                }
                 if (!jumped) execution.InstructionIndex++;
                 continue;
 

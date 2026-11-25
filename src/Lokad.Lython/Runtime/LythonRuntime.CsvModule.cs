@@ -299,7 +299,7 @@ internal sealed partial class LythonRuntime
                 int count;
                 try { count = file.ReadCsvLine(this, destination, asynchronous: false).GetAwaiter().GetResult(); }
                 catch { _parser.ResetRecord(); throw; }
-                if (count == EndOfNativeInput) return FinishUnpackedAsync(destination).GetAwaiter().GetResult();
+                if (count == EndOfNativeInput) return FinishUnpacked(destination);
                 if (count >= 0) return count;
             }
             return -1;
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
                 int count;
                 try { count = await file.ReadCsvLine(this, destination, asynchronous: true).ConfigureAwait(false); }
                 catch { _parser.ResetRecord(); throw; }
-                if (count == EndOfNativeInput) return await FinishUnpackedAsync(destination).ConfigureAwait(false);
+                if (count == EndOfNativeInput) return FinishUnpacked(destination);
                 if (count >= 0) return count;
             }
             return -1;
@@ -356,7 +356,7 @@ internal sealed partial class LythonRuntime
                     int count;
                     try { count = await _nativeFile.ReadCsvLine(this, null, asynchronous: true).ConfigureAwait(false); }
                     catch { _parser.ResetRecord(); throw; }
-                    if (count == EndOfNativeInput) await FinishExhaustedAsync().ConfigureAwait(false);
+                    if (count == EndOfNativeInput) FinishExhausted();
                     continue;
                 }
 
@@ -369,7 +369,7 @@ internal sealed partial class LythonRuntime
                     // resumes at the following element.
                     if (_position >= _indexed.Count)
                     {
-                        await FinishExhaustedAsync().ConfigureAwait(false);
+                        FinishExhausted();
                         continue;
                     }
 
@@ -396,7 +396,7 @@ internal sealed partial class LythonRuntime
 
                 if (!next.HasValue)
                 {
-                    await FinishExhaustedAsync().ConfigureAwait(false);
+                    FinishExhausted();
                     continue;
                 }
 
@@ -504,9 +504,6 @@ internal sealed partial class LythonRuntime
         }
 
         private void FinishExhausted()
-            => FinishExhaustedAsync().GetAwaiter().GetResult();
-
-        private async ValueTask FinishExhaustedAsync()
         {
             _completed = true;
             try
@@ -520,23 +517,23 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                await ReleaseExhaustedInputAsync().ConfigureAwait(false);
+                ReleaseExhaustedInput();
             }
         }
 
-        private async ValueTask<int> FinishUnpackedAsync(Memory<ExecutableSlot> destination)
+        private int FinishUnpacked(Memory<ExecutableSlot> destination)
         {
             _completed = true;
             try { return _parser.FinishUnpacked(destination.Span); }
             catch { _parser.ResetRecord(); throw; }
-            finally { await ReleaseExhaustedInputAsync().ConfigureAwait(false); }
+            finally { ReleaseExhaustedInput(); }
         }
 
-        private async ValueTask ReleaseExhaustedInputAsync()
+        private void ReleaseExhaustedInput()
         {
             try
             {
-                if (_cursor is not null) await _cursor.DisposeAsync().ConfigureAwait(false);
+                _cursor?.Dispose();
             }
             finally
             {

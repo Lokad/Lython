@@ -41,8 +41,8 @@ public sealed class CsvPrivateRecordOwnershipTests
     [Theory]
     [InlineData("success")]
     [InlineData("refusal")]
-    [InlineData("cleanup-error")]
-    public async Task PrivateRowCapacityIsReturnedOnlyAfterActualHeaderCleanup(string outcome)
+    [InlineData("pull-error")]
+    public async Task PrivateRowCapacityIsReturnedOnlyAfterPendingHeaderPull(string outcome)
     {
         var budget = new LythonMemoryBudget(65536);
         using var owner = budget.CreateScope();
@@ -54,14 +54,11 @@ public sealed class CsvPrivateRecordOwnershipTests
         try
         {
             await headers.PullEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var heldDuringPull = context.MemoryGovernor.CurrentCommittedBytes;
+            Assert.True(heldDuringPull >= source.OwnedBytes + PyList.EstimateCapacityBytes(1));
             Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes >= heldDuringPull);
             headers.PullRelease.SetResult();
-            await headers.CloseEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            var heldThroughCleanup = context.MemoryGovernor.CurrentCommittedBytes;
-            Assert.True(heldThroughCleanup >= source.OwnedBytes + PyList.EstimateCapacityBytes(1));
-            Assert.False(pending.IsCompleted);
-            Assert.True(budget.ReservedBytes >= heldThroughCleanup);
-            headers.CloseRelease.SetResult();
             if (outcome == "success")
             {
                 var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
@@ -74,15 +71,14 @@ public sealed class CsvPrivateRecordOwnershipTests
             {
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending.WaitAsync(TimeSpan.FromSeconds(10)));
                 if (outcome == "refusal") Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
-                else Assert.Equal("header cleanup", error.Message);
+                else Assert.Equal("header pull", error.Message);
             }
-            Assert.Equal(heldThroughCleanup - PyList.EstimateCapacityBytes(1), context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(heldDuringPull - PyList.EstimateCapacityBytes(1), context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally
         {
             headers.PullRelease.TrySetResult();
-            headers.CloseRelease.TrySetResult();
             try { await pending.WaitAsync(TimeSpan.FromSeconds(10)); }
             catch (LythonRuntimeException) { }
         }
@@ -90,38 +86,28 @@ public sealed class CsvPrivateRecordOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class GatedHeaders(MemoryGovernor governor, string outcome) : IPyAsyncIterableValue, IPySizedValue
+    private sealed class GatedHeaders(MemoryGovernor governor, string outcome) : IPyAsyncIteratorValue, IPySizedValue
     {
-        private MemoryGovernor Governor { get; } = governor;
-        private string Outcome { get; } = outcome;
+        private bool _yielded;
         internal TaskCompletionSource PullEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource PullRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource CloseEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource CloseRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int Length => 1;
-        public IEnumerable<object> Iterate() => [PyString.FromString("a")];
-        public IAsyncEnumerable<object> IterateAsync() => new Keys(this);
 
-        private sealed class Keys(GatedHeaders headers) : IAsyncEnumerable<object>, IAsyncEnumerator<object>
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+        public PyIterationResult TryMoveNext() => throw new InvalidOperationException("Expected an asynchronous pull.");
+
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
-            private bool _yielded;
-            public object Current => PyString.FromString("a");
-            public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this;
-            public async ValueTask<bool> MoveNextAsync()
+            if (!_yielded)
             {
-                if (_yielded) return false;
                 _yielded = true;
-                headers.PullEntered.SetResult();
-                await headers.PullRelease.Task;
-                if (headers.Outcome == "refusal") headers.Governor.Reserve(65536, Span);
-                return true;
+                return PyIterationResult.Yield(PyString.FromString("a"));
             }
-            public async ValueTask DisposeAsync()
-            {
-                headers.CloseEntered.SetResult();
-                await headers.CloseRelease.Task;
-                if (headers.Outcome == "cleanup-error") throw new LythonRuntimeException("RuntimeError", "header cleanup", Span);
-            }
+            PullEntered.TrySetResult();
+            await PullRelease.Task;
+            if (outcome == "refusal") governor.Reserve(65536, Span);
+            if (outcome == "pull-error") throw new LythonRuntimeException("RuntimeError", "header pull", Span);
+            return PyIterationResult.End;
         }
     }
 }

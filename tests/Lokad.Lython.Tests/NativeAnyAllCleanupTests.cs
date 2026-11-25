@@ -1,3 +1,4 @@
+using System.Collections;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -21,7 +22,7 @@ public sealed class NativeAnyAllCleanupTests
 
     [Theory]
     [MemberData(nameof(Routes))]
-    public async Task AggregateAwaitsFundedNativeCleanupExactlyOnce(bool all, string route, bool cleanupFails)
+    public async Task AggregateDisposesFundedCursorExactlyOnce(bool all, string route, bool cleanupFails)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -30,29 +31,13 @@ public sealed class NativeAnyAllCleanupTests
         {
             MemoryBudget = owner,             CancellationToken = cancellation.Token,
         },regexProvider:Utf8RegexProvider.Instance);
-        var source = new PausedSource(budget, context.MemoryGovernor, cancellation, all, route);
+        var source = new OwnedSource(budget, context.MemoryGovernor, cancellation, all, route);
         if (cleanupFails) source.CleanupFailure = new InvalidOperationException("native cleanup failed");
         context.Variables["source"] = source;
         var syntax = LythonFrontend.Compile("return " + (all ? "all" : "any") + "(source)",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(syntax).EntryPoint;
-        var baseline = budget.ReservedBytes;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
-        Exception? failure = null;
-        try
-        {
-            var first = await Task.WhenAny(source.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.Same(source.Disposing.Task, first);
-            Assert.False(pending.IsCompleted);
-            Assert.Equal(1, source.Disposals);
-            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 4096);
-            Assert.True(budget.ReservedBytes >= baseline + 4096);
-        }
-        finally
-        {
-            source.Release.TrySetResult();
-            failure = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
-        }
-
+        var failure = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
         if (cleanupFails)
         {
             var error = Assert.IsType<LythonRuntimeException>(failure);
@@ -75,38 +60,43 @@ public sealed class NativeAnyAllCleanupTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class PausedSource(LythonMemoryBudget budget, MemoryGovernor governor, CancellationTokenSource cancellation, bool all, string route)
-        : IPyAsyncIterableValue, IAsyncEnumerable<object>, IAsyncEnumerator<object>
+    private sealed class OwnedSource(LythonMemoryBudget budget, MemoryGovernor governor, CancellationTokenSource cancellation, bool all, string route)
+        : IPyIterableValue, IEnumerable<object>, IEnumerator<object>
     {
         private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
         private MemoryGovernor.TemporaryMemoryReservation? _storage;
-        internal readonly TaskCompletionSource Disposing = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal Exception? CleanupFailure;
         internal int Disposals;
         internal int Moves;
         public object Current => route == "short" ? !all : all;
-        public IEnumerable<object> Iterate() => [];
-        public IAsyncEnumerable<object> IterateAsync() => this;
-        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        object IEnumerator.Current => Current;
+        public IEnumerable<object> Iterate() => this;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<object> GetEnumerator()
         {
             _storage = governor.ReserveTemporary(4096, Span);
             return this;
         }
-        public ValueTask<bool> MoveNextAsync()
+        public void Reset() => throw new NotSupportedException();
+        public bool MoveNext()
         {
             Moves++;
             if (route == "fault") throw new LythonRuntimeException("ValueError", "pull failed", Span);
             if (route == "admission") governor.Reserve(budget.LimitBytes!.Value + 1, Span);
             if (route == "cancel") cancellation.Cancel();
-            return new(route != "exhaust" || Moves <= 2);
+            return route != "exhaust" || Moves <= 2;
         }
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             Disposals++;
-            Disposing.TrySetResult();
-            try { await Release.Task.ConfigureAwait(false); }
-            finally { _storage?.Dispose(); _storage = null; }
+            var storage = _storage;
+            _storage = null;
+            using (storage)
+            {
+                Assert.NotNull(storage);
+                Assert.True(governor.CurrentReservedBytes >= 4096);
+                Assert.True(budget.ReservedBytes >= 4096);
+            }
             if (CleanupFailure is not null) throw CleanupFailure;
         }
     }

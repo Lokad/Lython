@@ -44,14 +44,14 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     [InlineData("exhaust")]
     [InlineData("admission")]
     [InlineData("cancel")]
-    public async Task TerminalRoutesAwaitNativeIteratorCleanup(string route)
+    public async Task TerminalRoutesReleaseNativeIteratorStorage(string route)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
-        var source = new PausedSource(route == "exhaust");
+        var source = new OwnedSource(route == "exhaust");
         if (route == "cancel") source.OnMove = cancellation.Cancel;
         var body = route switch
         {
@@ -71,22 +71,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
             governor.Reserve(fill, new(1, 1, 1, 1));
             governor.Commit(fill);
         }
-        var held = budget.ReservedBytes;
         var pending = AdvanceOrClose().AsTask();
-        try
-        {
-            var first = await Task.WhenAny(source.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.Same(source.Disposing.Task, first);
-            Assert.False(pending.IsCompleted);
-            Assert.Equal(held, budget.ReservedBytes);
-            Assert.Equal(1, source.Disposals);
-        }
-        finally
-        {
-            source.Release.TrySetResult();
-            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
-            catch (LythonRuntimeException) when (route is "fault" or "admission" or "cancel") { }
-        }
         if (route is "fault" or "admission" or "cancel")
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
@@ -112,29 +97,17 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     }
 
     [Fact]
-    public async Task CaughtInnerFailureAwaitsDisposalAndKeepsOuterIterationAlive()
+    public async Task CaughtInnerFailureDisposesInnerAndKeepsOuterIterationAlive()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-        var outer = new PausedSource();
-        outer.Release.TrySetResult();
-        var inner = new PausedSource();
+        var outer = new OwnedSource();
+        var inner = new OwnedSource();
         var generator = Create(" for item in source:\n  try:\n   for unused in inner:yield 1//0\n  except ZeroDivisionError:yield item", context, outer, inner);
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
-        var pending = generator.TryMoveNextAsync().AsTask();
-        try
-        {
-            await inner.Disposing.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.False(pending.IsCompleted);
-            Assert.Equal(0, outer.Disposals);
-        }
-        finally
-        {
-            inner.Release.TrySetResult();
-            _ = await pending.WaitAsync(TimeSpan.FromSeconds(5));
-        }
-        var yielded = await pending;
+        var yielded = await generator.TryMoveNextAsync();
+        Assert.Equal(1, inner.Disposals);
         Assert.True(yielded.HasValue);
         Assert.Equal(new BigInteger(7), yielded.Value);
         Assert.Equal(0, outer.Disposals);
@@ -158,28 +131,16 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-        var outer = new PausedSource();
-        var inner = new PausedSource();
+        var outer = new OwnedSource();
+        var inner = new OwnedSource();
         if (cleanupFails) inner.CleanupFailure = new InvalidOperationException("native cleanup failed");
         var generator = Create(" for item in source:\n  for unused in inner:yield 1//0", context, outer, inner);
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
-        var pending = generator.TryMoveNextAsync().AsTask();
-        try
-        {
-            await inner.Disposing.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.False(pending.IsCompleted);
-            Assert.Equal(0, outer.Disposals);
-            inner.Release.TrySetResult();
-            await outer.Disposing.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.False(pending.IsCompleted);
-        }
-        finally
-        {
-            inner.Release.TrySetResult();
-            outer.Release.TrySetResult();
-            _ = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
-        }
-        var error = await Record.ExceptionAsync(() => pending);
+        var order = new List<string>();
+        inner.OnDispose = () => order.Add("inner");
+        outer.OnDispose = () => order.Add("outer");
+        var error = await Record.ExceptionAsync(async () => await generator.TryMoveNextAsync());
+        Assert.Equal(new[] { "inner", "outer" }, order);
         if (cleanupFails) Assert.Same(inner.CleanupFailure, error);
         else Assert.Equal("ZeroDivisionError", Assert.IsType<LythonRuntimeException>(error).ExceptionType);
         Assert.Equal(1, inner.Disposals);
@@ -196,32 +157,22 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     [InlineData("return")]
     [InlineData("break")]
     [InlineData("fault")]
-    public async Task LeavingLoopAwaitsDisposalBeforeOuterFinally(string route)
+    public async Task LeavingLoopDisposesCursorBeforeOuterFinally(string route)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-        var source = new PausedSource();
+        var source = new OwnedSource();
         var stamp = new Stamp();
         context.Variables["stamp"] = stamp;
         var statement = route == "fault" ? "1//0" : route;
         var generator = Create(" if False:yield 0\n try:\n  for item in source:" + statement + "\n finally:stamp()", context, source);
-        var pending = generator.TryMoveNextAsync().AsTask();
-        try
+        source.OnDispose = () =>
         {
-            var first = await Task.WhenAny(source.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.Same(source.Disposing.Task, first);
-            Assert.False(pending.IsCompleted);
             Assert.Equal(0, stamp.Calls);
-            Assert.Equal(1, source.Disposals);
             Assert.True(budget.ReservedBytes > 0);
-        }
-        finally
-        {
-            source.Release.TrySetResult();
-            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
-            catch (LythonRuntimeException) when (route == "fault") { }
-        }
+        };
+        var pending = generator.TryMoveNextAsync().AsTask();
         if (route == "fault")
             Assert.Equal("ZeroDivisionError", (await Assert.ThrowsAsync<LythonRuntimeException>(() => pending)).ExceptionType);
         else Assert.False((await pending).HasValue);
@@ -255,30 +206,28 @@ public sealed class ExecutableAsyncIteratorCleanupTests
             function.Invoke([CallArgumentValue.Positional(sources[0])], definition.Span, context));
     }
 
-    private sealed class PausedSource(bool empty = false) : IPyAsyncIterableValue, IEnumerable<object>, IAsyncEnumerable<object>, IAsyncEnumerator<object>
+    private sealed class OwnedSource(bool empty = false) : IPyIterableValue, IEnumerable<object>, IEnumerator<object>
     {
-        public TaskCompletionSource Disposing { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int Disposals { get; private set; }
         public Action? OnMove { get; set; }
+        public Action? OnDispose { get; set; }
         public Exception? CleanupFailure { get; set; }
         private int _moves;
         public object Current => new BigInteger(7);
+        object System.Collections.IEnumerator.Current => Current;
         public IEnumerable<object> Iterate() => this;
-        public IEnumerator<object> GetEnumerator() => throw new InvalidOperationException("Unexpected synchronous traversal.");
+        public IEnumerator<object> GetEnumerator() => this;
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-        public IAsyncEnumerable<object> IterateAsync() => this;
-        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this;
-        public ValueTask<bool> MoveNextAsync()
+        public bool MoveNext()
         {
             OnMove?.Invoke();
-            return new(!empty && _moves++ == 0);
+            return !empty && _moves++ == 0;
         }
-        public async ValueTask DisposeAsync()
+        public void Reset() => throw new NotSupportedException();
+        public void Dispose()
         {
             Disposals++;
-            Disposing.TrySetResult();
-            await Release.Task.ConfigureAwait(false);
+            OnDispose?.Invoke();
             if (CleanupFailure is not null) throw CleanupFailure;
         }
     }

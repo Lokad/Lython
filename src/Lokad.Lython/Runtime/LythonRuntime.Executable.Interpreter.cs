@@ -135,16 +135,10 @@ internal sealed partial class LythonRuntime
             _execution.Stack.PublishValue(_execution.Code.FirstTemporarySlot, _execution.Code.FirstTemporarySlot + 1, cursor);
         }
 
-        internal async ValueTask ReleaseGeneratorTemporariesAsync(bool asynchronous)
+        internal void ReleaseGeneratorTemporaries()
         {
-            _execution.Stack.DeferAsyncDisposal = asynchronous;
-            try
-            {
-                _execution.Stack.RetireTo(_execution.Code.FirstTemporarySlot);
-                try { if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
-                finally { _execution.Stack.ReleaseStorage(); }
-            }
-            finally { _execution.Stack.DeferAsyncDisposal = false; }
+            try { _execution.Stack.RetireTo(_execution.Code.FirstTemporarySlot); }
+            finally { _execution.Stack.ReleaseStorage(); }
         }
 
         internal void Resume(object sent, LythonRuntimeException? injected)
@@ -198,8 +192,7 @@ internal sealed partial class LythonRuntime
         {
             // Keep the final yielded item for the ordinary Advance result.
             // The private list has admitted capacity; Add invokes no Python or
-            // host callback. Pending cleanup must finish before resumption.
-            if (_execution.Stack.HasPendingDisposals) return false;
+            // host callback.
             if (destination is SumState sum)
             {
                 // Native addition invokes no guest code. Leave an unsupported
@@ -489,14 +482,16 @@ internal sealed partial class LythonRuntime
         {
             var iterator = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
             var next = iterator.TryMoveNext();
-            if (!next.HasValue) return CompleteForNext(iterator, instruction);
-
-            PublishInstructionResult(instruction, next.TakeSlotValue());
-            return false;
+            return CompleteForNext(next, iterator, instruction);
         }
 
-        private bool CompleteForNext(PyIteration.Cursor iterator, in ExecutableInstruction instruction)
+        private bool CompleteForNext(PyIterationResult next, PyIteration.Cursor iterator, in ExecutableInstruction instruction)
         {
+            if (next.HasValue)
+            {
+                PublishInstructionResult(instruction, next.TakeSlotValue());
+                return false;
+            }
             _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
             iterator.Dispose();
             _execution.InstructionIndex = instruction.TargetIndex;
@@ -686,68 +681,48 @@ internal sealed partial class LythonRuntime
 
         internal ExecutableSlot FrameReturnSlot => _execution.ReturnValue;
 
-        private async ValueTask DrainPendingDisposalsAsync()
+        private void RetireCompletedFrame()
         {
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo? failure = null;
-            while (_execution.Stack.TakePendingDisposal() is { } cursor)
-            {
-                try { await cursor.DisposeAsync().ConfigureAwait(false); }
-                catch (Exception exception)
-                {
-                    // A failed inner disposal must not strand an outer native
-                    // enumerator. Preserve the first cleanup failure afterwards.
-                    failure ??= System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception);
-                }
-            }
-            failure?.Throw();
+            if (HasYield || HasPendingCall) return;
+            _preparedCallValue = null;
+            try { AbandonFrame(); }
+            finally { if (!OwnsModuleNamespace) _execution.Stack.ReleaseStorage(); }
         }
 
         private async ValueTask<ExecutionContext?> ExecuteUntilCallAsync()
         {
-            _execution.Stack.DeferAsyncDisposal = true;
             try
             {
                 ResumePendingCall();
-                if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
                 RoutePendingFrameException();
                 while (true)
                 {
                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span, out var nextCall);
-                    if (pause == InstructionPause.Boundary)
+                    if (pause == InstructionPause.Boundary) return null;
+                    System.Diagnostics.Debug.Assert(pause is InstructionPause.Call or InstructionPause.Operation);
+                    var operationSpan = span.RequireNotNull();
+                    bool jumped;
+                    try
                     {
-                        return null;
+                        if (pause == InstructionPause.Call)
+                        {
+                            var child = nextCall.IsCompletedSuccessfully ? nextCall.Result : await nextCall.ConfigureAwait(false);
+                            if (!ReferenceEquals(child, this)) return child;
+                            jumped = true; // The call published and advanced its opcode.
+                        }
+                        else jumped = await pending.ConfigureAwait(false);
                     }
-                    var jumped = false;
-                    if (pause is InstructionPause.Call or InstructionPause.Operation)
+                    catch (ReturnSignal signal)
                     {
-                        var operationSpan = span.RequireNotNull();
-                        try
-                        {
-                            if (pause == InstructionPause.Call)
-                            {
-                                var child = nextCall.IsCompletedSuccessfully ? nextCall.Result : await nextCall.ConfigureAwait(false);
-                                if (!ReferenceEquals(child, this)) return child;
-                                jumped = true; // The call published and advanced its opcode.
-                            }
-                            else jumped = await pending.ConfigureAwait(false);
-                        }
-                        catch (ReturnSignal signal)
-                        {
-                            if (!TryRouteReturn(signal, operationSpan)) return null;
-                            jumped = true;
-                        }
-                        catch (LythonRuntimeException error)
-                        {
-                            if (!TryRouteRuntimeException(error, operationSpan)) throw;
-                            jumped = true;
-                        }
-                        finally { pending = default; nextCall = default; }
+                        if (!TryRouteReturn(signal, operationSpan)) return null;
+                        jumped = true;
                     }
-                    else jumped = ConsumeOperation(ref pending);
-
-                    // A relinquished cursor must finish before another guest
-                    // instruction or handler observes its cleanup effects.
-                    if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+                    catch (LythonRuntimeException error)
+                    {
+                        if (!TryRouteRuntimeException(error, operationSpan)) throw;
+                        jumped = true;
+                    }
+                    finally { pending = default; nextCall = default; }
                     if (!_execution.ReturnValue.IsUnassigned) return null;
                     if (HasYield)
                     {
@@ -757,20 +732,7 @@ internal sealed partial class LythonRuntime
                     if (!jumped) _execution.InstructionIndex++;
                 }
             }
-            finally
-            {
-                try
-                {
-                    if (!HasYield && !HasPendingCall)
-                    {
-                        _preparedCallValue = null;
-                        AbandonFrame();
-                    }
-                    try { if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
-                    finally { if (!HasYield && !HasPendingCall && !OwnsModuleNamespace) _execution.Stack.ReleaseStorage(); }
-                }
-                finally { _execution.Stack.DeferAsyncDisposal = false; }
-            }
+            finally { RetireCompletedFrame(); }
         }
     }
 }
