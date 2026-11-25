@@ -14,14 +14,16 @@
 | Eager annotated rules | 2,048 rule groups | 0.43268–0.43905 ms | 0.40411–0.41482 ms | 1.043–1.086× | Diagnostic. [B1685]. |
 | Postponed nested annotated rules | 2,048 rule groups | 0.61825–0.66753 ms | 0.53118–0.53396 ms | 1.158–1.257× | Diagnostic. Worker spread up to 7.97%. [B1685]. |
 | Generated rules with captured locals | 2,048 rule groups | 0.89205–0.89483 ms | 0.76652–0.77553 ms | 1.150–1.167× | Diagnostic. [B1633]. |
-| Generated ordinary definitions | 96 definitions, built 16 times | 0.31621–0.31811 ms | 0.14656–0.14897 ms | 2.123–2.171× | Diagnostic. [B1720]. |
+| Generated ordinary definitions | 96 definitions, built 16 times | 0.30543–0.30575 ms | 0.14830–0.15044 ms | 2.030–2.062× | Diagnostic. [B1727]. |
 | Generated rules with defaults | 2,048 rule groups | 0.89580–0.90843 ms | 0.68316–0.69232 ms | 1.294–1.330× | Diagnostic. [B1694]. |
+| Formatted JSON report | 1,024 records / 189,441 B | 2.66299–2.77436 ms | 2.58657–2.58703 ms | 1.029–1.073× | Diagnostic. Worker spread up to 4.18%. [B1727]. |
 | JSON Lines export with default options | 3,072 records / 189,441 B | 4.27718–4.35394 ms | 5.06345–5.15320 ms | 0.830–0.860× | Diagnostic. [B1720]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.1299–5.2194 ms | 6.5146–6.7011 ms | 0.766–0.801× | Diagnostic. [B1587]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. B1720 measures `7120ee55e` on November 25, 2026 UTC.
+two workers per engine. B1727 measures `857cc8001` on November 25, 2026 UTC.
+B1720 measures `7120ee55e` on November 25, 2026 UTC.
 B1713 and B1705 measure earlier revisions `75af75769` and `96d54066a` the same
 day. B1694 measures warm defaulted rules, the
 bound shipment report and the manifest through result at `f6cf9796c`.
@@ -35,7 +37,7 @@ use `6466fbb52`. The earlier manifest compile-only and sparse validator
 use `0bf516c79`. Postponed compilation and time to result use `5313f9e71`.
 The expanded-options JSON export uses `2cf721f73`, and the CSV meters
 use `8aef89b09`.
-[B1720] · [B1713] · [B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
+[B1727] · [B1720] · [B1713] · [B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -68,8 +70,10 @@ measurements cover the wider request.
 | Postponed nested annotated rules, 465 B | Compilation only | 0.02137–0.02188 ms | 0.03949–0.03962 ms | 0.539–0.554× | Diagnostic. [B1593]. |
 | Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
 | Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56978–0.57063 ms | 0.94974–0.95028 ms | 0.600–0.601× | Diagnostic. [B1720]. |
+| Formatted JSON report, 454 B of source | Compilation only | 0.02121–0.02138 ms | 0.03710–0.03734 ms | 0.568–0.576× | Diagnostic. [B1727]. |
+| Formatted JSON report, 16 records / 2,961 B | Compile-to-result | 0.15713–0.15865 ms | 0.16563–0.17055 ms | 0.921–0.958× | Diagnostic. [B1727]. |
 | Generated rules with defaults, 427 B | Compilation only | 0.02210–0.02213 ms | 0.04138–0.04167 ms | 0.530–0.535× | Diagnostic. [B1705]. |
-| Generated ordinary definitions | Compile-to-result | 0.90039–0.90285 ms | 1.11963–1.13414 ms | 0.794–0.806× | Diagnostic. [B1720]. |
+| Generated ordinary definitions | Compile-to-result | 0.87295–0.90248 ms | 1.13266–1.13426 ms | 0.770–0.797× | Diagnostic. Worker spread up to 3.38%. [B1727]. |
 | Generated rules with defaults | Compile-to-result | 0.91836–0.95004 ms | 0.73616–0.75183 ms | 1.221–1.291× | Diagnostic. Worker spread up to 3.45%. [B1720]. |
 | Generated rules with captured locals, 446 B | Compilation only | 0.02626–0.02666 ms | 0.04672–0.04684 ms | 0.561–0.571× | Diagnostic. [B1633]. |
 | Generated rules with captured locals | Compile-to-result | 0.96229–0.97110 ms | 0.87069–0.87170 ms | 1.104–1.115× | Diagnostic. [B1633]. |
@@ -105,6 +109,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Share f-string field scanning | Report compilation allocates 680 B less after removing a second delimiter walk and the ordinary debug builder. Both comparisons use less CPU through result on the 16-record report. | Warm timing remains uncertain. [B1726](../benchmarks/results/2026-11-25-single-formatted-field-scan/confirmation/README.md). |
 | Combine fixed admission for private function definitions | Generated ordinary definitions make 1,536 fewer allowance growth requests, and defaulted factories make 4,096 fewer. Both scripts show lower warm elapsed in two blocks. | CLR allocations and admitted peaks match. Movement in the unchanged controls limits timing attribution. [B1721](../benchmarks/results/2026-11-25-private-definition-admission/README.md). |
 | Admit completed CSV storage directly | Quoted invoice allocates 262,144 B less and the file-fed map allocates 130,904 B less per run. File-fed map uses 1.70–5.13% less warm async CPU in the first block and 5.30–8.38% less in confirmation. | Peak admission matches. Quoted invoice CPU and the text-control movement remain unresolved. [B1719](../benchmarks/results/2026-11-25-csv-direct-record-admission/README.md). |
 | Compile executable lambda defaults directly | Generated scripts with 48 defaulted lambdas allocate 28,288 B less per compilation. Live-alias compilation uses 1.48–4.16% less CPU in one block. | Retained compilation and peak execution admission match. Compile-to-result CPU remains inconclusive. [B1716](../benchmarks/results/2026-11-25-executable-lambda-headers/README.md). |
@@ -172,6 +177,7 @@ document reproduction.
 [B1669]: ../benchmarks/results/2026-11-25-post-zip-cpython/README.md
 [B1677]: ../benchmarks/results/2026-11-25-ordinary-defaults-cpython/README.md
 [B1685]: ../benchmarks/results/2026-11-25-retained-defaults-cpython/README.md
+[B1727]: ../benchmarks/results/2026-11-25-formatted-report-cpython/README.md
 [B1720]: ../benchmarks/results/2026-11-25-direct-record-cpython/README.md
 [B1713]: ../benchmarks/results/2026-11-25-retained-workspace-cpython/README.md
 [B1705]: ../benchmarks/results/2026-11-25-retained-csv-cpython/README.md

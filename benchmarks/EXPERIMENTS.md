@@ -65,6 +65,12 @@ falls another 1.16%. The small report uses less CPU through result in both
 blocks, and the warm report's adverse range narrows in confirmation. Retain
 the refined source and both timing blocks.
 
+[B1727 formatted report CPython checkpoint](results/2026-11-25-formatted-report-cpython/README.md)
+measures retained `857cc8001` against stock CPython 3.13.16. The formatted
+report is near parity warm and faster through result on the small input.
+Generated definitions still take about twice as long warm, with lower
+compile-to-result elapsed on the full script.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
