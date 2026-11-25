@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1674](results/2026-11-25-ordinary-definition-cpu/README.md) profiles the
+ordinary-definition control before and after retaining evaluated integers
+in callable slots. Dispatch, calls and definition construction account for
+the largest resolved regions. The paired timing regression still has no
+attributed cause. Preserve both observed admission points.
+
 [B1673](results/2026-11-25-single-read-callable-layout/README.md) reads the
 compiled layout once per binding phase. It retains the allocation savings
 of B1672, while ordinary-definition CPU still rises 1.58–2.96%. The source
