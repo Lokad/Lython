@@ -33,6 +33,13 @@ ordinary definitions bypass those starts. Shipment variants transfer
 17 prefixes and each rents one fresh continuation. The diagnostic has
 no timing data.
 
+[B1703 borrowed native subscript arguments](results/2026-11-25-borrowed-native-input/README.md)
+replaces all 6,144 mutable argument copies on invoice and file-fed
+map at matching admission. Invoice warm CPU falls 1.67–4.80%. Both
+file-fed map CPU comparisons span zero. Defaulted-rule CPU through
+result rises 0.59–4.13% with zero borrows. Keep the source private and
+refine where the compiler starts the proof.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
