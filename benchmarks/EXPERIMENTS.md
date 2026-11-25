@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1666](results/2026-11-25-post-zip-cpu/README.md) locates the remaining map
+boundary on the post-zip shipment image and recompiles the sparse validator.
+Parser and executable lowering have a greater sample share than local name
+diagnostics. The two disk-full captures remain with the corrected profile.
+
 [B1665](results/2026-11-25-zip-unpack/README.md) delivers fixed zip unpacks
 into admitted frame slots. The shipment report saves 12.10% allocation
 and 4.38% peak shared admission, with lower warm, async and through-result
