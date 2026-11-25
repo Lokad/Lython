@@ -30,6 +30,11 @@ isolates header completion. Both file-fed CPU ranges cross zero. The
 unaffected text and plain reader controls use less CPU, so the invoice
 improvement cannot be assigned to the changed stage. Keep the source private.
 
+[B1720 current CPython checkpoint](results/2026-11-25-direct-record-cpython/README.md)
+measures retained `7120ee55e` against stock CPython 3.13.16. Eleven phases and
+308 verified batches separate warm execution, compilation and time to result.
+The older B1713 observations remain available at their own revision.
+
 [B1719 direct CSV storage admission](results/2026-11-25-csv-direct-record-admission/README.md)
 removes the managed reservation holders for completed rows and dictionary
 shells. Matched preflights reduce CLR allocation by 4.37–13.93% on four CSV
