@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      737960,
+      737960
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281502,
+      3281558
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1315552,
+      1315552
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      939640,
+      939472
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-retained-zip",
+    "allocationBytes": [
+      1223758,
+      1223584
+    ],
+    "peakAdmission": [
+      2892539,
+      2892539
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-strict-zip",
+    "allocationBytes": [
+      1315648,
+      1315768
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  }
+]

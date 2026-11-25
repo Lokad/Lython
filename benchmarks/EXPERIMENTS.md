@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1697](results/2026-11-25-async-zip-pull/README.md) starts the zip
+continuation when a source actually suspends. Retained-tuple async
+elapsed falls 1.13–2.14%. The original async shipment CPU spans zero,
+and the unchanged sync shipment uses 2.05–5.93% more CPU. The patch stays private.
+
 [B1696](results/2026-11-25-post-async-map-cpu/README.md) attributes
 CPU on the retained external checkpoint. Async shipment still reaches a
 zip pull state machine on completed rows. Defaulted-rule samples remain
