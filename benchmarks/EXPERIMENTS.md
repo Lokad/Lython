@@ -66,7 +66,9 @@ peaks. Grouped last-close metadata remains on the cursor path.
 [The single-group follow-up](results/2026-11-25-regex-050-artifact-replay/single-group/README.md)
 derives `lastindex` from participation with one group. It passes 520 checks
 per platform and allocates 40.45–42.79% less on three log search scripts.
-Multiple groups still need last-close metadata.
+B1691 measures 9.90–19.16% less warm CPU across these scripts. The no-group
+elapsed and two-group CPU controls are adverse, with wider spread on two
+groups. Multiple groups still need last-close metadata.
 
 [B1682](results/2026-11-25-tagged-default-ownership/README.md) carries slot
 ownership through construction and removes the two inline-default flags.
