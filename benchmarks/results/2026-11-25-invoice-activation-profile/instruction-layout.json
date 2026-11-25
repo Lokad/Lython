@@ -1,0 +1,349 @@
+{
+  "coreSHA256": "b0a4b650c806b169ea600e220aa25c5fa315f90c0dab6903e08f78905154c9f4",
+  "methods": [
+    {
+      "name": "price_line",
+      "capacity": 12,
+      "locals": [
+        "row",
+        "quantity",
+        "unit_cents",
+        "discount",
+        "tax_rate",
+        "net",
+        "tax"
+      ],
+      "tempStart": 7,
+      "nativePrefix": 32,
+      "directReturn": false,
+      "instructions": [
+        {
+          "index": 0,
+          "opcode": "LoadGlobal",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": null
+        },
+        {
+          "index": 1,
+          "opcode": "Subscript",
+          "input": 0,
+          "output": 8,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 2,
+          "opcode": "Call",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": {
+            "argumentCount": 1,
+            "hasReceiver": false,
+            "returnedItems": 0
+          }
+        },
+        {
+          "index": 3,
+          "opcode": "StoreLocal",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        },
+        {
+          "index": 4,
+          "opcode": "LoadGlobal",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": null
+        },
+        {
+          "index": 5,
+          "opcode": "Subscript",
+          "input": 0,
+          "output": 8,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 6,
+          "opcode": "Call",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": {
+            "argumentCount": 1,
+            "hasReceiver": false,
+            "returnedItems": 0
+          }
+        },
+        {
+          "index": 7,
+          "opcode": "StoreLocal",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        },
+        {
+          "index": 8,
+          "opcode": "LoadGlobal",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": null
+        },
+        {
+          "index": 9,
+          "opcode": "Subscript",
+          "input": 0,
+          "output": 8,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 10,
+          "opcode": "Call",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": {
+            "argumentCount": 1,
+            "hasReceiver": false,
+            "returnedItems": 0
+          }
+        },
+        {
+          "index": 11,
+          "opcode": "StoreLocal",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        },
+        {
+          "index": 12,
+          "opcode": "LoadGlobal",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": null
+        },
+        {
+          "index": 13,
+          "opcode": "Subscript",
+          "input": 0,
+          "output": 8,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 14,
+          "opcode": "Call",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": {
+            "argumentCount": 1,
+            "hasReceiver": false,
+            "returnedItems": 0
+          }
+        },
+        {
+          "index": 15,
+          "opcode": "StoreLocal",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        },
+        {
+          "index": 16,
+          "opcode": "LoadCallMember",
+          "input": -7,
+          "output": 7,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 17,
+          "opcode": "Binary",
+          "input": 1,
+          "output": 9,
+          "extent": 10,
+          "call": null
+        },
+        {
+          "index": 18,
+          "opcode": "Binary",
+          "input": -5,
+          "output": 10,
+          "extent": 11,
+          "call": null
+        },
+        {
+          "index": 19,
+          "opcode": "Call",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": {
+            "argumentCount": 2,
+            "hasReceiver": true,
+            "returnedItems": 0
+          }
+        },
+        {
+          "index": 20,
+          "opcode": "StoreLocal",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        },
+        {
+          "index": 21,
+          "opcode": "LoadCallMember",
+          "input": -7,
+          "output": 7,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 22,
+          "opcode": "LoadLocal",
+          "input": 9,
+          "output": 9,
+          "extent": 10,
+          "call": null
+        },
+        {
+          "index": 23,
+          "opcode": "LoadLocal",
+          "input": 10,
+          "output": 10,
+          "extent": 11,
+          "call": null
+        },
+        {
+          "index": 24,
+          "opcode": "Call",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": {
+            "argumentCount": 2,
+            "hasReceiver": true,
+            "returnedItems": 0
+          }
+        },
+        {
+          "index": 25,
+          "opcode": "StoreLocal",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        },
+        {
+          "index": 26,
+          "opcode": "PreparedTupleReturn",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": null
+        },
+        {
+          "index": 27,
+          "opcode": "LoadLocal",
+          "input": 8,
+          "output": 8,
+          "extent": 9,
+          "call": null
+        },
+        {
+          "index": 28,
+          "opcode": "LoadLocal",
+          "input": 9,
+          "output": 9,
+          "extent": 10,
+          "call": null
+        },
+        {
+          "index": 29,
+          "opcode": "Binary",
+          "input": 5,
+          "output": 10,
+          "extent": 11,
+          "call": null
+        },
+        {
+          "index": 30,
+          "opcode": "MakeTuple",
+          "input": 7,
+          "output": 7,
+          "extent": 8,
+          "call": null
+        },
+        {
+          "index": 31,
+          "opcode": "Return",
+          "input": 7,
+          "output": 7,
+          "extent": 7,
+          "call": null
+        }
+      ]
+    },
+    {
+      "name": "rounded_basis_points",
+      "capacity": 7,
+      "locals": [
+        "self",
+        "amount",
+        "rate"
+      ],
+      "tempStart": 3,
+      "nativePrefix": 4,
+      "directReturn": true,
+      "instructions": [
+        {
+          "index": 0,
+          "opcode": "Binary",
+          "input": 1,
+          "output": 3,
+          "extent": 4,
+          "call": null
+        },
+        {
+          "index": 1,
+          "opcode": "Binary",
+          "input": 3,
+          "output": 3,
+          "extent": 4,
+          "call": null
+        },
+        {
+          "index": 2,
+          "opcode": "Binary",
+          "input": 3,
+          "output": 3,
+          "extent": 4,
+          "call": null
+        },
+        {
+          "index": 3,
+          "opcode": "Return",
+          "input": 3,
+          "output": 3,
+          "extent": 3,
+          "call": null
+        }
+      ]
+    }
+  ]
+}

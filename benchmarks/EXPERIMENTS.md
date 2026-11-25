@@ -38,6 +38,13 @@ still increases invoice elapsed in both modes. Text and file-fed map also
 slow in the refined block despite taking no prepared route. Keep the two
 prototypes private and retain the results and source patches.
 
+[B1723 quoted invoice profiles](results/2026-11-25-invoice-activation-profile/README.md)
+scope the native helper and receiver work in both hosting modes. The receiver
+helper already returns directly from operands. Entry and operand movement
+account for roughly 5% of resolved runtime samples. The source and profiles
+motivate a single subscription operand path for sequences, mappings and
+protocols. This is attribution evidence. Paired timings remain pending.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
