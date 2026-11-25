@@ -246,7 +246,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime("executable exception handler stack is invalid", span);
         }
 
-        stack.RetireTo(targetDepth);
+        stack.UnwindTo(targetDepth);
     }
 
     private static bool TryExecuteExecutableMatchCase(

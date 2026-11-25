@@ -43,6 +43,19 @@ have independent coverage. Both complete images verify seven CPython
 goldens. All 168 timed batches, both machine gates, worker joins, fixture
 retirement and persistent archive verification complete.
 
+## Delivery correction
+
+The first full workflow passed all 18,543 public checks on each
+platform. Five operand-stack regressions showed that ordinary
+shrinkage must preserve entries its failing disposer has not reached.
+The correction keeps that behavior. Unwinding a frame or entering an
+exception handler finishes relinquishing the whole discarded suffix, in
+order, before propagating the first cleanup failure. The timing table
+measures the original B1700 image. The corrected image has focused
+verification and its own delivery workflow.
+[Initial CI](https://github.com/Lokad/Lython/actions/runs/45558141051) ·
+[Failed checks](initial-delivery-failure.tar.xz).
+
 [Source and images](identity.json) · [Timings](quiet-summary.json) ·
 [Allocation and admission](allocation-summary.json) ·
 [Observations](quiet-observations.tar.xz) · [Terminal receipt](quiet-terminal-status.json) ·

@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
 
         internal void ReleaseGeneratorTemporaries()
         {
-            try { _execution.Stack.RetireTo(_execution.Code.FirstTemporarySlot); }
+            try { _execution.Stack.UnwindTo(_execution.Code.FirstTemporarySlot); }
             finally { _execution.Stack.ReleaseStorage(); }
         }
 
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
         // names and restoring the previous exception on frame exit.
         private void AbandonFrame()
         {
-            try { _execution.Stack.RetireTo(_execution.Code.FirstTemporarySlot); }
+            try { _execution.Stack.UnwindTo(_execution.Code.FirstTemporarySlot); }
             finally
             {
                 _savedActiveExceptions?.Clear();

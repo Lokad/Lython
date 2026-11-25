@@ -583,7 +583,11 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        public void RetireTo(int liveExtent)
+        public void RetireTo(int liveExtent) => RetireTo(liveExtent, unwinding: false);
+
+        public void UnwindTo(int liveExtent) => RetireTo(liveExtent, unwinding: true);
+
+        private void RetireTo(int liveExtent, bool unwinding)
         {
             if (liveExtent == LiveExtent)
             {
@@ -599,10 +603,10 @@ internal sealed partial class LythonRuntime
                 for (; i >= newCount; i--)
                     _items[i].RetireTemporary(_state.MemoryGovernor);
             }
-            catch
+            catch when (unwinding)
             {
-                // A failing cursor still relinquishes its slot. Retire the rest
-                // in order before surfacing the first cleanup failure.
+                // All of these slots are out of scope. A throwing disposer
+                // already relinquished its slot. Finish from the next one.
                 while (--i >= newCount)
                 {
                     try { _items[i].RetireTemporary(_state.MemoryGovernor); }
@@ -612,8 +616,13 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                Array.Clear(_items, newCount, LiveExtent - newCount);
-                LiveExtent = newCount;
+                // During an ordinary shrink, unvisited slots remain live if a
+                // disposer threw. Attempted disposers already cleared their slots.
+                if (i < newCount)
+                {
+                    Array.Clear(_items, newCount, LiveExtent - newCount);
+                    LiveExtent = newCount;
+                }
             }
         }
     }

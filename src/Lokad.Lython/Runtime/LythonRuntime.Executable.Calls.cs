@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (work.Code is not null)
                     {
-                        try { work.Stack.RetireTo(work.Code.FirstTemporarySlot); }
+                        try { work.Stack.UnwindTo(work.Code.FirstTemporarySlot); }
                         finally { work.Stack.ReleaseStorage(); }
                     }
                 }
