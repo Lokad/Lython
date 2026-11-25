@@ -10,10 +10,10 @@ public sealed class FactorialAllocationTests
 {
     // Invoke the operation on this thread. Public Run schedules a worker, whose
     // allocation cannot be measured with a caller-thread counter.
-    private static readonly Func<object[], LythonSourceSpan, Context, object> Factorial = typeof(LythonRuntime)
+    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object> Factorial = typeof(LythonRuntime)
         .GetNestedType("MathModule", BindingFlags.NonPublic)!
         .GetMethod("Factorial", BindingFlags.NonPublic | BindingFlags.Static)!
-        .CreateDelegate<Func<object[], LythonSourceSpan, Context, object>>();
+        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object>>();
 
     [Fact]
     public void DenialAvoidsArithmeticAllocationWithFundedPositiveControl()
