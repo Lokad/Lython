@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      737992,
+      737992
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      96632,
+      96632
+    ],
+    "peakAdmission": [
+      56399,
+      56399
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      68232,
+      68232
+    ],
+    "peakAdmission": [
+      92830,
+      92830
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281590,
+      3281542
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      200344,
+      200344
+    ],
+    "peakAdmission": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "diagnostic.config-mixed-boolean-guards",
+    "allocationBytes": [
+      68024,
+      68024
+    ],
+    "peakAdmission": [
+      94750,
+      94750
+    ]
+  }
+]

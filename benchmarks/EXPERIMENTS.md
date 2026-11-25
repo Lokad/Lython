@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1690](results/2026-11-25-boolean-precedence/README.md) makes boolean
+grammar descent conditional. Sparse guards use less CPU and the mixed
+guard script uses 0.67–2.30% more CPU through result. All elapsed ranges
+cross zero. The conditional-descent patch stays private.
+
 [B1689](results/2026-11-25-compiled-entry/README.md) removes the compiled
 runner delegates and per-run facade. Allocation falls 32 B on six cases.
 Defaulted rules use less CPU through result, while manifest compile CPU

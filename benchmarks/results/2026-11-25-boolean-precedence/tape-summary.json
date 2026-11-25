@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "tapes": 4,
+    "instructions": 58,
+    "retainedAdmission": 74175
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "tapes": 7,
+    "instructions": 251,
+    "retainedAdmission": 212960
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "tapes": 3,
+    "instructions": 2937,
+    "retainedAdmission": 2294048
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "tapes": 4,
+    "instructions": 150,
+    "retainedAdmission": 157114
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "tapes": 99,
+    "instructions": 1197,
+    "retainedAdmission": 883617
+  },
+  {
+    "case": "diagnostic.config-mixed-boolean-guards",
+    "tapes": 3,
+    "instructions": 4089,
+    "retainedAdmission": 2598176
+  }
+]
