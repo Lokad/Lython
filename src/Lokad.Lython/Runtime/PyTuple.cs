@@ -136,7 +136,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal void SetPrivateDefault(int index, LythonRuntime.ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
     {
-        WritableValueSlot(index) = FunctionDefaults.PreparePositionalValue(value, materialize: false, state, span, out var extra);
+        WritableValueSlot(index) = FunctionDefaults.PreparePositionalValue(value, state, span, out var extra);
         _committedBytes += extra;
     }
 

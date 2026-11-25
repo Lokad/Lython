@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
             => slot >= _supplied.Length
-                ? plan.ReadPreparedDefault(slot).TryGetInteger(out value)
+                ? plan.TryReadPreparedDefaultInteger(slot, out value)
                 : TryReadMachineOperand(code, _supplied, slot, scope, out value, captures);
 
         public ExecutableSlot ReadLocal(int slot) => slot >= _supplied.Length ? plan.ReadPreparedDefault(slot)

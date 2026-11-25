@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1670](results/2026-11-25-default-operand-storage/README.md) keeps
+computed singleton positional integers in the callable slot until Python
+observes their identity. Defaulted rule CPU falls in both blocks. Generated
+ordinary definitions allocate and spend more CPU with the wider slot.
+
 [Development regex allocation](results/2026-11-25-regex-050-funded-allocation/README.md)
 compares the funded 0.5.0 bridge and production 0.4.0 adapter on identical
 Lython core and workers. Log searches allocate 74.03–75.06% less. Peak

@@ -400,12 +400,14 @@ scalar literal positional defaults shares one immutable tuple owned by the
 compiled code. Reassigning `__defaults__` still affects only that function.
 Each definition admits its positional and keyword default backing before
 evaluation. Values complete into private storage that stays owned through
-suspension. One evaluated positional default can live on the callable as a
-stable reference. Reading `__defaults__` materializes its canonical tuple using
-the existing admission. A larger integer magnitude can require a further
-charge. A tuple holding multiple evaluated defaults can retain fresh integers
-in machine slots with admission for their eventual boxes. Private backing
-refunds on failure, and compiled key layouts stay funded with the code.
+suspension. A single evaluated positional default can live in the callable's
+operand slot. Closed arithmetic can read a private machine integer there.
+Binding that can expose the value publishes its canonical object in the slot.
+Reading `__defaults__` materializes the canonical tuple using the existing
+admission. A larger integer magnitude can require a further charge. A tuple
+holding multiple evaluated defaults can also retain private integer slots
+with admission for their eventual boxes. Private backing refunds on failure,
+and compiled key layouts stay funded with the code.
 Decorators can expose a definition, so its finished defaults transfer before
 the first decorator call. Binding reads the live defaults and holds selected
 values through keyword lookup and suspension. Positional default replacement

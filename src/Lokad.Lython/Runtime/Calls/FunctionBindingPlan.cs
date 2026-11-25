@@ -1,23 +1,24 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
+using ExecutableSlot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 
 namespace Lokad.Lython.Runtime;
 
-internal readonly record struct FunctionDefaults(object? Positional, object? Keywords,
+internal readonly record struct FunctionDefaults(ExecutableSlot Positional, object? Keywords,
     bool InlineKeyword = false, bool InlinePositional = false)
 {
     internal void RefundUnpublished(MemoryGovernor governor)
     {
         if (InlinePositional) governor.Release(InlinePositionalBytes(Positional));
-        else if (Positional is not null) governor.RefundUnpublishedValue(Positional);
+        else if (Positional.Reference is { } positional) governor.RefundUnpublishedValue(positional);
         if (InlineKeyword) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
         else if (Keywords is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
     }
 
-    internal static long InlinePositionalBytes(object? value)
-        => PyTuple.EstimateDefaultStorage(1) + PositionalScalarExcess(RuntimeMemoryEstimates.EstimateScalarStorageBytes(value));
+    internal static long InlinePositionalBytes(ExecutableSlot value)
+        => PyTuple.EstimateDefaultStorage(1) + PositionalScalarExcess(value.ScalarStorageBytes);
 
-    internal static LythonRuntime.ExecutableSlot PreparePositionalValue(LythonRuntime.ExecutableSlot value, bool materialize,
+    internal static ExecutableSlot PreparePositionalValue(ExecutableSlot value,
         ExecutionState state, LythonSourceSpan span, out long extra)
     {
         extra = PositionalScalarExcess(value.ScalarStorageBytes);
@@ -26,10 +27,8 @@ internal readonly record struct FunctionDefaults(object? Positional, object? Key
         try
         {
             state.CheckExecution(span);
-            // A private tuple can retain a fresh machine integer. A singleton
-            // value must have one stable reference before it can be borrowed.
-            if (materialize || !value.IsUnpublishedInteger)
-                value = LythonRuntime.ExecutableSlot.FromObject(LythonRuntime.RuntimeValue(value.Object));
+            if (!value.IsUnpublishedInteger)
+                value = ExecutableSlot.FromObject(LythonRuntime.RuntimeValue(value.Object));
             if (extra != 0) governor.Commit(extra);
             return value;
         }
@@ -48,7 +47,7 @@ internal readonly record struct FunctionDefaults(object? Positional, object? Key
 internal abstract class FunctionBindingPlan
 {
     private readonly FunctionParameterLayout _layout;
-    private object? _positionalDefaults;
+    private ExecutableSlot _positionalDefaults;
     private object? _keywordDefaults;
     private bool _inlinePositionalDefault;
     private bool _inlineKeywordDefault;
@@ -95,7 +94,7 @@ internal abstract class FunctionBindingPlan
 
     public int VariadicDictionaryIndex => _layout.VariadicDictionaryIndex;
 
-    internal bool SupportsPreparedPositionalDefaults => _inlinePositionalDefault || _positionalDefaults is null or PyTuple;
+    internal bool SupportsPreparedPositionalDefaults => _inlinePositionalDefault || _positionalDefaults.Reference is null or PyTuple;
     public PyString KeywordDefaultName(int index) => _layout.KeywordDefaultName(index);
 
     internal bool HasPreparedOmittedArguments(int supplied)
@@ -103,7 +102,11 @@ internal abstract class FunctionBindingPlan
                 (_inlineKeywordDefault || _keywordDefaults is object?[]) &&
                 _layout.Defaults.Length - _layout.PositionalDefaultCount == KeywordOnlyCount) &&
             supplied <= PositionalCount &&
-            supplied >= PositionalCount - (_inlinePositionalDefault ? 1 : (_positionalDefaults as PyTuple)?.Count ?? 0);
+            supplied >= PositionalCount - (_inlinePositionalDefault ? 1 : (_positionalDefaults.Reference as PyTuple)?.Count ?? 0);
+
+    internal bool TryReadPreparedDefaultInteger(int index, out long value)
+        => _inlinePositionalDefault && index == PositionalCount - 1
+            ? _positionalDefaults.TryGetInteger(out value) : ReadPreparedDefault(index).TryGetInteger(out value);
 
     internal LythonRuntime.ExecutableSlot ReadPreparedDefault(int index)
     {
@@ -168,13 +171,15 @@ internal abstract class FunctionBindingPlan
 
     public bool TryGetPositionalDefault(int parameterIndex, out LythonRuntime.ExecutableSlot value)
     {
-        var defaults = _positionalDefaults;
         var distance = PositionalCount - parameterIndex;
         if (_inlinePositionalDefault)
         {
-            value = distance == 1 ? LythonRuntime.ExecutableSlot.FromObject(defaults) : default;
+            // The generic binder can alias the default, including across calls.
+            // Publish it in its owner before copying a slot to the invocation.
+            value = distance == 1 ? ExecutableSlot.FromObject(_positionalDefaults.Object) : default;
             return distance == 1;
         }
+        var defaults = _positionalDefaults.Reference;
         if (defaults is PyTuple tuple) return tuple.TryReadTrailingSlot(distance, out value);
         if (defaults is not null && PyTupleLike.TryGetItems(defaults, out var items))
         {
@@ -206,14 +211,14 @@ internal abstract class FunctionBindingPlan
         {
             var span = PyStructuralGuard.AmbientSpan;
             context.CheckExecution(span);
-            var value = _positionalDefaults.RequireNotNull();
+            var value = _positionalDefaults.Object.RequireNotNull();
             // The reservation predates evaluation. Transfer it to the
             // canonical tuple without a second admission or a value copy.
-            _positionalDefaults = PyTuple.CreateAdmittedSingletonDefault(value, context.MemoryGovernor,
-                span, FunctionDefaults.InlinePositionalBytes(value));
+            _positionalDefaults.Object = PyTuple.CreateAdmittedSingletonDefault(value, context.MemoryGovernor,
+                span, FunctionDefaults.InlinePositionalBytes(_positionalDefaults));
             _inlinePositionalDefault = false;
         }
-        return _positionalDefaults ?? PyNone.Instance;
+        return _positionalDefaults.Reference ?? PyNone.Instance;
     }
 
     private object ReadKeywordDefaults(LythonRuntime.ExecutionContext context)
@@ -243,7 +248,7 @@ internal abstract class FunctionBindingPlan
                 throw new LythonRuntimeException("TypeError", "__defaults__ must be set to a tuple object", span);
             // A prior call can retain the original value. Keep its admission
             // with the execution owner, just as for an observed tuple.
-            _positionalDefaults = value is PyNone ? null : value;
+            _positionalDefaults.Object = value is PyNone ? null : value;
             _inlinePositionalDefault = false;
             return true;
         }

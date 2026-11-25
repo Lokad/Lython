@@ -103,7 +103,7 @@ public sealed class NativeDefinitionPairTests
     {
         const string source = """
             def make(seed):
-                def apply(value=seed % 13):
+                def apply(value=seed % 13 + 1000):
                     return value
                 other = lambda value=10 // seed: value
                 return apply, other
@@ -114,7 +114,10 @@ public sealed class NativeDefinitionPairTests
             except ZeroDivisionError:
                 print(first, second)
             first, second = make(2)
-            print(first(), second())
+            kept = first()
+            print(kept, second(), kept is first(), kept is first.__defaults__[0])
+            first.__defaults__ = (kept + 1,)
+            print(first(), kept)
             """;
         var budget = new LythonMemoryBudget(768 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
@@ -123,7 +126,7 @@ public sealed class NativeDefinitionPairTests
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("old first old second\n2 5\n", result.StandardOutput);
+            Assert.Equal("old first old second\n1002 5 True True\n1003 1002\n", result.StandardOutput);
         }
         Assert.Equal(baseline, budget.ReservedBytes);
     }

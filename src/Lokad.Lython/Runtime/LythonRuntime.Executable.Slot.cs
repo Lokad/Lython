@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
                 var storage = _value;
                 var kind = _integer;
                 this = default;
-                if (kind == PrivatePositionalDefault) governor.Release(FunctionDefaults.InlinePositionalBytes(storage));
+                if (kind == PrivatePositionalDefault) governor.Release(FunctionDefaults.InlinePositionalBytes(FromObject(storage)));
                 else if (kind == PrivateKeywordDefault) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
                 else if (storage is object?[] keywordValues) PyDict.RecordKeys.RefundPreparedValues(keywordValues, governor);
                 else governor.RefundUnpublishedValue(storage!);
