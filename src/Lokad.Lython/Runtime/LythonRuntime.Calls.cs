@@ -585,19 +585,21 @@ internal sealed partial class LythonRuntime
     [System.Runtime.CompilerServices.InlineArray(InlineIterationOperandCount)]
     internal struct IterationOperands { private ExecutableSlot _first; }
 
-    internal static PyIterationResult StartIterationCallback(object callable, Span<ExecutableSlot> operands,
+    internal static PyIterationResult StartIterationCallback(object callable, Span<ExecutableSlot> storage, int argumentCount,
+        bool borrowStorage,
         LythonSourceSpan span, ExecutionContext context, bool asynchronous, out ValueTask<object> pending)
     {
         pending = default;
         if (callable is BoundArgumentsCallable builtin)
         {
+            var operands = storage[..argumentCount];
             if (!asynchronous) return PyIterationResult.Yield(builtin.InvokeShortPositionalOperands(operands, span, context));
             pending = builtin.InvokeShortPositionalOperandsAsync(operands, span, context);
         }
         else if (IterationFunction(callable, out var receiver) is { } function)
         {
             if (function is PyExecutableFunction executable &&
-                executable.TryStartPositionalCallback(operands, receiver, span, context, out var result, out var frame, out var owned))
+                executable.TryStartPositionalCallback(storage, argumentCount, borrowStorage, receiver, span, context, out var result, out var frame, out var owned))
             {
                 if (frame is null) return PyIterationResult.Yield(result);
                 if (!asynchronous) return PyIterationResult.Yield(function.InvokeBound(owned, span, frame));
@@ -605,12 +607,14 @@ internal sealed partial class LythonRuntime
             }
             else
             {
+                var operands = storage[..argumentCount];
                 if (!asynchronous) return PyIterationResult.Yield(function.InvokeFromOperands(operands, span, context, receiver));
                 pending = function.InvokeFromOperandsAsync(operands, span, context, receiver);
             }
         }
         else
         {
+            var operands = storage[..argumentCount];
             CallableInvocation.Arguments packet = default;
             for (var i = 0; i < operands.Length; i++)
                 packet[i] = CallArgumentValue.Positional(RuntimeValue(operands[i].Object));

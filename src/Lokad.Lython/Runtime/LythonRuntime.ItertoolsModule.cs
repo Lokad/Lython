@@ -531,9 +531,10 @@ internal sealed partial class LythonRuntime
         if (positional.Length != 2) throw new LythonRuntimeException("TypeError", "itertools.starmap(function, iterable) expects two arguments.", span);
         context = GetGlobalContext(context);
         using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var borrowStorage = positional[0] is PyExecutableFunction function && function.CanBorrowIterationStorage(context, span);
         var source = asynchronous ? await PyIteration.Cursor.CreateAsync(positional[1], span, context).ConfigureAwait(false)
             : PyIteration.Cursor.Create(positional[1], span, context);
-        var result = new PyStarmapIterator(positional[0], source, context, span);
+        var result = new PyStarmapIterator(positional[0], source, context, span, borrowStorage);
         storage.Commit(288);
         return result;
     }

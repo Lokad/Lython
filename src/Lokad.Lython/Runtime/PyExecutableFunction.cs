@@ -287,7 +287,57 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return StartPositionalCallbackWorkspace(arguments, receiver, span, out result, out frame, out owned);
     }
 
-    internal bool TryStartPositionalCallback(Span<LythonRuntime.ExecutableSlot> operands, object? receiver, LythonSourceSpan span,
+    // Prove the actual physical footprint of a straight-line expression.
+    // The ordinary frame can need more capacity. Transfer still rents that
+    // complete frame before retaining any operand or resuming guest code.
+    internal bool CanBorrowIterationStorage(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        const int capacity = LythonRuntime.InlineIterationOperandCount;
+        var code = CodeObject;
+        if (!CanStartInline || code.HasDirectOperandReturn || PositionalCount > capacity ||
+            !HasCompletePositionalSupply(PositionalCount, receiver: null)) return false;
+        if (code.EntryIndex != 0 || code.NativePrefixEnd != code.Instructions.Length || code.ExceptionRegions.Count != 0 ||
+            code.CapturedLocalSlots.Count != 0 || code.FirstTemporarySlot > capacity ||
+            code.Instructions[^1].OpCode != ExecutableOpCode.Return) return false;
+
+        for (var index = 0; index < code.Instructions.Length; index++)
+        {
+            if ((index & 255) == 0) context.CheckExecution(span);
+            ref readonly var step = ref code.Instructions[index];
+            if (step.HasResultConsumer || step.LiveExtent > capacity) return false;
+            bool fits;
+            switch (step.OpCode)
+            {
+                case ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal:
+                    fits = (uint)step.ResultSlot < capacity;
+                    break;
+                case ExecutableOpCode.LoadLocal:
+                    fits = (uint)step.LocalSlot < capacity && (uint)step.ResultSlot < capacity;
+                    break;
+                case ExecutableOpCode.Subscript:
+                    fits = step.InputStart < capacity && step.SecondInput < capacity && (uint)step.ResultSlot < capacity;
+                    break;
+                case ExecutableOpCode.Call:
+                    var site = code.CallSites[step.CallSiteIndex];
+                    // Include the ordinary positional operand window that
+                    // the native call passes to the existing continuation.
+                    fits = !step.HasForwardedCallOperands && (uint)step.ResultSlot < capacity &&
+                        site is { IsPositionalOnly: true, HasReceiver: false, UnpackedReturnCount: 0, SplitPrefix: null } &&
+                        site.ArgumentCount <= capacity - step.ResultSlot - site.ArgumentOffset;
+                    break;
+                case ExecutableOpCode.Return:
+                    fits = step.InputStart < capacity;
+                    break;
+                default:
+                    return false;
+            }
+            if (!fits) return false;
+        }
+        return true;
+    }
+
+    internal bool TryStartPositionalCallback(Span<LythonRuntime.ExecutableSlot> storage, int argumentCount, bool borrowStorage,
+        object? receiver, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, out LythonRuntime.ExecutableSlot result,
         out LythonRuntime.ExecutionContext? frame, out BoundFunctionArguments owned)
     {
@@ -295,11 +345,19 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         frame = null;
         owned = default;
         if (!CanStartInline) return false;
-        if (!HasCompletePositionalSupply(operands.Length, receiver))
+        var operands = storage[..argumentCount];
+        if (!HasCompletePositionalSupply(argumentCount, receiver))
             return CodeObject.HasDirectOperandReturn && VariadicListIndex < 0 && VariadicDictionaryIndex < 0 &&
                 TryStartPreparedOperandReturn(operands, receiver, context, span, out result);
         context.CheckExecution(span);
         if (TryStartSuppliedOperandReturn(operands, receiver, span, out result)) return true;
+        if (borrowStorage && receiver is null)
+        {
+            // The cursor owns the remaining slots through this prefix.
+            // StartInline copies the live slots before handing off a frame.
+            StartInline(storage, null, span, false, default, out _, out result, out frame, out owned);
+            return true;
+        }
         StartNativeWorkspace(null, operands, receiver, context, span, false, true, default, out _, out result, out frame, out owned);
         return true;
     }

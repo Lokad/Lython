@@ -135,11 +135,12 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
     private readonly PyIteration.Cursor[] _iterators;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
+    private readonly bool _borrowStorage;
 
     private PyMapIterator(object function, PyIteration.Cursor[] iterators,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool borrowStorage)
     {
-        _function = function; _iterators = iterators; _context = context; _span = span;
+        _function = function; _iterators = iterators; _context = context; _span = span; _borrowStorage = borrowStorage;
     }
 
     internal static async ValueTask<PyMapIterator> CreateAsync(object[] arguments,
@@ -149,6 +150,9 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
         var count = arguments.Length - 1;
         var bytes = checked(IteratorValueBytes + 32L + 256L * count);
         using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        var borrowStorage = count <= LythonRuntime.InlineIterationOperandCount &&
+            arguments[0] is PyExecutableFunction function && function.HasCompletePositionalSupply(count, receiver: null) &&
+            function.CanBorrowIterationStorage(context, span);
         var cursors = new PyIteration.Cursor[count];
         try
         {
@@ -159,7 +163,7 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
                     ? await PyIteration.Cursor.CreateAsync(arguments[i + 1], span, context).ConfigureAwait(false)
                     : PyIteration.Cursor.Create(arguments[i + 1], span, context);
             }
-            var result = new PyMapIterator(arguments[0], cursors, context, span);
+            var result = new PyMapIterator(arguments[0], cursors, context, span, borrowStorage);
             storage.Commit(bytes);
             return result;
         }
@@ -192,7 +196,7 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
 
         if (arguments is null)
         {
-            var result = LythonRuntime.StartIterationCallback(_function, inline[.._iterators.Length], _span, _context,
+            var result = LythonRuntime.StartIterationCallback(_function, inline, _iterators.Length, _borrowStorage, _span, _context,
                 asynchronous: false, out _);
             System.Diagnostics.Debug.Assert(result.HasValue);
             return result;
@@ -211,7 +215,7 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
             if (!ReadAvailableOperands(ref count, ref operands, out var pending))
                 return new(PyIterationResult.End);
             return count == _iterators.Length
-                ? InvokeShortRowAsync(operands[..count])
+                ? InvokeShortRowAsync(operands, count)
                 : ResumeShortRowAsync(pending, count, operands);
         }
         catch (Exception error) { return ValueTask.FromException<PyIterationResult>(error); }
@@ -247,13 +251,13 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
             if (!next.HasValue) return PyIterationResult.End;
             operands[count++] = next.TakeSlotValue();
             if (!ReadAvailableOperands(ref count, ref operands, out pending)) return PyIterationResult.End;
-            if (count == _iterators.Length) return await InvokeShortRowAsync(operands[..count]).ConfigureAwait(false);
+            if (count == _iterators.Length) return await InvokeShortRowAsync(operands, count).ConfigureAwait(false);
         }
     }
 
-    private ValueTask<PyIterationResult> InvokeShortRowAsync(Span<LythonRuntime.ExecutableSlot> operands)
+    private ValueTask<PyIterationResult> InvokeShortRowAsync(Span<LythonRuntime.ExecutableSlot> operands, int count)
     {
-        var result = LythonRuntime.StartIterationCallback(_function, operands, _span, _context,
+        var result = LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
             asynchronous: true, out var pending);
         return result.HasValue ? new(result) : AwaitCallbackAsync(pending);
 

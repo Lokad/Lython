@@ -309,13 +309,15 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     private readonly PyIteration.Cursor _source;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
+    private readonly bool _borrowStorage;
 
-    public PyStarmapIterator(object function, PyIteration.Cursor source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public PyStarmapIterator(object function, PyIteration.Cursor source, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool borrowStorage)
     {
         _function = function;
         _source = source;
         _context = LythonRuntime.GetGlobalContext(context);
         _span = span;
+        _borrowStorage = borrowStorage;
     }
 
     // Per-element argument arrays scale with the element, not the output: one
@@ -340,7 +342,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             _context.CheckExecution(_span);
             _ = tuple.TryReadTrailingSlot(tuple.Count - i, out operands[i]);
         }
-        result = LythonRuntime.StartIterationCallback(_function, operands[..tuple.Count], _span, _context,
+        result = LythonRuntime.StartIterationCallback(_function, operands, tuple.Count, _borrowStorage, _span, _context,
             asynchronous, out pending);
         return true;
     }
