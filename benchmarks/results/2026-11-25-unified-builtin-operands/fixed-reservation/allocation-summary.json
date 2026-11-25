@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.explicit-options.large",
+    "allocationBytes": [
+      5327590,
+      5327584
+    ],
+    "peakAdmission": [
+      6157417,
+      6157732
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.default-options.large",
+    "allocationBytes": [
+      4938918,
+      4938918
+    ],
+    "peakAdmission": [
+      6228493,
+      6228493
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.explicit-wide-options.large",
+    "allocationBytes": [
+      5424702,
+      5326510
+    ],
+    "peakAdmission": [
+      6157732,
+      6157732
+    ]
+  },
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "allocationBytes": [
+      5522740,
+      5522678
+    ],
+    "peakAdmission": [
+      6157312,
+      6157312
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      200296,
+      200296
+    ],
+    "peakAdmission": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "diagnostic.measurement-tolerance.short-options",
+    "allocationBytes": [
+      896728,
+      896848
+    ],
+    "peakAdmission": [
+      1879,
+      1900
+    ]
+  }
+]

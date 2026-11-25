@@ -451,11 +451,16 @@ internal sealed partial class LythonRuntime
         catch (Exception error) { return ValueTask.FromException<object>(error); }
     }
 
-    private static async ValueTask<object> AwaitBorrowedCall(ValueTask<object> pending, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> AwaitBorrowedCall(ValueTask<object> pending, LythonSourceSpan span,
+        ExecutionContext context, long reservedBytes = 0)
     {
         try { return RuntimeValue(await pending.ConfigureAwait(false)); }
         catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
+        finally
+        {
+            try { context.LeaveInterpreterFrame(); }
+            finally { if (reservedBytes != 0) context.MemoryGovernor.ReleaseReserved(reservedBytes); }
+        }
     }
 
     // The expansion has validated the keys and supplied every positional slot.
@@ -573,10 +578,14 @@ internal sealed partial class LythonRuntime
     // The executable caller funds their final values through completion.
     private interface IOperandBoundCallable : ISpanCallable
     {
-        LythonCallableSignature BindingSignature { get; }
+        int GetOperandBindingCapacity(ExecutableCallSite call);
         ValueTask<object> InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
             ExecutionContext context, bool asynchronous);
     }
+
+    private static int OperandBindingCapacity(LythonCallableSignature signature, int supplied)
+        => signature.Parameters is NamedCallableParameterLayout named
+            ? Math.Max(supplied, named.ParameterNames.Length) : supplied;
 
     // A cursor transfers private operands into the existing callback binder.
     // Only a callable without an operand entry needs the original packet.
@@ -678,7 +687,8 @@ internal sealed partial class LythonRuntime
                 : InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, UsesMissingArgumentSlots), span, context);
         }
 
-        LythonCallableSignature IOperandBoundCallable.BindingSignature => Signature;
+        int IOperandBoundCallable.GetOperandBindingCapacity(ExecutableCallSite call)
+            => OperandBindingCapacity(Signature, call.ArgumentCount);
 
         ValueTask<object> IOperandBoundCallable.InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
             ExecutionContext context, bool asynchronous)

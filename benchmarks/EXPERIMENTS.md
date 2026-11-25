@@ -146,6 +146,13 @@ uses 8.06–20.42% more CPU and adds 32 B per call. Short-option JSON
 also uses more CPU. Wide JSON uses 1.82–3.60% less CPU. Preserve the
 private source and isolate fixed reservation ownership.
 
+[B1714b fixed binding reservation](results/2026-11-25-unified-builtin-operands/fixed-reservation/README.md)
+eliminates the extra temporary owner and returns short allocation to
+baseline. Wide JSON allocates 98,192 B less. Short and wide JSON use
+less warm sync CPU, and the short tolerance report remains adverse.
+Retain the common path and follow up by eliminating final heap binding
+for suitable synchronous builtins.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

@@ -67,50 +67,42 @@ internal sealed partial class LythonRuntime
                 => InvokeBorrowed(arguments, span, context);
 
             public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
-            {
-                context.CheckExecution(span);
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Loads))
-                {
-                    return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
-                }
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Dumps))
-                {
-                    return JsonEncodeIterator.EncodeToStringAsync(arguments[0].Value, JsonDumpOptions.Default, context, span, asynchronous: false).GetAwaiter().GetResult();
-                }
-                return InvokeOptions(new CallBinder.PacketInputs(arguments), span, context, asynchronous: false)
+                => InvokeFromInputs(new CallBinder.PacketInputs(arguments), span, context, asynchronous: false)
                     .GetAwaiter().GetResult();
-            }
 
             public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
                 => InvokeBorrowedAsync(arguments, span, context);
 
             public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
-            {
-                context.CheckExecution(span);
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Loads))
-                {
-                    return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true);
-                }
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Dumps))
-                {
-                    return JsonEncodeIterator.EncodeToStringAsync(arguments[0].Value, JsonDumpOptions.Default, context, span, asynchronous: true);
-                }
-                return InvokeOptions(new CallBinder.PacketInputs(arguments), span, context, asynchronous: true);
-            }
+                => InvokeFromInputs(new CallBinder.PacketInputs(arguments), span, context, asynchronous: true);
 
-            LythonCallableSignature IOperandBoundCallable.BindingSignature => _signature;
+            int IOperandBoundCallable.GetOperandBindingCapacity(ExecutableCallSite call)
+                => call.ArgumentCount == 1 && call.IsPositionalOnly &&
+                    (ReferenceEquals(_signature, LythonKnownCallableSignatures.Json.Loads) ||
+                     ReferenceEquals(_signature, LythonKnownCallableSignatures.Json.Dumps))
+                        ? 0 : OperandBindingCapacity(_signature, call.ArgumentCount);
 
             ValueTask<object> IOperandBoundCallable.InvokeFromOperands(Span<ExecutableSlot> operands,
                 ExecutableCallSite call, ExecutionContext context, bool asynchronous)
-            {
-                return InvokeOptions(new CallBinder.OperandInputs(operands, call.Arguments, context),
+                => InvokeFromInputs(new CallBinder.OperandInputs(operands, call.Arguments, context),
                     call.CallSpan, context, asynchronous);
-            }
 
-            private ValueTask<object> InvokeOptions<T>(T arguments, LythonSourceSpan span,
+            private ValueTask<object> InvokeFromInputs<T>(T arguments, LythonSourceSpan span,
                 ExecutionContext context, bool asynchronous)
                 where T : CallBinder.IBindingInputs, allows ref struct
             {
+                context.CheckExecution(span);
+                // A single positional value already supplies the complete
+                // default operation. Keep both callers out of option binding.
+                if (arguments.Length == 1 && arguments.KeywordAt(0) is null)
+                {
+                    if (ReferenceEquals(_signature, LythonKnownCallableSignatures.Json.Loads))
+                        return Instance.LoadsDefault(arguments.ValueAt(0), span, context, asynchronous);
+                    if (ReferenceEquals(_signature, LythonKnownCallableSignatures.Json.Dumps))
+                        return JsonEncodeIterator.EncodeToStringAsync(arguments.ValueAt(0),
+                            JsonDumpOptions.Default, context, span, asynchronous);
+                }
+
                 var bound = CallBinder.BindNamedArgumentsWithExtras(arguments, span, _signature,
                     PythonCallableKind.Builtin, out var extras);
                 return InvokeBoundOptions(bound, extras, span, context, asynchronous);
@@ -151,12 +143,6 @@ internal sealed partial class LythonRuntime
                 => !asynchronous || _asyncImplementation is null
                     ? new(_implementation(bound, extras, span, context))
                     : _asyncImplementation(bound, extras, span, context);
-
-            // This complete call shape has no keyword/default slots to bind.
-            // Other signatures and every explicit option retain general binding.
-            private bool IsDefaultCall(ReadOnlySpan<CallArgumentValue> arguments, LythonCallableSignature signature)
-                => ReferenceEquals(_signature, signature) &&
-                    arguments.Length == 1 && arguments[0].IsPositional;
 
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {

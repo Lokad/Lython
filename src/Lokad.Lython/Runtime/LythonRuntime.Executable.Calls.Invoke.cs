@@ -270,7 +270,6 @@ internal sealed partial class LythonRuntime
                 if (call.HasReceiver && target is ReceiverMethod receiverMethod && call.IsPositionalOnly && receiverMethod.AcceptsPositional(call.ArgumentCount))
                 {
                     var receiver = _execution.Stack[start];
-                    var arguments = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                     if (asynchronous) return CompleteCallValue(InvokeReceiverMethodAsync(receiverMethod, receiver, new ReceiverArguments(_execution.Stack.Values, start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, this), start);
                     result = InvokeReceiverMethod(receiverMethod, receiver, new ReceiverArguments(_execution.Stack.Values, start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, this);
                 }
@@ -332,7 +331,11 @@ internal sealed partial class LythonRuntime
             // Constructors can consume the same packet across __new__/__init__
             // suspension. Other short calls bind a managed stack borrow before
             // returning any pending work; retain no per-thread packet lifecycle.
-            if (call.ArgumentCount > 3 || _preparedCallValue is PyInstance)
+            if (_preparedCallValue is PyInstance)
+                return InvokeOwnedExecutableTargetAsync(call, start, target, asynchronous);
+            if (target is IOperandBoundCallable bound)
+                return InvokeExecutableOperandTarget(call, start, bound, asynchronous);
+            if (call.ArgumentCount > 3)
                 return InvokeOwnedExecutableTargetAsync(call, start, target, asynchronous);
             CallableInvocation.Arguments arguments = default;
             PrepareExecutableCallArguments(call, ref _execution.Stack, start, arguments[..call.ArgumentCount], this);
@@ -341,28 +344,38 @@ internal sealed partial class LythonRuntime
                 : new(InvokeBorrowedCallableTarget(target, call.TargetSpan, call.CallSpan, arguments[..call.ArgumentCount], this));
         }
 
+        // Binding consumes the original slots before returning. A suspended
+        // callable retains only its final values, their allowance and stack entry.
+        private ValueTask<object> InvokeExecutableOperandTarget(ExecutableCallSite call, int start,
+            IOperandBoundCallable bound, bool asynchronous)
+        {
+            var span = call.CallSpan;
+            var reservedBytes = CallArgumentStorageBytes(bound.GetOperandBindingCapacity(call));
+            if (reservedBytes != 0) MemoryGovernor.Reserve(reservedBytes, span);
+            var entered = false;
+            try
+            {
+                CheckExecution(span);
+                EnterInterpreterFrame(span);
+                entered = true;
+                var pending = bound.InvokeFromOperands(
+                    _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span, call, this, asynchronous);
+                if (pending.IsCompleted) return new(RuntimeValue(pending.GetAwaiter().GetResult()));
+                var completion = AwaitBorrowedCall(pending, span, this, reservedBytes);
+                entered = false;
+                reservedBytes = 0;
+                return completion;
+            }
+            catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+            finally
+            {
+                try { if (entered) LeaveInterpreterFrame(); }
+                finally { if (reservedBytes != 0) MemoryGovernor.ReleaseReserved(reservedBytes); }
+            }
+        }
+
         private async ValueTask<object> InvokeOwnedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
-            if (target is IOperandBoundCallable bound && _preparedCallValue is not PyInstance)
-            {
-                // Binding finishes over the original operands. Pending builtin
-                // work owns only the final argument values and presence data.
-                var capacity = bound.BindingSignature.Parameters is NamedCallableParameterLayout named
-                    ? Math.Max(call.ArgumentCount, named.ParameterNames.Length) : call.ArgumentCount;
-                using var bindingStorage = ReserveCallArgumentStorage(capacity, this, call.CallSpan);
-                CheckExecution(call.CallSpan);
-                EnterInterpreterFrame(call.CallSpan);
-                try
-                {
-                    var pending = bound.InvokeFromOperands(
-                        _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span,
-                        call, this, asynchronous);
-                    return RuntimeValue(await pending.ConfigureAwait(false));
-                }
-                catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated)) { throw translated; }
-                finally { LeaveInterpreterFrame(); }
-            }
-
             using var storage = ReserveCallArgumentStorage(call.ArgumentCount, this, call.CallSpan);
             var arguments = new CallArgumentValue[call.ArgumentCount];
             try

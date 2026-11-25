@@ -738,11 +738,13 @@ dictionary. Other forms use general expansion. Guest functions, bound methods
 and span-based builtin binders consume the expanded buffer's live prefix.
 Pending work owns the arguments it still needs. Buffer growth admits both
 capacities before copying any values.
-Wide ordinary calls to standard builtin binders and JSON wrappers bind directly
-from evaluated operand slots. The only allocated argument storage is the bound
-values, presence data and any extra JSON constructor keywords. The existing
-invocation reservation covers this storage through pending work and cleanup.
-Prepared constructors and dynamic callables keep their owned packets.
+Ordinary calls to operand-aware builtin and JSON binders read evaluated slots
+directly in both hosting modes. JSON's single positional default forms use their
+argument directly. Other bindings allocate their final values, presence data
+and any extra constructor keywords. Admission accounts for the declared capacity
+even when a short call supplies only a few values. A call or its continuation
+owns that reservation through pending work and cleanup. Prepared constructors
+and other dynamic callables keep their owned packets.
 Live defaults and genuinely suspending default protocols use the same slots.
 Async binding checks the live default dictionary at lookup, after storage admission
 can reenter; it does not save an earlier decision about whether lookup may suspend.

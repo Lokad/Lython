@@ -103,7 +103,10 @@ public sealed class JsonNumberTokenStorageTests
     {
         const long limit = 1024 * 1024;
         var text = floating ? "1.2300e+04" : "-0";
-        var (code, context) = Prepare("import json\nreturn json.loads(arm(source)," + (floating ? "parse_float" : "parse_int") + "=capture)", limit);
+        // The decoder binds its options before the gate. The denied request
+        // must come from numeric token publication within parsing.
+        var (code, context) = Prepare("import json\ndecoder=json.JSONDecoder(" +
+            (floating ? "parse_float" : "parse_int") + "=capture)\nreturn decoder.decode(arm(source))", limit);
         var source = PyString.FromString(text, context.MemoryGovernor, null);
         context.Variables["source"] = source;
         // A wide token can retain the funded source. Its shell and the
@@ -133,6 +136,32 @@ public sealed class JsonNumberTokenStorageTests
             }
             Assert.Equal(1, arm.Calls);
             Assert.True(context.MemoryGovernor.PeakAccountedBytes <= limit);
+        }
+        finally { arm.Dispose(); }
+        AssertUnwound(context);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ShortCallAdmitsTheFinalOptionBindingBeforeParsing(bool asynchronous)
+    {
+        const long limit = 1024 * 1024;
+        var (code, context) = Prepare("import json\nreturn json.loads(arm(source), parse_int=capture)", limit);
+        context.Variables["source"] = PyString.FromString("1", context.MemoryGovernor, null);
+        // The token alone fits, but the bound option values also remain live.
+        var tokenBytes = PyString.EstimateApproximateBytes(1);
+        using var arm = new AdmissionGate(context.MemoryGovernor, limit, tokenBytes + 1, true);
+        var capture = new Capture();
+        context.Variables["arm"] = arm;
+        context.Variables["capture"] = capture;
+        try
+        {
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+            Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > tokenBytes);
+            Assert.Equal(1, arm.Calls);
+            Assert.Equal(0, capture.Calls);
         }
         finally { arm.Dispose(); }
         AssertUnwound(context);

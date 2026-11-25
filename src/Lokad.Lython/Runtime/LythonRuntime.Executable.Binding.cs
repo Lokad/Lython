@@ -335,12 +335,17 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Small copied packets use minor control headroom. Wider copies are admitted
-    // through completion, independently of the original evaluated operands.
+    // Fund wide packets and final bound values through their last user.
+    // Small arrays use the existing minor control headroom.
+    private static long CallArgumentStorageBytes(int count)
+        => count <= 3 ? 0 : checked(32L + 32L * count);
+
     internal static MemoryGovernor.TemporaryMemoryReservation? ReserveCallArgumentStorage(
         int count, ExecutionContext context, LythonSourceSpan span)
-        => count <= 3 ? null : context.MemoryGovernor.ReserveTemporary(
-            checked(32L + 32L * count), span);
+    {
+        var bytes = CallArgumentStorageBytes(count);
+        return bytes == 0 ? null : context.MemoryGovernor.ReserveTemporary(bytes, span);
+    }
 
     // Bound wrappers supply fresh retainable prefixes. Unlike invocation scratch,
     // their major capacity stays charged until the execution/result owner ends.
