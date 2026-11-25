@@ -1,0 +1,57 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      152184,
+      152184
+    ],
+    "retainedAdmission": [
+      164576,
+      164576
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      64056,
+      64056
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1472960,
+      1472960
+    ],
+    "retainedAdmission": [
+      883617,
+      883617
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      134000,
+      134000
+    ],
+    "retainedAdmission": [
+      157114,
+      157114
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      33208,
+      33208
+    ],
+    "retainedAdmission": [
+      51392,
+      51392
+    ]
+  }
+]

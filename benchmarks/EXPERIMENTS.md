@@ -73,6 +73,11 @@ Warm defaulted rules use 2.88–5.33% more CPU and postponed annotations
 use 4.87–9.81% more at matching admission. Ordinary generated definitions
 improve slightly through result. The shared producer stays private.
 
+[B1708 short iterator workspace](results/2026-11-25-iteration-native-storage/README.md)
+replaces all 2,048 private file-fed workspaces on both hosting modes.
+File-fed timing spans zero. Two workloads with no loans use more CPU.
+The first source stays private with its exact images and transfer checks.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
