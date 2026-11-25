@@ -25,8 +25,21 @@ adapter pin stays at 0.4.0.
 This replay qualifies development compatibility for the tested shapes.
 Reversed anchored windows and the staged parser/compiler callbacks still
 need producer support. Reported flags and compiled-program equality still
-need full backend coverage. The replay supplies no timing for this producer.
-Published-package qualification is separate.
+need full backend coverage. Published-package qualification is separate.
+
+## Allocation replay
+
+The Windows .NET 11 comparison uses identical `c1984f96b` core and worker
+images with the 0.4.0 adapter or the funded `6edc01772` bridge. Both images
+match all four CPython 3.13.2 goldens. Local warm CLR allocation falls 75.94%
+for compiled log search, 75.41% for its bound method and 74.89% for module
+search. The invoice control differs by 84 B on 3.28 MB. The admitted peaks
+match and each allowance returns to baseline. Elapsed and CPU remain
+unmeasured for this producer.
+
+[Allocation](allocation/allocation-summary.json) ·
+[Image identities](allocation/identity.json) ·
+[Procedures and raw comparisons](allocation/procedures.tar.xz).
 
 [Package and assembly identities](verification.json) ·
 [Patches, build and test logs](procedures.tar.xz).

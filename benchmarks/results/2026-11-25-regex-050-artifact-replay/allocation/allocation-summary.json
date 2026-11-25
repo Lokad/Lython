@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "allocationBytes": [
+      14082122,
+      3388814
+    ],
+    "peakAdmission": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.bound",
+    "allocationBytes": [
+      14180498,
+      3487190
+    ],
+    "peakAdmission": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "allocationBytes": [
+      14278266,
+      3584958
+    ],
+    "peakAdmission": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3280918,
+      3280834
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

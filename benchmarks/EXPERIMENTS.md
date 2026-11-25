@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1685](results/2026-11-25-retained-defaults-cpython/README.md) compares
+the retained `c1984f96b` runtime with CPython 3.13.16 in 308 verified batches.
+Ordinary definitions take 2.146–2.188× warm and 0.794–0.814× through result.
+Shipment takes 1.466–1.471× warm and 1.295–1.345× through result. Defaulted
+and postponed rules have wider Lython spreads, and invoice spans parity.
+The original collector-count failure stopped before timing and is archived.
+
 [B1684](results/2026-11-25-exact-call-input/README.md) isolates a single
 borrowed argument and one omitted-default check. Eager rules use 6.27–9.83%
 less warm CPU. Postponed rules and defaulted time to result use more CPU.
