@@ -1,0 +1,35 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      64288,
+      64128
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocationBytes": [
+      213664,
+      213664
+    ],
+    "retainedAdmission": [
+      212960,
+      212960
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocationBytes": [
+      2169688,
+      2154328
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  }
+]

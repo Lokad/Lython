@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1668](results/2026-11-25-single-comparison/README.md) removes temporary
+comparison-chain storage from the ordinary binary case. Sparse compile
+allocation falls 15,360 B at equal retained admission. Timing is mixed.
+The initial adverse rules result does not repeat in the phase split.
+
 [B1667](results/2026-11-25-map-slots/README.md) tests direct operand
 transport for short map callbacks. The initial form lowers shipment warm
 CPU and raises CPU for a native-map control. The refinement reduces the

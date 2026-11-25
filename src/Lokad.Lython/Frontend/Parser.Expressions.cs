@@ -180,85 +180,59 @@ internal sealed partial class Parser
 
     private ExpressionSyntax? ParseComparisonExpression()
     {
-        var expression = ParseBitwiseOrExpression();
-        if (expression is null)
+        var left = ParseBitwiseOrExpression();
+        if (left is null || ComparisonOperator(CurrentToken) is not { } firstOperator) return left;
+        var right = ParseComparisonOperand(ref firstOperator);
+        if (right is null) return null;
+        if (ComparisonOperator(CurrentToken) is not { } nextOperator)
+            return new BinaryExpressionSyntax(left, firstOperator, right, Merge(left.Span, right.Span));
+
+        List<ExpressionSyntax> operands = [left, right];
+        List<BinaryOperatorSyntax> operators = [firstOperator];
+        while (true)
         {
-            return null;
+            var operand = ParseComparisonOperand(ref nextOperator);
+            if (operand is null) return null;
+            operands.Add(operand);
+            operators.Add(nextOperator);
+            if (ComparisonOperator(CurrentToken) is not { } following) break;
+            nextOperator = following;
         }
+        return new ChainedComparisonExpressionSyntax(operands, operators, Merge(left.Span, operands[^1].Span));
+    }
 
-        if (CurrentToken != Token.Less &&
-            CurrentToken != Token.LessEqual &&
-            CurrentToken != Token.Greater &&
-            CurrentToken != Token.GreaterEqual &&
-            CurrentToken != Token.EqualEqual &&
-            CurrentToken != Token.BangEqual &&
-            CurrentToken != Token.In &&
-            CurrentToken != Token.Is &&
-            CurrentToken != Token.Not)
+    private static BinaryOperatorSyntax? ComparisonOperator(Token token) => token switch
+    {
+        Token.EqualEqual => BinaryOperatorSyntax.Equal,
+        Token.BangEqual => BinaryOperatorSyntax.NotEqual,
+        Token.Less => BinaryOperatorSyntax.Less,
+        Token.LessEqual => BinaryOperatorSyntax.LessEqual,
+        Token.Greater => BinaryOperatorSyntax.Greater,
+        Token.GreaterEqual => BinaryOperatorSyntax.GreaterEqual,
+        Token.In => BinaryOperatorSyntax.In,
+        Token.Is => BinaryOperatorSyntax.Is,
+        Token.Not => BinaryOperatorSyntax.NotIn,
+        _ => null,
+    };
+
+    private ExpressionSyntax? ParseComparisonOperand(ref BinaryOperatorSyntax operation)
+    {
+        var operatorToken = ReadToken();
+        if (operation == BinaryOperatorSyntax.NotIn)
         {
-            return expression;
-        }
-
-        var operands = new List<ExpressionSyntax> { expression };
-        var operators = new List<BinaryOperatorSyntax>();
-
-        while (CurrentToken is Token.Less or Token.LessEqual or Token.Greater or Token.GreaterEqual or Token.EqualEqual or Token.BangEqual or Token.In or Token.Is or Token.Not)
-        {
-            var operatorToken = ReadToken();
-            BinaryOperatorSyntax op;
-            if (_tokens.Tokens[operatorToken].Token == Token.Not)
+            if (!TryRead(Token.In, out var inToken))
             {
-                if (!TryRead(Token.In, out var inToken))
-                {
-                    AddDiagnostic("LA1039", "Expected 'in' after 'not'.", operatorToken);
-                    return null;
-                }
-
-                op = BinaryOperatorSyntax.NotIn;
-                operatorToken = inToken;
-            }
-            else if (_tokens.Tokens[operatorToken].Token == Token.Is)
-            {
-                if (CurrentToken == Token.Not)
-                {
-                    ReadToken();
-                    op = BinaryOperatorSyntax.IsNot;
-                }
-                else
-                {
-                    op = BinaryOperatorSyntax.Is;
-                }
-            }
-            else
-            {
-                op = _tokens.Tokens[operatorToken].Token switch
-                {
-                    Token.EqualEqual => BinaryOperatorSyntax.Equal,
-                    Token.BangEqual => BinaryOperatorSyntax.NotEqual,
-                    Token.Less => BinaryOperatorSyntax.Less,
-                    Token.LessEqual => BinaryOperatorSyntax.LessEqual,
-                    Token.Greater => BinaryOperatorSyntax.Greater,
-                    Token.GreaterEqual => BinaryOperatorSyntax.GreaterEqual,
-                    Token.In => BinaryOperatorSyntax.In,
-                    _ => throw new InvalidOperationException()
-                };
-            }
-
-            var right = ParseBitwiseOrExpression();
-            if (right is null)
-            {
-                AddDiagnostic("LA1040", "Expected expression after comparison operator.", operatorToken);
+                AddDiagnostic("LA1039", "Expected 'in' after 'not'.", operatorToken);
                 return null;
             }
-
-            operators.Add(op);
-            operands.Add(right);
-            expression = right;
+            operatorToken = inToken;
         }
+        else if (operation == BinaryOperatorSyntax.Is && TryRead(Token.Not, out _))
+            operation = BinaryOperatorSyntax.IsNot;
 
-        return operators.Count == 1
-            ? new BinaryExpressionSyntax(operands[0], operators[0], operands[1], Merge(operands[0].Span, operands[1].Span))
-            : new ChainedComparisonExpressionSyntax(operands, operators, Merge(operands[0].Span, operands[^1].Span));
+        var operand = ParseBitwiseOrExpression();
+        if (operand is null) AddDiagnostic("LA1040", "Expected expression after comparison operator.", operatorToken);
+        return operand;
     }
 
     private ExpressionSyntax? ParseBitwiseOrExpression()
