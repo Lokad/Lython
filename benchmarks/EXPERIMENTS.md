@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1694](results/2026-11-25-retained-async-cpython/README.md) measures
+`f6cf9796c` against CPython in eleven independent phases. Shipment and
+defaulted rules still have compile-to-result gaps. Ordinary definitions
+reach the first result sooner and take over twice as long warm. Invoice
+spans warm parity.
+
 [B1693](results/2026-11-25-boolean-linear/README.md) replaces recursive
 boolean precedence descent with a single pass. Sparse guards take
 1.00–2.98% less time through result. Mixed guards through result and the
