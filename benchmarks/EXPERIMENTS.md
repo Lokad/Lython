@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1699](results/2026-11-25-closed-default-evaluation/README.md) shares
+the closed single and paired default evaluator. Warm defaulted rules use
+0.46–2.59% less CPU, while postponed annotated rules use 7.48–13.43%
+more. Generated ordinary and live-alias definitions also slow.
+The patch stays private at matched admission.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
