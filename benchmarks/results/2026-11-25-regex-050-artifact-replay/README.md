@@ -43,3 +43,6 @@ unmeasured for this producer.
 
 [Package and assembly identities](verification.json) ·
 [Patches, build and test logs](procedures.tar.xz).
+
+The [whole-match follow-up](value-match/README.md) uses this exact producer
+to qualify a private direct adapter path for patterns with no capture groups.

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1687](results/2026-11-25-closed-iteration-call/README.md) removes the
+argument drain for short exact `starmap` tuples and shares bound callback
+entry with `map`. Bound shipment and defaulted map reduce allocation and
+CPU. The original unbound shipment uses 0.99–4.04% more async CPU.
+Defaulted rules use less warm CPU and span zero through result. The shared
+entry is retained with the unbound regression open.
+
 [B1686](results/2026-11-25-shared-default-write/README.md) consolidates
 default writes into the admitted slot. Goldens and memory agree. Defaulted
 rules use 0.64–3.14% more warm CPU and 2.04–4.70% more CPU through result.
@@ -36,6 +43,10 @@ finds missing funded-bridge APIs in the exact local `dcfe880ab` artifacts.
 The private `6edc01772` packages pass 514 focused checks per platform after
 correcting a lifetime assertion for a pull that releases all scratch. The
 record verifies package binaries in both the test and cancellation worker.
+[The whole-match follow-up](results/2026-11-25-regex-050-artifact-replay/value-match/README.md)
+uses caller-owned slots for no-group patterns. It passes 516 focused checks
+per platform and cuts warm allocation 45.54–48.37%, at identical admitted
+peaks. Grouped last-close metadata remains on the cursor path.
 
 [B1682](results/2026-11-25-tagged-default-ownership/README.md) carries slot
 ownership through construction and removes the two inline-default flags.
