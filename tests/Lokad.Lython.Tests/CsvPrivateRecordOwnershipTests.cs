@@ -86,6 +86,68 @@ public sealed class CsvPrivateRecordOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task DeferredSourceFailureDiscardsPartialRecordAndAllowsNextPull()
+    {
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var lines = new DeferredRecordLines();
+        var source = new LythonRuntime.CsvRecordSource(lines, Options(), Span, context);
+        var reader = new LythonRuntime.CsvReaderObject(source);
+        var pending = reader.TryMoveNextAsync().AsTask();
+        try
+        {
+            Assert.False(pending.IsCompleted);
+            lines.First.SetResult(PyIterationResult.Yield(PyString.FromString("\"unfinished\n")));
+            await lines.SecondEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(1, reader.LineNum);
+            Assert.False(pending.IsCompleted);
+            lines.Second.SetException(new InvalidOperationException("source mutated"));
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending.WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.Equal("RuntimeError", error.ExceptionType);
+            var row = Assert.IsType<PyList>((await reader.TryMoveNextAsync()).Value);
+            Assert.Single(row);
+            Assert.Equal("kept", Assert.IsType<PyString>(row[0]).AsString());
+            Assert.Equal(2, reader.LineNum);
+            Assert.False((await reader.TryMoveNextAsync()).HasValue);
+            Assert.Equal("kept", Assert.IsType<PyString>(row[0]).AsString());
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        finally
+        {
+            lines.First.TrySetResult(PyIterationResult.End);
+            lines.Second.TrySetResult(PyIterationResult.End);
+            try { await pending.WaitAsync(TimeSpan.FromSeconds(10)); }
+            catch (LythonRuntimeException) { }
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class DeferredRecordLines : IPyAsyncIteratorValue
+    {
+        private int _position;
+        internal TaskCompletionSource<PyIterationResult> First { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<PyIterationResult> Second { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource SecondEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+        public PyIterationResult TryMoveNext() => throw new InvalidOperationException("Expected an asynchronous pull.");
+        public ValueTask<PyIterationResult> TryMoveNextAsync()
+        {
+            switch (_position++)
+            {
+                case 0: return new(First.Task);
+                case 1:
+                    SecondEntered.SetResult();
+                    return new(Second.Task);
+                case 2: return new(PyIterationResult.Yield(PyString.FromString("kept\n")));
+                default: return new(PyIterationResult.End);
+            }
+        }
+    }
+
     private sealed class GatedHeaders(MemoryGovernor governor, string outcome) : IPyAsyncIteratorValue, IPySizedValue
     {
         private bool _yielded;

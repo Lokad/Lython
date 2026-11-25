@@ -318,145 +318,113 @@ internal sealed partial class LythonRuntime
             return -1;
         }
 
-        internal bool TryMoveNext(out object[] row)
+        internal bool TryMoveNext([NotNullWhen(true)] out object[]? row)
+            => TryReadRecord(asynchronous: false, out row, out _, out _) && row is not null;
+
+        internal ValueTask<object[]?> TryMoveNextAsync()
+            => TryReadRecord(asynchronous: true, out var row, out var line, out var item)
+                ? new(row) : ResumeReadRecord(line, item);
+
+        // A row transfers out of the parser before any further source pull.
+        // Completed sources share this loop. Only an outstanding file or
+        // iterator operation needs to carry the loop into a continuation.
+        private bool TryReadRecord(bool asynchronous, out object[]? row,
+            out ValueTask<int>? pendingLine, out ValueTask<PyIterationResult> pendingItem)
         {
-            while (true)
+            pendingLine = null;
+            pendingItem = default;
+            while (!_parser.TryTakeReady(out row) && !_completed)
             {
-                if (_parser.TryTakeReady(out row))
-                {
-                    return true;
-                }
-
-                if (_completed)
-                {
-                    row = null!;
-                    return false;
-                }
-
-                Pull();
-            }
-        }
-
-        internal async ValueTask<object[]?> TryMoveNextAsync()
-        {
-            while (true)
-            {
-                if (_parser.TryTakeReady(out var row))
-                {
-                    return row;
-                }
-
-                if (_completed)
-                {
-                    return null;
-                }
-
-                if (_nativeFile is not null)
+                if (_nativeFile is { } file)
                 {
                     int count;
-                    try { count = await _nativeFile.ReadCsvLine(this, null, asynchronous: true).ConfigureAwait(false); }
+                    try
+                    {
+                        var line = file.ReadCsvLine(this, null, asynchronous);
+                        if (asynchronous && !line.IsCompleted)
+                        {
+                            pendingLine = line;
+                            return false;
+                        }
+                        count = line.GetAwaiter().GetResult();
+                    }
                     catch { _parser.ResetRecord(); throw; }
                     if (count == EndOfNativeInput) FinishExhausted();
-                    continue;
                 }
-
-                if (_indexed is not null)
+                else if (_indexed is { } indexed)
                 {
-                    // Indexed lists never touch the host, so the async pull shares
-                    // the live-index read exactly, including advancing past the
-                    // element before feeding it: the failed line is consumed
-                    // either way so catching a mid-stream error and continuing
-                    // resumes at the following element.
-                    if (_position >= _indexed.Count)
+                    // A failed line is still consumed. Index the live list so
+                    // replacement of its storage and mutations remain visible.
+                    if (_position < indexed.Count)
                     {
-                        FinishExhausted();
-                        continue;
+                        var current = indexed[_position];
+                        _position++;
+                        FeedPulledLine(current);
                     }
-
-                    var current = _indexed[_position];
-                    _position++;
-                    FeedPulledLine(current);
-                    continue;
+                    else FinishExhausted();
                 }
-
-                PyIterationResult next;
-                try
+                else
                 {
-                    next = await _cursor!.TryMoveNextAsync().ConfigureAwait(false);
+                    PyIterationResult next;
+                    try
+                    {
+                        if (asynchronous)
+                        {
+                            var item = _cursor!.TryMoveNextAsync();
+                            if (!item.IsCompleted)
+                            {
+                                pendingItem = item;
+                                return false;
+                            }
+                            next = item.GetAwaiter().GetResult();
+                        }
+                        else next = _cursor!.TryMoveNext();
+                    }
+                    catch (InvalidOperationException) { throw CursorMutation(); }
+                    catch { _parser.ResetRecord(); throw; }
+                    AcceptCursorItem(next);
                 }
-                catch (InvalidOperationException)
-                {
-                    // Version-checked iterators (large-list storage, views)
-                    // surface concurrent modification as a CLR failure; fail
-                    // explicitly instead of leaking it.
-                    _parser.ResetRecord();
-                    throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
-                }
-                catch { _parser.ResetRecord(); throw; }
-
-                if (!next.HasValue)
-                {
-                    FinishExhausted();
-                    continue;
-                }
-
-                FeedPulledLine(next.Value);
             }
+            return true;
         }
 
-        private void Pull()
+        private async ValueTask<object[]?> ResumeReadRecord(ValueTask<int>? pendingLine,
+            ValueTask<PyIterationResult> pendingItem)
         {
-            if (_nativeFile is not null)
+            object[]? row;
+            do
             {
-                int count;
-                try { count = _nativeFile.ReadCsvLine(this, null, asynchronous: false).GetAwaiter().GetResult(); }
-                catch { _parser.ResetRecord(); throw; }
-                if (count == EndOfNativeInput) FinishExhausted();
-                return;
-            }
-            object current;
-            if (_indexed is not null)
-            {
-                // Lists read live by index, so appends, replacements, removals
-                // and clears all behave like CPython instead of detaching on
-                // wholesale storage replacement.
-                if (_position >= _indexed.Count)
+                if (pendingLine is { } line)
                 {
-                    FinishExhausted();
-                    return;
+                    int count;
+                    try { count = await line.ConfigureAwait(false); }
+                    catch { _parser.ResetRecord(); throw; }
+                    if (count == EndOfNativeInput) FinishExhausted();
                 }
-
-                current = _indexed[_position];
-                _position++;
-            }
-            else
-            {
-                bool moved;
-                try
+                else
                 {
-                    var next = _cursor!.TryMoveNext();
-                    moved = next.HasValue;
-                    current = moved ? next.Value : PyNone.Instance;
+                    PyIterationResult next;
+                    try { next = await pendingItem.ConfigureAwait(false); }
+                    catch (InvalidOperationException) { throw CursorMutation(); }
+                    catch { _parser.ResetRecord(); throw; }
+                    AcceptCursorItem(next);
                 }
-                catch (InvalidOperationException)
-                {
-                    // Version-checked iterators (large-list storage, views)
-                    // surface concurrent modification as a CLR failure; fail
-                    // explicitly instead of leaking it.
-                    _parser.ResetRecord();
-                    throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
-                }
-                catch { _parser.ResetRecord(); throw; }
+            } while (!TryReadRecord(asynchronous: true, out row, out pendingLine, out pendingItem));
+            return row;
+        }
 
-                if (!moved)
-                {
-                    FinishExhausted();
-                    return;
-                }
+        private LythonRuntimeException CursorMutation()
+        {
+            // Version-checked CLR iterators surface concurrent modification
+            // as a native failure. The next pull starts with a clean record.
+            _parser.ResetRecord();
+            return new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
+        }
 
-            }
-
-            FeedPulledLine(current);
+        private void AcceptCursorItem(PyIterationResult next)
+        {
+            if (next.HasValue) FeedPulledLine(next.Value);
+            else FinishExhausted();
         }
 
         internal const int EndOfNativeInput = -2;
