@@ -77,6 +77,12 @@ functions in an output-equivalent diagnostic. Lython takes about 39% less
 warm time and CPython about 58% less. The remaining 2.883–3.029× gap directs
 profiling toward default evaluation and operand transport.
 
+[B1729 warm default CPU attribution](results/2026-11-25-default-effects-cpu/README.md)
+confirms the two scripts each construct 160 computed call arguments per
+factory run. `shift` already skips its callee workspace. Native call
+dispatch is nearest on 292 of 1,135 default-effects samples. The result
+motivates one probe of the caller's intermediate operand publication.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
