@@ -80,6 +80,12 @@ public sealed class FormattedFieldLexicalTests
         };
         yield return new object[]
         {
+            "comparison_and_quoted_field_separators",
+            "print(f\"{1 != 2!s:>6}|{':!}='!r}\")",
+            "  True|':!}='\n"
+        };
+        yield return new object[]
+        {
             "debug_comment_after_marker",
             "x=7\nprint(repr(f\"\"\"{x= # comment = ' } ! : \\\n}\"\"\"))",
             "'x= \\n7'\n"

@@ -142,26 +142,39 @@ internal sealed partial class Parser
         debugText = null;
         message = MalformedFormattedStringMessage;
 
-        if (!TryFindFormattedStringFieldEnd(content, start, out end, cancellationToken: _cancellationToken))
+        if (!FormattedStringLexicalScanner.TryScanField(content, start, out var bounds, cancellationToken: _cancellationToken) ||
+            bounds.LastExpressionCharacter < 0 || !TryReadFieldConversion(content, bounds, out var conversion))
         {
             return false;
         }
 
-        var field = content[start..end];
-        if (!TrySplitFormattedStringField(
-                field,
-                out var expressionText,
-                out var conversion,
-                out var formatSpecifier,
-                out var expressionOffset,
-                out var formatOffset,
-                out debugText) ||
-            expressionText.Length == 0 ||
-            !TryParseEmbeddedExpression(expressionText, contentStart + start + expressionOffset, out var expression, out message))
+        end = bounds.End;
+        var expressionEnd = bounds.Conversion >= 0 ? bounds.Conversion : bounds.Format >= 0 ? bounds.Format : end;
+        var source = content.AsSpan(start, expressionEnd - start);
+        var whitespace = FormattedStringLexicalScanner.Whitespace.AsSpan();
+        if (content[bounds.LastExpressionCharacter] == '=')
+        {
+            // Only a trailing, unquoted '=' can introduce debug text. Render
+            // comments and original whitespace only for that candidate.
+            var marker = bounds.LastExpressionCharacter - start;
+            var visible = FormattedStringLexicalScanner.DebugText(source, marker, out var visibleMarker, _cancellationToken);
+            var beforeMarker = visible.AsSpan(0, visibleMarker);
+            if (beforeMarker.IsEmpty || beforeMarker[^1] is not ('=' or '!' or '<' or '>' or ':'))
+            {
+                if (beforeMarker.Trim(whitespace).IsEmpty) return false;
+                debugText = visible;
+                source = source[..marker];
+            }
+        }
+        // Keep the physical newline of a trailing explicit continuation.
+        var expressionText = source.TrimStart(whitespace);
+        var expressionStart = contentStart + start + source.Length - expressionText.Length;
+        if (expressionText.IsEmpty || !TryParseEmbeddedExpression(expressionText.ToString(), expressionStart, out var expression, out message))
         {
             return false;
         }
 
+        var formatSpecifier = bounds.Format >= 0 ? content[(bounds.Format + 1)..end] : null;
         IReadOnlyList<FormattedStringPartSyntax>? formatSpecifierParts = null;
         if (formatSpecifier is not null &&
             (formatSpecifier.Contains('{', StringComparison.Ordinal) || formatSpecifier.Contains('}', StringComparison.Ordinal)))
@@ -170,7 +183,7 @@ internal sealed partial class Parser
                 !TryParseFormattedStringContent(
                     prefix,
                     formatSpecifier,
-                    contentStart + start + formatOffset,
+                    contentStart + bounds.Format + 1,
                     inFormatSpecifier: true,
                     allowNestedFormatFields: false,
                     out formatSpecifierParts,
@@ -201,285 +214,23 @@ internal sealed partial class Parser
         return true;
     }
 
-    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0,
-        CancellationToken cancellationToken = default, List<int>? newlines = null)
+    private bool TryReadFieldConversion(ReadOnlySpan<char> content, FormattedStringLexicalScanner.FieldBounds bounds, out char? conversion)
     {
-        end = -1;
-        if (depth >= MaxNestingDepth) return false;
-        var parenDepth = 0;
-        var bracketDepth = 0;
-        var braceDepth = 0;
-        var format = false;
-
-        for (var i = start; i < content.Length; i++)
-        {
-            PythonTokenization.CheckCancellation(cancellationToken, i);
-            var c = content[i];
-            if (c == '\n') newlines?.Add(i);
-            if (format)
-            {
-                if (c == '\\' && i + 1 < content.Length && content[i + 1] is not ('{' or '}'))
-                {
-                    FormattedStringLexicalScanner.AdvanceEscape(content, ref i, newlines);
-                    continue;
-                }
-                if (outerQuoteWidth == 1 && c is '\r' or '\n') return false;
-                if (c == outerQuote && (outerQuoteWidth == 1 ||
-                    i + 2 < content.Length && content[i + 1] == c && content[i + 2] == c)) return false;
-                if (c == '{')
-                {
-                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth, cancellationToken, newlines)) return false;
-                }
-                else if (c == '}')
-                {
-                    end = i;
-                    return true;
-                }
-                continue;
-            }
-            if (c == '#')
-            {
-                FormattedStringLexicalScanner.SkipComment(content, ref i, cancellationToken);
-                continue;
-            }
-            if (c is '"' or '\'')
-            {
-                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1, cancellationToken, newlines))
-                {
-                    return false;
-                }
-
-                continue;
-            }
-            if (c == ':' && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0)
-            {
-                format = true;
-                continue;
-            }
-
-            switch (c)
-            {
-                case '(':
-                    parenDepth++;
-                    break;
-                case ')':
-                    if (parenDepth == 0)
-                    {
-                        return false;
-                    }
-
-                    parenDepth--;
-                    break;
-                case '[':
-                    bracketDepth++;
-                    break;
-                case ']':
-                    if (bracketDepth == 0)
-                    {
-                        return false;
-                    }
-
-                    bracketDepth--;
-                    break;
-                case '{':
-                    braceDepth++;
-                    break;
-                case '}':
-                    if (parenDepth == 0 && bracketDepth == 0 && braceDepth == 0)
-                    {
-                        end = i;
-                        return true;
-                    }
-
-                    if (braceDepth == 0)
-                    {
-                        return false;
-                    }
-
-                    braceDepth--;
-                    break;
-            }
-        }
-
-        return false;
-    }
-
-    private bool TrySplitFormattedStringField(
-        string field,
-        out string expressionText,
-        out char? conversion,
-        out string? formatSpecifier,
-        out int expressionOffset,
-        out int formatOffset,
-        out string? debugText)
-    {
-        expressionText = string.Empty;
         conversion = null;
-        formatSpecifier = null;
-        debugText = null;
-        expressionOffset = 0;
-        formatOffset = 0;
+        if (bounds.Conversion < 0) return true;
+        if (bounds.Conversion + 1 >= bounds.End) return false;
+        conversion = content[bounds.Conversion + 1];
+        if (conversion is not ('s' or 'r' or 'a')) return false;
 
-        if (!TryFindFormattedStringSeparators(field, out var conversionIndex, out var formatIndex))
-        {
-            return false;
-        }
-
-        var expressionEnd = conversionIndex >= 0
-            ? conversionIndex
-            : formatIndex >= 0
-                ? formatIndex
-                : field.Length;
-        var expressionSource = field[..expressionEnd];
-        var visibleExpression = FormattedStringLexicalScanner.DebugText(expressionSource, out var debugMarker, _cancellationToken);
-        var debugEnd = visibleExpression.Length - 1;
-        while (debugEnd >= 0 && FormattedStringLexicalScanner.IsWhitespace(visibleExpression[debugEnd]))
-        {
-            CheckCancellation(debugEnd);
-            debugEnd--;
-        }
-
-        if (debugEnd >= 0 &&
-            visibleExpression[debugEnd] == '=' &&
-            (debugEnd == 0 || visibleExpression[debugEnd - 1] is not ('=' or '!' or '<' or '>' or ':')))
-        {
-            debugText = visibleExpression;
-            visibleExpression = visibleExpression[..debugEnd];
-            // Locate the actual debug marker without disturbing source offsets.
-            expressionSource = expressionSource[..debugMarker];
-        }
-
-        expressionOffset = expressionSource.Length - expressionSource.TrimStart(FormattedStringLexicalScanner.Whitespace).Length;
-        // Keep the physical newline of a trailing explicit continuation.
-        expressionText = expressionSource[expressionOffset..];
-        if (visibleExpression.Trim(FormattedStringLexicalScanner.Whitespace).Length == 0) return false;
-
-        if (conversionIndex >= 0)
-        {
-            if (conversionIndex + 1 >= field.Length)
-            {
-                return false;
-            }
-
-            conversion = field[conversionIndex + 1];
-            if (conversion is not ('s' or 'r' or 'a'))
-            {
-                return false;
-            }
-
-            var afterConversion = conversionIndex + 2;
-            while (afterConversion < field.Length)
-            {
-                CheckCancellation(afterConversion);
-                if (FormattedStringLexicalScanner.IsWhitespace(field[afterConversion])) afterConversion++;
-                else if (field[afterConversion] == '#')
-                {
-                    FormattedStringLexicalScanner.SkipComment(field, ref afterConversion, _cancellationToken);
-                    afterConversion++;
-                }
-                else break;
-            }
-            if (afterConversion < field.Length)
-            {
-                if (field[afterConversion] != ':')
-                {
-                    return false;
-                }
-
-                formatIndex = afterConversion;
-            }
-        }
-
-        if (formatIndex >= 0)
-        {
-            formatSpecifier = field[(formatIndex + 1)..];
-            formatOffset = formatIndex + 1;
-        }
-
-        return true;
-    }
-
-    private bool TryFindFormattedStringSeparators(string field, out int conversionIndex, out int formatIndex)
-    {
-        conversionIndex = -1;
-        formatIndex = -1;
-        var parenDepth = 0;
-        var bracketDepth = 0;
-        var braceDepth = 0;
-
-        for (var i = 0; i < field.Length; i++)
+        var limit = bounds.Format >= 0 ? bounds.Format : bounds.End;
+        for (var i = bounds.Conversion + 2; i < limit; i++)
         {
             CheckCancellation(i);
-            var c = field[i];
-            if (c == '#')
-            {
-                FormattedStringLexicalScanner.SkipComment(field, ref i, _cancellationToken);
-                continue;
-            }
-            if (c is '"' or '\'')
-            {
-                if (!FormattedStringLexicalScanner.TrySkipString(field, ref i, cancellationToken: _cancellationToken))
-                {
-                    return false;
-                }
-
-                continue;
-            }
-
-            if (parenDepth == 0 && bracketDepth == 0 && braceDepth == 0)
-            {
-                if (c == ':' && formatIndex < 0)
-                {
-                    formatIndex = i;
-                    return true;
-                }
-
-                if (c == '!' && i + 1 < field.Length && field[i + 1] != '=' && conversionIndex < 0)
-                {
-                    conversionIndex = i;
-                    continue;
-                }
-            }
-
-            switch (c)
-            {
-                case '(':
-                    parenDepth++;
-                    break;
-                case ')':
-                    if (parenDepth == 0)
-                    {
-                        return false;
-                    }
-
-                    parenDepth--;
-                    break;
-                case '[':
-                    bracketDepth++;
-                    break;
-                case ']':
-                    if (bracketDepth == 0)
-                    {
-                        return false;
-                    }
-
-                    bracketDepth--;
-                    break;
-                case '{':
-                    braceDepth++;
-                    break;
-                case '}':
-                    if (braceDepth == 0)
-                    {
-                        return false;
-                    }
-
-                    braceDepth--;
-                    break;
-            }
+            if (content[i] == '#')
+                FormattedStringLexicalScanner.SkipComment(content[..limit], ref i, _cancellationToken);
+            else if (!FormattedStringLexicalScanner.IsWhitespace(content[i])) return false;
         }
-
-        return parenDepth == 0 && bracketDepth == 0 && braceDepth == 0;
+        return true;
     }
 
     private bool TryParseEmbeddedExpression(string expressionText, int expressionStart, [MaybeNullWhen(false)] out ExpressionSyntax expression, out string message)

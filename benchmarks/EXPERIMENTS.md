@@ -57,6 +57,14 @@ The representative report allocates 3.91% less at compilation and the
 inspected tapes match. Compile-to-result elapsed spans zero. The 1,024-row
 warm report leans adverse. Retain the frontend change and the warm evidence.
 
+[B1726 shared f-string field scan](results/2026-11-25-single-formatted-field-scan/README.md)
+removes the repeated delimiter scan and the ordinary debug builder. The
+[refinement](results/2026-11-25-single-formatted-field-scan/confirmation/README.md)
+preserves cancellation while carrying the debug marker. Compiler allocation
+falls another 1.16%. The small report uses less CPU through result in both
+blocks, and the warm report's adverse range narrows in confirmation. Retain
+the refined source and both timing blocks.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
