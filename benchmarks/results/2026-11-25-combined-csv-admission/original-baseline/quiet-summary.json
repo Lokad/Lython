@@ -1,0 +1,37 @@
+{
+  "sourcePatch": "7379a93466118f32728e45665c19be1c0109262481185ee0b41924ed10637286",
+  "reference": "4e8e60923672f910df148565eaa6fdb82bb15605",
+  "timedBatches": 28,
+  "lanes": 1,
+  "elapsedSeconds": 64.85796944517642,
+  "rows": [
+    {
+      "case": "diagnostic.shipment-file-fed-map",
+      "lane": "warm-async",
+      "elapsedPercent": [
+        -15.19102570422557,
+        -6.255416433044725
+      ],
+      "cpuPercent": [
+        -14.767337209019482,
+        -4.89451476793249
+      ],
+      "sameSourceElapsedSpreadPercent": [
+        1.6895872213745333,
+        8.699585742687542
+      ],
+      "elapsedMediansMs": {
+        "candidate": 0.5644887670886076,
+        "reference": 0.612330094520548,
+        "candidate-control": 0.5193108724672229,
+        "reference-control": 0.6021561413043478
+      },
+      "widerCpuMediansMs": {
+        "candidate": 0.620253164556962,
+        "reference": 0.6712328767123288,
+        "candidate-control": 0.5721096543504172,
+        "reference-control": 0.6521739130434783
+      }
+    }
+  ]
+}

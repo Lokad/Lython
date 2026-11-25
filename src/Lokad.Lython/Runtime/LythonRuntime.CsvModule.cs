@@ -294,6 +294,7 @@ internal sealed partial class LythonRuntime
 
         internal int UnpackNext(Memory<ExecutableSlot> destination)
         {
+            _nativeFile?.CheckCsvReadReentry();
             while (_nativeFile is { } file)
             {
                 int count;
@@ -307,6 +308,7 @@ internal sealed partial class LythonRuntime
 
         internal async ValueTask<int> UnpackNextAsync(Memory<ExecutableSlot> destination)
         {
+            _nativeFile?.CheckCsvReadReentry();
             while (_nativeFile is { } file)
             {
                 int count;
@@ -319,28 +321,43 @@ internal sealed partial class LythonRuntime
         }
 
         internal bool TryMoveNext([NotNullWhen(true)] out object[]? row)
-            => TryReadRecord(asynchronous: false, out row, out _, out _) && row is not null;
+        {
+            row = (object[]?)ReadNext(null);
+            return row is not null;
+        }
 
-        internal ValueTask<object[]?> TryMoveNextAsync()
-            => TryReadRecord(asynchronous: true, out var row, out var line, out var item)
-                ? new(row) : ResumeReadRecord(line, item);
+        internal object? ReadNext(CsvDictReaderObject? dictionary)
+        {
+            _nativeFile?.CheckCsvReadReentry();
+            TryReadRecord(dictionary, asynchronous: false, out var row, out _, out _);
+            return row;
+        }
+
+        internal ValueTask<object?> TryMoveNextAsync(CsvDictReaderObject? dictionary = null)
+        {
+            // A budget hook can try to read the same source. Reject that pull
+            // before its error path can reset the active parser's descriptors.
+            _nativeFile?.CheckCsvReadReentry();
+            return TryReadRecord(dictionary, asynchronous: true, out var row, out var line, out var item)
+                ? new(row) : ResumeReadRecord(dictionary, line, item);
+        }
 
         // A row transfers out of the parser before any further source pull.
         // Completed sources share this loop. Only an outstanding file or
         // iterator operation needs to carry the loop into a continuation.
-        private bool TryReadRecord(bool asynchronous, out object[]? row,
+        private bool TryReadRecord(CsvDictReaderObject? dictionary, bool asynchronous, out object? row,
             out ValueTask<int>? pendingLine, out ValueTask<PyIterationResult> pendingItem)
         {
             pendingLine = null;
             pendingItem = default;
-            while (!_parser.TryTakeReady(out row) && !_completed)
+            while (!_parser.TryTakeCompleted(out row) && !_completed)
             {
                 if (_nativeFile is { } file)
                 {
                     int count;
                     try
                     {
-                        var line = file.ReadCsvLine(this, null, asynchronous);
+                        var line = file.ReadCsvLine(this, null, asynchronous, dictionary);
                         if (asynchronous && !line.IsCompleted)
                         {
                             pendingLine = line;
@@ -388,10 +405,10 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private async ValueTask<object[]?> ResumeReadRecord(ValueTask<int>? pendingLine,
+        private async ValueTask<object?> ResumeReadRecord(CsvDictReaderObject? dictionary, ValueTask<int>? pendingLine,
             ValueTask<PyIterationResult> pendingItem)
         {
-            object[]? row;
+            object? row;
             do
             {
                 if (pendingLine is { } line)
@@ -409,7 +426,7 @@ internal sealed partial class LythonRuntime
                     catch { _parser.ResetRecord(); throw; }
                     AcceptCursorItem(next);
                 }
-            } while (!TryReadRecord(asynchronous: true, out row, out pendingLine, out pendingItem));
+            } while (!TryReadRecord(dictionary, asynchronous: true, out row, out pendingLine, out pendingItem));
             return row;
         }
 
@@ -438,11 +455,12 @@ internal sealed partial class LythonRuntime
             return _parser.ConsumeStagedLine(before, destination);
         }
 
-        internal int ConsumeBorrowedNativeLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination)
+        internal int ConsumeBorrowedNativeLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination,
+            CsvDictReaderObject? dictionary)
         {
             _context.CheckExecution(_span);
             PhysicalLineCount++;
-            return _parser.ConsumeBorrowedLine(line, destination);
+            return _parser.ConsumeBorrowedLine(line, destination, dictionary);
         }
 
         private void FeedPulledLine(object current)
@@ -528,7 +546,10 @@ internal sealed partial class LythonRuntime
         private int _fieldStart;
         private long _stringBytes;
         private int _payloadBytes;
-        private object[]? _readyRecord;
+        // A buffered file can complete an inferred-header dictionary directly.
+        // Otherwise the same slot publishes the private array for the caller.
+        private object? _readyRecord;
+        private const int ReusableFieldCapacity = 1024;
         private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote, AfterEscapedNewline }
         private FieldState _state;
         private bool _fieldWasQuoted;
@@ -550,10 +571,11 @@ internal sealed partial class LythonRuntime
         internal int ConsumeStagedLine(int before, Memory<ExecutableSlot>? destination)
             => DescribeOwnedLine(before) ? PublishRecord(_record.WrittenSpan, destination) : -1;
 
-        private int PublishRecord(ReadOnlySpan<byte> source, Memory<ExecutableSlot>? destination)
+        private int PublishRecord(ReadOnlySpan<byte> source, Memory<ExecutableSlot>? destination,
+            CsvDictReaderObject? dictionary = null)
         {
             if (destination is { } slots) return UnpackRecord(source, slots.Span);
-            EmitRecord(source);
+            EmitRecord(source, dictionary);
             return -1;
         }
 
@@ -700,14 +722,16 @@ internal sealed partial class LythonRuntime
         // pulled until this independently funded result has been transferred.
         public bool TryTakeReady(out object[] row)
         {
-            if (_readyRecord is null)
-            {
-                row = null!;
-                return false;
-            }
+            var present = TryTakeCompleted(out var record);
+            row = (object[])record!;
+            return present;
+        }
+
+        internal bool TryTakeCompleted(out object? row)
+        {
             row = _readyRecord;
             _readyRecord = null;
-            return true;
+            return row is not null;
         }
 
         public void Feed(ReadOnlySpan<byte> text)
@@ -721,9 +745,10 @@ internal sealed partial class LythonRuntime
             else Feed(text.Utf8Span);
         }
 
-        internal int ConsumeBorrowedLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination)
+        internal int ConsumeBorrowedLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination,
+            CsvDictReaderObject? dictionary = null)
         {
-            if (TryDescribeLiteralRecord(line, out var nextField)) return PublishRecord(line, destination);
+            if (TryDescribeLiteralRecord(line, out var nextField)) return PublishRecord(line, destination, dictionary);
 
             // Retain only the already described prefix if the general parser
             // needs to transform or continue the record. Its offsets stay valid.
@@ -955,13 +980,15 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void EmitRecord(ReadOnlySpan<byte> source)
+        private void EmitRecord(ReadOnlySpan<byte> source, CsvDictReaderObject? dictionary = null)
         {
             // Admit all ordinary field payloads once, while working bytes and
             // old capacities remain funded. The private array includes headroom
             // for adoption by csv.reader; each value keeps independent funding.
             var rowBytes = PyList.EstimateCapacityBytes(_fields.Count);
-            var resultBytes = checked(_stringBytes + rowBytes);
+            var layout = _fields.Capacity <= ReusableFieldCapacity ? dictionary?.PrivateLayout(_fields.Count) : null;
+            var shellBytes = layout is null ? 0 : PyDict.RecordKeys.CsvRecordShellBytes;
+            var resultBytes = checked(_stringBytes + rowBytes + shellBytes);
             var governor = _context.MemoryGovernor;
             governor.Reserve(resultBytes, _span);
             try
@@ -979,8 +1006,22 @@ internal sealed partial class LythonRuntime
                     row[index++] = ReadField(source, field, payload, ref payloadOffset);
                 }
                 _context.CheckExecution(_span);
+                object result = row;
+                if (layout is not null)
+                {
+                    // Admission can expose or replace the header. A raw row
+                    // falls back to the live DictReader protocol after the pull.
+                    if (ReferenceEquals(layout, dictionary!.PrivateLayout(row.Length)))
+                        result = layout.AdoptFundedCsvRecord(row, governor, _span);
+                    else
+                    {
+                        resultBytes -= shellBytes;
+                        governor.ReleaseReserved(shellBytes);
+                        _context.CheckExecution(_span);
+                    }
+                }
                 governor.Commit(resultBytes);
-                _readyRecord = row;
+                _readyRecord = result;
             }
             catch { governor.ReleaseReserved(resultBytes); throw; }
             ResetRecord();
@@ -1073,7 +1114,7 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseRowScratch()
         {
-            if (_fields.Capacity > 1024)
+            if (_fields.Capacity > ReusableFieldCapacity)
             {
                 var before = _fields.Capacity;
                 _fields.TrimExcess();

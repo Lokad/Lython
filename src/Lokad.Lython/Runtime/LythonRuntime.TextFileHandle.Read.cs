@@ -213,7 +213,8 @@ internal sealed partial class LythonRuntime
                 return CompleteReadAsync(pending);
             }
 
-            internal ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous)
+            internal ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous,
+                CsvDictReaderObject? dictionary = null)
             {
                 var buffer = source.NativeLineBuffer;
                 var before = buffer.Length;
@@ -223,7 +224,7 @@ internal sealed partial class LythonRuntime
                 var completed = false;
                 try
                 {
-                    if (before == 0 && source.CanBorrowNativeLine && TryConsumeBufferedCsvLine(source, destination, out var fields))
+                    if (before == 0 && source.CanBorrowNativeLine && TryConsumeBufferedCsvLine(source, destination, dictionary, out var fields))
                         borrowedFields = fields;
                     else
                         pending = ReadLineCore(-1, asynchronous, buffer);
@@ -271,7 +272,8 @@ internal sealed partial class LythonRuntime
                 => borrowedFields ?? (source.NativeLineBuffer.Length == before
                     ? CsvRecordSource.EndOfNativeInput : source.ConsumeStagedNativeLine(before, destination));
 
-            private bool TryConsumeBufferedCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, out int fields)
+            private bool TryConsumeBufferedCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination,
+                CsvDictReaderObject? dictionary, out int fields)
             {
                 fields = -1;
                 var start = _windowConsumed;
@@ -284,7 +286,7 @@ internal sealed partial class LythonRuntime
                 // admission. Retained fields still receive independent payload.
                 Advance(end);
                 _services.CheckExecution(null);
-                fields = source.ConsumeBorrowedNativeLine(bytes[start..end], destination);
+                fields = source.ConsumeBorrowedNativeLine(bytes[start..end], destination, dictionary);
                 return true;
             }
 
@@ -407,8 +409,15 @@ internal sealed partial class LythonRuntime
             {
                 _services.CheckExecution(null);
                 EnsureNotReleased();
-                if (_reading) throw RuntimeErrors.Runtime("reentrant text read", null);
+                ThrowIfReading();
                 _reading = true;
+            }
+
+            internal void ThrowIfReading()
+            {
+                if (!_reading) return;
+                _services.CheckExecution(null);
+                throw RuntimeErrors.Runtime("reentrant text read", null);
             }
 
             private void EndRead(bool failed)

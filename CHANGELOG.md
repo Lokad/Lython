@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit the buffered `DictReader` row and dictionary together when the inferred
+  header is private. Preserve the active record when a nested pull is refused.
 - Keep the binding of a simple eager list projection in its scope and pass the
   yielded item directly into its expression. Preserve iterator-visible locals.
 - Defer constructing eligible write-only local functions until their scope can

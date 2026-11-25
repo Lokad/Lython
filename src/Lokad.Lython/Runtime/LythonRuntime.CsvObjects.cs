@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
-            var row = await Records.TryMoveNextAsync().ConfigureAwait(false);
+            var row = (object[]?)await Records.TryMoveNextAsync().ConfigureAwait(false);
             return row is null ? PyIterationResult.End : PyIterationResult.Yield(Records.AdoptRecord(row));
         }
 
@@ -65,6 +65,8 @@ internal sealed partial class LythonRuntime
         public CsvRecordSource Rows { get; }
         private readonly CsvReaderObject _reader;
         private PyDict.RecordKeys? _recordKeys;
+        private PyDict.RecordKeys? _privateRecordKeys;
+        private bool _fieldNamesExposed;
         private ExecutableSlot _lineNumber = ExecutableSlot.FromInteger(0);
 
         public CsvDictReaderObject(CsvRecordSource rows, object fieldNames, object restKey, object restValue,
@@ -72,13 +74,14 @@ internal sealed partial class LythonRuntime
         {
             Rows = rows; _fieldNames = fieldNames; _restKey = restKey; _restValue = restValue;
             _context = context; _span = span; _reader = new CsvReaderObject(rows);
+            _fieldNamesExposed = fieldNames is not PyNone;
         }
         public bool IsTruthy() => true;
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "fieldnames" => GetFieldNamesAsync(false).GetAwaiter().GetResult(),
+                "fieldnames" => ExposeFieldNamesAsync(false).GetAwaiter().GetResult(),
                 "restkey" => _restKey, "restval" => _restValue,
                 "line_num" => _lineNumber.Object.RequireNotNull(), "reader" => _reader,
                 _ => MissingMemberValue.Instance,
@@ -86,24 +89,39 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance) || IteratorMembers.TryGetMember(this, name, out value);
         }
         public async ValueTask<(bool Found, object Value)> TryGetMemberAsync(string name, ExecutionContext context, LythonSourceSpan span)
-            => name == "fieldnames" ? (true, await GetFieldNamesAsync(true).ConfigureAwait(false))
+            => name == "fieldnames" ? (true, await ExposeFieldNamesAsync(true).ConfigureAwait(false))
                 : TryGetMember(name, out var value) ? (true, value) : (false, PyNone.Instance);
         public bool TrySetMember(string name, object value)
         {
             switch (name)
             {
-                case "fieldnames": _fieldNames = value; return true;
+                case "fieldnames":
+                    _fieldNamesExposed = true;
+                    _privateRecordKeys = null;
+                    _fieldNames = value;
+                    return true;
                 case "restkey": _restKey = value; return true;
                 case "restval": _restValue = value; return true;
                 case "line_num": _lineNumber.Object = value; return true;
                 default: return false;
             }
         }
+        private ValueTask<object> ExposeFieldNamesAsync(bool asynchronous)
+        {
+            _fieldNamesExposed = true;
+            _privateRecordKeys = null;
+            return GetFieldNamesAsync(asynchronous);
+        }
+
+        internal PyDict.RecordKeys? PrivateLayout(int width)
+            => _privateRecordKeys is { } layout && layout.Count == width ? layout : null;
+
         private async ValueTask<object> GetFieldNamesAsync(bool asynchronous)
         {
             if (_fieldNames is PyNone)
             {
-                var row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
+                var row = (object[]?)(asynchronous
+                    ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.ReadNext(null));
                 if (row is not null) _fieldNames = Rows.AdoptRecord(row);
             }
             _lineNumber.SetInteger(Rows.PhysicalLineCount);
@@ -137,23 +155,31 @@ internal sealed partial class LythonRuntime
             object[]? row = null;
             try
             {
-                row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
-                if (row is null) return PyIterationResult.End;
-                _lineNumber.SetInteger(Rows.PhysicalLineCount);
-                while (row.Length == 0)
+                var first = true;
+                while (true)
                 {
-                    var blank = row;
+                    var complete = asynchronous ? await Rows.TryMoveNextAsync(this).ConfigureAwait(false) : Rows.ReadNext(this);
+                    if (complete is null) return PyIterationResult.End;
+                    if (complete is PyDict completed)
+                    {
+                        _lineNumber.SetInteger(Rows.PhysicalLineCount);
+                        return PyIterationResult.Yield(completed);
+                    }
+                    row = (object[])complete;
+                    if (first)
+                    {
+                        _lineNumber.SetInteger(Rows.PhysicalLineCount);
+                        first = false;
+                    }
+                    if (row.Length != 0) break;
                     row = null;
-                    Rows.ReleaseRecord(blank);
-                    row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out next) ? next : null;
-                    if (row is null) return PyIterationResult.End;
+                    Rows.ReleaseRecord((object[])complete);
                 }
                 var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
                 var recordKeys = _recordKeys;
                 if (fields is PyList unchanged &&
                     recordKeys?.TryAdoptRecord(unchanged, row, _context, _span) is { } adopted)
                 {
-                    _recordKeys = recordKeys;
                     row = null; // The dictionary now owns this funded capacity.
                     return PyIterationResult.Yield(adopted);
                 }
@@ -177,6 +203,10 @@ internal sealed partial class LythonRuntime
                             RestFields(row, new BigInteger(names.Count)));
                     }
                     _recordKeys = record.ShareRecordKeys(_context, _span);
+                    if (!_fieldNamesExposed && ReferenceEquals(_fieldNames, names) &&
+                        _recordKeys is { } layout && layout.MatchesCsvFields(names, row.Length, _context, _span))
+                        _privateRecordKeys = layout;
+                    else _privateRecordKeys = null;
                     return PyIterationResult.Yield(record);
                 }
                 var result = new PyDict(_context.MemoryGovernor, _span);

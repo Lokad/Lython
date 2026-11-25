@@ -203,6 +203,31 @@ internal sealed partial class PyDict
         internal static long RecordBytes(int capacity)
             => checked(NativeShellBytes + (capacity == 0 ? 0 : 32L + (8L + RuntimeMemoryEstimates.ScalarStorageBytes) * capacity));
 
+        internal const long CsvRecordShellBytes = NativeShellBytes;
+
+        internal bool MatchesCsvFields(PyList fields, int width,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            if (fields.Count != Count || width != Count) return false;
+            for (var i = 0; i < Count; i++)
+            {
+                context.CheckExecution(span);
+                if (!ReferenceEquals(_keys[i].Key, fields[i])) return false;
+            }
+            return true;
+        }
+
+        internal PyDict AdoptFundedCsvRecord(object[] values, MemoryGovernor owner, LythonSourceSpan span)
+        {
+            System.Diagnostics.Debug.Assert(ReferenceEquals(_owner, owner) && values.Length == Count);
+            return new PyDict(_keys, this, _sequence, 0, owner, span)
+            {
+                _nativeValues = values,
+                _nativeCount = values.Length,
+                _nativeCommittedBytes = checked(NativeShellBytes + PyList.EstimateCapacityBytes(values.Length)),
+            };
+        }
+
         // The caller transfers an exclusively owned, already-funded CSV row.
         // Preserve actual key identities, not only equivalent header text.
         internal PyDict? TryAdoptRecord(PyList fields, object[] values,
@@ -211,7 +236,7 @@ internal sealed partial class PyDict
             context.CheckExecution(span);
             if (_owner is null || !ReferenceEquals(_owner, context.MemoryGovernor))
                 throw new InvalidOperationException("Record keys must retain their execution owner.");
-            if (!MatchesFields()) return null;
+            if (!MatchesCsvFields(fields, values.Length, context, span)) return null;
             _owner.Reserve(NativeShellBytes, span);
             var committed = false;
             try
@@ -219,30 +244,13 @@ internal sealed partial class PyDict
                 context.CheckExecution(span);
                 // Admission can mutate headers or reenter the reader. No callback
                 // or further admission occurs between this proof and publication.
-                if (!MatchesFields()) return null;
-                var record = new PyDict(_keys, this, _sequence, 0, _owner, span)
-                {
-                    _nativeValues = values,
-                    _nativeCount = values.Length,
-                    // Transfer the row's original funded capacity to the record.
-                    _nativeCommittedBytes = checked(NativeShellBytes + PyList.EstimateCapacityBytes(values.Length)),
-                };
+                if (!MatchesCsvFields(fields, values.Length, context, span)) return null;
+                var record = AdoptFundedCsvRecord(values, _owner, span);
                 _owner.Commit(NativeShellBytes);
                 committed = true;
                 return record;
             }
             finally { if (!committed) _owner.ReleaseReserved(NativeShellBytes); }
-
-            bool MatchesFields()
-            {
-                if (fields.Count != Count || values.Length != Count) return false;
-                for (var i = 0; i < Count; i++)
-                {
-                    context.CheckExecution(span);
-                    if (!ReferenceEquals(_keys[i].Key, fields[i])) return false;
-                }
-                return true;
-            }
         }
 
         internal PyString? MatchDelimitedName(ReadOnlySpan<byte> source, int position, byte delimiter,

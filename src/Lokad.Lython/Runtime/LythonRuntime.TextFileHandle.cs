@@ -254,10 +254,16 @@ internal sealed partial class LythonRuntime
                 return RequireReader().ReadLine(size);
             }
 
-            internal ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous)
+            internal void CheckCsvReadReentry()
+            {
+                if (_state is ChunkedTextFileReadState reader) reader.ThrowIfReading();
+            }
+
+            internal ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous,
+                CsvDictReaderObject? dictionary = null)
             {
                 EnsureOpen();
-                return RequireReader().ReadCsvLine(source, destination, asynchronous);
+                return RequireReader().ReadCsvLine(source, destination, asynchronous, dictionary);
             }
 
             public PyList ReadLines() => ReadLines(-1);

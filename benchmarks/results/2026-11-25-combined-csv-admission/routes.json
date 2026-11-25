@@ -1,0 +1,116 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "Combined": 3064,
+        "PrivateArray": 1033,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": true,
+      "routes": {
+        "Combined": 3064,
+        "PrivateArray": 1033,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "Combined": 2046,
+        "PrivateArray": 3,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "Combined": 2046,
+        "PrivateArray": 3,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "Combined": 2046,
+        "PrivateArray": 3,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "Combined": 2046,
+        "PrivateArray": 3,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-plain-reader",
+      "asynchronous": false,
+      "routes": {
+        "Combined": 0,
+        "PrivateArray": 4097,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 8252450,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-plain-reader",
+      "asynchronous": true,
+      "routes": {
+        "Combined": 0,
+        "PrivateArray": 4097,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 8252450,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "Combined": 0,
+        "PrivateArray": 0,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "Combined": 0,
+        "PrivateArray": 0,
+        "Unpacked": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

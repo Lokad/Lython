@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1738 combined CSV record admission](results/2026-11-25-combined-csv-admission/README.md)
+removes the second shell reservation and repeated header validation for verified
+private headers. The confirmation uses 10.00–13.40% less file-fed map warm
+async CPU and 4.00–7.43% less shipment CPU. Quoted invoice and plain reader
+timing span zero. In a separate paired block, file-fed map also beats the
+pre-comprehension baseline with wide candidate spread. A baseline regression
+reproduces an empty row after a refused nested raw pull. The active parser
+keeps its record with the new guard. [Confirmation](results/2026-11-25-combined-csv-admission/confirmation/README.md) ·
+[Original-baseline check](results/2026-11-25-combined-csv-admission/original-baseline/README.md).
+
 [B1737 forwarded comprehension bindings](results/2026-11-25-forwarded-comprehension-binding/README.md)
 removes the named store and reload for single-target list projections and
 bypasses the suspension wrapper for ordinary display append. Shipment warm CPU

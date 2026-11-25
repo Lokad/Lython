@@ -203,7 +203,7 @@ public sealed class CsvExhaustedInputLifetimeTests
         var count = 0;
         while (true)
         {
-            var row = asynchronous ? source.TryMoveNextAsync().GetAwaiter().GetResult() :
+            var row = asynchronous ? (object[]?)source.TryMoveNextAsync().GetAwaiter().GetResult() :
                 source.TryMoveNext(out var next) ? next : null;
             if (row is null) break;
             if (count++ == 0 && retention == "field") field = (PyString)row[0];

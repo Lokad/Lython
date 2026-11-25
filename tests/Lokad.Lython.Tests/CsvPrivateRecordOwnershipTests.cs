@@ -52,6 +52,50 @@ public sealed class CsvPrivateRecordOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReentrantRawPullCannotDiscardTheActiveNativeRecord(bool asynchronous)
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/csv", "10,20\n30,40\n50,60\n");
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(host, new() { MemoryBudget = hook });
+        var file = await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync("/csv", context,
+            LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
+        var source = new LythonRuntime.CsvRecordSource(file, Options(), Span, context);
+        var reader = new LythonRuntime.CsvReaderObject(source);
+        async ValueTask<PyList> Next()
+            => Assert.IsType<PyList>((asynchronous ? await reader.TryMoveNextAsync() : reader.TryMoveNext()).Value);
+        string[] Values(PyList row) => row.Cast<PyString>().Select(value => value.AsString()).ToArray();
+        try
+        {
+            var first = await Next();
+            var nestedRefused = false;
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                var failure = Assert.Throws<LythonRuntimeException>(() => reader.TryMoveNext());
+                Assert.Equal("reentrant text read", failure.Message);
+                nestedRefused = true;
+            };
+            Assert.Equal(["30", "40"], Values(await Next()));
+            Assert.True(nestedRefused);
+            Assert.Equal(["10", "20"], Values(first));
+            Assert.Equal(["50", "60"], Values(await Next()));
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        finally
+        {
+            hook.AfterGrowth = null;
+            context.State.CloseResources();
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void PublicRowAdoptsItsFundedArrayWithoutCopyOrNewAdmission()
     {

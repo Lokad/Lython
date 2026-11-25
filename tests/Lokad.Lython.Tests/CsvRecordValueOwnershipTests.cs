@@ -61,6 +61,97 @@ public sealed class CsvRecordValueOwnershipTests
     }
 
     [Theory]
+    [InlineData(false, "adopt")]
+    [InlineData(true, "expose")]
+    [InlineData(false, "reenter")]
+    [InlineData(true, "cancel")]
+    [InlineData(true, "refuse")]
+    public async Task BufferedRecordKeepsItsHeaderAndInputValidDuringAdmission(bool asynchronous, string outcome)
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/csv", "a,b\n10,20\n30,40\n50,60\n");
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(host, new()
+        {
+            MemoryBudget = hook, CancellationToken = cancellation.Token,
+        });
+        var file = await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync("/csv", context,
+            LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
+        var options = new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral, PyString.FromString("\""),
+            LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
+        var source = new LythonRuntime.CsvRecordSource(file, options, Span, context);
+        var reader = new LythonRuntime.CsvDictReaderObject(source, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
+        async ValueTask<PyIterationResult> Next() => asynchronous ? await reader.TryMoveNextAsync() : reader.TryMoveNext();
+        try
+        {
+            var first = Assert.IsType<PyDict>((await Next()).Value);
+            var key = Assert.IsType<PyString>(first.Keys.First());
+            Assert.True(reader.TryGetMember("reader", out var raw));
+            var rawReader = Assert.IsType<LythonRuntime.CsvReaderObject>(raw);
+            var before = budget.ReservedBytes;
+            var combined = PyList.EstimateCapacityBytes(2) + 2 * PyString.EstimateApproximateBytes(2) + PyDict.RecordKeys.CsvRecordShellBytes;
+            var requests = new List<long>();
+            PyString? replacement = null;
+            hook.RefuseGrowth = amount =>
+            {
+                requests.Add(amount);
+                return outcome == "refuse";
+            };
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                if (outcome == "expose")
+                {
+                    Assert.True(reader.TryGetMember("fieldnames", out var fields));
+                    replacement = PyString.FromString("a");
+                    Assert.IsType<PyList>(fields)[0] = replacement;
+                }
+                else if (outcome == "reenter")
+                {
+                    var error = Assert.Throws<LythonRuntimeException>(() => rawReader.TryMoveNext());
+                    Assert.Equal("reentrant text read", error.Message);
+                }
+                else if (outcome == "cancel") cancellation.Cancel();
+            };
+
+            if (outcome is "cancel" or "refuse")
+            {
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await Next(); });
+                Assert.Equal(outcome == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    failure.Attribution?.Reason);
+                if (outcome == "refuse") Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(combined, Assert.Single(requests));
+                Assert.Equal(before, budget.ReservedBytes);
+            }
+            else
+            {
+                var second = Assert.IsType<PyDict>((await Next()).Value);
+                Assert.Equal(["30", "40"], second.Values.Cast<PyString>().Select(v => v.AsString()));
+                Assert.Same(replacement ?? key, second.Keys.First());
+                Assert.Equal(combined, requests[0]);
+                if (outcome != "expose") Assert.Single(requests);
+                hook.RefuseGrowth = null;
+                var rawThird = asynchronous ? await rawReader.TryMoveNextAsync() : rawReader.TryMoveNext();
+                Assert.Equal(["50", "60"], Assert.IsType<PyList>(rawThird.Value).Cast<PyString>().Select(v => v.AsString()));
+            }
+            Assert.Same(key, first.Keys.First());
+            Assert.Equal(["10", "20"], first.Values.Cast<PyString>().Select(v => v.AsString()));
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        finally
+        {
+            hook.AfterGrowth = null;
+            hook.RefuseGrowth = null;
+            context.State.CloseResources();
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("identity")]
     [InlineData("shrink")]
     [InlineData("cancel")]
