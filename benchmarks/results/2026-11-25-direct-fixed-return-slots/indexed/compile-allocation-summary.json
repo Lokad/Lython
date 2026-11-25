@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1444680,
+      1444680
+    ],
+    "retainedAdmission": [
+      883617,
+      883617
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      134008,
+      134008
+    ],
+    "retainedAdmission": [
+      157114,
+      157114
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      33216,
+      33216
+    ],
+    "retainedAdmission": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      80296,
+      80296
+    ],
+    "retainedAdmission": [
+      92127,
+      92127
+    ]
+  }
+]

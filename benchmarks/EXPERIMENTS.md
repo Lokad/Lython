@@ -30,6 +30,14 @@ isolates header completion. Both file-fed CPU ranges cross zero. The
 unaffected text and plain reader controls use less CPU, so the invoice
 improvement cannot be assigned to the changed stage. Keep the source private.
 
+[B1722 prepared tuple publication](results/2026-11-25-direct-fixed-return-slots/README.md)
+removes 4,096 staged copies from the quoted invoice in both hosting modes.
+The first block has 2.70% higher warm async CPU. The
+[slot-map refinement](results/2026-11-25-direct-fixed-return-slots/indexed/README.md)
+still increases invoice elapsed in both modes. Text and file-fed map also
+slow in the refined block despite taking no prepared route. Keep the two
+prototypes private and retain the results and source patches.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.

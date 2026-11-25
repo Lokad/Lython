@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "asyncHosting": false,
+    "preparedReturns": [
+      0,
+      0
+    ],
+    "stagedWindowCopies": [
+      16,
+      16
+    ],
+    "executionPeak": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "asyncHosting": true,
+    "preparedReturns": [
+      0,
+      0
+    ],
+    "stagedWindowCopies": [
+      16,
+      16
+    ],
+    "executionPeak": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "asyncHosting": false,
+    "preparedReturns": [
+      4096,
+      4096
+    ],
+    "stagedWindowCopies": [
+      4096,
+      0
+    ],
+    "executionPeak": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "asyncHosting": true,
+    "preparedReturns": [
+      4096,
+      4096
+    ],
+    "stagedWindowCopies": [
+      4096,
+      0
+    ],
+    "executionPeak": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asyncHosting": false,
+    "preparedReturns": [
+      0,
+      0
+    ],
+    "stagedWindowCopies": [
+      0,
+      0
+    ],
+    "executionPeak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asyncHosting": true,
+    "preparedReturns": [
+      0,
+      0
+    ],
+    "stagedWindowCopies": [
+      0,
+      0
+    ],
+    "executionPeak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "asyncHosting": false,
+    "preparedReturns": [
+      0,
+      0
+    ],
+    "stagedWindowCopies": [
+      0,
+      0
+    ],
+    "executionPeak": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "asyncHosting": true,
+    "preparedReturns": [
+      0,
+      0
+    ],
+    "stagedWindowCopies": [
+      0,
+      0
+    ],
+    "executionPeak": [
+      603795,
+      603795
+    ]
+  }
+]
