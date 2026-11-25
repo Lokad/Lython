@@ -1,0 +1,101 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      737992,
+      737992
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      259480,
+      259480
+    ],
+    "peakAdmission": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      570896,
+      570896
+    ],
+    "peakAdmission": [
+      2902945,
+      2902945
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      200224,
+      200344
+    ],
+    "peakAdmission": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281470,
+      3281476
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1315464,
+      1315296
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.generated-default-free-definitions",
+    "allocationBytes": [
+      197968,
+      197968
+    ],
+    "peakAdmission": [
+      249652,
+      249652
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "allocationBytes": [
+      1518694,
+      1518694
+    ],
+    "peakAdmission": [
+      3115985,
+      3115985
+    ]
+  },
+  {
+    "case": "diagnostic.bound-map-defaulted-readings",
+    "allocationBytes": [
+      14072,
+      14072
+    ],
+    "peakAdmission": [
+      2645,
+      2645
+    ]
+  }
+]

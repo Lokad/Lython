@@ -46,3 +46,5 @@ unmeasured for this producer.
 
 The [whole-match follow-up](value-match/README.md) uses this exact producer
 to qualify a private direct adapter path for patterns with no capture groups.
+The [single-group follow-up](single-group/README.md) extends it to one
+capture group and verifies the affected `lastindex` and window behavior.

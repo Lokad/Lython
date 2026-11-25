@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "allocationBytes": [
+      3388758,
+      1938656
+    ],
+    "peakAdmission": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.bound",
+    "allocationBytes": [
+      3487140,
+      2037150
+    ],
+    "peakAdmission": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "allocationBytes": [
+      3585356,
+      2134974
+    ],
+    "peakAdmission": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3280918,
+      3280918
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled.whole-match",
+    "allocationBytes": [
+      1634928,
+      1635104
+    ],
+    "peakAdmission": [
+      1101330,
+      1101330
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled.two-groups",
+    "allocationBytes": [
+      3904286,
+      3904286
+    ],
+    "peakAdmission": [
+      1243981,
+      1243981
+    ]
+  }
+]

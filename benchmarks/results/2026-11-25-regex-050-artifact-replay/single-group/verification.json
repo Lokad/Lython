@@ -1,0 +1,34 @@
+{
+  "targets": {
+    "windows": {
+      "target": "net11.0",
+      "testCount": 520,
+      "producerAssemblies": {
+        "Lokad.Lython.PublicApi.Tests": {
+          "Lokad.Utf8Regex": "19d36d546cb7cb15d3332f1d6348d1af37d1b87cc7d323f281a42f46f46143e1",
+          "Lokad.Utf8Regex.PythonRe": "3fb3d42c921a89a9029b4c3f96e6e5e163a451146bffb2543eb04ca81d95b036"
+        },
+        "Lokad.Lython.WorkerFixture": {
+          "Lokad.Utf8Regex": "19d36d546cb7cb15d3332f1d6348d1af37d1b87cc7d323f281a42f46f46143e1",
+          "Lokad.Utf8Regex.PythonRe": "3fb3d42c921a89a9029b4c3f96e6e5e163a451146bffb2543eb04ca81d95b036"
+        }
+      }
+    },
+    "ubuntu": {
+      "target": "net10.0",
+      "testCount": 520,
+      "producerAssemblies": {
+        "Lokad.Lython.PublicApi.Tests": {
+          "Lokad.Utf8Regex": "0a09b8fcba0461311d8486daa1d2f35b57abdb3006b56cd73b95294afbd4c8c4",
+          "Lokad.Utf8Regex.PythonRe": "2f246378c3cc4268755252af6dcd333d2a433e8b52c4df2ebd5dbb3814a3ec27"
+        },
+        "Lokad.Lython.WorkerFixture": {
+          "Lokad.Utf8Regex": "0a09b8fcba0461311d8486daa1d2f35b57abdb3006b56cd73b95294afbd4c8c4",
+          "Lokad.Utf8Regex.PythonRe": "2f246378c3cc4268755252af6dcd333d2a433e8b52c4df2ebd5dbb3814a3ec27"
+        }
+      }
+    }
+  },
+  "developmentPatchSHA256": "96ac7bd2212cdd8baece03a04ece577b711b2548f0ea1f50eeb4c4f57b4aabc6",
+  "coreHasBackendDependency": false
+}

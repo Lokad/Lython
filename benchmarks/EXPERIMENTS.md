@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1688](results/2026-11-25-resolved-guest-call/README.md) resolves the
+guest function and receiver once across call entry routes. Defaulted rules
+use 5.55–6.80% more CPU through result, and postponed rules and invoice
+also slow warm. The original async shipment spans zero. Keep the patch
+private with matching admission and no reliable CPU improvement.
+
 [B1687](results/2026-11-25-closed-iteration-call/README.md) removes the
 argument drain for short exact `starmap` tuples and shares bound callback
 entry with `map`. Bound shipment and defaulted map reduce allocation and
@@ -47,6 +53,10 @@ record verifies package binaries in both the test and cancellation worker.
 uses caller-owned slots for no-group patterns. It passes 516 focused checks
 per platform and cuts warm allocation 45.54–48.37%, at identical admitted
 peaks. Grouped last-close metadata remains on the cursor path.
+[The single-group follow-up](results/2026-11-25-regex-050-artifact-replay/single-group/README.md)
+derives `lastindex` from participation with one group. It passes 520 checks
+per platform and allocates 40.45–42.79% less on three log search scripts.
+Multiple groups still need last-close metadata.
 
 [B1682](results/2026-11-25-tagged-default-ownership/README.md) carries slot
 ownership through construction and removes the two inline-default flags.
