@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Development regex allocation](results/2026-11-25-regex-050-funded-allocation/README.md)
+compares the funded 0.5.0 bridge and production 0.4.0 adapter on identical
+Lython core and workers. Log searches allocate 74.03–75.06% less. Peak
+execution admission matches and no CPU or elapsed result is inferred.
+
 [B1669](results/2026-11-25-post-zip-cpython/README.md) measures `a45b6da7f`
 against CPython 3.13.16. Shipment is 1.464–1.532× warm and 1.321–1.383×
 through result. Defaulted rules are 1.277–1.319× through result, and the
