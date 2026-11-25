@@ -118,6 +118,55 @@ return "|".join(vals)
         Assert.Equal("zip() argument 2 is shorter than argument 1|zip() argument 2 is longer than argument 1|zip() argument 3 is longer than arguments 1-2|zip() argument 3 is shorter than arguments 1-2|zip() argument 2 is shorter than argument 1|zip() argument 2 is longer than argument 1|[(1, 2)]", result.ReturnValue);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FixedZipUnpackKeepsAliasesAndLeavesPartialRowsUnpublished(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            shared = []
+            other = []
+            events = []
+            def source(name, values):
+                for item in values:
+                    events.append(name)
+                    yield item
+            def scan(left, right, strict):
+                a = b = None
+                try:
+                    for a, b in zip(source('left', left), source('right', right), strict=strict):
+                        print(a is shared, b is other)
+                except ValueError as error:
+                    print(str(error))
+                print(a is shared, b is other, events)
+                events.clear()
+            scan([shared, other], [other], False)
+            scan([shared, other], [other], True)
+            scan([shared], [other, shared], True)
+            for a, *rest in zip([shared], [other]):
+                print(a is shared, rest[0] is other)
+            """);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("""
+                True True
+                True True ['left', 'right', 'left']
+                True True
+                zip() argument 2 is shorter than argument 1
+                True True ['left', 'right', 'left']
+                True True
+                zip() argument 2 is longer than argument 1
+                True True ['left', 'right', 'right']
+                True True
+                """.ReplaceLineEndings("\n") + "\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void EnumerateStart_CoercesIndexLikeCpython()
     {

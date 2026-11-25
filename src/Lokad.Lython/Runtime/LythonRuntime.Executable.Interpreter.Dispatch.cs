@@ -312,9 +312,9 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.ForNextUnpack:
                             if (invocation is null || execution.Stack.LiveExtent != instruction.ResultSlot ||
                                 execution.Stack.Values[instruction.InputStart].Reference is not
-                                    PyIteration.Cursor { NativeCsvSource: { CanUnpackDirectly: true } csv } cursor)
+                                    PyIteration.Cursor cursor ||
+                                !invocation.TryAdvanceFixedUnpack(cursor, instruction, asynchronous, out pending))
                                 goto case ExecutableOpCode.ForNext;
-                            pending = invocation.AdvanceCsvUnpack(csv, cursor, instruction, asynchronous);
                             if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                             jumped = ConsumeOperation(ref pending);
                             break;

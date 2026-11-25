@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1665](results/2026-11-25-zip-unpack/README.md) delivers fixed zip unpacks
+into admitted frame slots. The shipment report saves 12.10% allocation
+and 4.38% peak shared admission, with lower warm, async and through-result
+elapsed and CPU. The retained-tuple control improves in longer batches
+after an initial range that crossed zero. The first slot-order failure is
+archived with the corrected CPython regression.
+
 [B1664](results/2026-11-25-shipment-and-defaulted-cpu/README.md) profiles
 the production shipment report and defaulted rules. Zip's row production
 and admission are visible in the shipment report. Definition construction

@@ -386,8 +386,7 @@ internal static partial class PyIteration
             return TryMoveNextCore();
         }
 
-        internal LythonRuntime.CsvRecordSource? NativeCsvSource => !_disposed && _asyncEnumerator is null
-            ? (_iterator as LythonRuntime.CsvReaderObject)?.Records : null;
+        internal IPyIteratorValue? DirectUnpackSource => !_disposed && _asyncEnumerator is null ? _iterator : null;
 
         private PyIterationResult TryMoveNextCore()
         {

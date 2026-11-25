@@ -400,117 +400,100 @@ internal sealed class PyZipIterator : PyIteratorBase
 
     public override PyIterationResult TryMoveNext()
     {
-        if (_finished || _cursors.Length == 0)
-        {
-            return PyIterationResult.End;
-        }
-
-        var funding = checked(32L + 80L * _cursors.Length);
-
+        if (_finished || Arity == 0) return PyIterationResult.End;
+        var funding = checked(32L + 80L * Arity);
         _governor.Reserve(funding, _span);
         try
         {
-            var items = new object[_cursors.Length];
-
-            for (var i = 0; i < _cursors.Length; i++)
-            {
-                if ((_cursors[i].TryMoveNext() is { HasValue: true, Value: var item }))
-                {
-                    items[i] = item;
-                    continue;
-                }
-
-                _finished = true;
-                if (_strict)
-                {
-                    // Like CPython, an exhausted cursor behind earlier yielders
-                    // is shorter; only the first cursor peeks ahead for a longer
-                    // tail, naming the first diverging argument.
-                    if (i > 0)
-                    {
-                        throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
-                    }
-
-                    for (var j = i + 1; j < _cursors.Length; j++)
-                    {
-                        if (_cursors[j].TryMoveNext().HasValue)
-                        {
-                            throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
-                        }
-                    }
-                }
-
-                return PyIterationResult.End;
-            }
-
-            var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-            return PyIterationResult.Yield(produced);
+            var items = new object[Arity];
+            return Pull(new(items, default))
+                ? PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _governor, _span)) : PyIterationResult.End;
         }
-        finally
-        {
-
-            _governor.ReleaseReserved(funding);
-        }
+        finally { _governor.ReleaseReserved(funding); }
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        if (_finished || _cursors.Length == 0)
-        {
-            return PyIterationResult.End;
-        }
-
-        var funding = checked(32L + 80L * _cursors.Length);
-
+        if (_finished || Arity == 0) return PyIterationResult.End;
+        var funding = checked(32L + 80L * Arity);
         _governor.Reserve(funding, _span);
         try
         {
-            var items = new object[_cursors.Length];
-
-            for (var i = 0; i < _cursors.Length; i++)
-            {
-                var (hasValue, item) = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
-                if (hasValue)
-                {
-                    items[i] = item;
-                    continue;
-                }
-
-                _finished = true;
-                if (_strict)
-                {
-                    // Same strict tail-peeking as the sync path above.
-                    if (i > 0)
-                    {
-                        throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
-                    }
-
-                    for (var j = i + 1; j < _cursors.Length; j++)
-                    {
-                        var (laterHasValue, _) = await _cursors[j].TryMoveNextAsync().ConfigureAwait(false);
-                        if (laterHasValue)
-                        {
-                            throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
-                        }
-                    }
-                }
-
-                return PyIterationResult.End;
-            }
-
-            // Same fresh-tuple ownership as the sync path above.
-            var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-            return PyIterationResult.Yield(produced);
+            var items = new object[Arity];
+            return await PullAsync(new(items, default)).ConfigureAwait(false)
+                ? PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _governor, _span)) : PyIterationResult.End;
         }
-        finally
-        {
+        finally { _governor.ReleaseReserved(funding); }
+    }
 
-            _governor.ReleaseReserved(funding);
+    internal int Arity => _cursors.Length;
+
+    internal int UnpackNext(Memory<LythonRuntime.ExecutableSlot> destination)
+        => !_finished && Pull(new(null, destination)) ? Arity : -1;
+
+    internal async ValueTask<int> UnpackNextAsync(Memory<LythonRuntime.ExecutableSlot> destination)
+        => !_finished && await PullAsync(new(null, destination)).ConfigureAwait(false) ? Arity : -1;
+
+    // The VM's fixed unpack has admitted destination slots. Both destinations
+    // use the same input order and strict termination for each execution mode.
+    private readonly struct Row(object[]? items, Memory<LythonRuntime.ExecutableSlot> slots)
+    {
+        internal void Set(int index, PyIterationResult item)
+        {
+            // Fixed unpack consumes its first target from the top of the stack.
+            if (items is null) slots.Span[slots.Length - 1 - index] = item.TakeSlotValue();
+            else items[index] = item.Value;
         }
     }
 
-    private static string StrictOthers(int index)
-        => index == 1 ? "argument 1" : "arguments 1-" + index;
+    private bool Pull(Row row)
+    {
+        for (var i = 0; i < Arity; i++)
+        {
+            var next = _cursors[i].TryMoveNext();
+            if (next.HasValue)
+            {
+                row.Set(i, next);
+                continue;
+            }
+            if (MustPeek(i))
+                for (var j = 1; j < Arity; j++)
+                    if (_cursors[j].TryMoveNext().HasValue) throw UnevenLength(j, "longer");
+            return false;
+        }
+        return true;
+    }
+
+    private async ValueTask<bool> PullAsync(Row row)
+    {
+        for (var i = 0; i < Arity; i++)
+        {
+            var next = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
+            if (next.HasValue)
+            {
+                row.Set(i, next);
+                continue;
+            }
+            if (MustPeek(i))
+                for (var j = 1; j < Arity; j++)
+                    if ((await _cursors[j].TryMoveNextAsync().ConfigureAwait(false)).HasValue)
+                        throw UnevenLength(j, "longer");
+            return false;
+        }
+        return true;
+    }
+
+    private bool MustPeek(int index)
+    {
+        _finished = true;
+        if (!_strict) return false;
+        if (index > 0) throw UnevenLength(index, "shorter");
+        return true;
+    }
+
+    private LythonRuntimeException UnevenLength(int index, string comparison)
+        => new("ValueError", "zip() argument " + (index + 1) + " is " + comparison + " than " +
+            (index == 1 ? "argument 1" : "arguments 1-" + index), _span);
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<zip object>");
 }

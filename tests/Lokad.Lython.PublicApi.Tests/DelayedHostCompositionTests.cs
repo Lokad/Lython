@@ -98,6 +98,44 @@ public sealed class DelayedHostCompositionTests
         Assert.True(host.CompletedAsynchronously > 0);
     }
 
+    [Fact]
+    public async Task CancelledZipUnpackUnwindsAWaitingPartialRow()
+    {
+        using var script = new LythonEngine().Compile("""
+            def first():
+                print('left advanced')
+                yield ['retained']
+            with open('/paused') as later:
+                for left, right in zip(first(), later):
+                    print('row published')
+            """);
+        Assert.True(script.IsValid);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/paused", "right\n");
+        var reached = host.PauseReadUntilCancellation("/paused");
+        using var cancel = new CancellationTokenSource();
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }, cancel.Token);
+        try
+        {
+            await reached.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > 0);
+            cancel.Cancel();
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Equal("left advanced\n", result.StandardOutput);
+        }
+        finally
+        {
+            cancel.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static DelayedLythonHost SeedCompositionHost()
     {
         var host = new DelayedLythonHost();
