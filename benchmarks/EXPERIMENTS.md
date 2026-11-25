@@ -81,7 +81,17 @@ profiling toward default evaluation and operand transport.
 confirms the two scripts each construct 160 computed call arguments per
 factory run. `shift` already skips its callee workspace. Native call
 dispatch is nearest on 292 of 1,135 default-effects samples. The result
-motivates one probe of the caller's intermediate operand publication.
+motivates removing the caller's intermediate operand publication.
+
+[B1730 computed scalar operands](results/2026-11-25-arithmetic-call-operands/README.md)
+tests direct transport of an arithmetic argument into an existing direct
+return. The first block uses 12–15% less warm ordinary-definition CPU and
+18–21% less CPU on the diagnostic that isolates default effects. Both
+hosting modes preserve allocation and admitted peaks. The escaping-rule
+control spans zero. The [retained confirmation](results/2026-11-25-arithmetic-call-operands/confirmation/README.md)
+preserves the existing augmented result path. Ordinary-definition
+compile-to-result elapsed falls 4.68–6.62% and compile-only elapsed rises
+0.20–0.78%. The escaping-rule control remains inconclusive.
 
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.

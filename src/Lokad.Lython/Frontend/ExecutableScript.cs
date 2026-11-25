@@ -13,6 +13,7 @@ internal enum ExecutableOpCode
     LoadLocal,
     LoadClosure,
     LoadGlobal,
+    LoadGlobalForArithmeticCall,
     LoadName,
     ApplyOperation,
     StoreMember,
@@ -226,7 +227,10 @@ internal readonly record struct ExecutableInstruction
         ? _secondaryOperand : throw InvalidOperand(nameof(ClosureArithmeticConstant));
     internal ExecutableInstruction WithClosureArithmetic(int constantIndex)
         => new(OpCode, Span, _primaryOperand, constantIndex, _inputStart, _resultSlot, _liveExtent);
-    public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
+    internal ExecutableInstruction WithArithmeticCall()
+        => new(ExecutableOpCode.LoadGlobalForArithmeticCall, Span, _primaryOperand, _secondaryOperand,
+            _inputStart, _resultSlot, _liveExtent);
+    public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadGlobalForArithmeticCall or ExecutableOpCode.LoadName
         or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCasedSplit
         or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
         or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast

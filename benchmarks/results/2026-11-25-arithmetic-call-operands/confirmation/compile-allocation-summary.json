@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1444680,
+      1444680
+    ],
+    "retainedAdmission": [
+      883617,
+      883617
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-default-effects",
+    "allocationBytes": [
+      714336,
+      714336
+    ],
+    "retainedAdmission": [
+      413190,
+      413190
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      63768,
+      63768
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  }
+]

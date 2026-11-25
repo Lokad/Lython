@@ -139,6 +139,47 @@ internal sealed partial class LythonRuntime
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TryCallWithArithmeticArgument(ExecutableCodeObject code, Span<ExecutableSlot> values,
+        ref int index, int liveExtent, ExecutionContext scope, out ExecutableSlot result)
+    {
+        result = default;
+        var start = index;
+        ref readonly var target = ref code.Instructions[start];
+        ref readonly var invoke = ref code.Instructions[start + 2];
+        var call = code.CallSites[invoke.CallSiteIndex];
+        if (liveExtent != target.ResultSlot ||
+            !TryResolveExecutableGlobal(code, target.NameIndex, scope, out var callable) ||
+            callable is not PyExecutableFunction { CodeObject.HasDirectOperandReturn: true } function ||
+            !function.TrySelectNativeCall(call, receiver: null, out var complete) || !complete) return false;
+
+        ref readonly var argument = ref code.Instructions[++index];
+        scope.CheckExecution(argument.Span);
+        if (TryEvaluatePreparedBinary(code, values, argument, scope, out var integer))
+        {
+            index++;
+            scope.CheckExecution(invoke.Span);
+            var slot = ExecutableSlot.FromInteger(integer);
+            try
+            {
+                scope.EnterInterpreterFrame(call.CallSpan);
+                try
+                {
+                    if (function.TryStartSuppliedOperandReturn(new Span<ExecutableSlot>(ref slot),
+                        receiver: null, call.CallSpan, out result)) return true;
+                }
+                finally { scope.LeaveInterpreterFrame(); }
+            }
+            catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+            { throw translated; }
+        }
+
+        // Only exact integer work has run. The original tape still owns all
+        // inputs and performs rebinding, protocols and suspension in order.
+        index = start;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static bool TryPrepareFixedTupleReturn(ExecutableCodeObject code, Span<ExecutableSlot> values,
         ref int index, int liveExtent, int unpackCount, ExecutionContext scope)
     {

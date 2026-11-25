@@ -127,6 +127,14 @@ internal sealed partial class LythonRuntime
                         if (Values[instruction.LocalSlot].IsUnassigned)
                             throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[instruction.LocalSlot], instruction.Span);
                         break;
+                    case ExecutableOpCode.LoadGlobalForArithmeticCall:
+                        if (Index + 2 < Code.NativePrefixEnd && _scope.State.CurrentRecursionDepth < NativeCallDepth &&
+                            TryCallWithArithmeticArgument(Code, Values, ref Index, LiveExtent, _scope, out var arithmeticCall))
+                        {
+                            Publish(Code.Instructions[Index], arithmeticCall);
+                            break;
+                        }
+                        goto case ExecutableOpCode.LoadGlobal;
                     case ExecutableOpCode.LoadGlobal:
                         Publish(instruction, ResolveExecutableGlobal(Code, instruction.NameIndex, instruction.Span, _scope));
                         break;

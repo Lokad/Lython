@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      200296,
+      200296
+    ],
+    "peakAdmission": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-default-effects",
+    "allocationBytes": [
+      20096,
+      20096
+    ],
+    "peakAdmission": [
+      30362,
+      30362
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      737944,
+      737944
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  }
+]

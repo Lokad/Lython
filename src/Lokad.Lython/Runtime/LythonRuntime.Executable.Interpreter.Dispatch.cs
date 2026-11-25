@@ -218,6 +218,14 @@ internal sealed partial class LythonRuntime
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 RuntimeValue(execution.Code.Constants[instruction.ConstantIndex]));
                             break;
+                        case ExecutableOpCode.LoadGlobalForArithmeticCall:
+                            if (TryCallWithArithmeticArgument(execution.Code, execution.Stack.Values,
+                                ref execution.InstructionIndex, execution.Stack.LiveExtent, scope, out var arithmeticCall))
+                            {
+                                PublishInstructionResult(ref execution, invocation, instructions[execution.InstructionIndex], arithmeticCall);
+                                break;
+                            }
+                            goto case ExecutableOpCode.LoadGlobal;
                         case ExecutableOpCode.LoadGlobal:
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 ResolveExecutableGlobal(execution.Code, instruction.NameIndex, instruction.Span, scope));

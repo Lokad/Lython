@@ -151,4 +151,46 @@ public sealed class DirectGlobalOperandTests
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Fact]
+    public async Task ArithmeticArgumentKeepsResolvedTargetThroughProtocolIo()
+    {
+        const string source = """
+            def increment(value): return value + 1
+            def replacement(value): return value + 10
+            target = increment
+
+            class Operand:
+                def __add__(self, other):
+                    global target
+                    target = replacement
+                    with open('input.txt') as source:
+                        return int(source.read())
+
+            def invoke(value): return target(value + 1)
+            print(invoke(2), invoke(Operand()), invoke(2))
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var host = new MockLythonHost(); host.SeedFile("/input.txt", "41");
+            using (var result = script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("4 42 13\n", result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            var delayed = new DelayedLythonHost(); delayed.SeedFile("/input.txt", "41");
+            using (var result = await script.RunAsync(delayed))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("4 42 13\n", result.StandardOutput);
+                Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 }

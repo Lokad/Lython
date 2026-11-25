@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Pass an exact computed integer argument directly to an eligible global
+  function's scalar return. Preserve late binding, protocol fallback and
+  managed stack admission.
 - Parse f-string fields directly as expressions. Reject a trailing backslash
   without a physical newline and preserve explicit line continuations.
 - Resolve a module regex pattern before checking operation arguments. Share

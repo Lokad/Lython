@@ -148,6 +148,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 }
                 instructions[position.Offset + j] = instruction.OpCode switch
                 {
+                    // Leave call-plus-update publication to its existing path.
+                    ExecutableOpCode.LoadGlobal when hasNoExceptionRegions && code.UsesOnlyLexicalSlots &&
+                        j + 3 < source.Count && source[j + 3].OpCode != ExecutableOpCode.Augmented &&
+                        CanCallWithArithmeticArgument(code, instruction, source[j + 1], source[j + 2])
+                        => instruction.WithArithmeticCall(),
                     ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(positions[instruction.TargetIndex].Offset),
                     ExecutableOpCode.ForNext when j + 1 < source.Count && CanUnpackIteration(instruction, source[j + 1])
                         => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)).WithFixedUnpack(),
@@ -229,6 +234,17 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
 
         static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 || !block[^1].TerminatesBlock;
     }
+
+    private static bool CanCallWithArithmeticArgument(ExecutableCodeObject code, in ExecutableInstruction target,
+        in ExecutableInstruction argument, in ExecutableInstruction call)
+        => !target.HasResultConsumer && argument is { OpCode: ExecutableOpCode.Binary, HasResultConsumer: false } &&
+            call is { OpCode: ExecutableOpCode.Call, HasForwardedCallOperands: false } &&
+            code.CallSites[call.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1, UnpackedReturnCount: 0 } &&
+            call.ResultSlot == target.ResultSlot && argument.ResultSlot == target.LiveExtent &&
+            IsDirectInput(code, argument.InputStart) && IsDirectInput(code, argument.SecondInput);
+
+    private static bool IsDirectInput(ExecutableCodeObject code, int slot)
+        => slot < 0 ? ~slot < code.Constants.Length : slot < code.FirstTemporarySlot;
 
     private static void PrepareTupleReturn(ExecutableCodeObject code, ExecutableInstruction[] tape,
         List<ExecutableInstruction> block, int offset, int index)
