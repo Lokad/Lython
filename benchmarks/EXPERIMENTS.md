@@ -57,6 +57,11 @@ CSV map takes 0.489–0.497× CPython's elapsed time. Shipment callbacks take
 definitions take 2.134–2.155× warm and 0.798–0.815× through result.
 Defaulted rules still take 1.242–1.309× through result.
 
+[B1706 shared CSV record pulls](results/2026-11-25-csv-record-pull/README.md)
+removes duplicate source progression and keeps complete pulls inline.
+The quote-heavy invoice uses 1.69–3.45% more CPU. File-fed map and list-fed
+meter are inconclusive. Peak admission matches. The source stays private.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
