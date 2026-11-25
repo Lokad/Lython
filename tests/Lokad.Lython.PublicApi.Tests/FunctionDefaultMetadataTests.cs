@@ -8,6 +8,55 @@ public sealed class FunctionDefaultMetadataTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task EvaluatedDefaultSurvivesLaterDefaultAndKeepsItsIdentity(bool asynchronous)
+    {
+        const string source = """
+            def shift(value):
+                return value - 1
+            def late(fail):
+                with open('/factor') as stream:
+                    factor = int(stream.read())
+                    if fail:
+                        raise ValueError('late')
+                    return factor
+            def build(seed, fail=False):
+                def select(value=shift(seed), *, factor=late(fail)):
+                    return value
+                return select
+
+            for seed in [-2, -1, 0, 1, -9223372036854775807, 9876543210]:
+                select = build(seed)
+                retained = select()
+                print(retained, retained is select.__defaults__[0], select.__kwdefaults__['factor'])
+            try:
+                select = build(-2, True)
+            except ValueError:
+                print('late', retained is select())
+            select.__defaults__ = (17,)
+            print(select(), retained)
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var synchronousHost = new MockLythonHost();
+        var delayedHost = new DelayedLythonHost();
+        synchronousHost.SeedFile("/factor", "4");
+        delayedHost.SeedFile("/factor", "4");
+        using (var result = asynchronous ? await script.RunAsync(delayedHost) : script.Run(synchronousHost))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("-3 True 4\n-2 True 4\n-1 True 4\n0 True 4\n-9223372036854775808 True 4\n" +
+                "9876543209 True 4\nlate True\n17 9876543209\n", result.StandardOutput);
+        }
+        Assert.Equal(7, asynchronous ? delayedHost.ClosedFileCount : synchronousHost.ClosedFileCount);
+        if (asynchronous) Assert.True(delayedHost.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ForwardedIntegerKeepsIdentityOnDirectReturnAndAfterDefaultsAreExposed(bool asynchronous)
     {
         const string source = """

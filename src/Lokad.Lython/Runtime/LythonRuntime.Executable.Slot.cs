@@ -14,6 +14,7 @@ internal sealed partial class LythonRuntime
     {
         private static readonly object UnpublishedInteger = new();
         private static readonly object UnpublishedDouble = new();
+        private static readonly object PrivatePositionalInteger = new();
         private object? _value;
         // An integer, double bits, short UTF-8 with its existing owner, a tuple
         // item offset, or a private-default marker with its admitted storage.
@@ -44,12 +45,14 @@ internal sealed partial class LythonRuntime
         internal readonly bool HasMaterializedValue => _integer == 0
             && _value is not (null or PyIteration.Cursor or ExecutableTemporaryValue)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
-        private readonly bool HasPrivateDefault => _integer is >= PrivatePositionalDefault and <= PrivateDefaultContainer &&
+        private readonly bool HasPrivateDefault => OwnsPositionalInteger ||
+            _integer is >= PrivatePositionalDefault and <= PrivateDefaultContainer &&
             !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         internal readonly bool HasPrivateKeywordDefault => _integer == PrivateKeywordDefault &&
-            !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
-        internal readonly bool HasPrivatePositionalDefault => _integer == PrivatePositionalDefault &&
-            !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
+            !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble) && !OwnsPositionalInteger;
+        private readonly bool OwnsPositionalInteger => ReferenceEquals(_value, PrivatePositionalInteger);
+        internal readonly bool HasPrivatePositionalDefault => OwnsPositionalInteger ||
+            _integer == PrivatePositionalDefault && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue || HasPrivateDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefaultContainer };
@@ -57,8 +60,15 @@ internal sealed partial class LythonRuntime
         internal static ExecutableSlot OwnPrivateKeywordDefault(object value)
             => new() { _value = value, _integer = PrivateKeywordDefault };
 
-        internal static ExecutableSlot OwnPrivatePositionalDefault(object value)
-            => new() { _value = value, _integer = PrivatePositionalDefault };
+        internal static ExecutableSlot OwnPrivatePositionalDefault(ExecutableSlot value)
+            => value.IsUnpublishedInteger
+                ? new() { _value = PrivatePositionalInteger, _integer = value._integer }
+                : new() { _value = value._value, _integer = PrivatePositionalDefault };
+
+        // Removing the retirement marker copies the value for the callable.
+        // The definition clears the charged operand only after publication.
+        internal readonly ExecutableSlot ReadPositionalDefault()
+            => OwnsPositionalInteger ? FromInteger(_integer) : FromObject(_value);
 
         internal void RetireTemporary(MemoryGovernor governor)
         {
@@ -73,9 +83,15 @@ internal sealed partial class LythonRuntime
             {
                 var storage = _value;
                 var kind = _integer;
+                if (HasPrivatePositionalDefault)
+                {
+                    var positional = ReadPositionalDefault();
+                    this = default;
+                    governor.Release(FunctionDefaults.InlinePositionalBytes(positional));
+                    return;
+                }
                 this = default;
-                if (kind == PrivatePositionalDefault) governor.Release(FunctionDefaults.InlinePositionalBytes(FromObject(storage)));
-                else if (kind == PrivateKeywordDefault) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
+                if (kind == PrivateKeywordDefault) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
                 else if (storage is object?[] keywordValues) PyDict.RecordKeys.RefundPreparedValues(keywordValues, governor);
                 else governor.RefundUnpublishedValue(storage!);
             }

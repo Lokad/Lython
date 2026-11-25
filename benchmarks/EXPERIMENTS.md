@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1675](results/2026-11-25-ordinary-default-operands/README.md) keeps the
+evaluated integer private through ordinary default construction. Ordinary
+definitions allocate 11.60% less and use 2.44–4.82% less warm CPU in the
+confirmation. The initial shipment increase remains recorded. Shipment and
+ordinary time-to-result timing are inconclusive in the repeat.
+
 [B1674](results/2026-11-25-ordinary-definition-cpu/README.md) profiles the
 ordinary-definition control before and after retaining evaluated integers
 in callable slots. Dispatch, calls and definition construction account for
