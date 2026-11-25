@@ -412,8 +412,10 @@ callable admission, that same slot belongs to the callable. Closed arithmetic
 can read the integer directly. Binding that can expose the value publishes
 its canonical object in the owner. Reading `__defaults__` or `__kwdefaults__`
 materializes the canonical container with the existing admission. Replacing
-an inline keyword default refunds unused mapping backing and retains the
-charge for a published scalar that can still have aliases. A larger positional
+private keyword defaults refunds their mapping backing. For a singleton, the
+execution keeps the charge for a published scalar. For multiple defaults it
+conservatively retains the scalar allowance for each previous value because
+earlier calls may hold aliases. A larger positional
 integer magnitude can require a further charge. A tuple
 holding multiple evaluated defaults can also retain private integer slots
 with admission for their eventual boxes. Private backing refunds on failure,

@@ -27,7 +27,7 @@ public sealed class FunctionDefaultConstructionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void ReplacingKeywordDefaultsRefundsOnlyUnobservedStorage(bool observe)
+    public void ReplacingKeywordDefaultsRefundsOnlyPrivateBacking(bool observe)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -56,8 +56,54 @@ public sealed class FunctionDefaultConstructionTests
             Assert.True(plan.TrySetDefaultMetadata("__kwdefaults__", PyNone.Instance, context.MemoryGovernor));
             Assert.False(plan.TryFillPreparedKeywordDefaults(bound, context, Span));
             Assert.Null(plan.KeywordDefaultStorage);
-            Assert.Equal(observe ? admitted : before, budget.ReservedBytes);
+            Assert.Equal(observe ? admitted : before + 2 * RuntimeMemoryEstimates.ScalarStorageBytes, budget.ReservedBytes);
             if (alias is not null) Assert.Same(first, alias.GetItem(plan.KeywordDefaultName(0)));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReplacingPrivateKeywordDefaultsKeepsEarlierCallResultsFunded(bool asynchronous)
+    {
+        const string source = """
+            def make(seed):
+                def pick(*, first=seed+1, second=seed+2):
+                    return first, second
+                return pick
+            pick=make(1000000)
+            return pick, pick(), pick()
+            """;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+        var factory = code.Constants.OfType<ExecutableCreateFunction>().Single();
+        var definition = factory.CodeObject.Constants.OfType<ExecutableCreateFunction>().Single();
+        var keys = definition.ParameterLayout.PreparedKeywordDefaultKeys!;
+        var backing = PyDict.RecordKeys.RecordBytes(keys.PreparedValueCapacity);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            try
+            {
+                var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                    : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+                var values = Assert.IsType<PyTuple>(result);
+                var function = Assert.IsType<PyExecutableFunction>(values[0]);
+                var firstCall = Assert.IsType<PyTuple>(values[1]);
+                var secondCall = Assert.IsType<PyTuple>(values[2]);
+                var retained = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
+                var before = budget.ReservedBytes;
+
+                Assert.True(function.TrySetMember("__kwdefaults__", PyNone.Instance));
+
+                Assert.Equal(before - backing + retained, budget.ReservedBytes);
+                Assert.Equal(new BigInteger(1000001), firstCall[0]);
+                Assert.Equal(new BigInteger(1000002), firstCall[1]);
+                Assert.Same(firstCall[0], secondCall[0]);
+                Assert.Same(firstCall[1], secondCall[1]);
+            }
+            finally { context.State.CloseResources(); }
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

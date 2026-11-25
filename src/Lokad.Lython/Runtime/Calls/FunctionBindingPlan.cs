@@ -268,7 +268,13 @@ internal abstract class FunctionBindingPlan
                 // dictionary. Refund the backing and keep its scalar charge.
                 governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes - RuntimeMemoryEstimates.EstimateNumericSlotBytes(previous.Reference));
             }
-            else if (previous.Reference is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
+            else if (previous.Reference is object?[] values)
+            {
+                // Earlier bindings can retain values without materializing the dictionary.
+                // Release the array and unused capacity, keeping allowance for those aliases.
+                PyDict.RecordKeys.RefundPreparedValues(values, governor,
+                    potentiallyRetainedValues: _layout.PreparedKeywordDefaultKeys!.Count);
+            }
             return true;
         }
         return false;

@@ -197,11 +197,11 @@ internal sealed partial class PyDict
             return AdoptPreparedValues(values, owner, span);
         }
 
-        internal static void RefundPreparedValues(object?[] values, MemoryGovernor owner)
-            => owner.Release(RecordBytes(values.Length));
+        internal static void RefundPreparedValues(object?[] values, MemoryGovernor owner, int potentiallyRetainedValues = 0)
+            => owner.Release(RecordBytes(values.Length) - RuntimeMemoryEstimates.ScalarStorageBytes * potentiallyRetainedValues);
 
         internal static long RecordBytes(int capacity)
-            => checked(NativeShellBytes + (capacity == 0 ? 0 : 32L + 72L * capacity));
+            => checked(NativeShellBytes + (capacity == 0 ? 0 : 32L + (8L + RuntimeMemoryEstimates.ScalarStorageBytes) * capacity));
 
         // The caller transfers an exclusively owned, already-funded CSV row.
         // Preserve actual key identities, not only equivalent header text.
