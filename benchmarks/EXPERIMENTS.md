@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1686](results/2026-11-25-shared-default-write/README.md) consolidates
+default writes into the admitted slot. Goldens and memory agree. Defaulted
+rules use 0.64–3.14% more warm CPU and 2.04–4.70% more CPU through result.
+The other ranges cross zero. The writer stays private pending a larger
+construction change or an attribution that separates the extra work.
+
 [B1685](results/2026-11-25-retained-defaults-cpython/README.md) compares
 the retained `c1984f96b` runtime with CPython 3.13.16 in 308 verified batches.
 Ordinary definitions take 2.146–2.188× warm and 0.794–0.814× through result.
