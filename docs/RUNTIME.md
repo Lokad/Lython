@@ -835,6 +835,11 @@ receiver alongside those operands. The binder copies any inputs needed
 after suspension into admitted storage. Wider rows and arbitrary iterables
 use the general argument drain.
 
+An async `map` reads completed short-row sources into these same slots.
+Only an incomplete pull transfers the evaluated prefix to the resume
+path. The continuation consumes that pull once and resumes in source
+order. The existing binder owns the arguments for an incomplete callback.
+
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older

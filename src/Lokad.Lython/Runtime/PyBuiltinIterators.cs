@@ -201,27 +201,75 @@ internal sealed class PyMapIterator : PyIteratorBase
         return PyIterationResult.Yield(callable.Invoke(arguments, _span, _context));
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public override ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        var wide = _iterators.Length > LythonRuntime.InlineIterationOperandCount;
-        using var scratch = wide
-            ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
-        LythonRuntime.IterationOperands inline = default;
-        var arguments = wide ? new CallArgumentValue[_iterators.Length] : null;
+        if (_iterators.Length > LythonRuntime.InlineIterationOperandCount) return MoveWideRowAsync();
+        try
+        {
+            LythonRuntime.IterationOperands operands = default;
+            var count = 0;
+            if (!ReadAvailableOperands(ref count, ref operands, out var pending))
+                return new(PyIterationResult.End);
+            return count == _iterators.Length
+                ? InvokeShortRowAsync(operands[..count])
+                : ResumeShortRowAsync(pending, count, operands);
+        }
+        catch (Exception error) { return ValueTask.FromException<PyIterationResult>(error); }
+    }
+
+    // A pending source takes ownership of the evaluated prefix. The same
+    // loop resumes from that source without reading earlier iterators again.
+    private bool ReadAvailableOperands(ref int count, ref LythonRuntime.IterationOperands operands,
+        out ValueTask<PyIterationResult> pending)
+    {
+        pending = default;
+        while (count < _iterators.Length)
+        {
+            var next = _iterators[count].TryMoveNextAsync();
+            if (!next.IsCompleted)
+            {
+                pending = next;
+                return true;
+            }
+            var ready = next.GetAwaiter().GetResult();
+            if (!ready.HasValue) return false;
+            operands[count++] = ready.TakeSlotValue();
+        }
+        return true;
+    }
+
+    private async ValueTask<PyIterationResult> ResumeShortRowAsync(ValueTask<PyIterationResult> pending, int count,
+        LythonRuntime.IterationOperands operands)
+    {
+        while (true)
+        {
+            var next = await pending.ConfigureAwait(false);
+            if (!next.HasValue) return PyIterationResult.End;
+            operands[count++] = next.TakeSlotValue();
+            if (!ReadAvailableOperands(ref count, ref operands, out pending)) return PyIterationResult.End;
+            if (count == _iterators.Length) return await InvokeShortRowAsync(operands[..count]).ConfigureAwait(false);
+        }
+    }
+
+    private ValueTask<PyIterationResult> InvokeShortRowAsync(Span<LythonRuntime.ExecutableSlot> operands)
+    {
+        var result = LythonRuntime.StartIterationCallback(_function, operands, _span, _context,
+            asynchronous: true, out var pending);
+        return result.HasValue ? new(result) : AwaitCallbackAsync(pending);
+
+        static async ValueTask<PyIterationResult> AwaitCallbackAsync(ValueTask<object> pending)
+            => PyIterationResult.Yield(await pending.ConfigureAwait(false));
+    }
+
+    private async ValueTask<PyIterationResult> MoveWideRowAsync()
+    {
+        using var scratch = _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span);
+        var arguments = new CallArgumentValue[_iterators.Length];
         for (var i = 0; i < _iterators.Length; i++)
         {
             var next = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);
             if (!next.HasValue) return PyIterationResult.End;
-            if (arguments is null) inline[i] = next.TakeSlotValue();
-            else arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(next.Value));
-        }
-
-        if (arguments is null)
-        {
-            var result = LythonRuntime.StartIterationCallback(_function, inline[.._iterators.Length], _span, _context,
-                asynchronous: true, out var pending);
-            if (result.HasValue) return result;
-            return PyIterationResult.Yield(await pending.ConfigureAwait(false));
+            arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(next.Value));
         }
         var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
         return PyIterationResult.Yield(await callable.InvokeAsync(arguments, _span, _context).ConfigureAwait(false));

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1692](results/2026-11-25-async-map-prefix/README.md) starts the short
+async map continuation only at an incomplete pull or callback. All four
+affected async workloads use less CPU. The original shipment improves
+9.01–11.21% against B1689 at matching admission. The unchanged invoice
+also moves favorably. The async path is retained.
+
 [B1690](results/2026-11-25-boolean-precedence/README.md) makes boolean
 grammar descent conditional. Sparse guards use less CPU and the mixed
 guard script uses 0.67–2.30% more CPU through result. All elapsed ranges

@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "tapes": 4,
+    "instructions": 58,
+    "retainedAdmission": 74175
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "tapes": 4,
+    "instructions": 150,
+    "retainedAdmission": 157114
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "tapes": 4,
+    "instructions": 168,
+    "retainedAdmission": 164576
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "tapes": 5,
+    "instructions": 176,
+    "retainedAdmission": 173020
+  },
+  {
+    "case": "diagnostic.bound-map-defaulted-readings",
+    "tapes": 3,
+    "instructions": 27,
+    "retainedAdmission": 51852
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "tapes": 2,
+    "instructions": 37,
+    "retainedAdmission": 51392
+  }
+]

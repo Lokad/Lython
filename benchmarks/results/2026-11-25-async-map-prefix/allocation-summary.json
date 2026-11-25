@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      737960,
+      737960
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281558,
+      3281558
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1315552,
+      1315552
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "allocationBytes": [
+      1518776,
+      1518720
+    ],
+    "peakAdmission": [
+      3115985,
+      3115985
+    ]
+  },
+  {
+    "case": "diagnostic.bound-map-defaulted-readings",
+    "allocationBytes": [
+      14160,
+      14160
+    ],
+    "peakAdmission": [
+      2645,
+      2645
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      939352,
+      939352
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  }
+]
