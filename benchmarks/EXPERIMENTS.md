@@ -43,7 +43,13 @@ scope the native helper and receiver work in both hosting modes. The receiver
 helper already returns directly from operands. Entry and operand movement
 account for roughly 5% of resolved runtime samples. The source and profiles
 motivate a single subscription operand path for sequences, mappings and
-protocols. This is attribution evidence. Paired timings remain pending.
+protocols.
+
+[B1724 receiver-first subscriptions](results/2026-11-25-single-subscript-dispatch/README.md)
+remove the speculative sequence probe for mappings and protocol objects.
+Admission peaks match and allocation is essentially flat. Quoted invoice
+async CPU rises 1.33–4.05%. The other workloads span zero and the unchanged
+rules control has wide spread. The patch stays private.
 
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
