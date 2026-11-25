@@ -97,6 +97,11 @@ sources. Shipment allocates 0.43% less at matching admission. All four timing
 ranges span zero. Keep the patch private and preserve source-order, alias and
 suspended-row ownership coverage.
 
+[B1711 compiler-proved default stores](results/2026-11-25-closed-default-store-links/README.md)
+removes runtime discovery of expression ends and shares closed construction.
+Defaulted phases remain uncertain and eager annotations use 4.70–6.76%
+more warm CPU at matching admission. The prototype stays private.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
