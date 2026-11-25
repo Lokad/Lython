@@ -962,23 +962,27 @@ internal sealed partial class LythonRuntime
             // for adoption by csv.reader; each value keeps independent funding.
             var rowBytes = PyList.EstimateCapacityBytes(_fields.Count);
             var resultBytes = checked(_stringBytes + rowBytes);
-            using var storage = _context.MemoryGovernor.ReserveTemporary(resultBytes, _span);
-            _context.CheckExecution(_span);
-            var row = _fields.Count == 0 ? Array.Empty<object>() : new object[_fields.Count];
-            // The existing conservative field estimate funds this entire final
-            // backing and all shells before allocation. Windows never borrow
-            // the mutable parser buffer or refund a retained sibling's bytes.
-            var payload = _payloadBytes == 0 ? Array.Empty<byte>() : new byte[_payloadBytes];
-            var payloadOffset = 0;
-            var index = 0;
-            foreach (var field in _fields)
+            var governor = _context.MemoryGovernor;
+            governor.Reserve(resultBytes, _span);
+            try
             {
                 _context.CheckExecution(_span);
-                row[index++] = ReadField(source, field, payload, ref payloadOffset);
+                var row = _fields.Count == 0 ? Array.Empty<object>() : new object[_fields.Count];
+                // The field estimate covers the final backing and every shell.
+                // Windows never borrow the parser buffer or refund a sibling.
+                var payload = _payloadBytes == 0 ? Array.Empty<byte>() : new byte[_payloadBytes];
+                var payloadOffset = 0;
+                var index = 0;
+                foreach (var field in _fields)
+                {
+                    _context.CheckExecution(_span);
+                    row[index++] = ReadField(source, field, payload, ref payloadOffset);
+                }
+                _context.CheckExecution(_span);
+                governor.Commit(resultBytes);
+                _readyRecord = row;
             }
-            _context.CheckExecution(_span);
-            storage.Commit(resultBytes);
-            _readyRecord = row;
+            catch { governor.ReleaseReserved(resultBytes); throw; }
             ResetRecord();
             ReleaseRowScratch();
         }

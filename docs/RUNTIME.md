@@ -1530,7 +1530,9 @@ borrows the mutable parser buffer. Ordinary `csv.reader` and exposed
 fieldnames adopt the funded array without copying. `DictReader` transfers
 it to matching native-key records or relinquishes the array capacity after
 header and key protocols and awaited cleanup. Escaping dictionaries and
-rest lists retain their storage funding.
+rest lists retain their storage funding. Completed rows and native dictionary
+shells reserve directly. A header identity change during shell admission
+refunds the shell reservation and leaves the input row funded.
 When a fixed loop target immediately unpacks a file-backed `csv.reader` row,
 the parser checks arity, admits the fields and writes them directly into
 existing executable operands. Short text fields in nonnumeric readers can

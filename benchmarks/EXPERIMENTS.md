@@ -30,6 +30,13 @@ isolates header completion. Both file-fed CPU ranges cross zero. The
 unaffected text and plain reader controls use less CPU, so the invoice
 improvement cannot be assigned to the changed stage. Keep the source private.
 
+[B1719 direct CSV storage admission](results/2026-11-25-csv-direct-record-admission/README.md)
+removes the managed reservation holders for completed rows and dictionary
+shells. Matched preflights reduce CLR allocation by 4.37–13.93% on four CSV
+workloads. File-fed async CPU falls in both blocks. The first block's adverse
+text control remains unexplained and its confirmation crosses zero. Retain
+both blocks and the runtime change.
+
 [B1699](results/2026-11-25-closed-default-evaluation/README.md) shares
 the closed single and paired default evaluator. Warm defaulted rules use
 0.46–2.59% less CPU, while postponed annotated rules use 7.48–13.43%

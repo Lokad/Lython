@@ -212,21 +212,26 @@ internal sealed partial class PyDict
             if (_owner is null || !ReferenceEquals(_owner, context.MemoryGovernor))
                 throw new InvalidOperationException("Record keys must retain their execution owner.");
             if (!MatchesFields()) return null;
-            using var shell = _owner.ReserveTemporary(NativeShellBytes, span);
-            context.CheckExecution(span);
-            // Admission can mutate headers or reenter the reader. No callback
-            // or further admission occurs between this proof and publication.
-            if (!MatchesFields()) return null;
-            var record = new PyDict(_keys, this, _sequence, 0, _owner, span)
+            _owner.Reserve(NativeShellBytes, span);
+            var committed = false;
+            try
             {
-                _nativeValues = values,
-                _nativeCount = values.Length,
-                // Retain the row's original conservative headroom. Its storage
-                // is transferred, never refunded and then reserved again.
-                _nativeCommittedBytes = checked(NativeShellBytes + PyList.EstimateCapacityBytes(values.Length)),
-            };
-            shell.Commit(NativeShellBytes);
-            return record;
+                context.CheckExecution(span);
+                // Admission can mutate headers or reenter the reader. No callback
+                // or further admission occurs between this proof and publication.
+                if (!MatchesFields()) return null;
+                var record = new PyDict(_keys, this, _sequence, 0, _owner, span)
+                {
+                    _nativeValues = values,
+                    _nativeCount = values.Length,
+                    // Transfer the row's original funded capacity to the record.
+                    _nativeCommittedBytes = checked(NativeShellBytes + PyList.EstimateCapacityBytes(values.Length)),
+                };
+                _owner.Commit(NativeShellBytes);
+                committed = true;
+                return record;
+            }
+            finally { if (!committed) _owner.ReleaseReserved(NativeShellBytes); }
 
             bool MatchesFields()
             {
