@@ -74,9 +74,7 @@ public sealed class LythonEngine
         LythonCompiledScript Cancelled()
         {
             IReadOnlyList<LythonDiagnostic> diagnostics = [new("LA2011", "Compilation was cancelled.", LythonDiagnosticSeverity.Error, null)];
-            return new LythonCompiledScript(source, diagnostics, false,
-                (_, options) => LythonRuntime.CancellationFailure(options),
-                (_, options) => Task.FromResult(LythonRuntime.CancellationFailure(options)))
+            return new LythonCompiledScript(source, diagnostics, new(LythonFailureReason.Cancelled))
                 .OwnMemoryScope(owner, memoryBudget);
         }
 
@@ -85,10 +83,8 @@ public sealed class LythonEngine
         {
             IReadOnlyList<LythonDiagnostic> denied = [new("LA0008",
                 message, LythonDiagnosticSeverity.Error, span)];
-            LythonExecutionResult Failure() => LythonExecutionResult.CompilationFailed(1, "", "", denied,
-                attribution ?? new(LythonFailureReason.SharedMemoryAllowance));
-            return new LythonCompiledScript(source, denied, false, (_, _) => Failure(),
-                (_, _) => Task.FromResult(Failure())).OwnMemoryScope(owner, memoryBudget);
+            return new LythonCompiledScript(source, denied, attribution ?? new(LythonFailureReason.SharedMemoryAllowance))
+                .OwnMemoryScope(owner, memoryBudget);
         }
 
     }
@@ -100,57 +96,19 @@ public sealed class LythonEngine
         governor.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         var diagnostics = frontend.Diagnostics;
-        var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);
-        var script = frontend.Script;
-        // Invalid source never executes. Unexpected compiler defects surface.
-        var executableScript = isValid && script is not null ? ExecutableScript.Compile(script, cancellationToken, governor) : null;
+        var executable = diagnostics.Any(static d => d.Severity == LythonDiagnosticSeverity.Error)
+            ? null : ExecutableScript.Compile(frontend.Script.RequireNotNull(), cancellationToken, governor);
         governor.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
-        // Only the code object's real lowered consumers survive compilation.
-        var retainedRegexPrograms = isValid && regexPrograms.HasPrograms ? regexPrograms : null;
-
-        LythonExecutionResult? CreatePreExecutionFailure()
+        if (executable is null)
         {
-            if (!isValid)
-            {
-                return LythonExecutionResult.CompilationFailed(
-                    exitCode: 1,
-                    standardOutput: string.Empty,
-                    standardError: string.Empty,
-                    diagnostics: diagnostics,
-                    attribution: diagnostics.Any(d => d.Code == "LA2010")
-                        ? new(LythonFailureReason.HostCapabilityUnavailable) : new(LythonFailureReason.Compilation));
-            }
-
-            return null;
+            var reason = diagnostics.Any(static d => d.Code == "LA2010")
+                ? LythonFailureReason.HostCapabilityUnavailable : LythonFailureReason.Compilation;
+            return new LythonCompiledScript(source, diagnostics, new(reason));
         }
-
-        return new LythonCompiledScript(
-            source,
-            diagnostics,
-            isValid,
-            (host, options) =>
-            {
-                var preExecutionFailure = CreatePreExecutionFailure();
-                if (preExecutionFailure is not null)
-                {
-                    return preExecutionFailure;
-                }
-
-                var runtime = new LythonRuntime(regexProvider, retainedRegexPrograms);
-                return runtime.Run(executableScript.RequireNotNull(), host, options);
-            },
-            async (host, options) =>
-            {
-                var preExecutionFailure = CreatePreExecutionFailure();
-                if (preExecutionFailure is not null)
-                {
-                    return preExecutionFailure;
-                }
-
-                var runtime = new LythonRuntime(regexProvider, retainedRegexPrograms);
-                return await runtime.RunAsync(executableScript.RequireNotNull(), host, options).ConfigureAwait(false);
-            });
+        // Only the code object's real lowered consumers survive compilation.
+        return new LythonCompiledScript(source, diagnostics, executable, regexProvider,
+            regexPrograms.HasPrograms ? regexPrograms : null);
     }
 
     /// <summary>Compiles and synchronously runs source with default options.</summary>

@@ -15,6 +15,11 @@ budget or token. Compilation returns a disposable
 against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
+The compiled script holds the executable and its provider state directly.
+Concurrent runs create independent execution contexts, while borrowing the
+compiled program and its retained provider programs. Await all runs before
+disposing the script.
+
 Compilation observes its token during indentation checks, tokenization, ordinary
 parsing, literal decoding, container/callback fact inspection and provider work,
 and between later compiler phases. Lexical-fact discovery and statement

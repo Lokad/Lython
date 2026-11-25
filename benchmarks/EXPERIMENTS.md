@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1689](results/2026-11-25-compiled-entry/README.md) removes the compiled
+runner delegates and per-run facade. Allocation falls 32 B on six cases.
+Defaulted rules use less CPU through result, while manifest compile CPU
+rises. The direct program handoff is retained with that adverse result.
+
 [B1688](results/2026-11-25-resolved-guest-call/README.md) resolves the
 guest function and receiver once across call entry routes. Defaulted rules
 use 5.55–6.80% more CPU through result, and postponed rules and invoice
