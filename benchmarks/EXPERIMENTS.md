@@ -140,6 +140,12 @@ measures fully qualified `75af75769` against CPython 3.13.16. The 308
 verified batches cover new text and JSON rows plus separate warm,
 compile-only and through-result clocks.
 
+[B1714 short builtin operand binding](results/2026-11-25-unified-builtin-operands/README.md)
+extends the existing wide direct binder. The short tolerance report
+uses 8.06–20.42% more CPU and adds 32 B per call. Short-option JSON
+also uses more CPU. Wide JSON uses 1.82–3.60% less CPU. Preserve the
+private source and isolate fixed reservation ownership.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
