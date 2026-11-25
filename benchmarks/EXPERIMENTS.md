@@ -102,6 +102,13 @@ removes runtime discovery of expression ends and shares closed construction.
 Defaulted phases remain uncertain and eager annotations use 4.70–6.76%
 more warm CPU at matching admission. The prototype stays private.
 
+[B1712 native dictionary value slots](results/2026-11-25-native-dictionary-slots/README.md)
+moves private scalars out of keys and transfers the CSV parser's final array.
+Shipment and file-fed map allocate 29.94% and 41.83% less. File-fed
+warm async CPU falls 1.47–6.68%. Shipment timing spans zero. Both invoice
+variants and the nonlocal text control use more CPU. Keep the source private
+until storage and packed-consumer dispatch costs can be separated.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
