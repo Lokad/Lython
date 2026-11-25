@@ -91,6 +91,12 @@ Shipment has more nearest CSV construction and instruction samples than
 iterator routing samples. The original disk failure and successful
 same-image retry remain recorded.
 
+[B1710 direct native map inputs](results/2026-11-25-native-map-sources/README.md)
+eliminates wrapper allocation and mediated pulls for already acquired native
+sources. Shipment allocates 0.43% less at matching admission. All four timing
+ranges span zero. Keep the patch private and preserve source-order, alias and
+suspended-row ownership coverage.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
