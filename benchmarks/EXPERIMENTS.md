@@ -6,6 +6,10 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1667](results/2026-11-25-map-slots/README.md) tests direct operand
+transport for short map callbacks. The initial form lowers shipment warm
+CPU and raises CPU for a native-map control. Time to result spans zero.
+
 [B1666](results/2026-11-25-post-zip-cpu/README.md) locates the remaining map
 boundary on the post-zip shipment image and recompiles the sparse validator.
 Parser and executable lowering have a greater sample share than local name
