@@ -8,7 +8,9 @@ internal enum ExecutableDisplayKind { List, Tuple, Set, Dictionary }
 internal sealed record ExecutableStartDisplay(ExecutableDisplayKind Kind) : ExecutableOperation;
 internal sealed record ExecutableAppendDisplay(bool Unpacking, int IteratorDepth = 0) : ExecutableOperation;
 internal sealed record ExecutableStoreDictionaryItem(bool Unpacking, int IteratorDepth = 0) : ExecutableOperation;
-internal sealed record ExecutableStartComprehension(ExecutableDisplayKind Kind, ScopeDirectiveFacts ScopeFacts) : ExecutableOperation;
+internal sealed record ExecutableStartComprehension(ExecutableDisplayKind Kind, ScopeDirectiveFacts ScopeFacts,
+    bool ForwardsBinding) : ExecutableOperation;
+internal sealed record ExecutableForwardComprehensionItem : ExecutableOperation;
 internal sealed record ExecutableFinishComprehension : ExecutableOperation;
 internal sealed record ExecutableFinishTuple : ExecutableOperation;
 internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleStar) : ExecutableOperation;

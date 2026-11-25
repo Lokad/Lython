@@ -1,0 +1,149 @@
+{
+  "sourcePatch": "0a8829447d6d441a5313e4c9c406683b299f8fb4501add742519b782a65f1bf5",
+  "reference": "4e8e60923672f910df148565eaa6fdb82bb15605",
+  "timedBatches": 140,
+  "lanes": 5,
+  "elapsedSeconds": 245.52933163614944,
+  "rows": [
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "lane": "warm",
+      "elapsedPercent": [
+        -7.984055581822314,
+        5.070340574996246
+      ],
+      "cpuPercent": [
+        -6.750801282051288,
+        3.754940711462451
+      ],
+      "sameSourceElapsedSpreadPercent": [
+        11.467680199360286,
+        2.439650744323596
+      ],
+      "elapsedMediansMs": {
+        "candidate": 0.8971555553359684,
+        "reference": 0.9517799978947369,
+        "candidate-control": 0.8757893538461539,
+        "reference-control": 0.8538618514285714
+      },
+      "widerCpuMediansMs": {
+        "candidate": 0.9486166007905138,
+        "reference": 1.0105263157894737,
+        "candidate-control": 0.9423076923076923,
+        "reference-control": 0.9142857142857143
+      }
+    },
+    {
+      "case": "diagnostic.shipment-routing-callbacks",
+      "lane": "compile-run",
+      "elapsedPercent": [
+        -5.771661626098434,
+        -4.94293693056671
+      ],
+      "cpuPercent": [
+        -6.979166666666659,
+        -3.9800995024875663
+      ],
+      "sameSourceElapsedSpreadPercent": [
+        0.4691893514683354,
+        0.40838020226354743
+      ],
+      "elapsedMediansMs": {
+        "reference-control": 2.446111010526316,
+        "candidate-control": 2.3143426368159203,
+        "reference": 2.4346877150259068,
+        "candidate": 2.30492976
+      },
+      "widerCpuMediansMs": {
+        "reference-control": 2.526315789473684,
+        "candidate-control": 2.388059701492537,
+        "reference": 2.4870466321243523,
+        "candidate": 2.35
+      }
+    },
+    {
+      "case": "diagnostic.shipment-routing-callbacks",
+      "lane": "warm-async",
+      "elapsedPercent": [
+        -8.932106711335097,
+        -7.148636532894582
+      ],
+      "cpuPercent": [
+        -8.542713567839211,
+        -6.598984771573601
+      ],
+      "sameSourceElapsedSpreadPercent": [
+        0.9083157809445686,
+        1.0406282469756167
+      ],
+      "elapsedMediansMs": {
+        "candidate": 2.370375271356784,
+        "reference": 2.602866043956044,
+        "candidate-control": 2.3950420659898475,
+        "reference-control": 2.579436614130435
+      },
+      "widerCpuMediansMs": {
+        "candidate": 2.4623115577889445,
+        "reference": 2.6923076923076925,
+        "candidate-control": 2.487309644670051,
+        "reference-control": 2.6630434782608696
+      }
+    },
+    {
+      "case": "diagnostic.shipment-file-fed-map",
+      "lane": "warm-async",
+      "elapsedPercent": [
+        2.7728557242758356,
+        6.554216407916713
+      ],
+      "cpuPercent": [
+        3.11231393775373,
+        6.868131868131866
+      ],
+      "sameSourceElapsedSpreadPercent": [
+        2.75537228697873,
+        0.899189641492737
+      ],
+      "elapsedMediansMs": {
+        "reference-control": 0.5709291568123394,
+        "candidate-control": 0.6029276265223275,
+        "reference": 0.5866603805774279,
+        "candidate": 0.6083490892857143
+      },
+      "widerCpuMediansMs": {
+        "reference-control": 0.6298200514138818,
+        "candidate-control": 0.6630581867388363,
+        "reference": 0.6430446194225722,
+        "candidate": 0.6730769230769231
+      }
+    },
+    {
+      "case": "diagnostic.shipment-routing-callbacks",
+      "lane": "warm",
+      "elapsedPercent": [
+        -6.78211599658638,
+        -3.935284877812917
+      ],
+      "cpuPercent": [
+        -5.581395348837215,
+        -3.791469194312802
+      ],
+      "sameSourceElapsedSpreadPercent": [
+        0.9694514192351233,
+        2.064488179361712
+      ],
+      "elapsedMediansMs": {
+        "candidate": 2.1753499953488373,
+        "reference": 2.3112126403940887,
+        "candidate-control": 2.2202598388625594,
+        "reference-control": 2.333618724137931
+      },
+      "widerCpuMediansMs": {
+        "candidate": 2.2325581395348837,
+        "reference": 2.3645320197044337,
+        "candidate-control": 2.2748815165876777,
+        "reference-control": 2.3645320197044337
+      }
+    }
+  ]
+}

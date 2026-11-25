@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep the binding of a simple eager list projection in its scope and pass the
+  yielded item directly into its expression. Preserve iterator-visible locals.
 - Defer constructing eligible write-only local functions until their scope can
   be observed. Evaluate defaults in order and release unpublished storage at exit.
 - Reuse admitted UTF-8 pattern bytes for directly analyzed regex literals.

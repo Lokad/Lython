@@ -1011,10 +1011,10 @@ internal sealed partial class LythonRuntime
 
         if (includeFrameLocals)
             foreach (var binding in context.EnumerateInlinedBindings())
-                foreach (var name in binding.ScopeFacts.LocalBindingOrder)
+                foreach (var name in binding.Facts.LocalBindingOrder)
                 {
                     var key = PyString.FromString(name, context.MemoryGovernor, span);
-                    if (binding.Variables.TryGetValue(name, out var value)) scope.SetItem(key, value);
+                    if (binding.TryRead(name, out var value)) scope.SetItem(key, value);
                     else scope.Remove(key);
                 }
 

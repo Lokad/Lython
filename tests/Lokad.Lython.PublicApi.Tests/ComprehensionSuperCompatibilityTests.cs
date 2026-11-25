@@ -253,4 +253,56 @@ public sealed class ComprehensionSuperCompatibilityTests
             Assert.Equal(expected, result.StandardOutput);
         }
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IteratorCanObserveTheShadowedBindingBeforeAndAfterTheFirstItem(bool asynchronous)
+    {
+        // Calling the builtin as __next__ exposes the actual comprehension
+        // snapshot even though the projection contains no explicit call.
+        const string source = """
+            class ObserveCaller:
+                def __iter__(self): return self
+                __next__ = staticmethod(locals)
+
+            def stop(self): raise StopIteration
+
+            class Marker:
+                def __getitem__(self, name): return 1
+                def __eq__(self, other):
+                    ObservePrevious.__next__ = stop
+                    return other == 1
+
+            class ObservePrevious:
+                def __iter__(self): return self
+                def __next__(self):
+                    ObservePrevious.__next__ = staticmethod(locals)
+                    return Marker()
+
+            def work():
+                row = 'outside'
+                try:
+                    [row['row'] for row in ObserveCaller()]
+                except KeyError:
+                    print(row)
+                payload = []
+                projected = [row for row in [payload, payload]]
+                print(projected[0] is projected[1] is payload, row)
+                print([row['row'] == 1 for row in ObservePrevious()], row)
+
+            work()
+            """;
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("outside\nTrue outside\n[True, True] outside\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
 }

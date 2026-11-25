@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      151184,
+      149992
+    ],
+    "retainedAdmission": [
+      164576,
+      164576
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      33080,
+      33080
+    ],
+    "retainedAdmission": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      79800,
+      79800
+    ],
+    "retainedAdmission": [
+      92127,
+      92127
+    ]
+  },
+  {
+    "case": "diagnostic.comprehension-protocol-observes-shadow",
+    "allocationBytes": [
+      41016,
+      40960
+    ],
+    "retainedAdmission": [
+      60034,
+      60034
+    ]
+  }
+]

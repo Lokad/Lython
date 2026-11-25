@@ -106,6 +106,55 @@ public sealed class LoopTargetExecutionTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ProjectedSubscriptionJoinsSuspendedProtocolWithoutReplay(bool cancel)
+    {
+        const string source = """
+            class Row:
+                def __getitem__(self, name):
+                    with open('effects.txt', 'a') as output:
+                        output.write(name)
+                    return 'yes'
+
+            def project(rows):
+                return [row['late'] == 'yes' for row in rows]
+
+            print(project([Row(), Row()]))
+            """;
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/effects.txt", "before");
+        var entered = cancel ? host.PauseWriteUntilCancellation("/effects.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.Same(entered, first);
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(result.Success != cancel, result.Failure?.Message);
+            Assert.Equal(cancel ? "" : "[True, True]\n", result.StandardOutput);
+            Assert.Equal(cancel ? "before" : "beforelatelate", host.ReadText("/effects.txt"));
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, null)]
     [InlineData(false, "/rows.txt")]
     [InlineData(false, "/receiver.txt")]

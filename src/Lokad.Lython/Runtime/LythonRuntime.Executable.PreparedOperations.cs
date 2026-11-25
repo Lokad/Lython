@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableStartComprehension start when invocation is not null:
                 {
                     var comprehensionOuter = execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    var comprehension = invocation.EnterComprehension(start.ScopeFacts);
+                    var comprehension = invocation.EnterComprehension(start.ScopeFacts, start.ForwardsBinding);
                     var onStack = false;
                     try
                     {
@@ -112,6 +112,11 @@ internal sealed partial class LythonRuntime
                     var completed = execution.Stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
                     ((ExecutableTemporaryValue)execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
                     PublishInstructionResult(ref execution, invocation, instruction, completed);
+                    break;
+                case ExecutableForwardComprehensionItem when invocation is not null:
+                    // Observe a canonical value once for locals() and for
+                    // the already published leading operand of the item.
+                    invocation._inlinedComprehension!.BindForwardedItem(execution.Stack[instruction.InputStart]);
                     break;
                 case ExecutableStartDisplay start when invocation is not null:
                     object collection = start.Kind switch

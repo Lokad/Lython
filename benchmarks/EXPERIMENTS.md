@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1737 forwarded comprehension bindings](results/2026-11-25-forwarded-comprehension-binding/README.md)
+removes the named store and reload for single-target list projections and
+bypasses the suspension wrapper for ordinary display append. Shipment warm CPU
+falls in both hosting modes in two blocks. The compiler's structured
+cancellation path is used in confirmation. The file-fed map control rises
+3.11–6.87% in that block. The retained binding-only variant saves 19,712 B
+per shipment run and uses 4.02–5.15% less warm async CPU. File-fed map still
+uses 1.20–4.39% more CPU. Consider this adverse result at the next record
+construction checkpoint. [Confirmation](results/2026-11-25-forwarded-comprehension-binding/confirmation/README.md) ·
+[Retained isolation](results/2026-11-25-forwarded-comprehension-binding/isolation/README.md).
+
 [B1735 deferred lexical functions](results/2026-11-25-deferred-callable-locals/README.md)
 stages eligible computed defaults. B1735c also stages compilation-owned tuples,
 eliminating 1,488 callable constructions per complete factory run. Retain the

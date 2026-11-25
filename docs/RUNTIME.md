@@ -440,6 +440,10 @@ and frame handoff materialize pending definitions before exposing local bindings
 Private defaults and the prepaid callable charge return when a pending definition
 retires unpublished. Literal tuples keep their compilation owner. The extra
 workspace capacity is admitted up front and can lead to earlier refusal.
+Eligible single-target list comprehensions feed the yielded value directly into
+the expression. Their scope keeps the current binding for `locals()` snapshots,
+including during a custom iterator pull or suspended item operation. Capturing
+and nested bodies use their existing namespace scope.
 An eligible native call can return a bound operand, finish exact integer
 arithmetic or return a closed lexical definition before preparing callee
 workspace or a tuple-unpack destination. Both executable drivers use the same

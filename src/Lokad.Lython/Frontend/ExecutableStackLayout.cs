@@ -688,6 +688,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     {
         ExecutableStartDisplay or ExecutableStartClassHeader => (0, 1),
         ExecutableStartComprehension => (1, 3),
+        ExecutableForwardComprehensionItem => (1, 1),
         ExecutableFinishComprehension => (2, 1),
         ExecutableFinishCall => (1, 1),
         ExecutableCallWithKeywordMapping call => (checked(call.PositionalCount + 2), 1),
