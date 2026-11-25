@@ -25,6 +25,11 @@ CPU in all six affected phases. In confirmation file-fed async elapsed is
 lower with wide candidate spread, while quoted invoice CPU rises 1.89–4.47%.
 The combined split stays private. The separate blank-row refund fix ships.
 
+[B1718c inline DictReader headers](results/2026-11-25-dictreader-inline-headers/README.md)
+isolates header completion. Both file-fed CPU ranges cross zero. The
+unaffected text and plain reader controls use less CPU, so the invoice
+improvement cannot be assigned to the changed stage. Keep the source private.
+
 [B1699](results/2026-11-25-closed-default-evaluation/README.md) shares
 the closed single and paired default evaluator. Warm defaulted rules use
 0.46–2.59% less CPU, while postponed annotated rules use 7.48–13.43%
