@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1696](results/2026-11-25-post-async-map-cpu/README.md) attributes
+CPU on the retained external checkpoint. Async shipment still reaches a
+zip pull state machine on completed rows. Defaulted-rule samples remain
+concentrated in pair construction and its two admission points.
+
 [B1695](results/2026-11-25-csv-private-header/README.md) skips repeated
 `DictReader` header scans before a privately owned inferred header escapes.
 The file-fed async report uses 6.24–12.95% less CPU. The original async
