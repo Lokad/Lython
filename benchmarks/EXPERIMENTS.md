@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1673](results/2026-11-25-single-read-callable-layout/README.md) reads the
+compiled layout once per binding phase. It retains the allocation savings
+of B1672, while ordinary-definition CPU still rises 1.58–2.96%. The source
+stays private pending attribution of that control.
+
+[Development regex construction refund](results/2026-11-25-regex-050-construction-refund/README.md)
+returns producer-released peak capacity after compilation. The named log
+and wide-capture examples return 14,200 B and 42,088 B while keeping their
+live program funded. Cursor working owners keep their existing cleanup.
+
 [B1672](results/2026-11-25-shared-callable-layout/README.md) shares the
 immutable parameter layout through executable code. It recovers half the
 ordinary-definition allocation increase from B1670. Rule time to result

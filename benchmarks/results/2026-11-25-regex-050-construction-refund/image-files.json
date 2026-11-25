@@ -1,0 +1,20 @@
+{
+  "original": {
+    "Lokad.Lython.dll": "d975067f27b31d3d0f44d8ca241bbed418e38eda7e856c77314b363882a7c99d",
+    "Lokad.Lython.Utf8Regex.dll": "58aad2e2e11aced795bf08f91ef381a09a590d09de92550316fb7c8b45b53a66",
+    "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+    "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+    "Slack.deps.json": "920c85be67b6f67ec653aefe0c0c62f8d8ee1298f46b9ddc3ca894c77927c196",
+    "Slack.dll": "3d7387c6a57253f6c04c4640c740e7c2d31be06657a7a61787bbfcc2a2cd0837",
+    "Slack.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+  },
+  "trimmed": {
+    "Lokad.Lython.dll": "d975067f27b31d3d0f44d8ca241bbed418e38eda7e856c77314b363882a7c99d",
+    "Lokad.Lython.Utf8Regex.dll": "bf56f8c8f37b6a2bc7d73d25a1bbc9f7d79022a47f950e6629244cabbd31232f",
+    "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+    "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+    "Slack.deps.json": "920c85be67b6f67ec653aefe0c0c62f8d8ee1298f46b9ddc3ca894c77927c196",
+    "Slack.dll": "3d7387c6a57253f6c04c4640c740e7c2d31be06657a7a61787bbfcc2a2cd0837",
+    "Slack.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+  }
+}

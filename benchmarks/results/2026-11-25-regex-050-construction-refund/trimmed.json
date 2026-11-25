@@ -1,0 +1,58 @@
+[
+  {
+    "name": "literal",
+    "directProgram": 29696,
+    "producerProgramPeak": 29696,
+    "wrapperEstimate": 325,
+    "adapterProgram": 30021,
+    "directCursorBefore": 0,
+    "directAfterFirst": 0,
+    "directFirstRetained": 176,
+    "producerCursorPeak": 176,
+    "adapterBefore": 0,
+    "adapterAfterFirst": 0,
+    "adapterAfterEnd": 0
+  },
+  {
+    "name": "named-log",
+    "directProgram": 42560,
+    "producerProgramPeak": 56760,
+    "wrapperEstimate": 485,
+    "adapterProgram": 43045,
+    "directCursorBefore": 96,
+    "directAfterFirst": 320,
+    "directFirstRetained": 528,
+    "producerCursorPeak": 528,
+    "adapterBefore": 96,
+    "adapterAfterFirst": 528,
+    "adapterAfterEnd": 0
+  },
+  {
+    "name": "unicode",
+    "directProgram": 35296,
+    "producerProgramPeak": 35296,
+    "wrapperEstimate": 402,
+    "adapterProgram": 35698,
+    "directCursorBefore": 96,
+    "directAfterFirst": 864,
+    "directFirstRetained": 1056,
+    "producerCursorPeak": 1056,
+    "adapterBefore": 96,
+    "adapterAfterFirst": 1056,
+    "adapterAfterEnd": 0
+  },
+  {
+    "name": "wide-captures",
+    "directProgram": 195616,
+    "producerProgramPeak": 237704,
+    "wrapperEstimate": 4672,
+    "adapterProgram": 200288,
+    "directCursorBefore": 576,
+    "directAfterFirst": 1952,
+    "directFirstRetained": 3152,
+    "producerCursorPeak": 3152,
+    "adapterBefore": 576,
+    "adapterAfterFirst": 3152,
+    "adapterAfterEnd": 0
+  }
+]
