@@ -109,6 +109,12 @@ warm async CPU falls 1.47–6.68%. Shipment timing spans zero. Both invoice
 variants and the nonlocal text control use more CPU. Keep the source private
 until storage and packed-consumer dispatch costs can be separated.
 
+[B1712a layout-only isolation](results/2026-11-25-native-dictionary-slots/layout-only/README.md)
+restores ordinary executable reads. Quoted invoice returns near baseline,
+file-fed timing spans zero, and both text workers have wide spread. The
+layout alone reduces file-fed map allocation by 29.63%. Retain both source
+pairs and prepare the consumer decision in the executable tape.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

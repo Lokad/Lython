@@ -30,7 +30,7 @@ framing. The plain reader is an allocation and semantic control.
 Managed array allocation confirms that key/value elements move from 40/8
 to 32/16 bytes. Private dictionaries keep the same combined element width.
 Shared layouts spend eight additional physical bytes per value. In the
-local diagnostic, admitted peaks fall by about 65 KiB for the two shipment
+local diagnostic, admitted peaks fall by about 64 KiB for the two shipment
 variants and 128 KiB for both invoice variants. Cleanup restores every
 allowance. Plain reader allocation and admitted peaks match.
 
