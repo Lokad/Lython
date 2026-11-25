@@ -8,7 +8,9 @@ original conditions retained. Current comparisons belong in
 
 [B1667](results/2026-11-25-map-slots/README.md) tests direct operand
 transport for short map callbacks. The initial form lowers shipment warm
-CPU and raises CPU for a native-map control. Time to result spans zero.
+CPU and raises CPU for a native-map control. The refinement reduces the
+native regression and improves shipment time to result. Both forms stay
+private because the control remains adverse and pull paths are duplicated.
 
 [B1666](results/2026-11-25-post-zip-cpu/README.md) locates the remaining map
 boundary on the post-zip shipment image and recompiles the sparse validator.

@@ -34,11 +34,37 @@ framing. Process startup is outside these clocks.
 | Shipment callback report | Compile to result | −2.44 to +7.23% | −3.29 to +7.67% | 5.81 / 3.88% |
 
 The initial warm shipment improvement accompanies an adverse native-map
-control, and time to result is inconclusive. The refinement keeps the
-original packet for native callables throughout iteration. The initial
-candidate remains private. Both quiet gates, all 140 batches, worker joins,
-fixture cleanup and persistent archival verify.
+control, and time to result is inconclusive. Both quiet gates, all 140
+batches, worker joins, fixture cleanup and persistent archival verify.
+
+## Native-path refinement
+
+The refinement retains the existing native and wide packet while pulling
+inputs. Only the short compiled path borrows typed slots. Four workers
+repeat the same lanes with a 0.79-second target on the same VM. Both
+images match all goldens. Both Release targets pass the same 421 focused
+checks on Windows and Ubuntu. Peak admission matches. The allocation
+diagnostic varies by at most 212 B, and all allowance balances return to
+baseline.
+
+| Workload | Boundary | Elapsed change | Wider CPU change | Elapsed worker spread, reference / candidate |
+| --- | --- | ---: | ---: | ---: |
+| Shipment callback report | Warm | −4.72 to −0.37% | −5.74 to −1.20% | 3.98 / 0.56% |
+| Shipment native `map(int, …)` control | Warm | +0.71 to +3.42% | +1.34 to +2.33% | 1.72 / 0.95% |
+| Shipment callback report | Warm async | −7.66 to −1.07% | −7.69 to −1.11% | 3.43 / 3.58% |
+| Quote-heavy invoice | Warm | −4.04 to +1.67% | −4.55 to −0.07% | 3.69 / 2.18% |
+| Shipment callback report | Compile to result | −6.00 to −2.62% | −5.68 to −4.39% | 1.98 / 1.58% |
+
+The shipment gain survives the refinement and time to result improves in
+this block. The native control still spends more CPU, even with its
+original packet during iteration. Keep both prototypes private. The typed
+path duplicates ordered pulls, and the remaining regression weakens the
+case for delivery without simplifying callback transport more broadly.
+Both quiet gates and the complete 140-batch archive verify after cleanup.
 
 [Identity](identity.json) · [Timings](quiet-summary.json) ·
 [Allocation](allocation-summary.json) · [Observations](quiet-observations.tar.xz) ·
-[Terminal status](quiet-terminal-status.json) · [Procedures](procedures.tar.xz).
+[Terminal status](quiet-terminal-status.json) · [Procedures](procedures.tar.xz) ·
+[Refined identity](refined/identity.json) · [Refined timings](refined/quiet-summary.json) ·
+[Refined allocation](refined/allocation-summary.json) · [Refined observations](refined/quiet-observations.tar.xz) ·
+[Refined terminal status](refined/quiet-terminal-status.json) · [Refined procedures](refined/procedures.tar.xz).
