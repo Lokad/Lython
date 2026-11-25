@@ -10,6 +10,48 @@ public sealed class CsvPrivateRecordOwnershipTests
     private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral, PyString.FromString("\""),
         LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedBlankRowRefundKeepsOtherStorageFunded(bool asynchronous)
+    {
+        const long limit = 65536;
+        var budget = new LythonMemoryBudget(limit);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var governor = context.MemoryGovernor;
+            var headers = new PyList([PyString.FromString("name")], governor, Span);
+            var source = new LythonRuntime.CsvRecordSource(new PyList([PyString.FromString("\n")]), Options(), Span, context);
+            var reader = new LythonRuntime.CsvDictReaderObject(source, headers, PyNone.Instance, PyNone.Instance, context, Span);
+            long fundedAtFailure = -1;
+            hook.AfterShrink = refund =>
+            {
+                Assert.Equal(PyList.EstimateCapacityBytes(0), refund);
+                hook.AfterShrink = null;
+                var refusal = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(limit + 1, Span));
+                fundedAtFailure = budget.ReservedBytes;
+                throw refusal;
+            };
+            try
+            {
+                var error = asynchronous
+                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await reader.TryMoveNextAsync())
+                    : Assert.Throws<LythonRuntimeException>(() => reader.TryMoveNext());
+                Assert.Same(governor.AdmissionFailure, error);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.True(fundedAtFailure > 0);
+                Assert.Equal(fundedAtFailure, budget.ReservedBytes);
+                Assert.Equal(fundedAtFailure, governor.CurrentAccountedBytes);
+                Assert.Equal(0, governor.CurrentReservedBytes);
+                Assert.Equal("name", Assert.IsType<PyString>(Assert.Single(headers)).AsString());
+            }
+            finally { hook.AfterShrink = null; context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void PublicRowAdoptsItsFundedArrayWithoutCopyOrNewAdmission()
     {

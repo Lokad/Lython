@@ -142,8 +142,9 @@ internal sealed partial class LythonRuntime
                 _lineNumber.SetInteger(Rows.PhysicalLineCount);
                 while (row.Length == 0)
                 {
-                    Rows.ReleaseRecord(row);
+                    var blank = row;
                     row = null;
+                    Rows.ReleaseRecord(blank);
                     row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out next) ? next : null;
                     if (row is null) return PyIterationResult.End;
                 }
