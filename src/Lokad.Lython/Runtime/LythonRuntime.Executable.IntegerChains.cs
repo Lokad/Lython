@@ -89,18 +89,18 @@ internal sealed partial class LythonRuntime
             : slot == 0 ? receiver : _arguments[slot - 1].Value;
     }
 
-    internal readonly ref struct DefaultIntegerOperands(Span<ExecutableSlot> supplied, FunctionBindingPlan plan,
-        ExecutableCaptures captures, bool borrowedArgument) : IIntegerOperands
+    internal readonly ref struct DefaultIntegerOperands<T>(T supplied, int suppliedCount, FunctionBindingPlan plan)
+        : IIntegerOperands where T : IIntegerOperands, allows ref struct
     {
-        private readonly Span<ExecutableSlot> _supplied = supplied;
+        private readonly T _supplied = supplied;
 
         public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
-            => slot >= _supplied.Length
+            => slot >= suppliedCount
                 ? plan.TryReadPreparedDefaultInteger(slot, out value)
-                : TryReadMachineOperand(code, _supplied, slot, scope, out value, captures);
+                : _supplied.TryRead(code, slot, scope, out value);
 
-        public ExecutableSlot ReadLocal(int slot) => slot >= _supplied.Length ? plan.ReadPreparedDefault(slot)
-            : borrowedArgument ? ExecutableSlot.FromObject(_supplied[slot].Object) : _supplied[slot];
+        public ExecutableSlot ReadLocal(int slot)
+            => slot >= suppliedCount ? plan.ReadPreparedDefault(slot) : _supplied.ReadLocal(slot);
     }
 
     private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, ExecutableCaptures cells,

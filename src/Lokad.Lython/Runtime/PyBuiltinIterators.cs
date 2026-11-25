@@ -131,12 +131,6 @@ internal sealed class PyReversedIterator : PyIteratorBase
 
 internal sealed class PyMapIterator : PyIteratorBase
 {
-    [System.Runtime.CompilerServices.InlineArray(3)]
-    private struct Operands
-    {
-        private LythonRuntime.ExecutableSlot _first;
-    }
-
     private readonly object _function;
     private readonly PyIteration.Cursor[] _iterators;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -183,10 +177,11 @@ internal sealed class PyMapIterator : PyIteratorBase
 
     public override PyIterationResult TryMoveNext()
     {
-        using var scratch = _iterators.Length > 3
+        var wide = _iterators.Length > LythonRuntime.InlineIterationOperandCount;
+        using var scratch = wide
             ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
-        Operands inline = default;
-        var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
+        LythonRuntime.IterationOperands inline = default;
+        var arguments = wide ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
             var next = _iterators[i].TryMoveNext();
@@ -208,10 +203,11 @@ internal sealed class PyMapIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        using var scratch = _iterators.Length > 3
+        var wide = _iterators.Length > LythonRuntime.InlineIterationOperandCount;
+        using var scratch = wide
             ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
-        Operands inline = default;
-        var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
+        LythonRuntime.IterationOperands inline = default;
+        var arguments = wide ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
             var next = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);

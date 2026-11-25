@@ -580,6 +580,11 @@ internal sealed partial class LythonRuntime
 
     // A cursor transfers private operands into the existing callback binder.
     // Only a callable without an operand entry needs the original packet.
+    internal const int InlineIterationOperandCount = 3;
+
+    [System.Runtime.CompilerServices.InlineArray(InlineIterationOperandCount)]
+    internal struct IterationOperands { private ExecutableSlot _first; }
+
     internal static PyIterationResult StartIterationCallback(object callable, Span<ExecutableSlot> operands,
         LythonSourceSpan span, ExecutionContext context, bool asynchronous, out ValueTask<object> pending)
     {
@@ -589,10 +594,10 @@ internal sealed partial class LythonRuntime
             if (!asynchronous) return PyIterationResult.Yield(builtin.InvokeShortPositionalOperands(operands, span, context));
             pending = builtin.InvokeShortPositionalOperandsAsync(operands, span, context);
         }
-        else if (callable is PyFunctionBase function)
+        else if (IterationFunction(callable, out var receiver) is { } function)
         {
             if (function is PyExecutableFunction executable &&
-                executable.TryStartPositionalCallback(operands, span, context, out var result, out var frame, out var owned))
+                executable.TryStartPositionalCallback(operands, receiver, span, context, out var result, out var frame, out var owned))
             {
                 if (frame is null) return PyIterationResult.Yield(result);
                 if (!asynchronous) return PyIterationResult.Yield(function.InvokeBound(owned, span, frame));
@@ -600,8 +605,8 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                if (!asynchronous) return PyIterationResult.Yield(function.InvokeFromOperands(operands, span, context));
-                pending = function.InvokeFromOperandsAsync(operands, span, context);
+                if (!asynchronous) return PyIterationResult.Yield(function.InvokeFromOperands(operands, span, context, receiver));
+                pending = function.InvokeFromOperandsAsync(operands, span, context, receiver);
             }
         }
         else
@@ -619,6 +624,18 @@ internal sealed partial class LythonRuntime
         var value = pending.Result;
         pending = default;
         return PyIterationResult.Yield(value);
+    }
+
+    private static PyFunctionBase? IterationFunction(object callable, out object? receiver)
+    {
+        receiver = null;
+        if (callable is PyFunctionBase function) return function;
+        if (callable is PyBoundMethod { Function: PyFunctionBase method } bound)
+        {
+            receiver = bound.Receiver;
+            return method;
+        }
+        return null;
     }
 
     private abstract class BoundArgumentsCallable : IOperandBoundCallable

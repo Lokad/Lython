@@ -87,12 +87,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         suppliedReturn = completePositional &&
             TryStartSuppliedOperandReturn(arguments, receiver, call.CallSpan, out result, borrowedArgument);
         if (suppliedReturn) return true;
-        if (receiver is not null) return false;
 
         if (!completePositional)
-            return CodeObject.HasDirectOperandReturn &&
-                TryStartPreparedOperandReturn(call, arguments, context, call.CallSpan, out result, borrowedArgument);
-        if (arguments.Length != 1 || CodeObject.DirectDefinitionReturn is not { } definition) return false;
+            return call.IsPositionalOnly && CodeObject.HasDirectOperandReturn &&
+                TryStartPreparedOperandReturn(arguments, receiver, context, call.CallSpan, out result, borrowedArgument);
+        if (receiver is not null || arguments.Length != 1 || CodeObject.DirectDefinitionReturn is not { } definition) return false;
         // A captured value can outlive this call. A computed definition
         // consumes only the integer extracted before its admission callback.
         if (borrowedArgument && definition.InputCount == 0) _ = arguments[0].Object;
@@ -212,17 +211,21 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
     }
 
-    internal bool TryStartPreparedOperandReturn(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments,
+    internal bool TryStartPreparedOperandReturn(Span<LythonRuntime.ExecutableSlot> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result,
         bool borrowedArgument = false)
     {
         result = default;
         // An exposed keyword mapping can run comparisons during binding.
         // Decline before counting or reading the positional defaults.
-        if (!call.IsPositionalOnly || ParameterCount != CodeObject.FirstTemporarySlot ||
-            !HasPreparedOmittedArguments(arguments.Length)) return false;
+        var supplied = arguments.Length + (receiver is null ? 0 : 1);
+        if (ParameterCount != CodeObject.FirstTemporarySlot || !HasPreparedOmittedArguments(supplied)) return false;
         context.CheckExecution(span);
-        return TryStartDirectOperandReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this, _closureCells, borrowedArgument), span, out result);
+        return receiver is null
+            ? TryStartDirectOperandReturn(new LythonRuntime.DefaultIntegerOperands<LythonRuntime.SlotIntegerOperands>(
+                new(arguments, _closureCells, borrowedArgument), supplied, this), span, out result)
+            : TryStartDirectOperandReturn(new LythonRuntime.DefaultIntegerOperands<LythonRuntime.BoundIntegerOperands>(
+                new(receiver, arguments, _closureCells), supplied, this), span, out result);
     }
 
     internal bool TryStartSuppliedOperandReturn(Span<LythonRuntime.ExecutableSlot> arguments,
@@ -284,17 +287,20 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return StartPositionalCallbackWorkspace(arguments, receiver, span, out result, out frame, out owned);
     }
 
-    internal bool TryStartPositionalCallback(Span<LythonRuntime.ExecutableSlot> operands, LythonSourceSpan span,
+    internal bool TryStartPositionalCallback(Span<LythonRuntime.ExecutableSlot> operands, object? receiver, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, out LythonRuntime.ExecutableSlot result,
         out LythonRuntime.ExecutionContext? frame, out BoundFunctionArguments owned)
     {
         result = default;
         frame = null;
         owned = default;
-        if (!CanStartInline || !HasCompletePositionalSupply(operands.Length, null)) return false;
+        if (!CanStartInline) return false;
+        if (!HasCompletePositionalSupply(operands.Length, receiver))
+            return CodeObject.HasDirectOperandReturn && VariadicListIndex < 0 && VariadicDictionaryIndex < 0 &&
+                TryStartPreparedOperandReturn(operands, receiver, context, span, out result);
         context.CheckExecution(span);
-        if (TryStartSuppliedOperandReturn(operands, null, span, out result)) return true;
-        StartNativeWorkspace(null, operands, null, context, span, false, true, default, out _, out result, out frame, out owned);
+        if (TryStartSuppliedOperandReturn(operands, receiver, span, out result)) return true;
+        StartNativeWorkspace(null, operands, receiver, context, span, false, true, default, out _, out result, out frame, out owned);
         return true;
     }
 

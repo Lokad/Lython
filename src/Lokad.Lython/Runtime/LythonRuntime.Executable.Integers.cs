@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
             {
                 var completed = complete
                     ? function.TryStartSuppliedOperandReturn(arguments, null, call.CallSpan, out returned)
-                    : function.TryStartPreparedOperandReturn(call, arguments, scope, call.CallSpan, out returned);
+                    : function.TryStartPreparedOperandReturn(arguments, null, scope, call.CallSpan, out returned);
                 if (!completed) return false;
             }
             finally { scope.LeaveInterpreterFrame(); }

@@ -325,6 +325,26 @@ internal sealed class PyStarmapIterator : PyIteratorBase
     // the async shape reuses the leased drain and covers the exact final array.
     private const long ArgumentSlotBytes = 24;
 
+    private bool TryStartTupleCallback(object current, bool asynchronous, out PyIterationResult result,
+        out ValueTask<object> pending)
+    {
+        result = default;
+        pending = default;
+        if (current is not PyTuple tuple || tuple.Count > LythonRuntime.InlineIterationOperandCount) return false;
+
+        // Exact tuples own any deferred scalar identities. Keep those loans
+        // through binding or immediate return, before a callback can suspend.
+        LythonRuntime.IterationOperands operands = default;
+        for (var i = 0; i < tuple.Count; i++)
+        {
+            _context.CheckExecution(_span);
+            _ = tuple.TryReadTrailingSlot(tuple.Count - i, out operands[i]);
+        }
+        result = LythonRuntime.StartIterationCallback(_function, operands[..tuple.Count], _span, _context,
+            asynchronous, out pending);
+        return true;
+    }
+
     public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
@@ -332,6 +352,9 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         {
             return PyIterationResult.End;
         }
+
+        if (TryStartTupleCallback(current, asynchronous: false, out var tupleResult, out _))
+            return tupleResult;
 
         // The argument array duplicates the streamed element beside it; grow a
         // transient reservation with the backing list (mirroring the shared
@@ -370,6 +393,9 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         {
             return PyIterationResult.End;
         }
+
+        if (TryStartTupleCallback(current, asynchronous: true, out var tupleResult, out var pending))
+            return tupleResult.HasValue ? tupleResult : PyIterationResult.Yield(await pending.ConfigureAwait(false));
 
         // N09: leased drain keeps the element list charged beside the argument array
         // and callback (reservation ends after the call, not before).

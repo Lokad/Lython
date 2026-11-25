@@ -823,6 +823,13 @@ the original left operand. For private destinations the existing store
 consumes the result, with ordinary publication and dispatch available
 when arithmetic, namespace state or pending cleanup require them.
 
+`map` and `itertools.starmap` pass short operand spans to the same callback
+entry. `starmap` reads up to three elements directly from an exact tuple,
+preserving identities owned by the tuple. Bound guest methods pass their
+receiver alongside those operands. The binder copies any inputs needed
+after suspension into admitted storage. Wider rows and arbitrary iterables
+use the general argument drain.
+
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older
