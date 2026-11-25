@@ -1,0 +1,35 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      63768,
+      63768
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      59344,
+      59344
+    ],
+    "retainedAdmission": [
+      78622,
+      78622
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      152192,
+      152192
+    ],
+    "retainedAdmission": [
+      164576,
+      164576
+    ]
+  }
+]

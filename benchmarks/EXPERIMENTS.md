@@ -14,6 +14,11 @@ confirmation. The combined prototype stays private. Isolate pair ownership
 while preserving the single-definition path to test whether the two outcomes
 can be separated.
 
+[B1717c pair-only rollback](results/2026-11-25-pair-only-rollback/README.md)
+preserves single-definition construction. Defaulted warm CPU rises
+2.30–6.52%, while compile-to-result CPU falls 1.63–5.79%. Postponed
+controls remain uncertain and the candidate stays private.
+
 [B1699](results/2026-11-25-closed-default-evaluation/README.md) shares
 the closed single and paired default evaluator. Warm defaulted rules use
 0.46–2.59% less CPU, while postponed annotated rules use 7.48–13.43%
