@@ -67,6 +67,12 @@ the final quiet check. The valid repeat is inconclusive with matching peak
 admission. Retain the deletion and both blocks.
 
 
+[B1707 shared final default storage](results/2026-11-25-shared-default-owners/README.md)
+uses the existing result-consumer marker and one final-slot writer.
+Warm defaulted rules use 2.88–5.33% more CPU and postponed annotations
+use 4.87–9.81% more at matching admission. Ordinary generated definitions
+improve slightly through result. The shared producer stays private.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

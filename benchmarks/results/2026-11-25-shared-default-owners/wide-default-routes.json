@@ -1,0 +1,33 @@
+{
+  "imageSHA256": "e4afff7b354e3315533e32f09b7f9abadf2b67420e855dcd19aeba5c33dbc6af",
+  "routes": {
+    "<module>": {
+      "directPair": false,
+      "directSingle": false
+    },
+    "make_pair": {
+      "directPair": true,
+      "directSingle": false
+    },
+    "left": {
+      "directPair": false,
+      "directSingle": false
+    },
+    "<lambda>": {
+      "directPair": false,
+      "directSingle": false
+    },
+    "capture_factory": {
+      "directPair": false,
+      "directSingle": true
+    },
+    "build": {
+      "directPair": false,
+      "directSingle": true
+    },
+    "rule": {
+      "directPair": false,
+      "directSingle": false
+    }
+  }
+}

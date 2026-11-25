@@ -1,0 +1,79 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      64056,
+      64056
+    ],
+    "retainedAdmission": [
+      74175,
+      74175
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      44944,
+      44944
+    ],
+    "retainedAdmission": [
+      63610,
+      63610
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocationBytes": [
+      59336,
+      59336
+    ],
+    "retainedAdmission": [
+      78622,
+      78622
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1472960,
+      1472960
+    ],
+    "retainedAdmission": [
+      883617,
+      883617
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      134000,
+      134000
+    ],
+    "retainedAdmission": [
+      157114,
+      157114
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      152184,
+      152184
+    ],
+    "retainedAdmission": [
+      164576,
+      164576
+    ]
+  },
+  {
+    "case": "diagnostic.generated-live-definitions",
+    "allocationBytes": [
+      1513856,
+      1513856
+    ],
+    "retainedAdmission": [
+      971169,
+      971169
+    ]
+  }
+]
