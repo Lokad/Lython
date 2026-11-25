@@ -57,9 +57,13 @@ internal sealed partial class LythonRuntime
             var outerBytes = PyTuple.EstimateApproximateBytes(Captures.Length);
             var bytes = checked(outerBytes + RegexBoundsStorageBytes * Captures.Length);
             governor.Reserve(bytes, span);
+            var committed = false;
             try
             {
                 context.CheckExecution(span);
+                // Admission can reenter and publish the cache. Only the
+                // projection actually retained by the match is committed.
+                if (_registers is { } established) return established;
                 var pairs = new object[Captures.Length];
                 for (var i = 0; i < pairs.Length; i++)
                 {
@@ -71,9 +75,10 @@ internal sealed partial class LythonRuntime
                 var projection = PyTuple.FromAdmittedOwnedArray(pairs, governor, span, outerBytes);
                 context.CheckExecution(span);
                 governor.Commit(bytes);
-                return _registers ??= projection;
+                committed = true;
+                return _registers = projection;
             }
-            catch { governor.ReleaseReserved(bytes); throw; }
+            finally { if (!committed) governor.ReleaseReserved(bytes); }
         }
 
         internal ReadOnlySpan<byte> GroupBytes(int index)

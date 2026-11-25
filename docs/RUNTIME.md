@@ -2721,7 +2721,10 @@ the original string and window with the provider cursor, prepared subject and
 capture scratch. Validation and projection use that same subject throughout.
 `finditer` opens its cursor on the first pull. Cleanup closes the cursor before
 releasing the subject borrow and scratch. Escaping matches own their final
-ranges and retain the funded original subject.
+ranges and retain the funded original subject. The first `match.regs` read
+admits the full tuple of scalar spans. If admission reenters and publishes
+that tuple, the outer read returns the established tuple and refunds its
+unused reservation.
 
 Filename matching reads the original UTF-8 inputs with scalar cursors; it creates
 no whole-string rune arrays or per-character string cache. `?` and character

@@ -9,6 +9,42 @@ public sealed class RegexExpansionOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
+    [Fact]
+    public void ReentrantRegisterProjectionRetainsOneCacheCharge()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook },
+                regexProvider: Utf8RegexProvider.Instance);
+            try
+            {
+                var control = Match(context, "(é)(x)?", "é");
+                var match = Match(context, "(é)(x)?", "é");
+                var before = budget.ReservedBytes;
+                Assert.Equal(3, control.ReadRegisters(context, Span).Count);
+                var afterControl = budget.ReservedBytes;
+                Assert.True(afterControl > before);
+
+                PyTuple? nested = null;
+                hook.AfterGrowth = _ =>
+                {
+                    hook.AfterGrowth = null;
+                    nested = match.ReadRegisters(context, Span);
+                };
+                var result = match.ReadRegisters(context, Span);
+
+                Assert.Same(nested, result);
+                Assert.Same(result, match.ReadRegisters(context, Span));
+                Assert.Equal(afterControl - before, budget.ReservedBytes - afterControl);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(64)]
     [InlineData(4096)]
