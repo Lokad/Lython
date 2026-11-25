@@ -1,0 +1,96 @@
+{
+  "scripts.rule-default-closures": [],
+  "scripts.annotated-rule-closures": [
+    {
+      "index": 12,
+      "callIndex": 15,
+      "beforeCall": [
+        "LoadLocal",
+        "LoadLocal"
+      ],
+      "soleLocalArgument": true,
+      "span": {
+        "Start": 253,
+        "Length": 22,
+        "Line": 9,
+        "Column": 5
+      }
+    }
+  ],
+  "scripts.annotated-rule-closures.nested-factories.postponed": [
+    {
+      "index": 18,
+      "callIndex": 21,
+      "beforeCall": [
+        "LoadLocal",
+        "LoadLocal"
+      ],
+      "soleLocalArgument": true,
+      "span": {
+        "Start": 399,
+        "Length": 22,
+        "Line": 13,
+        "Column": 5
+      }
+    }
+  ],
+  "diagnostic.generated-ordinary-definitions": [],
+  "scripts.csv-invoice.method-policy.quoted-control": [],
+  "diagnostic.shipment-routing-callbacks": [
+    {
+      "index": 41,
+      "callIndex": 46,
+      "beforeCall": [
+        "LoadGlobal",
+        "LoadLocal",
+        "LoadLocal",
+        "LoadLocal"
+      ],
+      "soleLocalArgument": false,
+      "span": {
+        "Start": 1128,
+        "Length": 41,
+        "Line": 31,
+        "Column": 17
+      }
+    },
+    {
+      "index": 53,
+      "callIndex": 58,
+      "beforeCall": [
+        "LoadGlobal",
+        "LoadLocal",
+        "LoadLocal",
+        "LoadLocal"
+      ],
+      "soleLocalArgument": false,
+      "span": {
+        "Start": 1225,
+        "Length": 41,
+        "Line": 34,
+        "Column": 13
+      }
+    }
+  ],
+  "diagnostic.generated-default-free-definitions": [],
+  "scripts.ordinary-fully-supplied-helper.local-function": [
+    {
+      "index": 8,
+      "callIndex": 14,
+      "beforeCall": [
+        "LoadGlobal",
+        "LoadLocal",
+        "Binary",
+        "Binary",
+        "Binary"
+      ],
+      "soleLocalArgument": false,
+      "span": {
+        "Start": 140,
+        "Length": 51,
+        "Line": 8,
+        "Column": 9
+      }
+    }
+  ]
+}

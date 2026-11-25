@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1684](results/2026-11-25-exact-call-input/README.md) isolates a single
+borrowed argument and one omitted-default check. Eager rules use 6.27–9.83%
+less warm CPU. Postponed rules and defaulted time to result use more CPU.
+The shipment control crosses zero with wider reference spread. This
+refinement stays private with flat allocation and admission.
+
 [B1683](results/2026-11-25-borrowed-call-window/README.md) borrows forwarded
 call slots and avoids a repeated default check in exact integer updates.
 Ordinary and defaulted definitions use less warm CPU. Async shipment and
