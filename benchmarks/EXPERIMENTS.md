@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1672](results/2026-11-25-shared-callable-layout/README.md) shares the
+immutable parameter layout through executable code. It recovers half the
+ordinary-definition allocation increase from B1670. Rule time to result
+improves in the repeat and ordinary-definition CPU rises. The prototype
+stays private for a follow-up on binding costs.
+
 [B1670](results/2026-11-25-default-operand-storage/README.md) keeps
 computed singleton positional integers in the callable slot until Python
 observes their identity. Defaulted rule CPU falls in both blocks. Generated
