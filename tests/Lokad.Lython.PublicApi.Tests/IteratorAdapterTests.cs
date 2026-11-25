@@ -110,4 +110,67 @@ public sealed class IteratorAdapterTests
         }
         Assert.Equal(0,budget.ReservedBytes);
     }
+
+    [Fact]
+    public async Task MapRowRetainsAliasesAndUnwindsWhenALaterSourceSuspends()
+    {
+        const string source = """
+            def late():
+                with open('pause') as stream:
+                    yield int(stream.read())
+
+            def choose(value, enabled):
+                return value if enabled else None
+
+            def increment(value):
+                return value + 1
+
+            marker = []
+            values = list(map(choose, [marker, marker], late()))
+            print(values[0] is marker)
+            print(list(map(int, map(increment, range(9223372036854775806, 9223372036854775808)))))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        var blocked = new DelayedLythonHost();
+        blocked.SeedFile("/pause", "1");
+        var reached = blocked.PauseReadUntilCancellation("/pause");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(blocked, new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token });
+        try
+        {
+            await reached.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var result = await pending;
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Equal("", result.StandardOutput);
+        }
+        Assert.Equal(1, blocked.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        var immediate = new MockLythonHost();
+        immediate.SeedFile("/pause", "1");
+        var delayed = new DelayedLythonHost();
+        delayed.SeedFile("/pause", "1");
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(delayed, new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(immediate, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("True\n[9223372036854775807, 9223372036854775808]\n", result.StandardOutput);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        Assert.Equal(1, immediate.ClosedFileCount);
+        Assert.Equal(1, delayed.ClosedFileCount);
+        Assert.True(delayed.CompletedAsynchronously > 0);
+    }
 }

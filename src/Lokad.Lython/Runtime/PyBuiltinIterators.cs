@@ -131,6 +131,12 @@ internal sealed class PyReversedIterator : PyIteratorBase
 
 internal sealed class PyMapIterator : PyIteratorBase
 {
+    [System.Runtime.CompilerServices.InlineArray(3)]
+    private struct Operands
+    {
+        private LythonRuntime.ExecutableSlot _first;
+    }
+
     private readonly object _function;
     private readonly PyIteration.Cursor[] _iterators;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -179,49 +185,50 @@ internal sealed class PyMapIterator : PyIteratorBase
     {
         using var scratch = _iterators.Length > 3
             ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
-        CallableInvocation.Arguments inline = default;
+        Operands inline = default;
         var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
-            if (!(_iterators[i].TryMoveNext() is { HasValue: true, Value: var current }))
-            {
-                return PyIterationResult.End;
-            }
-
-            var argument = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
-            if (arguments is null) inline[i] = argument;
-            else arguments[i] = argument;
+            var next = _iterators[i].TryMoveNext();
+            if (!next.HasValue) return PyIterationResult.End;
+            if (arguments is null) inline[i] = next.TakeSlotValue();
+            else arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(next.Value));
         }
 
-        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(arguments is null
-            ? CallableInvocation.Invoke(_function, inline[.._iterators.Length], _span, _context)
-            : (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(arguments, _span, _context)));
+        if (arguments is null)
+        {
+            var result = LythonRuntime.StartIterationCallback(_function, inline[.._iterators.Length], _span, _context,
+                asynchronous: false, out _);
+            System.Diagnostics.Debug.Assert(result.HasValue);
+            return result;
+        }
+        var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
+        return PyIterationResult.Yield(callable.Invoke(arguments, _span, _context));
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         using var scratch = _iterators.Length > 3
             ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
-        CallableInvocation.Arguments inline = default;
+        Operands inline = default;
         var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
-            var (hasValue, current) = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                return PyIterationResult.End;
-            }
-
-            var argument = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
-            if (arguments is null) inline[i] = argument;
-            else arguments[i] = argument;
+            var next = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);
+            if (!next.HasValue) return PyIterationResult.End;
+            if (arguments is null) inline[i] = next.TakeSlotValue();
+            else arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(next.Value));
         }
 
-        var pending = arguments is null
-            ? CallableInvocation.InvokeAsync(_function, inline[.._iterators.Length], _span, _context)
-            : (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).InvokeAsync(arguments, _span, _context);
-        var value = LythonRuntime.RuntimeValue(await pending.ConfigureAwait(false));
-        return PyIterationResult.Yield(value);
+        if (arguments is null)
+        {
+            var result = LythonRuntime.StartIterationCallback(_function, inline[.._iterators.Length], _span, _context,
+                asynchronous: true, out var pending);
+            if (result.HasValue) return result;
+            return PyIterationResult.Yield(await pending.ConfigureAwait(false));
+        }
+        var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
+        return PyIterationResult.Yield(await callable.InvokeAsync(arguments, _span, _context).ConfigureAwait(false));
     }
 
     public override PyString RenderPython(PyRenderingContext context)

@@ -578,6 +578,49 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, bool asynchronous);
     }
 
+    // A cursor transfers private operands into the existing callback binder.
+    // Only a callable without an operand entry needs the original packet.
+    internal static PyIterationResult StartIterationCallback(object callable, Span<ExecutableSlot> operands,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous, out ValueTask<object> pending)
+    {
+        pending = default;
+        if (callable is BoundArgumentsCallable builtin)
+        {
+            if (!asynchronous) return PyIterationResult.Yield(builtin.InvokeShortPositionalOperands(operands, span, context));
+            pending = builtin.InvokeShortPositionalOperandsAsync(operands, span, context);
+        }
+        else if (callable is PyFunctionBase function)
+        {
+            if (function is PyExecutableFunction executable &&
+                executable.TryStartPositionalCallback(operands, span, context, out var result, out var frame, out var owned))
+            {
+                if (frame is null) return PyIterationResult.Yield(result);
+                if (!asynchronous) return PyIterationResult.Yield(function.InvokeBound(owned, span, frame));
+                pending = function.InvokeBoundAsync(owned, span, frame);
+            }
+            else
+            {
+                if (!asynchronous) return PyIterationResult.Yield(function.InvokeFromOperands(operands, span, context));
+                pending = function.InvokeFromOperandsAsync(operands, span, context);
+            }
+        }
+        else
+        {
+            CallableInvocation.Arguments packet = default;
+            for (var i = 0; i < operands.Length; i++)
+                packet[i] = CallArgumentValue.Positional(RuntimeValue(operands[i].Object));
+            var arguments = packet[..operands.Length];
+            if (!asynchronous) return PyIterationResult.Yield(CallableInvocation.Invoke(callable, arguments, span, context));
+            pending = CallableInvocation.InvokeAsync(callable, arguments, span, context);
+        }
+        // An empty result hands the caller its existing pending operation.
+        // A successful callback always returns a value, including Python None.
+        if (!pending.IsCompletedSuccessfully) return default;
+        var value = pending.Result;
+        pending = default;
+        return PyIterationResult.Yield(value);
+    }
+
     private abstract class BoundArgumentsCallable : IOperandBoundCallable
     {
         private readonly PythonCallableKind _callableKind;
@@ -628,6 +671,24 @@ internal sealed partial class LythonRuntime
                     : InvokeBoundAsync(bound.Values, call.CallSpan, context);
             return new(preservePresence ? InvokeBoundWithPresence(bound, call.CallSpan, context)
                 : InvokeBound(bound.Values, call.CallSpan, context));
+        }
+
+        internal object InvokeShortPositionalOperands(Span<ExecutableSlot> operands, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            var preservePresence = PreservePresence;
+            var bound = CallBinder.BindShortPositionalOperands(operands, span, Signature, _callableKind,
+                preservePresence, UsesMissingArgumentSlots);
+            return preservePresence ? InvokeBoundWithPresence(bound, span, context) : InvokeBound(bound.Values, span, context);
+        }
+
+        internal ValueTask<object> InvokeShortPositionalOperandsAsync(Span<ExecutableSlot> operands, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            var preservePresence = PreservePresence;
+            var bound = CallBinder.BindShortPositionalOperands(operands, span, Signature, _callableKind,
+                preservePresence, UsesMissingArgumentSlots);
+            return preservePresence ? InvokeBoundWithPresenceAsync(bound, span, context) : InvokeBoundAsync(bound.Values, span, context);
         }
 
         /// <summary>Whether calls bind with assignment tracking so omitted arguments stay distinguishable from explicit values.</summary>

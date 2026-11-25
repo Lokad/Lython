@@ -130,14 +130,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             return;
         }
         StartNativeWorkspace(call, arguments, receiver, context, span, consumedByIteration, completePositional,
-            unpackedReturn, out unpacked, out result, out frame);
+            unpackedReturn, out unpacked, out result, out frame, out _);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private void StartNativeWorkspace(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, object? receiver,
+    private void StartNativeWorkspace(ExecutableCallSite? call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
         bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
-        out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
+        out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame, out BoundFunctionArguments owned)
     {
         // Both executable callers select eligibility before entry. Starting a
         // selected call completes or transfers its exact work; it never declines
@@ -157,7 +157,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         else LythonRuntime.BindFunctionArgumentsInto(values[..ParameterCount],
             [], span, this, context, out _, receiver: receiver, callSite: call, operands: arguments);
         StartInline(values, null, span, consumedByIteration, unpackedReturn,
-            out unpacked, out result, out frame, out _);
+            out unpacked, out result, out frame, out owned);
     }
 
     private bool TryReturnDefinition(ExecutableCreateFunction? definition,
@@ -282,6 +282,20 @@ internal sealed class PyExecutableFunction : PyFunctionBase
                 span, out result)) return true;
         }
         return StartPositionalCallbackWorkspace(arguments, receiver, span, out result, out frame, out owned);
+    }
+
+    internal bool TryStartPositionalCallback(Span<LythonRuntime.ExecutableSlot> operands, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, out LythonRuntime.ExecutableSlot result,
+        out LythonRuntime.ExecutionContext? frame, out BoundFunctionArguments owned)
+    {
+        result = default;
+        frame = null;
+        owned = default;
+        if (!CanStartInline || !HasCompletePositionalSupply(operands.Length, null)) return false;
+        context.CheckExecution(span);
+        if (TryStartSuppliedOperandReturn(operands, null, span, out result)) return true;
+        StartNativeWorkspace(null, operands, null, context, span, false, true, default, out _, out result, out frame, out owned);
+        return true;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]

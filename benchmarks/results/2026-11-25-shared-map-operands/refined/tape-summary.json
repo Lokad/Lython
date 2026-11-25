@@ -1,0 +1,32 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "tapes": 4,
+    "instructions": 168,
+    "retainedAdmission": 164576
+  },
+  {
+    "case": "diagnostic.shipment-native-map-control",
+    "tapes": 1,
+    "instructions": 69,
+    "retainedAdmission": 64064
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "tapes": 4,
+    "instructions": 150,
+    "retainedAdmission": 157114
+  },
+  {
+    "case": "diagnostic.shipment-retained-zip",
+    "tapes": 2,
+    "instructions": 97,
+    "retainedAdmission": 75584
+  },
+  {
+    "case": "diagnostic.nested-map-scalar-report",
+    "tapes": 4,
+    "instructions": 30,
+    "retainedAdmission": 54176
+  }
+]

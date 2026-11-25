@@ -124,6 +124,13 @@ internal static class CallBinder
             signature.Name, callableKind, signature.Parameters, out _, preservePresence,
             useNullForOmittedArguments: useNullForOmittedArguments);
 
+    internal static BoundBuiltinArguments BindShortPositionalOperands(Span<LythonRuntime.ExecutableSlot> operands,
+        LythonSourceSpan span, LythonCallableSignature signature, PythonCallableKind callableKind,
+        bool preservePresence, bool useNullForOmittedArguments)
+        => BindNamedArgumentsCore(new ShortPositionalOperands(operands), span,
+            signature.Name, callableKind, signature.Parameters, out _, preservePresence,
+            useNullForOmittedArguments: useNullForOmittedArguments);
+
     // These entry points have fixed named slots and allow extra keywords for
     // their user-supplied constructors. The cursor is gone before a constructor
     // or option callback can run. Only the final binding survives suspension.
@@ -217,6 +224,19 @@ internal static class CallBinder
         public int Length => _arguments.Length;
         public string? KeywordAt(int index) => _arguments[index].IsPositional ? null : _arguments[index].KeywordName;
         public object ValueAt(int index) => _arguments[index].Value;
+        public void CheckExecution(int index, LythonSourceSpan span) { }
+    }
+
+    // The iterator checks cancellation before binding its short operand row.
+    private readonly ref struct ShortPositionalOperands : IBindingInputs
+    {
+        private readonly Span<LythonRuntime.ExecutableSlot> _operands;
+
+        internal ShortPositionalOperands(Span<LythonRuntime.ExecutableSlot> operands) => _operands = operands;
+
+        public int Length => _operands.Length;
+        public string? KeywordAt(int index) => null;
+        public object ValueAt(int index) => _operands[index].Object.RequireNotNull();
         public void CheckExecution(int index, LythonSourceSpan span) { }
     }
 

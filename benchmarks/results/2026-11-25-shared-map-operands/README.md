@@ -58,7 +58,38 @@ the source private. The refinement restores the ordinary input path and
 uses a bounded positional view for the short builtin callback in the same
 binder. It also skips the completed task wrapper on synchronous builtin calls.
 
+## B1679 Keep the ordinary binder input unchanged
+
+The refinement shares binding through a positional operand view for short
+map rows. The ordinary executable supplies its original argument forms.
+Both images match the five goldens and the original tapes. Windows passes
+274 focused public checks per Release target. Ubuntu .NET 11 passes 274
+public and 21 white-box checks. The 393,216 B scalar allocation saving,
+admitted peaks and allowance restoration all repeat.
+
+The same VM and reference image use 0.88-second target batches and a
+20-second post-run settle, with the original quiet thresholds. All 140
+batches, both quiet gates, worker joins and archival verification pass.
+
+| Workload | Warm elapsed change | Wider CPU change | Elapsed worker spread, reference / candidate |
+| --- | ---: | ---: | ---: |
+| Shipment native map | +0.98 to +1.34% | −0.04 to +2.18% | 0.20 / 0.15% |
+| Nested scalar report | −21.37 to −20.67% | −21.50 to −20.76% | 0.09 / 0.81% |
+| Shipment with retained zip tuples | −0.34 to +1.93% | −0.98 to +1.12% | 0.95 / 1.32% |
+| Shipment callback report | −1.52 to +2.75% | −1.75 to +4.18% | 3.94 / 0.38% |
+| Quote-heavy invoice | +0.50 to +1.33% | +0.10 to +1.14% | 0.15 / 0.68% |
+
+Retain the shared short callback path for the measured scalar gain and
+removal of repeated operand publication. Shipment and retained zip remain
+inconclusive. The native map and invoice elapsed increases are small and
+consistent within this block. Carry them into the next affected changes.
+The first run's larger increases remain recorded above. The refined
+`RunAsync` path has focused correctness coverage, with timing left open.
+
 [Identity](identity.json) · [Timings](quiet-summary.json) ·
 [Allocations](allocation-summary.json) · [Tapes](tape-summary.json) ·
 [Observations](quiet-observations.tar.xz) · [Terminal status](quiet-terminal-status.json) ·
-[Procedures and source](procedures.tar.xz).
+[Procedures and source](procedures.tar.xz) · [Refined identity](refined/identity.json) ·
+[Refined timings](refined/quiet-summary.json) · [Refined allocations](refined/allocation-summary.json) ·
+[Refined observations](refined/quiet-observations.tar.xz) · [Refined terminal status](refined/quiet-terminal-status.json) ·
+[Refined procedures and source](refined/procedures.tar.xz).

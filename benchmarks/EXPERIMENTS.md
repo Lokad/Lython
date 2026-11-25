@@ -11,6 +11,9 @@ slots through nested `map` callbacks. The scalar report allocates 96.66%
 less and keeps the same peak admission. Its first timing run fails the final
 quiet check and has adverse native map and retained zip controls. The
 original batch values and source remain archived.
+The B1679 refinement keeps ordinary builtin binding unchanged and clears
+both quiet gates. Scalar CPU falls 20.76–21.50%. Native map and invoice show
+small adverse elapsed ranges, while shipment and retained zip cross zero.
 
 [B1677](results/2026-11-25-ordinary-defaults-cpython/README.md) compares
 `2b1e8a6f2` with CPython 3.13.16. Ordinary definitions take 2.211–2.255×

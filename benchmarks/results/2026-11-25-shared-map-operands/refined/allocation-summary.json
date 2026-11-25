@@ -1,0 +1,57 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1315590,
+      1315584
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-native-map-control",
+    "allocationBytes": [
+      1139376,
+      1139376
+    ],
+    "peakAdmission": [
+      2662235,
+      2662235
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocationBytes": [
+      3281534,
+      3281590
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-retained-zip",
+    "allocationBytes": [
+      1223672,
+      1223784
+    ],
+    "peakAdmission": [
+      2892539,
+      2892539
+    ]
+  },
+  {
+    "case": "diagnostic.nested-map-scalar-report",
+    "allocationBytes": [
+      406824,
+      13608
+    ],
+    "peakAdmission": [
+      2720,
+      2720
+    ]
+  }
+]

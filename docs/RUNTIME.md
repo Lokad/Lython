@@ -1318,6 +1318,11 @@ Short executable calls and shared callback helpers pass managed stack arguments
 through the borrowed entry on the callable contract. Eligible Python callbacks
 with every positional parameter supplied start in the existing native slots.
 They reserve owned workspace before transferring to the general runner.
+Short `map` rows carry the cursor's operands into the existing compiled or
+builtin binder. A compiled scalar result can reach the next cursor without
+publishing a box. The map iterator awaits the actual pending callback after
+binding has established its owners. Wide calls and arbitrary callables use
+the ordinary argument packet.
 General function, builtin and JSON binding own any values needed through
 default lookup or body suspension. Bound receivers follow the same rules.
 Wide calls and prepared constructors keep caller-owned packets through
