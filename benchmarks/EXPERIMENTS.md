@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1741 shared assignment bindings](results/2026-11-25-shared-assignment-bindings/README.md)
+removes the ordinary recursive binding walk and saves 0.5–0.8% compilation
+allocation on generated rules. Local timing and same-source control ranges
+span zero. The archived prototype adds temporary state while generator,
+comprehension and lazy type paths still need the collector.
+
 [B1740 compiled regex subjects](results/2026-11-25-compiled-regex-subject/README.md)
 shares the validated UTF-8 array across repeated analysis and literal emission.
 The long match and miss each allocate 16,496 B less during compilation with

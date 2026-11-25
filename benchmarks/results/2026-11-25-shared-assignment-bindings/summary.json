@@ -1,0 +1,207 @@
+{
+  "allocation": [
+    {
+      "case": "diagnostic.generated-record-rules-no-bindings",
+      "allocationBytes": [
+        1630344,
+        1617216
+      ],
+      "retainedAdmission": 760066
+    },
+    {
+      "case": "diagnostic.generated-record-rules-bindings",
+      "allocationBytes": [
+        1908680,
+        1899136
+      ],
+      "retainedAdmission": 987394
+    },
+    {
+      "case": "scripts.file-manifest.small",
+      "allocationBytes": [
+        72328,
+        72328
+      ],
+      "retainedAdmission": 82304
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "allocationBytes": [
+        1437832,
+        1437920
+      ],
+      "retainedAdmission": 883617
+    },
+    {
+      "case": "diagnostic.shipment-routing-callbacks",
+      "allocationBytes": [
+        149992,
+        149512
+      ],
+      "retainedAdmission": 164576
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "allocationBytes": [
+        2136312,
+        2136072
+      ],
+      "retainedAdmission": 2294048
+    }
+  ],
+  "pinnedPairedTiming": [
+    {
+      "case": "diagnostic.generated-record-rules-no-bindings",
+      "lane": "compile",
+      "cpu": {
+        "candidate / reference": {
+          "medianPercent": -1.1005135730007165,
+          "minPercent": -5.89095744680852,
+          "maxPercent": 12.985170857511275
+        },
+        "candidate-control / candidate": {
+          "medianPercent": 1.6550686477336818,
+          "minPercent": -13.814180929095343,
+          "maxPercent": 65.47677261613688
+        },
+        "reference-control / reference": {
+          "medianPercent": 0.9447004608295062,
+          "minPercent": -12.171814671814651,
+          "maxPercent": 20.35714285714285
+        }
+      },
+      "elapsed": {
+        "candidate / reference": {
+          "medianPercent": -1.673725175373053,
+          "minPercent": -5.362417745973779,
+          "maxPercent": 17.479659320144727
+        },
+        "candidate-control / candidate": {
+          "medianPercent": 2.2511869098120085,
+          "minPercent": -12.729991463659495,
+          "maxPercent": 115.30937703400808
+        },
+        "reference-control / reference": {
+          "medianPercent": 7.185040263735809,
+          "minPercent": -9.971211701405359,
+          "maxPercent": 19.02942633245268
+        }
+      }
+    },
+    {
+      "case": "diagnostic.generated-record-rules-bindings",
+      "lane": "compile",
+      "cpu": {
+        "candidate / reference": {
+          "medianPercent": -2.3814541622760754,
+          "minPercent": -16.90802348336594,
+          "maxPercent": 28.414872798434466
+        },
+        "candidate-control / candidate": {
+          "medianPercent": -0.4823825503355583,
+          "minPercent": -13.541255428345844,
+          "maxPercent": 53.1040268456376
+        },
+        "reference-control / reference": {
+          "medianPercent": -0.11942675159235527,
+          "minPercent": -18.046709129511697,
+          "maxPercent": 8.745712885840273
+        }
+      },
+      "elapsed": {
+        "candidate / reference": {
+          "medianPercent": -2.2434307283564214,
+          "minPercent": -18.32101124472102,
+          "maxPercent": 21.988853195370407
+        },
+        "candidate-control / candidate": {
+          "medianPercent": -2.5905355986244993,
+          "minPercent": -13.98228881870388,
+          "maxPercent": 58.79096822526244
+        },
+        "reference-control / reference": {
+          "medianPercent": -2.434811324347008,
+          "minPercent": -17.23232354783938,
+          "maxPercent": 10.784101117421452
+        }
+      }
+    },
+    {
+      "case": "diagnostic.generated-record-rules-bindings",
+      "lane": "compile-run",
+      "cpu": {
+        "candidate / reference": {
+          "medianPercent": -5.0949050949051,
+          "minPercent": -17.974882260596548,
+          "maxPercent": 4.39560439560438
+        },
+        "candidate-control / candidate": {
+          "medianPercent": -6.522855675398043,
+          "minPercent": -12.994350282485867,
+          "maxPercent": 15.677966101694917
+        },
+        "reference-control / reference": {
+          "medianPercent": -3.404067197170657,
+          "minPercent": -11.803713527851478,
+          "maxPercent": 19.122257053291513
+        }
+      },
+      "elapsed": {
+        "candidate / reference": {
+          "medianPercent": -8.786465613881521,
+          "minPercent": -33.22637874310557,
+          "maxPercent": 9.100177474585136
+        },
+        "candidate-control / candidate": {
+          "medianPercent": -8.108141153604986,
+          "minPercent": -15.307481656341848,
+          "maxPercent": 13.052039746858423
+        },
+        "reference-control / reference": {
+          "medianPercent": -0.7244787886050874,
+          "minPercent": -13.255560017559354,
+          "maxPercent": 28.0972329526737
+        }
+      }
+    },
+    {
+      "case": "scripts.file-manifest.small",
+      "lane": "compile",
+      "cpu": {
+        "candidate / reference": {
+          "medianPercent": -8.601565158217085,
+          "minPercent": -53.98120763210931,
+          "maxPercent": 17.710105478053762
+        },
+        "candidate-control / candidate": {
+          "medianPercent": 10.5219614921781,
+          "minPercent": -30.48549732354039,
+          "maxPercent": 29.679101484155645
+        },
+        "reference-control / reference": {
+          "medianPercent": 3.829926410466067,
+          "minPercent": -43.47719982388829,
+          "maxPercent": 29.787408013082594
+        }
+      },
+      "elapsed": {
+        "candidate / reference": {
+          "medianPercent": -4.978028282695767,
+          "minPercent": -53.55330824530732,
+          "maxPercent": 9.237433072697865
+        },
+        "candidate-control / candidate": {
+          "medianPercent": 13.785073202382602,
+          "minPercent": -40.162278671746066,
+          "maxPercent": 20.397073550050205
+        },
+        "reference-control / reference": {
+          "medianPercent": 2.764879875996651,
+          "minPercent": -40.12954109483925,
+          "maxPercent": 20.214082993510885
+        }
+      }
+    }
+  ],
+  "elapsedCollectionSeconds": 129.94556403299794
+}
