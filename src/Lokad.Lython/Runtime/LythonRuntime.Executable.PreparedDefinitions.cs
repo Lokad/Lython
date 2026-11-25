@@ -131,11 +131,11 @@ internal sealed partial class LythonRuntime
             var index = 1;
             var positional = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             StoreFunctionDefault(ref defaults, 0, true, positional, scope.State, instructions[index++].Span);
-            ExecutableSlot keyword = default;
+            var keyword = ExecutableSlot.FromObject(keywordCapture);
             if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             else scope.CheckExecution(instructions[index++].Span);
             scope.CheckExecution(instructions[index++].Span);
-            defaults = defaults with { Keywords = RuntimeValue(keywordCapture ?? keyword.Object) };
+            defaults = defaults with { Keywords = ExecutableSlot.OwnPrivateKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
             var span = instructions[index].Span;
             scope.CheckExecution(span);
             var result = definition.EagerAnnotationReads is { } reads

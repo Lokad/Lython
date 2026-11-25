@@ -400,13 +400,16 @@ scalar literal positional defaults shares one immutable tuple owned by the
 compiled code. Reassigning `__defaults__` still affects only that function.
 Each definition admits its positional and keyword default backing before
 evaluation. Values complete into private storage that stays owned through
-suspension. An evaluated singleton positional integer stays in operand form
-through ordinary and prepared definitions. The private slot refunds on failure
-or transfers the funded value into the callable after its separate admission.
-Closed arithmetic can read the integer from the callable's operand slot.
-Binding that can expose the value publishes its canonical object in the slot.
-Reading `__defaults__` materializes the canonical tuple using the existing
-admission. A larger integer magnitude can require a further charge. A tuple
+suspension. Evaluated singleton positional and keyword integers stay in
+operand form through ordinary and prepared definitions. The slot carries its
+ownership tag and refunds private backing on failure. After the separate
+callable admission, that same slot belongs to the callable. Closed arithmetic
+can read the integer directly. Binding that can expose the value publishes
+its canonical object in the owner. Reading `__defaults__` or `__kwdefaults__`
+materializes the canonical container with the existing admission. Replacing
+an inline keyword default refunds unused mapping backing and retains the
+charge for a published scalar that can still have aliases. A larger positional
+integer magnitude can require a further charge. A tuple
 holding multiple evaluated defaults can also retain private integer slots
 with admission for their eventual boxes. Private backing refunds on failure,
 and compiled key layouts stay funded with the code.

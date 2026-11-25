@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1682](results/2026-11-25-tagged-default-ownership/README.md) carries slot
+ownership through construction and removes the two inline-default flags.
+Ordinary and eager definitions allocate 19.69% and 20.16% less, with lower
+warm CPU in confirmation. The original adverse defaulted-rule timing
+remains archived and its repeat spans zero.
+
 [B1681](results/2026-11-25-keyword-default-operands/README.md) keeps a
 singleton keyword integer private until it needs a canonical box. Eager
 rules improve and the wider callable costs allocation on three controls.

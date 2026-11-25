@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
         else if (destination.HasPrivateKeywordDefault)
         {
             state.CheckExecution(consumer.Span);
-            destination = ExecutableSlot.OwnPrivateKeywordDefault(RuntimeValue(value.Object));
+            destination = ExecutableSlot.OwnPrivateKeywordDefault(FunctionDefaults.PrepareInlineValue(value));
         }
         else if (destination.Reference is PyTuple positional)
             positional.SetPrivateDefault(consumer.DefaultValueIndex, value, state, consumer.Span);

@@ -4,15 +4,17 @@ using ExecutableSlot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 
 namespace Lokad.Lython.Runtime;
 
-internal readonly record struct FunctionDefaults(ExecutableSlot Positional, object? Keywords,
-    bool InlineKeyword = false, bool InlinePositional = false)
+internal readonly record struct FunctionDefaults(ExecutableSlot Positional, ExecutableSlot Keywords)
 {
+    internal bool InlinePositional => Positional.HasPrivatePositionalDefault;
+    internal bool InlineKeyword => Keywords.HasPrivateKeywordDefault;
+
     internal void RefundUnpublished(MemoryGovernor governor)
     {
-        if (InlinePositional) governor.Release(InlinePositionalBytes(Positional));
-        else if (Positional.Reference is { } positional) governor.RefundUnpublishedValue(positional);
-        if (InlineKeyword) governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
-        else if (Keywords is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
+        var positional = Positional;
+        var keywords = Keywords;
+        try { positional.RetireTemporary(governor); }
+        finally { keywords.RetireTemporary(governor); }
     }
 
     internal static long InlinePositionalBytes(ExecutableSlot value)
@@ -27,8 +29,7 @@ internal readonly record struct FunctionDefaults(ExecutableSlot Positional, obje
         try
         {
             state.CheckExecution(span);
-            if (!value.IsUnpublishedInteger)
-                value = ExecutableSlot.FromObject(LythonRuntime.RuntimeValue(value.Object));
+            value = PrepareInlineValue(value);
             if (extra != 0) governor.Commit(extra);
             return value;
         }
@@ -39,6 +40,9 @@ internal readonly record struct FunctionDefaults(ExecutableSlot Positional, obje
         }
     }
 
+    internal static ExecutableSlot PrepareInlineValue(ExecutableSlot value)
+        => value.IsUnpublishedInteger ? value : ExecutableSlot.FromObject(LythonRuntime.RuntimeValue(value.Object));
+
     private static long PositionalScalarExcess(long bytes) => Math.Max(0, bytes - RuntimeMemoryEstimates.ScalarStorageBytes);
 }
 
@@ -48,17 +52,13 @@ internal abstract class FunctionBindingPlan
 {
     private readonly FunctionParameterLayout _layout;
     private ExecutableSlot _positionalDefaults;
-    private object? _keywordDefaults;
-    private bool _inlinePositionalDefault;
-    private bool _inlineKeywordDefault;
+    private ExecutableSlot _keywordDefaults;
 
     protected FunctionBindingPlan(FunctionParameterLayout layout, FunctionDefaults defaults)
     {
         _layout = layout;
         _positionalDefaults = defaults.Positional;
-        _inlinePositionalDefault = defaults.InlinePositional;
         _keywordDefaults = defaults.Keywords;
-        _inlineKeywordDefault = defaults.InlineKeyword;
     }
 
     public abstract string CallableName { get; }
@@ -94,26 +94,33 @@ internal abstract class FunctionBindingPlan
 
     public int VariadicDictionaryIndex => _layout.VariadicDictionaryIndex;
 
-    internal bool SupportsPreparedPositionalDefaults => _inlinePositionalDefault || _positionalDefaults.Reference is null or PyTuple;
+    internal bool SupportsPreparedPositionalDefaults => _positionalDefaults.Reference is null or PyTuple ||
+        _positionalDefaults.HasPrivatePositionalDefault;
     public PyString KeywordDefaultName(int index) => _layout.KeywordDefaultName(index);
 
     internal bool HasPreparedOmittedArguments(int supplied)
         => (KeywordOnlyCount == 0 ||
-                (_inlineKeywordDefault || _keywordDefaults is object?[]) &&
+                (_keywordDefaults.HasPrivateKeywordDefault || _keywordDefaults.Reference is object?[]) &&
                 _layout.Defaults.Length - _layout.PositionalDefaultCount == KeywordOnlyCount) &&
             supplied <= PositionalCount &&
-            supplied >= PositionalCount - (_inlinePositionalDefault ? 1 : (_positionalDefaults.Reference as PyTuple)?.Count ?? 0);
+            supplied >= PositionalCount - (_positionalDefaults.HasPrivatePositionalDefault ? 1 : (_positionalDefaults.Reference as PyTuple)?.Count ?? 0);
 
     internal bool TryReadPreparedDefaultInteger(int index, out long value)
-        => _inlinePositionalDefault && index == PositionalCount - 1
-            ? _positionalDefaults.TryGetInteger(out value) : ReadPreparedDefault(index).TryGetInteger(out value);
+    {
+        if (index == PositionalCount - 1 && _positionalDefaults.HasPrivatePositionalDefault)
+            return _positionalDefaults.ReadDefaultOperand().TryGetInteger(out value);
+        if (index >= PositionalCount && _keywordDefaults.HasPrivateKeywordDefault)
+            return _keywordDefaults.ReadDefaultOperand().TryGetInteger(out value);
+        return ReadPreparedDefault(index).TryGetInteger(out value);
+    }
 
     internal LythonRuntime.ExecutableSlot ReadPreparedDefault(int index)
     {
         if (index >= PositionalCount)
         {
             var keywordPosition = _layout.KeywordDefaultAt(index - PositionalCount).RecordPosition;
-            var stored = _inlineKeywordDefault ? _keywordDefaults : ((object?[])_keywordDefaults!)[keywordPosition];
+            var stored = _keywordDefaults.HasPrivateKeywordDefault ? _keywordDefaults.PublishInlineDefault()
+                : ((object?[])_keywordDefaults.Reference!)[keywordPosition];
             return LythonRuntime.ExecutableSlot.FromObject(stored);
         }
         TryGetPositionalDefault(index, out var slot);
@@ -123,8 +130,8 @@ internal abstract class FunctionBindingPlan
     internal bool TryFillPreparedKeywordDefaults(Span<LythonRuntime.ExecutableSlot> bound,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var storage = _keywordDefaults;
-        var inline = _inlineKeywordDefault;
+        var storage = _keywordDefaults.Reference;
+        var inline = _keywordDefaults.HasPrivateKeywordDefault;
         if (!inline && storage is not object?[]) return false;
         // The original slots cannot invoke guest code. Borrow them after
         // supplied-argument binding, which can replace defaults on reentry.
@@ -136,7 +143,7 @@ internal abstract class FunctionBindingPlan
             var position = _layout.KeywordDefaultAt(k).RecordPosition;
             if (position < 0)
                 throw CallErrors.MissingArgument(CallableKind, CallableName, NameAt(PositionalCount + k), span);
-            target.Object = (inline ? storage : ((object?[])storage!)[position]).RequireNotNull();
+            target.Object = (inline ? _keywordDefaults.PublishInlineDefault() : ((object?[])storage!)[position]).RequireNotNull();
         }
         return true;
     }
@@ -161,22 +168,22 @@ internal abstract class FunctionBindingPlan
         LythonSourceSpan span, out int index)
         => _layout.TryGetNativeKeywordIndex(key, context, span, out index);
 
-    public PyDict? KeywordDefaultStorage => _keywordDefaults switch
+    public PyDict? KeywordDefaultStorage => _keywordDefaults.Reference switch
     {
-        PyDict dictionary when !_inlineKeywordDefault => dictionary,
-        PyDefaultDict dictionary when !_inlineKeywordDefault => dictionary.InnerDict,
-        PyCounter dictionary when !_inlineKeywordDefault => dictionary.InnerDict,
+        PyDict dictionary when !_keywordDefaults.HasPrivateKeywordDefault => dictionary,
+        PyDefaultDict dictionary when !_keywordDefaults.HasPrivateKeywordDefault => dictionary.InnerDict,
+        PyCounter dictionary when !_keywordDefaults.HasPrivateKeywordDefault => dictionary.InnerDict,
         _ => null,
     };
 
     public bool TryGetPositionalDefault(int parameterIndex, out LythonRuntime.ExecutableSlot value)
     {
         var distance = PositionalCount - parameterIndex;
-        if (_inlinePositionalDefault)
+        if (_positionalDefaults.HasPrivatePositionalDefault)
         {
             // The generic binder can alias the default, including across calls.
             // Publish it in its owner before copying a slot to the invocation.
-            value = distance == 1 ? ExecutableSlot.FromObject(_positionalDefaults.Object) : default;
+            value = distance == 1 ? ExecutableSlot.FromObject(_positionalDefaults.PublishInlineDefault()) : default;
             return distance == 1;
         }
         var defaults = _positionalDefaults.Reference;
@@ -207,37 +214,35 @@ internal abstract class FunctionBindingPlan
 
     private object ReadPositionalDefaults(LythonRuntime.ExecutionContext context)
     {
-        if (_inlinePositionalDefault)
+        if (_positionalDefaults.HasPrivatePositionalDefault)
         {
             var span = PyStructuralGuard.AmbientSpan;
             context.CheckExecution(span);
-            var value = _positionalDefaults.Object.RequireNotNull();
+            var value = _positionalDefaults.PublishInlineDefault();
             // The reservation predates evaluation. Transfer it to the
             // canonical tuple without a second admission or a value copy.
             _positionalDefaults.Object = PyTuple.CreateAdmittedSingletonDefault(value, context.MemoryGovernor,
-                span, FunctionDefaults.InlinePositionalBytes(_positionalDefaults));
-            _inlinePositionalDefault = false;
+                span, FunctionDefaults.InlinePositionalBytes(_positionalDefaults.ReadDefaultOperand()));
         }
         return _positionalDefaults.Reference ?? PyNone.Instance;
     }
 
     private object ReadKeywordDefaults(LythonRuntime.ExecutionContext context)
     {
-        if (_inlineKeywordDefault)
+        if (_keywordDefaults.HasPrivateKeywordDefault)
         {
             var span = PyStructuralGuard.AmbientSpan;
             context.CheckExecution(span);
-            _keywordDefaults = _layout.PreparedKeywordDefaultKeys!.AdoptPreparedValue(
-                _keywordDefaults.RequireNotNull(), context.MemoryGovernor, span);
-            _inlineKeywordDefault = false;
+            _keywordDefaults.Object = _layout.PreparedKeywordDefaultKeys!.AdoptPreparedValue(
+                _keywordDefaults.PublishInlineDefault(), context.MemoryGovernor, span);
         }
-        else if (_keywordDefaults is object?[] values)
+        else if (_keywordDefaults.Reference is object?[] values)
         {
             var span = PyStructuralGuard.AmbientSpan;
             context.CheckExecution(span);
-            _keywordDefaults = _layout.PreparedKeywordDefaultKeys!.AdoptPreparedValues(values, context.MemoryGovernor, span);
+            _keywordDefaults.Object = _layout.PreparedKeywordDefaultKeys!.AdoptPreparedValues(values, context.MemoryGovernor, span);
         }
-        return _keywordDefaults ?? PyNone.Instance;
+        return _keywordDefaults.Reference ?? PyNone.Instance;
     }
 
     public bool TrySetDefaultMetadata(string name, object value, MemoryGovernor governor, LythonSourceSpan? span = null)
@@ -249,7 +254,6 @@ internal abstract class FunctionBindingPlan
             // A prior call can retain the original value. Keep its admission
             // with the execution owner, just as for an observed tuple.
             _positionalDefaults.Object = value is PyNone ? null : value;
-            _inlinePositionalDefault = false;
             return true;
         }
         if (name == "__kwdefaults__")
@@ -257,13 +261,14 @@ internal abstract class FunctionBindingPlan
             if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
                 throw new LythonRuntimeException("TypeError", "__kwdefaults__ must be set to a dict object", span);
             var previous = _keywordDefaults;
-            _keywordDefaults = value is PyNone ? null : value;
-            if (_inlineKeywordDefault)
+            _keywordDefaults.Object = value is PyNone ? null : value;
+            if (previous.HasPrivateKeywordDefault)
             {
-                _inlineKeywordDefault = false;
-                governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
+                // A call can retain an observed scalar without exposing its
+                // dictionary. Refund the backing and keep its scalar charge.
+                governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes - RuntimeMemoryEstimates.EstimateNumericSlotBytes(previous.Reference));
             }
-            else if (previous is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
+            else if (previous.Reference is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
             return true;
         }
         return false;

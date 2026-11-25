@@ -62,6 +62,41 @@ public sealed class FunctionDefaultConstructionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReplacingSingletonKeywordDefaultKeepsAnObservedIntegerFunded(bool observe)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var layout = FunctionParameterLayout.Create([new GeneratedFunctionParameter("value", FunctionParameterKind.KeywordOnly, 1)]);
+            var baseline = budget.ReservedBytes;
+            var bytes = PyDict.RecordKeys.SinglePreparedValueBytes;
+            var governor = context.MemoryGovernor;
+            governor.Reserve(bytes, Span);
+            governor.Commit(bytes);
+            const long number = -1099511627776;
+            var plan = new GeneratedFunctionBindingPlan("f", layout,
+                new FunctionDefaults(default, LythonRuntime.ExecutableSlot.OwnPrivateKeywordDefault(
+                    LythonRuntime.ExecutableSlot.FromInteger(number))));
+
+            LythonRuntime.ExecutableSlot[] bound = [default];
+            if (observe)
+            {
+                Assert.True(plan.TryFillPreparedKeywordDefaults(bound, context, Span));
+                Assert.Equal(new BigInteger(number), bound[0].Object);
+            }
+
+            Assert.True(plan.TrySetDefaultMetadata("__kwdefaults__", PyNone.Instance, governor, Span));
+            Assert.False(plan.TryFillPreparedKeywordDefaults(bound, context, Span));
+            Assert.Equal(baseline + (observe ? RuntimeMemoryEstimates.ScalarStorageBytes : 0), budget.ReservedBytes);
+            if (observe) Assert.Equal(new BigInteger(number), bound[0].Object);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void DeniedMetadataConstructionRefundsOnlyItsUnpublishedStorage()
     {

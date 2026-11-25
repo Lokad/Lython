@@ -9,12 +9,8 @@ internal sealed partial class LythonRuntime
         bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
     {
         var defaults = AllocateFunctionDefaults(layout, keywordsOnly, context, span);
-        if (defaults.Positional.Reference is { } positional)
-            operands[0] = defaults.InlinePositional
-                ? ExecutableSlot.OwnPrivatePositionalDefault(defaults.Positional) : ExecutableSlot.OwnPrivateDefault(positional);
-        if (defaults.Keywords is { } keyword)
-            operands[^1] = defaults.InlineKeyword
-                ? ExecutableSlot.OwnPrivateKeywordDefault(keyword) : ExecutableSlot.OwnPrivateDefault(keyword);
+        if (!defaults.Positional.IsUnassigned) operands[0] = defaults.Positional;
+        if (!defaults.Keywords.IsUnassigned) operands[^1] = defaults.Keywords;
     }
 
     // Admit the final backing, even when a singleton tuple is still implicit.
@@ -32,16 +28,17 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            object? positional = positionalCount switch
+            var positional = positionalCount switch
             {
-                0 => null,
-                1 => PyNone.Instance,
-                _ => PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes),
+                0 => default,
+                1 => ExecutableSlot.OwnPrivatePositionalDefault(ExecutableSlot.FromObject(PyNone.Instance)),
+                _ => ExecutableSlot.OwnPrivateDefault(PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes)),
             };
-            var inlineKeyword = keys?.Count == 1;
-            object? keyword = keys is null ? null : inlineKeyword ? PyNone.Instance : new object?[keywordCapacity];
+            var keyword = keys is null ? default : keys.Count == 1
+                ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(PyNone.Instance))
+                : ExecutableSlot.OwnPrivateDefault(new object?[keywordCapacity]);
             governor.Commit(bytes);
-            return new(ExecutableSlot.FromObject(positional), keyword, inlineKeyword, positionalCount == 1);
+            return new(positional, keyword);
         }
         catch { governor.ReleaseReserved(bytes); throw; }
     }
@@ -52,9 +49,8 @@ internal sealed partial class LythonRuntime
         System.Diagnostics.Debug.Assert(operands.Length == layout.DefaultStorageCount);
         var positional = layout.PositionalDefaultCount == 0 ? default : operands[0];
         var keyword = layout.HasKeywordDefaults ? operands[^1] : default;
-        return new(positional.ReadPositionalDefault(),
-            directKeywordDefault ? RuntimeValue(keyword.Object) : keyword.Reference,
-            directKeywordDefault || keyword.HasPrivateKeywordDefault, positional.HasPrivatePositionalDefault);
+        return new(positional, directKeywordDefault
+            ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(RuntimeValue(keyword.Object))) : keyword);
     }
 
     private static void StorePreparedKeywordDefault(object?[] values, int index, ExecutableSlot value,
@@ -70,15 +66,16 @@ internal sealed partial class LythonRuntime
         if (positional)
         {
             if (defaults.InlinePositional)
-                defaults = defaults with { Positional = FunctionDefaults.PreparePositionalValue(value, state, span, out _) };
+                defaults = defaults with { Positional = ExecutableSlot.OwnPrivatePositionalDefault(
+                    FunctionDefaults.PreparePositionalValue(value, state, span, out _)) };
             else ((PyTuple)defaults.Positional.Reference!).SetPrivateDefault(index, value, state, span);
         }
-        else if (defaults.Keywords is object?[] values)
+        else if (defaults.Keywords.Reference is object?[] values)
             StorePreparedKeywordDefault(values, index, value, state, span);
         else
         {
             state.CheckExecution(span);
-            defaults = defaults with { Keywords = RuntimeValue(value.Object) };
+            defaults = defaults with { Keywords = ExecutableSlot.OwnPrivateKeywordDefault(FunctionDefaults.PrepareInlineValue(value)) };
         }
     }
 

@@ -8,6 +8,38 @@ public sealed class FunctionDefaultMetadataTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task EvaluatedSingletonKeywordDefaultHasOneCanonicalIdentity(bool asynchronous)
+    {
+        const string source = """
+            def shift(value):
+                return value - 1
+            def make(seed):
+                return lambda *, factor=shift(seed): factor
+            for seed in [-2, -1, 0, 1, -9223372036854775807, 9876543210]:
+                select = make(seed)
+                alias = select()
+                print(alias, alias is select(), alias is select.__kwdefaults__['factor'])
+            retained = select()
+            select.__kwdefaults__ = {'factor': 17}
+            print(select(), retained)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(512 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("-3 True True\n-2 True True\n-1 True True\n0 True True\n-9223372036854775808 True True\n" +
+                "9876543209 True True\n17 9876543209\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task EvaluatedDefaultSurvivesLaterDefaultAndKeepsItsIdentity(bool asynchronous)
     {
         const string source = """

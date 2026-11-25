@@ -14,7 +14,12 @@ internal sealed partial class LythonRuntime
     {
         private static readonly object UnpublishedInteger = new();
         private static readonly object UnpublishedDouble = new();
-        private static readonly object PrivatePositionalInteger = new();
+        private sealed class InlineDefaultInteger(long kind)
+        {
+            internal readonly long Kind = kind;
+        }
+        private static readonly InlineDefaultInteger PrivatePositionalInteger = new(PrivatePositionalDefault);
+        private static readonly InlineDefaultInteger PrivateKeywordInteger = new(PrivateKeywordDefault);
         private object? _value;
         // An integer, double bits, short UTF-8 with its existing owner, a tuple
         // item offset, or a private-default marker with its admitted storage.
@@ -45,30 +50,42 @@ internal sealed partial class LythonRuntime
         internal readonly bool HasMaterializedValue => _integer == 0
             && _value is not (null or PyIteration.Cursor or ExecutableTemporaryValue)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
-        private readonly bool HasPrivateDefault => OwnsPositionalInteger ||
+        private readonly long PrivateDefaultKind => _value is InlineDefaultInteger scalar ? scalar.Kind :
             _integer is >= PrivatePositionalDefault and <= PrivateDefaultContainer &&
-            !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
-        internal readonly bool HasPrivateKeywordDefault => _integer == PrivateKeywordDefault &&
-            !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble) && !OwnsPositionalInteger;
-        private readonly bool OwnsPositionalInteger => ReferenceEquals(_value, PrivatePositionalInteger);
-        internal readonly bool HasPrivatePositionalDefault => OwnsPositionalInteger ||
-            _integer == PrivatePositionalDefault && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
+                !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble) ? _integer : 0;
+        private readonly bool HasPrivateDefault => PrivateDefaultKind != 0;
+        internal readonly bool HasPrivateKeywordDefault => PrivateDefaultKind == PrivateKeywordDefault;
+        internal readonly bool HasPrivatePositionalDefault => PrivateDefaultKind == PrivatePositionalDefault;
         internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue || HasPrivateDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefaultContainer };
 
-        internal static ExecutableSlot OwnPrivateKeywordDefault(object value)
-            => new() { _value = value, _integer = PrivateKeywordDefault };
+        internal static ExecutableSlot OwnPrivateKeywordDefault(ExecutableSlot value)
+            => OwnInlineDefault(value, PrivateKeywordInteger);
 
         internal static ExecutableSlot OwnPrivatePositionalDefault(ExecutableSlot value)
-            => value.IsUnpublishedInteger
-                ? new() { _value = PrivatePositionalInteger, _integer = value._integer }
-                : new() { _value = value._value, _integer = PrivatePositionalDefault };
+            => OwnInlineDefault(value, PrivatePositionalInteger);
 
-        // Removing the retirement marker copies the value for the callable.
-        // The definition clears the charged operand only after publication.
-        internal readonly ExecutableSlot ReadPositionalDefault()
-            => OwnsPositionalInteger ? FromInteger(_integer) : FromObject(_value);
+        private static ExecutableSlot OwnInlineDefault(ExecutableSlot value, InlineDefaultInteger kind)
+            => value.IsUnpublishedInteger
+                ? new() { _value = kind, _integer = value._integer }
+                : new() { _value = value._value, _integer = kind.Kind };
+
+        // The owner keeps its default tag when an observer publishes the box.
+        internal object PublishInlineDefault()
+        {
+            if (_value is InlineDefaultInteger integer)
+            {
+                var boxed = PublishInteger();
+                _integer = integer.Kind;
+                return boxed;
+            }
+            return _value.RequireNotNull();
+        }
+
+        // Read the value without copying its ownership marker.
+        internal readonly ExecutableSlot ReadDefaultOperand()
+            => _value is InlineDefaultInteger ? FromInteger(_integer) : FromObject(_value);
 
         internal void RetireTemporary(MemoryGovernor governor)
         {
@@ -79,13 +96,14 @@ internal sealed partial class LythonRuntime
                 this = default;
                 temporary.Dispose();
             }
-            else if (HasPrivateDefault)
+            else
             {
+                var kind = PrivateDefaultKind;
+                if (kind == 0) return;
                 var storage = _value;
-                var kind = _integer;
-                if (HasPrivatePositionalDefault)
+                if (kind == PrivatePositionalDefault)
                 {
-                    var positional = ReadPositionalDefault();
+                    var positional = ReadDefaultOperand();
                     this = default;
                     governor.Release(FunctionDefaults.InlinePositionalBytes(positional));
                     return;
