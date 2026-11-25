@@ -1,0 +1,62 @@
+[
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "allocationBytes": [
+      939792,
+      939792
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-generator-over-map",
+    "asynchronous": true,
+    "allocationBytes": [
+      1328558,
+      1328334
+    ],
+    "peakAdmission": [
+      2842396,
+      2842396
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "asynchronous": true,
+    "allocationBytes": [
+      3281526,
+      3281526
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "asynchronous": true,
+    "allocationBytes": [
+      96496,
+      96496
+    ],
+    "peakAdmission": [
+      56399,
+      56399
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control-sync",
+    "asynchronous": false,
+    "allocationBytes": [
+      3281366,
+      3281366
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  }
+]

@@ -1,0 +1,300 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 2608,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 0,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 16,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 971730,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 2608,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 0,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 16,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 971730,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 2048,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 0,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 2048,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 0,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 8192,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 4096,
+        "PositionalOperandsCopied": 4096,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 4096,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 8192,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 4096,
+        "PositionalOperandsCopied": 4096,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 4096,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 1,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 17,
+        "RentedContinuations": 1,
+        "ContinuationSlotsCopied": 13
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 1,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 17,
+        "RentedContinuations": 1,
+        "ContinuationSlotsCopied": 13
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 1,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 17,
+        "RentedContinuations": 1,
+        "ContinuationSlotsCopied": 13
+      },
+      "peakExecutionMemoryBytes": 3115985,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 1,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 17,
+        "RentedContinuations": 1,
+        "ContinuationSlotsCopied": 13
+      },
+      "peakExecutionMemoryBytes": 3115985,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 0,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 2048,
+        "PositionalOperandsCopied": 2048,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 2048,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 0,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 2048,
+        "PositionalOperandsCopied": 2048,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 2048,
+        "TransferredNativePrefixes": 0,
+        "RentedContinuations": 0,
+        "ContinuationSlotsCopied": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-generator-over-map",
+      "asynchronous": false,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 1,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 17,
+        "RentedContinuations": 1,
+        "ContinuationSlotsCopied": 13
+      },
+      "peakExecutionMemoryBytes": 2842396,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-generator-over-map.async",
+      "asynchronous": true,
+      "routes": {
+        "DirectScalarReturns": 4096,
+        "CaptureDefinitions": 0,
+        "ComputedDefinitions": 0,
+        "DefaultedPairs": 0,
+        "CapturedPairs": 0,
+        "PositionalWorkspaces": 1,
+        "PositionalOperandsCopied": 0,
+        "BoundWorkspaces": 0,
+        "CallbackWorkspaces": 0,
+        "FinishedNativePrefixes": 0,
+        "TransferredNativePrefixes": 17,
+        "RentedContinuations": 1,
+        "ContinuationSlotsCopied": 13
+      },
+      "peakExecutionMemoryBytes": 2842396,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

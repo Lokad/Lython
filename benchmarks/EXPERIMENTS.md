@@ -19,6 +19,20 @@ instruction polls. Retain the simpler path with matched admission and
 uses 0.51–2.74% more CPU and file-fed map remains inconclusive. Real async
 file close, cancellation and refusal retain their focused regressions.
 
+[B1701 private cursor scopes](results/2026-11-25-private-cursor-scopes/README.md)
+replaces broad completed disposal awaits with ordinary scopes. Keep the
+patch private. Warm async manifest CPU increases 1.00–2.37% and async
+invoice increases 0.52–2.22%. File-fed map also regresses with wider
+worker spread. All sampled admission peaks match.
+
+[B1702 current native call routes](results/2026-11-25-native-call-construction/README.md)
+counts actual prepared calls on seven scripts through both hosting APIs.
+Invoice and the file-fed map take 6,144 native positional workspaces,
+with one argument copy each and no frame transfers. Defaulted rules and
+ordinary definitions bypass those starts. Shipment variants transfer
+17 prefixes and each rents one fresh continuation. The diagnostic has
+no timing data.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
