@@ -164,11 +164,11 @@ internal static class StaticRegexReturnResolver
         bool evaluateConstant = true)
     {
         if (evaluateConstant && patternSummary.Program is { } program && patternSummary.CaptureSlotCount is { } captureSlotCount &&
-            TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
+            TryGetArgument(arguments, textPosition, textKeyword, bindings, out var textExpression, out var textValue) &&
             textValue.Kind == AbstractValueKind.String &&
             TryGetBounds(arguments, boundsPosition, bindings, out var pos, out var endPos))
         {
-            return MatchConstant(program, captureSlotCount, textValue.RequireText(), pos, endPos, operation, bindings, span)
+            return MatchConstant(program, captureSlotCount, textExpression, textValue.RequireText(), pos, endPos, operation, bindings, span)
                 ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
                 : AbstractValue.None(span);
         }
@@ -314,34 +314,44 @@ internal static class StaticRegexReturnResolver
         }
     }
 
-    private static bool MatchConstant(ILythonRegexPattern pattern, int captureSlotCount, string text, int pos, int endPos,
-        LythonRegexMatchMode operation, AbstractState bindings, LythonSourceSpan span)
+    private static bool MatchConstant(ILythonRegexPattern pattern, int captureSlotCount, ExpressionSyntax expression,
+        string text, int pos, int endPos, LythonRegexMatchMode operation, AbstractState bindings, LythonSourceSpan span)
     {
         var analysis = bindings.AnalysisContext!;
         var token = analysis.CancellationToken;
-        using var inputStorage = analysis.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
-        var input = EncodeConstantText(text, token, span);
+        var literal = analysis.GetCompiledRegexLiteral(expression, text);
+        var prepared = literal?.PreparedRegexUtf8;
+        using var inputStorage = prepared is null ? analysis.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span) : null;
+        var input = prepared ?? EncodeConstantText(text, token, span);
         var length = PyString.CountUtf8Units(input, false, token, span);
         var window = LythonRuntime.RegexCompiler.CreateWindow(input, length, pos, endPos, token, span);
-        if (LythonRuntime.RegexCompiler.IsImpossibleWindow(operation, window.Pos, window.EndPos)) return false;
-        using var subject = LythonRuntime.RegexCompiler.ProviderCall((pattern, input, window, analysis, token),
-            static state => state.pattern.Prepare(state.input, state.window,
-                state.analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), state.token),
-            analysis.MemoryGovernor, token, span, operationName: "Regex constant-subject preparation");
-        var useInlineCaptures = captureSlotCount <= LythonRuntime.RegexCompiler.InlineCaptureCapacity;
-        using var storage = useInlineCaptures ? null
-            : analysis.MemoryGovernor?.ReserveTemporary(LythonRuntime.RegexCompiler.CaptureBufferBytes(captureSlotCount), span);
-        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-        LythonRuntime.RegexCompiler.InlineCaptureBuffer buffer = default;
-        Span<LythonRegexCapture?> captures = buffer;
-        captures = useInlineCaptures ? captures[..captureSlotCount] : new LythonRegexCapture?[captureSlotCount];
-        if (!LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out var lastIndex,
-            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching")) return false;
+        var matched = false;
+        if (!LythonRuntime.RegexCompiler.IsImpossibleWindow(operation, window.Pos, window.EndPos))
+        {
+            using var subject = LythonRuntime.RegexCompiler.ProviderCall((pattern, input, window, analysis, token),
+                static state => state.pattern.Prepare(state.input, state.window,
+                    state.analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), state.token),
+                analysis.MemoryGovernor, token, span, operationName: "Regex constant-subject preparation");
+            var useInlineCaptures = captureSlotCount <= LythonRuntime.RegexCompiler.InlineCaptureCapacity;
+            using var storage = useInlineCaptures ? null
+                : analysis.MemoryGovernor?.ReserveTemporary(LythonRuntime.RegexCompiler.CaptureBufferBytes(captureSlotCount), span);
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            LythonRuntime.RegexCompiler.InlineCaptureBuffer buffer = default;
+            Span<LythonRegexCapture?> captures = buffer;
+            captures = useInlineCaptures ? captures[..captureSlotCount] : new LythonRegexCapture?[captureSlotCount];
+            matched = LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out var lastIndex,
+                analysis.MemoryGovernor, token, span, operationName: "Regex constant matching");
+            if (matched && LythonRuntime.RegexCompiler.MatchResultError(input, window, operation, captures, lastIndex,
+                analysis.MemoryGovernor, token, span) is { } error)
+                throw RuntimeErrors.Capability(error, span);
+        }
 
-        var error = LythonRuntime.RegexCompiler.MatchResultError(input, window, operation, captures, lastIndex,
-            analysis.MemoryGovernor, token, span);
-        if (error is not null) throw RuntimeErrors.Capability(error, span);
-        return true;
+        // The provider has finished borrowing the exact buffer. The existing
+        // compile estimate already funds the emitted literal's backing. Use
+        // these bytes in its place before releasing the match's scratch charge.
+        analysis.CheckExecution();
+        if (literal is not null && input.Length > PyString.InlineUtf8Capacity) literal.PreparedRegexUtf8 ??= input;
+        return matched;
     }
 
     // Both callers admit the UTF-8 capacity before entering. For large

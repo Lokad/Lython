@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1740 compiled regex subjects](results/2026-11-25-compiled-regex-subject/README.md)
+shares the validated UTF-8 array across repeated analysis and literal emission.
+The long match and miss each allocate 16,496 B less during compilation with
+matching retained admission and flat controls. The provider trace verifies
+backing identity and absolute windows. Keep this compile-allocation evidence
+separate from backend timing or final adapter qualification.
+
 [B1738 combined CSV record admission](results/2026-11-25-combined-csv-admission/README.md)
 removes the second shell reservation and repeated header validation for verified
 private headers. The confirmation uses 10.00–13.40% less file-fed map warm

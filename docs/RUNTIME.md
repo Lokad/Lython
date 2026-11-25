@@ -2647,7 +2647,9 @@ checks before accepting a provider result as a compiler fact.
 
 An accepted direct regex literal can share the compiled pattern key's
 immutable UTF-8 bytes with the executable constant. The compiled script or
-imported module funds the backing through execution.
+imported module funds the backing through execution. A constant-match subject
+can also supply the bytes for its executable or lowered literal once the
+provider disposes its subject handle. Subsequent analysis reuses that backing.
 
 Lython counts UTF-8 scalars from nearby known endpoints or the iteration
 checkpoint, checking cancellation during long scans. It copies retained

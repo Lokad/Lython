@@ -44,12 +44,15 @@ internal sealed class StaticAnalysisContext : IDisposable
         int captureSlotCount, LythonSourceSpan span)
         => _regexPrograms.Add(encoded, options, program, captureSlotCount, CancellationToken, span);
 
+    internal StringLiteralExpressionSyntax? GetCompiledRegexLiteral(ExpressionSyntax? expression, string text)
+        => !_ownsRegexPrograms && expression is StringLiteralExpressionSyntax literal && ReferenceEquals(literal.Value, text)
+            ? literal : null;
+
     internal void PrepareRegexLiteral(ExpressionSyntax? expression, string pattern, byte[] encoded)
     {
         // Only the caller-owned program table survives analysis. The script
         // or imported module keeps its key bytes funded through execution.
-        if (!_ownsRegexPrograms && encoded.Length > Runtime.Text.PyString.InlineUtf8Capacity &&
-            expression is StringLiteralExpressionSyntax literal && ReferenceEquals(literal.Value, pattern))
+        if (encoded.Length > Runtime.Text.PyString.InlineUtf8Capacity && GetCompiledRegexLiteral(expression, pattern) is { } literal)
             literal.PreparedRegexUtf8 ??= encoded;
     }
 

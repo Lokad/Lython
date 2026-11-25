@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse the UTF-8 backing of eligible constant regex subjects in analysis and
+  emitted literals. End each provider borrow before publishing the backing.
 - Admit the buffered `DictReader` row and dictionary together when the inferred
   header is private. Preserve the active record when a nested pull is refused.
 - Keep the binding of a simple eager list projection in its scope and pass the

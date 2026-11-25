@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -10,6 +12,42 @@ namespace Lokad.Lython.Tests;
 /// </summary>
 public sealed class RegexCompilationAccountingTests
 {
+    [Theory]
+    [InlineData("😀x尾", false)]
+    [InlineData("😀x尾é漢字😀尾é", true)]
+    public void PreparedSubjectBacksBothCompiledLiteralConsumers(string text, bool usesBacking)
+    {
+        var source = $"import re\np=re.compile('x')\nm=p.search('{text}')";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
+            Assert.True(owner.TryReserve(estimate, out _));
+            var governor = new MemoryGovernor(owner);
+            using var programs = new CompiledRegexPrograms(governor);
+            var frontend = LythonFrontend.Compile(source, governor, Utf8RegexProvider.Instance, regexPrograms: programs);
+            Assert.Empty(frontend.Diagnostics);
+            Assert.True(programs.HasPrograms);
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            var assignments = frontend.Script!.Statements.OfType<AssignmentStatementSyntax>();
+            var match = Assert.IsType<CallExpressionSyntax>(assignments.Last().Expression);
+            var literal = Assert.IsType<StringLiteralExpressionSyntax>(Assert.Single(match.Arguments).Expression);
+            var lowered = new LoweredStringLiteralExpression(literal).Value;
+            var executable = ExecutableScript.Compile(frontend.Script, governor: governor);
+            var emitted = Assert.Single(executable.EntryPoint.Constants.OfType<PyString>(), value => value.AsString() == text);
+            Assert.Equal(text, lowered.AsString());
+            if (usesBacking)
+            {
+                Assert.True(MemoryMarshal.TryGetArray(lowered.Utf8Bytes, out var loweredBytes));
+                Assert.True(MemoryMarshal.TryGetArray(emitted.Utf8Bytes, out var emittedBytes));
+                Assert.Same(Assert.IsType<byte[]>(literal.PreparedRegexUtf8), emittedBytes.Array);
+                Assert.Same(emittedBytes.Array, loweredBytes.Array);
+            }
+            else Assert.Null(literal.PreparedRegexUtf8);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static object CreatePattern(object pattern, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => LythonRuntime.RegexCompiler.CreatePattern([pattern], "re.compile(pattern[, flags])", span, context,
             asynchronous: false).GetAwaiter().GetResult();

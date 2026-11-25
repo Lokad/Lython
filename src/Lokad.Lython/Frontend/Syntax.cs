@@ -462,6 +462,9 @@ internal sealed record StringLiteralExpressionSyntax(
 {
     internal byte[]? PreparedRegexUtf8 { get; set; }
 
+    internal PyString CreateValue()
+        => PreparedRegexUtf8 is { } encoded ? PyString.FromOwnedUtf8(encoded) : PyString.FromString(Value);
+
     public bool Equals(StringLiteralExpressionSyntax? other)
         => ReferenceEquals(this, other) || other is not null && base.Equals(other) && Value == other.Value;
 

@@ -28,14 +28,13 @@ internal sealed partial class ExecutableScript
                 {
                     var literal = (StringLiteralExpressionSyntax)state.Items[index].Key;
                     var builder = state.Builder;
-                    return (PyString)builder._buffers.Constants[builder.InternConstant(PyString.FromString(literal.Value))]!;
+                    return (PyString)builder._buffers.Constants[builder.InternConstant(literal.CreateValue())]!;
                 }, _compilation.CancellationToken, expression.Span);
         }
 
         private static object ScalarLiteral(ExpressionSyntax expression) => expression switch
         {
-            StringLiteralExpressionSyntax text => text.PreparedRegexUtf8 is { } encoded
-                ? PyString.FromOwnedUtf8(encoded) : PyString.FromString(text.Value),
+            StringLiteralExpressionSyntax text => text.CreateValue(),
             BytesLiteralExpressionSyntax bytes => bytes.Value,
             IntegerLiteralExpressionSyntax integer => integer.Value,
             ImaginaryLiteralExpressionSyntax imaginary => new PyComplex(0, imaginary.Value),

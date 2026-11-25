@@ -1,0 +1,310 @@
+{
+  "reference": [
+    {
+      "id": "diagnostic.regex-subject-0-match",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 2,
+          "Length": 8,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 3,
+          "Length": 8,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.regex-subject-128-match",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 264,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 2,
+          "Length": 264,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 3,
+          "Length": 264,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.regex-subject-4097-match",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 2,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 3,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.regex-subject-4097-miss",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 2,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 3,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    }
+  ],
+  "candidate": [
+    {
+      "id": "diagnostic.regex-subject-0-match",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 2,
+          "Length": 8,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 3,
+          "Length": 8,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.regex-subject-128-match",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 264,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 264,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 1,
+          "Length": 264,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.regex-subject-4097-match",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.regex-subject-4097-miss",
+      "Observations": [
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "compile",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        },
+        {
+          "Phase": "run",
+          "Backing": 1,
+          "Length": 8202,
+          "Window": {
+            "Pos": 1,
+            "EndPos": 2,
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        }
+      ]
+    }
+  ]
+}

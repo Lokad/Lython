@@ -1,0 +1,58 @@
+[
+  {
+    "case": "diagnostic.regex-subject-0-match",
+    "allocationBytes": [
+      62112,
+      62112
+    ],
+    "retainedAdmission": 107459
+  },
+  {
+    "case": "diagnostic.regex-subject-128-match",
+    "allocationBytes": [
+      63168,
+      62560
+    ],
+    "retainedAdmission": 119747
+  },
+  {
+    "case": "diagnostic.regex-subject-4097-match",
+    "allocationBytes": [
+      94936,
+      78440
+    ],
+    "retainedAdmission": 500771
+  },
+  {
+    "case": "diagnostic.regex-subject-4097-miss",
+    "allocationBytes": [
+      89104,
+      72608
+    ],
+    "retainedAdmission": 497891
+  },
+  {
+    "case": "scripts.file-manifest.small",
+    "allocationBytes": [
+      72328,
+      72328
+    ],
+    "retainedAdmission": 82304
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1437832,
+      1437832
+    ],
+    "retainedAdmission": 883617
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      149992,
+      149992
+    ],
+    "retainedAdmission": 164576
+  }
+]

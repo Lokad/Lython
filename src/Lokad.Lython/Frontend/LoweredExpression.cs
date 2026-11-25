@@ -32,7 +32,7 @@ internal sealed record LoweredStringLiteralExpression(
     StringLiteralExpressionSyntax Literal) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Literal;
-    public PyString Value { get; } = PyString.FromString(Literal.Value);
+    public PyString Value { get; } = Literal.CreateValue();
 }
 
 internal sealed record LoweredBytesLiteralExpression(

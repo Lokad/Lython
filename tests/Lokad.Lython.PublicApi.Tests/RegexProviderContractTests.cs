@@ -1015,18 +1015,22 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
-    [InlineData(1, 2, 2, 5)]
-    [InlineData(2, 1, 1, 4)]
-    [InlineData(1, 99, 3, 8)]
-    public async Task FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures(int pos, int end, int endPos, int endByte)
+    [InlineData(1, 2, 2, 5, false)]
+    [InlineData(2, 1, 1, 4, false)]
+    [InlineData(1, 99, 3, 8, false)]
+    [InlineData(1, 2, 2, 5, true)]
+    public async Task FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures(int pos, int end, int endPos, int endByte,
+        bool longSubject)
     {
         var reversed = pos > end;
+        var text = "😀x尾" + (longSubject ? new string('é', 4097) : "");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var compilation = new CancellationTokenSource();
         using var provider = new CooperatingProvider { CaptureSlots = 2 };
         var preparations = 0;
         provider.OnPrepare = (input, window) =>
         {
-            Assert.Equal("😀x尾", Encoding.UTF8.GetString(input.Span));
+            Assert.Equal(text, Encoding.UTF8.GetString(input.Span));
             Assert.Equal(new LythonRegexWindow(pos, endPos, reversed ? 5 : 4, endByte), window);
             preparations++;
         };
@@ -1034,8 +1038,8 @@ public sealed class RegexProviderContractTests
             ? new(new LythonRegexCapture?[] { new(5, 5), new(5, 5) }, 1)
             : new(new LythonRegexCapture?[] { new(4, 5), new(0, 4) }, 1);
         using (var script = new LythonEngine(provider).Compile("import re\nm=re.compile('" +
-            (reversed ? "()" : "(?<=(😀))x") + $"').match('😀x尾',{pos},{end})\n" +
-            "print(m.span(),m.pos,m.endpos,m.string)\nprint(m.span(1),repr(m.group(1)))", budget))
+            (reversed ? "()" : "(?<=(😀))x") + $"').match('{text}',{pos},{end})\n" +
+            "print(m.span(),m.pos,m.endpos,m.string)\nprint(m.span(1),repr(m.group(1)))", budget, compilation.Token))
         {
             Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
             Assert.True(preparations > 0);
@@ -1046,8 +1050,8 @@ public sealed class RegexProviderContractTests
                 using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
                 {
                     Assert.True(result.Success, result.Failure?.Message);
-                    Assert.Equal(reversed ? "(2, 2) 2 1 😀x尾\n(2, 2) ''\n"
-                        : $"(1, 2) 1 {endPos} 😀x尾\n(0, 1) '😀'\n", result.StandardOutput);
+                    Assert.Equal(reversed ? $"(2, 2) 2 1 {text}\n(2, 2) ''\n"
+                        : $"(1, 2) 1 {endPos} {text}\n(0, 1) '😀'\n", result.StandardOutput);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
