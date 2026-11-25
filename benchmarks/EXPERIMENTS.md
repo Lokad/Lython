@@ -153,6 +153,14 @@ less warm sync CPU, and the short tolerance report remains adverse.
 Retain the common path and follow up by eliminating final heap binding
 for suitable synchronous builtins.
 
+[B1715 borrowed builtin binding](results/2026-11-25-borrowed-builtin-bindings/README.md)
+removes the final heap array for ordinary fixed-width math calls,
+saving 56 B per call. Short and wide tolerance use 8.52–14.48% less
+warm CPU than the interim runtime. Short async uses 8.75–13.55%
+less. The [direct prior-runtime check](results/2026-11-25-borrowed-builtin-bindings/prior-runtime/README.md)
+leaves sync timing inconclusive and finds 0.06–2.98% less async CPU.
+Retain the managed stack path with the existing binder and owned fallback.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

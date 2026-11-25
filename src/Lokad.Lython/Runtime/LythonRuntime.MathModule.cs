@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
             1.5056327351493116e-7,
         ];
 
-        private static object Factorial(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Factorial(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var n = ExpectNonNegativeInteger(arguments[0], "factorial() not defined for negative values", span, context);
             // Upper-bound the exact result before computing (log2(n!) < n * bitlen(n)):
@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
             return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
-        private static object Comb(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Comb(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var n = ExpectNonNegativeInteger(arguments[0], "n must be a non-negative integer", span, context);
             var k = ExpectNonNegativeInteger(arguments[1], "k must be a non-negative integer", span, context);
@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
             return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
-        private static object Perm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Perm(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var n = ExpectNonNegativeInteger(arguments[0], "n must be a non-negative integer", span, context);
             var k = arguments.Length >= 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
@@ -158,7 +158,7 @@ internal sealed partial class LythonRuntime
             return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
-        private static object ISqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object ISqrt(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             return OwnHeapInteger(IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "isqrt() argument must be nonnegative", span, context), context, span), context.MemoryGovernor, span);
         }
@@ -331,7 +331,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static object Frexp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Frexp(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.frexp", span, context);
             if (value == 0.0 || double.IsNaN(value) || double.IsInfinity(value))
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
             return new PyTuple([mantissa, new BigInteger(exponent)], context.MemoryGovernor, span);
         }
 
-        private static object Ldexp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Ldexp(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectReal(arguments[0], "math.ldexp", span);
             var exponent = ExpectInteger(arguments[1], span, context);
@@ -381,7 +381,7 @@ internal sealed partial class LythonRuntime
             return CheckedMathResult(Math.ScaleB(value, (int)exponent), "math.ldexp", span, value);
         }
 
-        private static object Modf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Modf(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.modf", span, context);
             double fractional;
@@ -409,7 +409,7 @@ internal sealed partial class LythonRuntime
             return new PyTuple([fractional, integral], context.MemoryGovernor, span);
         }
 
-        private static object Remainder(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Remainder(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.remainder", span, context);
             if (y == 0.0 || double.IsInfinity(x))
@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
             return Math.IEEERemainder(x, y);
         }
 
-        private static object NextAfter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object NextAfter(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var x = ExpectReal(arguments[0], "math.nextafter", span);
             var y = ExpectReal(arguments[1], "math.nextafter", span);
@@ -469,7 +469,7 @@ internal sealed partial class LythonRuntime
             return BitConverter.UInt64BitsToDouble(resultBits);
         }
 
-        private static object Ulp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Ulp(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.ulp", span, context);
             if (double.IsNaN(value))
@@ -492,13 +492,13 @@ internal sealed partial class LythonRuntime
             return double.IsInfinity(next) ? abs - Math.BitDecrement(abs) : next - abs;
         }
 
-        private static object Exp2(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Exp2(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.exp2", span, context, static value => Math.Pow(2.0, value));
 
-        private static object Expm1(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Expm1(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.expm1", span, context, Expm1Accurate);
 
-        private static object Log1p(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log1p(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.log1p", span, context);
             if (value <= -1.0)
@@ -509,16 +509,16 @@ internal sealed partial class LythonRuntime
             return Log1pAccurate(value);
         }
 
-        private static object Cbrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Cbrt(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.cbrt", span, context, Math.Cbrt);
 
-        private static object Erf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Erf(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.erf", span, context, FloatingPointSpecialFunctions.Erf);
 
-        private static object Erfc(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Erfc(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.erfc", span, context, FloatingPointSpecialFunctions.Erfc);
 
-        private static object Gamma(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Gamma(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.gamma", span, context);
             if (double.IsNaN(value))
@@ -539,7 +539,7 @@ internal sealed partial class LythonRuntime
             return CheckedMathResult(GammaLanczos(value), "math.gamma", span, value);
         }
 
-        private static object LGamma(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object LGamma(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.lgamma", span, context);
             if (double.IsNaN(value))
@@ -560,7 +560,7 @@ internal sealed partial class LythonRuntime
             return LogGammaLanczos(value);
         }
 
-        private static object Fma(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Fma(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             var x = ExpectReal(arguments[0], "math.fma", span);

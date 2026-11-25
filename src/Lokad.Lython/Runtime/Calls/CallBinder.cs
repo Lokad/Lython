@@ -273,6 +273,13 @@ internal static class CallBinder
         }
     }
 
+    internal static int BindFixedExecutableArguments(Span<LythonRuntime.ExecutableSlot> operands,
+        ExecutableCallSite call, LythonCallableSignature signature, LythonRuntime.ExecutionContext context,
+        scoped Span<object> values)
+        => BindArgumentValues(new OperandInputs(operands, call.Arguments, context),
+            call.CallSpan, signature.Name, PythonCallableKind.Builtin, signature.Parameters,
+            out _, out _, out _, values);
+
     private static BoundBuiltinArguments BindNamedArgumentsCore<T>(
         T arguments,
         LythonSourceSpan span,
@@ -285,6 +292,20 @@ internal static class CallBinder
         bool useNullForOmittedArguments = false)
         where T : IBindingInputs, allows ref struct
     {
+        _ = BindArgumentValues(arguments, span, callableName, callableKind, parameters, out extras,
+            out var values, out var assigned, default, preservePresence, collectExtras, useNullForOmittedArguments);
+        return new BoundBuiltinArguments(values!, assigned);
+    }
+
+    // Validate the input shape once, then write the selected final storage.
+    // A synchronous fixed-width caller supplies its own managed stack slots.
+    private static int BindArgumentValues<T>(T arguments, LythonSourceSpan span, string callableName,
+        PythonCallableKind callableKind, CallableParameterLayout parameters,
+        out KeyValuePair<string, object>[] extras, out object[]? values, out ArgumentPresence resultAssigned,
+        scoped Span<object> destination, bool preservePresence = false, bool collectExtras = false,
+        bool useNullForOmittedArguments = false) where T : IBindingInputs, allows ref struct
+    {
+        values = null;
         extras = [];
         if (parameters is PositionalCallableParameterLayout)
         {
@@ -297,14 +318,17 @@ internal static class CallBinder
                 }
             }
 
-            var positionalOnly = new object[arguments.Length];
+            Span<object> positionalOnly = destination.IsEmpty
+                ? values = new object[arguments.Length]
+                : destination[..arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
             {
                 arguments.CheckExecution(i, span);
                 positionalOnly[i] = arguments.ValueAt(i);
             }
 
-            return new BoundBuiltinArguments(positionalOnly, ArgumentPresence.Empty);
+            resultAssigned = ArgumentPresence.Empty;
+            return positionalOnly.Length;
         }
 
         var named = (NamedCallableParameterLayout)parameters;
@@ -390,11 +414,13 @@ internal static class CallBinder
 
         var length = preservePresence && extraPositionalCount == 0
             ? parameterNames.Length : count + extraPositionalCount;
-        var result = length == 0 ? Array.Empty<object>() : new object[length];
+        Span<object> result = destination.IsEmpty
+            ? values = length == 0 ? [] : new object[length]
+            : destination[..length];
         if (extraKeywordCount != 0) extras = new KeyValuePair<string, object>[extraKeywordCount];
         // Receiver windows use null for unbound slots. A supplied Python
         // None must remain distinguishable, including across sparse keywords.
-        if (!useNullForOmittedArguments) Array.Fill(result, PyNone.Instance);
+        if (!useNullForOmittedArguments) result.Fill(PyNone.Instance);
         positionalIndex = 0;
         var extraIndex = count;
         var extraKeywordIndex = 0;
@@ -416,9 +442,9 @@ internal static class CallBinder
             }
         }
 
-        var resultAssigned = assigned.WithLength(length);
+        resultAssigned = assigned.WithLength(length);
         resultAssigned.MarkRange(count, extraPositionalCount);
-        return new BoundBuiltinArguments(result, resultAssigned);
+        return length;
     }
 
 }

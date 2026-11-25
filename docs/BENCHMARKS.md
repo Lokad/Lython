@@ -105,6 +105,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Bind fixed-width math calls into managed stack slots | Tolerance reports allocate 56 B less per call and use 8.52–14.48% less warm CPU against the interim direct binder. | Against the pre-interim runtime, short-call sync timing remains inconclusive and async CPU falls 0.06–2.98%. [B1715](../benchmarks/results/2026-11-25-borrowed-builtin-bindings/README.md). |
 | Run short callbacks in iterator-owned slots | File-fed map uses 6.26–13.95% less warm sync CPU and removes 2,048 private workspace starts per run in both hosting modes. | Peak admission matches. Sync reference-worker spread is 6.19%. Async magnitude and the controls remain uncertain. [B1708b](../benchmarks/results/2026-11-25-iteration-native-storage/prepared/README.md). |
 | Finish buffered CSV reads inline | File-fed map uses 1.18–6.46% less warm async CPU in the first block and 1.37–3.29% less in confirmation. | Admitted peaks match. Quote-heavy invoice CPU is inconclusive, and the text control reverses direction between blocks. [B1704](../benchmarks/results/2026-11-25-csv-completed-read/README.md). |
 | Parse conjunctions and disjunctions in one pass | Sparse guards take 1.00–2.98% less time through result with lower wider CPU. Manifest compilation takes 0.31–1.32% less elapsed. | Executable spans and admitted peaks match. Mixed-guard time through result and warm invoice timing span zero. [B1693](../benchmarks/results/2026-11-25-boolean-linear/README.md). |

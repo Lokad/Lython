@@ -29,59 +29,59 @@ internal sealed partial class LythonRuntime
                 "tau" => Math.Tau,
                 "inf" => double.PositiveInfinity,
                 "nan" => PythonNaN,
-                "sqrt" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Sqrt, Sqrt),
-                "exp" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Exp, Exp),
-                "log" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Log, Log),
-                "log10" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Log10, Log10),
-                "log2" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Log2, Log2),
-                "sin" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Sin, Sin),
-                "cos" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Cos, Cos),
-                "tan" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Tan, Tan),
-                "asin" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Asin, Asin),
-                "acos" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Acos, Acos),
-                "atan" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Atan, Atan),
-                "atan2" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Atan2, Atan2),
-                "sinh" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Sinh, Sinh),
-                "cosh" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Cosh, Cosh),
-                "tanh" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Tanh, Tanh),
-                "floor" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Floor, Floor),
-                "ceil" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Ceil, Ceil),
-                "fabs" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Fabs, Fabs),
-                "trunc" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Trunc, Trunc),
-                "degrees" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Degrees, Degrees),
-                "radians" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Radians, Radians),
-                "isfinite" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.IsFinite, IsFinite),
-                "isinf" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.IsInf, IsInf),
-                "isnan" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.IsNaN, IsNaN),
-                "pow" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Pow, Pow),
+                "sqrt" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Sqrt, Sqrt),
+                "exp" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Exp, Exp),
+                "log" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Log, Log),
+                "log10" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Log10, Log10),
+                "log2" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Log2, Log2),
+                "sin" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Sin, Sin),
+                "cos" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Cos, Cos),
+                "tan" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Tan, Tan),
+                "asin" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Asin, Asin),
+                "acos" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Acos, Acos),
+                "atan" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Atan, Atan),
+                "atan2" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Atan2, Atan2),
+                "sinh" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Sinh, Sinh),
+                "cosh" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Cosh, Cosh),
+                "tanh" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Tanh, Tanh),
+                "floor" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Floor, Floor),
+                "ceil" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Ceil, Ceil),
+                "fabs" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Fabs, Fabs),
+                "trunc" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Trunc, Trunc),
+                "degrees" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Degrees, Degrees),
+                "radians" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Radians, Radians),
+                "isfinite" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.IsFinite, IsFinite),
+                "isinf" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.IsInf, IsInf),
+                "isnan" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.IsNaN, IsNaN),
+                "pow" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Pow, Pow),
                 "hypot" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Hypot, Hypot),
-                "fmod" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Fmod, Fmod),
-                "copysign" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.CopySign, CopySign),
-                "isclose" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.IsClose, IsClose),
+                "fmod" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Fmod, Fmod),
+                "copysign" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.CopySign, CopySign),
+                "isclose" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.IsClose, IsClose),
                 "prod" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Prod, Prod, ProdAsync),
                 "fsum" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Fsum, Fsum, FsumAsync),
-                "factorial" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Factorial, Factorial),
+                "factorial" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Factorial, Factorial),
                 "gcd" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Gcd, Gcd),
                 "lcm" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Lcm, Lcm),
-                "comb" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Comb, Comb),
-                "perm" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Perm, Perm),
-                "isqrt" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Isqrt, ISqrt),
+                "comb" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Comb, Comb),
+                "perm" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Perm, Perm),
+                "isqrt" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Isqrt, ISqrt),
                 "dist" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Dist, Dist, DistAsync),
-                "frexp" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Frexp, Frexp),
-                "ldexp" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Ldexp, Ldexp),
-                "modf" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Modf, Modf),
-                "remainder" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Remainder, Remainder),
-                "nextafter" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.NextAfter, NextAfter),
-                "ulp" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Ulp, Ulp),
-                "exp2" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Exp2, Exp2),
-                "expm1" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Expm1, Expm1),
-                "log1p" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Log1p, Log1p),
-                "cbrt" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Cbrt, Cbrt),
-                "erf" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Erf, Erf),
-                "erfc" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Erfc, Erfc),
-                "gamma" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Gamma, Gamma),
-                "lgamma" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Lgamma, LGamma),
-                "fma" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.Fma, Fma),
+                "frexp" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Frexp, Frexp),
+                "ldexp" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Ldexp, Ldexp),
+                "modf" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Modf, Modf),
+                "remainder" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Remainder, Remainder),
+                "nextafter" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.NextAfter, NextAfter),
+                "ulp" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Ulp, Ulp),
+                "exp2" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Exp2, Exp2),
+                "expm1" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Expm1, Expm1),
+                "log1p" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Log1p, Log1p),
+                "cbrt" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Cbrt, Cbrt),
+                "erf" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Erf, Erf),
+                "erfc" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Erfc, Erfc),
+                "gamma" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Gamma, Gamma),
+                "lgamma" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Lgamma, LGamma),
+                "fma" => BuiltinCallable.CreateBorrowed(LythonKnownCallableSignatures.Math.Fma, Fma),
                 "sumprod" => BuiltinCallable.Create(LythonKnownCallableSignatures.Math.SumProd, SumProd, SumProdAsync),
                 _ => MissingMemberValue.Instance,
             };
@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static object Sqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Sqrt(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.sqrt", span, context);
             if (value < 0.0)
@@ -100,10 +100,10 @@ internal sealed partial class LythonRuntime
             return Math.Sqrt(value);
         }
 
-        private static object Exp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Exp(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.exp", span, context, Math.Exp);
 
-        private static object Log(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length is < 1 or > 2)
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
             return Math.Log(x, @base);
         }
 
-        private static object Log10(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log10(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.log10", span, context);
             if (value <= 0.0)
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
             return Math.Log10(value);
         }
 
-        private static object Log2(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log2(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.log2", span, context);
             if (value <= 0.0)
@@ -153,16 +153,16 @@ internal sealed partial class LythonRuntime
             return Math.Log2(value);
         }
 
-        private static object Sin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Sin(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.sin", span, context, Math.Sin);
 
-        private static object Cos(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Cos(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.cos", span, context, Math.Cos);
 
-        private static object Tan(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Tan(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.tan", span, context, Math.Tan);
 
-        private static object Asin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Asin(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.asin", span, context);
             if (value is < -1.0 or > 1.0)
@@ -173,7 +173,7 @@ internal sealed partial class LythonRuntime
             return Math.Asin(value);
         }
 
-        private static object Acos(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Acos(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.acos", span, context);
             if (value is < -1.0 or > 1.0)
@@ -184,22 +184,22 @@ internal sealed partial class LythonRuntime
             return Math.Acos(value);
         }
 
-        private static object Atan(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Atan(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.atan", span, context, Math.Atan);
 
-        private static object Atan2(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Atan2(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => BinaryFloat(arguments, "math.atan2", span, context, Math.Atan2);
 
-        private static object Sinh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Sinh(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.sinh", span, context, Math.Sinh);
 
-        private static object Cosh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Cosh(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.cosh", span, context, Math.Cosh);
 
-        private static object Tanh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Tanh(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.tanh", span, context, Math.Tanh);
 
-        private static object Floor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Floor(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
             return ExpectFloorLike(arguments[0], "math.floor", "__floor__", span, context, static x => Math.Floor(x));
         }
 
-        private static object Ceil(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Ceil(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -219,10 +219,10 @@ internal sealed partial class LythonRuntime
             return ExpectFloorLike(arguments[0], "math.ceil", "__ceil__", span, context, static x => Math.Ceiling(x));
         }
 
-        private static object Fabs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Fabs(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.fabs", span, context, Math.Abs);
 
-        private static object Trunc(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Trunc(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -232,22 +232,22 @@ internal sealed partial class LythonRuntime
             return ExpectFloorLike(arguments[0], "math.trunc", "__trunc__", span, context, static x => Math.Truncate(x));
         }
 
-        private static object Degrees(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Degrees(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.degrees", span, context, static x => x * (180.0 / Math.PI));
 
-        private static object Radians(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Radians(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.radians", span, context, static x => x * (Math.PI / 180.0));
 
-        private static object IsFinite(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsFinite(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryBool(arguments, "math.isfinite", span, context, static x => double.IsFinite(x));
 
-        private static object IsInf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsInf(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryBool(arguments, "math.isinf", span, context, static x => double.IsInfinity(x));
 
-        private static object IsNaN(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsNaN(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryBool(arguments, "math.isnan", span, context, static x => double.IsNaN(x));
 
-        private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Pow(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.pow", span, context);
             if (x == 0.0 && double.IsFinite(y) && y < 0.0)
@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
             return max * Math.Sqrt(scaled);
         }
 
-        private static object Fmod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Fmod(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.fmod", span, context);
             if (y == 0.0 || double.IsInfinity(x))
@@ -312,10 +312,10 @@ internal sealed partial class LythonRuntime
             return x % y;
         }
 
-        private static object CopySign(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object CopySign(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
             => BinaryFloat(arguments, "math.copysign", span, context, static (x, y) => Math.Abs(x) * (Math.CopySign(1.0, y)));
 
-        private static object IsClose(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsClose(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length is < 2 or > 4)
@@ -588,7 +588,7 @@ internal sealed partial class LythonRuntime
             return total;
         }
 
-        private static double ExpectUnaryReal(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static double ExpectUnaryReal(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length != 1)
@@ -599,7 +599,7 @@ internal sealed partial class LythonRuntime
             return ExpectReal(arguments[0], owner, span);
         }
 
-        private static BinaryRealArguments ExpectBinaryReal(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static BinaryRealArguments ExpectBinaryReal(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length != 2)
@@ -610,25 +610,25 @@ internal sealed partial class LythonRuntime
             return new BinaryRealArguments(ExpectReal(arguments[0], owner, span), ExpectReal(arguments[1], owner, span));
         }
 
-        private static object UnaryFloat(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
+        private static object UnaryFloat(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
         {
             var value = ExpectUnaryReal(arguments, owner, span, context);
             return func(value);
         }
 
-        private static object UnaryBool(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, bool> func)
+        private static object UnaryBool(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, bool> func)
         {
             var value = ExpectUnaryReal(arguments, owner, span, context);
             return func(value);
         }
 
-        private static object BinaryFloat(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double, double> func)
+        private static object BinaryFloat(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double, double> func)
         {
             var (x, y) = ExpectBinaryReal(arguments, owner, span, context);
             return func(x, y);
         }
 
-        private static object UnaryCheckedFloat(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
+        private static object UnaryCheckedFloat(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
         {
             var value = ExpectUnaryReal(arguments, owner, span, context);
             return CheckedMathResult(func(value), owner, span, value);

@@ -687,10 +687,15 @@ internal sealed partial class LythonRuntime
                 : InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, UsesMissingArgumentSlots), span, context);
         }
 
-        int IOperandBoundCallable.GetOperandBindingCapacity(ExecutableCallSite call)
+        int IOperandBoundCallable.GetOperandBindingCapacity(ExecutableCallSite call) => GetBindingCapacity(call);
+
+        protected virtual int GetBindingCapacity(ExecutableCallSite call)
             => OperandBindingCapacity(Signature, call.ArgumentCount);
 
         ValueTask<object> IOperandBoundCallable.InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
+            ExecutionContext context, bool asynchronous) => InvokeFromOperands(operands, call, context, asynchronous);
+
+        protected virtual ValueTask<object> InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
             ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(call.CallSpan);
@@ -746,33 +751,6 @@ internal sealed partial class LythonRuntime
         /// </summary>
         protected virtual ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ValueTask.FromResult(InvokeBound(arguments, span, context));
-    }
-
-    private abstract class DelegateBoundArgumentsCallable : BoundArgumentsCallable
-    {
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
-
-        protected DelegateBoundArgumentsCallable(
-            LythonCallableSignature signature,
-            PythonCallableKind callableKind,
-            Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
-            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
-            : base(signature, callableKind)
-        {
-            _implementation = implementation;
-            _asyncImplementation = asyncImplementation;
-        }
-
-        /// <inheritdoc />
-        protected sealed override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _implementation(arguments, span, context);
-
-        /// <inheritdoc />
-        protected sealed override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _asyncImplementation is null
-                ? ValueTask.FromResult(_implementation(arguments, span, context))
-                : _asyncImplementation(arguments, span, context);
     }
 
     // Builtin type constructors expose CPython-style __bases__/__mro__ resolved
@@ -2917,21 +2895,70 @@ internal sealed partial class LythonRuntime
     private static readonly TypeNewMethod _notImplementedTypeNewSlot;
     private static readonly FrozenDictionary<PyBuiltinRuntimeType, TypeNewMethod> _datetimeTypeNewSlots;
 
-    private class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
+    private class BuiltinCallable : BoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
-        protected BuiltinCallable(
-            LythonCallableSignature signature,
+        private readonly Func<object[], LythonSourceSpan, ExecutionContext, object>? _implementation;
+        private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
+
+        protected BuiltinCallable(LythonCallableSignature signature) : base(signature, PythonCallableKind.Builtin) { }
+
+        protected BuiltinCallable(LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
-            : base(signature, PythonCallableKind.Builtin, implementation, asyncImplementation)
-        { }
+            : this(signature)
+        {
+            _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
+        }
+
+        protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => (_implementation ?? throw new InvalidOperationException("Missing bound builtin implementation."))(arguments, span, context);
+
+        protected override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => _asyncImplementation is null ? new(InvokeBound(arguments, span, context)) : _asyncImplementation(arguments, span, context);
+
+        public static BuiltinCallable CreateBorrowed(LythonCallableSignature signature,
+            Func<ReadOnlySpan<object>, LythonSourceSpan, ExecutionContext, object> implementation)
+            => new BorrowedBuiltinCallable(signature, implementation);
+
+        private sealed class BorrowedBuiltinCallable : BuiltinCallable
+        {
+            private const int Capacity = 4;
+            [System.Runtime.CompilerServices.InlineArray(Capacity)]
+            private struct FinalValues { private object _first; }
+
+            private readonly Func<ReadOnlySpan<object>, LythonSourceSpan, ExecutionContext, object> _body;
+
+            internal BorrowedBuiltinCallable(LythonCallableSignature signature,
+                Func<ReadOnlySpan<object>, LythonSourceSpan, ExecutionContext, object> body) : base(signature)
+            {
+                if (signature.Parameters is not NamedCallableParameterLayout
+                    { ParameterNames.Length: <= Capacity, AllowsExtraPositional: false, AllowsExtraKeywords: false })
+                    throw new InvalidOperationException("Borrowed builtin binding requires a fixed small signature.");
+                _body = body;
+            }
+
+            protected override int GetBindingCapacity(ExecutableCallSite call) => 0;
+
+            protected override ValueTask<object> InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
+                ExecutionContext context, bool asynchronous)
+            {
+                context.CheckExecution(call.CallSpan);
+                FinalValues values = default;
+                var count = CallBinder.BindFixedExecutableArguments(operands, call, Signature, context, values);
+                return new(_body(values[..count], call.CallSpan, context));
+            }
+
+            protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => _body(arguments, span, context);
+        }
 
         private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _presence;
         private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object>? _syncPresence;
         private BuiltinCallable(LythonCallableSignature signature,
             Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> sync,
             Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? async)
-            : this(signature, static (object[] _, LythonSourceSpan __, ExecutionContext ___) => throw new InvalidOperationException("Missing argument presence"), null)
+            : this(signature)
         { _presence = async; _syncPresence = sync; }
         protected override bool PreservePresence => _syncPresence is not null;
         protected override object InvokeBoundWithPresence(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
