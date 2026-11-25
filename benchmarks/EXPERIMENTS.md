@@ -122,6 +122,13 @@ async CPU and allocates 41.83% less in the local sync diagnostic. Neither
 invoice regression recurs. The text control uses 6.38–11.98% more CPU
 with zero prepared routes. Keep the exact source private during attribution.
 
+[B1712c text-control profiles](results/2026-11-25-native-dictionary-slots/text-attribution/README.md)
+sample the reference, layout and prepared images at deeper warmup.
+Neither dictionary updates nor executable dispatch use more samples
+per invocation on either candidate. This reverses uninstrumented timing
+and leaves attribution unresolved. Compare all three images at two
+warmup depths in one uninstrumented collection.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

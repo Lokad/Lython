@@ -1,0 +1,317 @@
+{
+  "kind": "Profiles of one warmed worker per image with perf map enabled. Per-invocation sample counts are diagnostic and incomplete.",
+  "rows": [
+    {
+      "role": "reference",
+      "invocations": 8192,
+      "total": 1639,
+      "resolvedRuntime": 1507,
+      "exclusiveNearest": {
+        "word preparation": 461,
+        "dictionary accumulate": 246,
+        "executable dispatch": 165,
+        "resource accounting": 153,
+        "other managed runtime": 482
+      },
+      "samplesPer1000Invocations": {
+        "word preparation": 56.27,
+        "dictionary accumulate": 30.03,
+        "executable dispatch": 20.14,
+        "resource accounting": 18.68,
+        "other managed runtime": 58.84
+      },
+      "totalSamplesPer1000Invocations": 200.07,
+      "unresolvedLeafs": 239,
+      "topMethods": [
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteDictionaryLoop",
+          246
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime::TryFinishDirectCasedReturn",
+          221
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps::PrepareCasedWhitespaceIteration",
+          188
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix",
+          165
+        ],
+        [
+          "Lokad.Lython.Runtime.MemoryGovernor::Reserve",
+          107
+        ],
+        [
+          "Lokad.Lython.Runtime.PyIteration+Cursor::TryMoveNextCore",
+          55
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteNativeCall",
+          53
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack",
+          53
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CompleteResultConsumer",
+          48
+        ],
+        [
+          "Lokad.Lython.Runtime.OpenedByteFile+<OpenAsync>d__7::MoveNext",
+          47
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime::ExecuteCasedSplit",
+          36
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage::RetireTo",
+          32
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame",
+          27
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::get_CanContinue",
+          27
+        ],
+        [
+          "Lokad.Lython.Runtime.PyExecutableFunction::StartNativeCall",
+          21
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps::WriteAsciiCase",
+          20
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.TextLineScanning::FindLineEndByte",
+          18
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps+CasedWhitespaceIteration::Initialize",
+          16
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::CreateWindowValue",
+          14
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::InstallWindow",
+          12
+        ]
+      ]
+    },
+    {
+      "role": "layout",
+      "invocations": 8704,
+      "total": 1641,
+      "resolvedRuntime": 1491,
+      "exclusiveNearest": {
+        "word preparation": 483,
+        "dictionary accumulate": 219,
+        "executable dispatch": 156,
+        "resource accounting": 149,
+        "other managed runtime": 484
+      },
+      "samplesPer1000Invocations": {
+        "word preparation": 55.49,
+        "dictionary accumulate": 25.16,
+        "executable dispatch": 17.92,
+        "resource accounting": 17.12,
+        "other managed runtime": 55.61
+      },
+      "totalSamplesPer1000Invocations": 188.53,
+      "unresolvedLeafs": 249,
+      "topMethods": [
+        [
+          "Lokad.Lython.Runtime.LythonRuntime::TryFinishDirectCasedReturn",
+          237
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteDictionaryLoop",
+          219
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps::PrepareCasedWhitespaceIteration",
+          189
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix",
+          156
+        ],
+        [
+          "Lokad.Lython.Runtime.MemoryGovernor::Reserve",
+          106
+        ],
+        [
+          "Lokad.Lython.Runtime.PyIteration+Cursor::TryMoveNextCore",
+          66
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack",
+          53
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteNativeCall",
+          49
+        ],
+        [
+          "Lokad.Lython.Runtime.OpenedByteFile+<OpenAsync>d__7::MoveNext",
+          48
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CompleteResultConsumer",
+          42
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime::ExecuteCasedSplit",
+          41
+        ],
+        [
+          "Lokad.Lython.Runtime.PyExecutableFunction::StartNativeCall",
+          30
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame",
+          29
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage::RetireTo",
+          26
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.TextLineScanning::FindLineEndByte",
+          26
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps::WriteAsciiCase",
+          19
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot::RetireTemporary",
+          17
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps+CasedWhitespaceIteration::Initialize",
+          16
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::CreateWindowValue",
+          13
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::get_CanContinue",
+          13
+        ]
+      ]
+    },
+    {
+      "role": "prepared",
+      "invocations": 8704,
+      "total": 1614,
+      "resolvedRuntime": 1473,
+      "exclusiveNearest": {
+        "word preparation": 469,
+        "dictionary accumulate": 208,
+        "executable dispatch": 163,
+        "resource accounting": 154,
+        "other managed runtime": 479
+      },
+      "samplesPer1000Invocations": {
+        "word preparation": 53.88,
+        "dictionary accumulate": 23.9,
+        "executable dispatch": 18.73,
+        "resource accounting": 17.69,
+        "other managed runtime": 55.03
+      },
+      "totalSamplesPer1000Invocations": 185.43,
+      "unresolvedLeafs": 226,
+      "topMethods": [
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps::PrepareCasedWhitespaceIteration",
+          224
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteDictionaryLoop",
+          208
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime::TryFinishDirectCasedReturn",
+          195
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix",
+          163
+        ],
+        [
+          "Lokad.Lython.Runtime.MemoryGovernor::Reserve",
+          121
+        ],
+        [
+          "Lokad.Lython.Runtime.PyIteration+Cursor::TryMoveNextCore",
+          60
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteNativeCall",
+          52
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack",
+          51
+        ],
+        [
+          "Lokad.Lython.Runtime.OpenedByteFile+<OpenAsync>d__7::MoveNext",
+          46
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CompleteResultConsumer",
+          38
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime::ExecuteCasedSplit",
+          32
+        ],
+        [
+          "Lokad.Lython.Runtime.PyExecutableFunction::StartNativeCall",
+          30
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame",
+          25
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps::WriteAsciiCase",
+          21
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::CreateWindowValue",
+          20
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage::RetireTo",
+          20
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage::TryPrepareNativeIteration",
+          18
+        ],
+        [
+          "Lokad.Lython.Runtime.Text.PyStringOps+CasedWhitespaceIteration::Initialize",
+          18
+        ],
+        [
+          "Lokad.Lython.Runtime.ExecutionState::get_CanContinue",
+          17
+        ],
+        [
+          "Lokad.Lython.Runtime.OpenedByteFile+<ReadAsync>d__12::MoveNext",
+          13
+        ]
+      ]
+    }
+  ]
+}
