@@ -101,6 +101,13 @@ spread. The original manifest failed before timing and the verified retry
 uses the same image. The shipment instruction inventory locates two eager
 comprehension binding and append scopes outside the direct chooser.
 
+[B1732 shipment route and CPU attribution](results/2026-11-25-shipment-comprehension-cpu/README.md)
+counts 16 borrowed-workspace handoffs at tuple unpacking, before either
+comprehension starts. Each shipment run takes 4,096 scope lookups, stores
+and appends. Warm profiles locate more samples nearest map advancement
+than frame entry or operand binding. The next prototype prepares one
+fully supplied callback per eligible map instead of selecting it per row.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.

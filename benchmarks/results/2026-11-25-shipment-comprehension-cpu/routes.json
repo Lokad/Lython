@@ -1,0 +1,68 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "ComprehensionEntries": 32,
+        "ComprehensionExits": 32,
+        "ComprehensionReads": 4096,
+        "ComprehensionWrites": 4096,
+        "ComprehensionAppends": 4096
+      },
+      "transfers": {
+        "report_shipments/Call/rent": 1,
+        "tally/UnpackValues/borrow": 16
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "ComprehensionEntries": 32,
+        "ComprehensionExits": 32,
+        "ComprehensionReads": 4096,
+        "ComprehensionWrites": 4096,
+        "ComprehensionAppends": 4096
+      },
+      "transfers": {
+        "report_shipments/Call/rent": 1,
+        "tally/UnpackValues/borrow": 16
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "ComprehensionEntries": 0,
+        "ComprehensionExits": 0,
+        "ComprehensionReads": 0,
+        "ComprehensionWrites": 0,
+        "ComprehensionAppends": 0
+      },
+      "transfers": {},
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "ComprehensionEntries": 0,
+        "ComprehensionExits": 0,
+        "ComprehensionReads": 0,
+        "ComprehensionWrites": 0,
+        "ComprehensionAppends": 0
+      },
+      "transfers": {},
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}
