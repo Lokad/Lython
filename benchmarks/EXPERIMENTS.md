@@ -115,6 +115,13 @@ file-fed timing spans zero, and both text workers have wide spread. The
 layout alone reduces file-fed map allocation by 29.63%. Retain both source
 pairs and prepare the consumer decision in the executable tape.
 
+[B1712b prepared record consumers](results/2026-11-25-native-dictionary-slots/prepared/README.md)
+uses the existing tape to identify adjacent packed comparisons and parse
+each admitted short decimal once. File-fed map uses 6.77–11.22% less warm
+async CPU and allocates 41.83% less in the local sync diagnostic. Neither
+invoice regression recurs. The text control uses 6.38–11.98% more CPU
+with zero prepared routes. Keep the exact source private during attribution.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at

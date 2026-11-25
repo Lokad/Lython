@@ -1,0 +1,164 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "PackedDictionaryFields": 21504,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 16380,
+        "PublishedPackedFields": 2052,
+        "ConsumedPreparedRecordIntegers": 16380
+      },
+      "peakExecutionMemoryBytes": 8909226,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "PackedDictionaryFields": 8192,
+        "PackedComparisonReads": 4094,
+        "PackedIntegerReads": 2047,
+        "PublishedPackedFields": 4,
+        "ConsumedPreparedRecordIntegers": 2047
+      },
+      "peakExecutionMemoryBytes": 2752188,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "PackedDictionaryFields": 8192,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 2047,
+        "PublishedPackedFields": 4,
+        "ConsumedPreparedRecordIntegers": 2047
+      },
+      "peakExecutionMemoryBytes": 2204567,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-exposed-header",
+      "asynchronous": false,
+      "routes": {
+        "PackedDictionaryFields": 21504,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 16380,
+        "PublishedPackedFields": 2052,
+        "ConsumedPreparedRecordIntegers": 16380
+      },
+      "peakExecutionMemoryBytes": 8909346,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-plain-reader",
+      "asynchronous": false,
+      "routes": {
+        "PackedDictionaryFields": 0,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 0,
+        "PublishedPackedFields": 0,
+        "ConsumedPreparedRecordIntegers": 0
+      },
+      "peakExecutionMemoryBytes": 8252450,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "PackedDictionaryFields": 0,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 0,
+        "PublishedPackedFields": 0,
+        "ConsumedPreparedRecordIntegers": 0
+      },
+      "peakExecutionMemoryBytes": 603811,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": true,
+      "routes": {
+        "PackedDictionaryFields": 21504,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 16380,
+        "PublishedPackedFields": 2052,
+        "ConsumedPreparedRecordIntegers": 16380
+      },
+      "peakExecutionMemoryBytes": 8909226,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "PackedDictionaryFields": 8192,
+        "PackedComparisonReads": 4094,
+        "PackedIntegerReads": 2047,
+        "PublishedPackedFields": 4,
+        "ConsumedPreparedRecordIntegers": 2047
+      },
+      "peakExecutionMemoryBytes": 2752188,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "PackedDictionaryFields": 8192,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 2047,
+        "PublishedPackedFields": 4,
+        "ConsumedPreparedRecordIntegers": 2047
+      },
+      "peakExecutionMemoryBytes": 2204567,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-exposed-header",
+      "asynchronous": true,
+      "routes": {
+        "PackedDictionaryFields": 21504,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 16380,
+        "PublishedPackedFields": 2052,
+        "ConsumedPreparedRecordIntegers": 16380
+      },
+      "peakExecutionMemoryBytes": 8909346,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-plain-reader",
+      "asynchronous": true,
+      "routes": {
+        "PackedDictionaryFields": 0,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 0,
+        "PublishedPackedFields": 0,
+        "ConsumedPreparedRecordIntegers": 0
+      },
+      "peakExecutionMemoryBytes": 8252450,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "PackedDictionaryFields": 0,
+        "PackedComparisonReads": 0,
+        "PackedIntegerReads": 0,
+        "PublishedPackedFields": 0,
+        "ConsumedPreparedRecordIntegers": 0
+      },
+      "peakExecutionMemoryBytes": 603811,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing.",
+  "instrumentedSHA256": "f520533aafd0e31d76ace67bb4aaa110e90ce187e408602847d5e059f9080fa1",
+  "measuredSourcePatchSHA256": "22655bd48c7b94342c4924931a7cb3e8ff5b34317c7896b943cc8817b6ea7f75"
+}
