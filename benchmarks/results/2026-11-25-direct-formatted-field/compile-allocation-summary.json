@@ -1,0 +1,35 @@
+[
+  {
+    "case": "scripts.file-manifest.small",
+    "allocationBytes": [
+      72776,
+      72776
+    ],
+    "retainedAdmission": [
+      82304,
+      82304
+    ]
+  },
+  {
+    "case": "scripts.report-render.small",
+    "allocationBytes": [
+      60776,
+      58400
+    ],
+    "retainedAdmission": [
+      76352,
+      76352
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "allocationBytes": [
+      60776,
+      58400
+    ],
+    "retainedAdmission": [
+      76352,
+      76352
+    ]
+  }
+]

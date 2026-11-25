@@ -8,6 +8,9 @@ internal static class PythonTokenization
     public static TokenizedSource Read(string source, CancellationToken cancellationToken = default, bool module = false)
         => new Reader(source, cancellationToken).Read(module);
 
+    internal static TokenizedSource ReadFormattedField(string source, CancellationToken cancellationToken)
+        => new Reader(source, cancellationToken).Read(module: false, groupedField: true);
+
     internal static void CheckCancellation(CancellationToken token, int position)
     {
         // String escapes can advance by two or three code units in one step.
@@ -25,9 +28,16 @@ internal static class PythonTokenization
         private bool _invalid;
         private LythonDiagnostic? _lexicalDiagnostic;
 
-        public TokenizedSource Read(bool module)
+        public TokenizedSource Read(bool module, bool groupedField = false)
         {
             CheckCancellation(cancellationToken, 0);
+            if (groupedField)
+            {
+                // Field newlines are implicit joins. The expression parser
+                // consumes the ordinary grouping grammar over these tokens.
+                Add(Token.OpenParen, 0, 0);
+                _depth = 1;
+            }
             var limit = source.Length;
             while (limit > 0 && source[limit - 1] is ' ' or '\t' or '\r' or '\f')
             { CheckCancellation(cancellationToken, limit); limit--; }
@@ -95,6 +105,11 @@ internal static class PythonTokenization
                 else if (token is Token.CloseParen or Token.CloseBracket or Token.CloseBrace && _depth > 0) _depth--;
                 Add(token, start, length);
                 _position += length;
+            }
+            if (groupedField && _depth == 1 && _position >= limit)
+            {
+                Add(Token.CloseParen, _position, 0);
+                _depth = 0;
             }
             return Finish();
         }

@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse f-string fields directly as expressions. Reject a trailing backslash
+  without a physical newline and preserve explicit line continuations.
 - Resolve a module regex pattern before checking operation arguments. Share
   argument processing with compiled patterns, preserve Python error order,
   and reject explicit `None` for substitution and split counts.

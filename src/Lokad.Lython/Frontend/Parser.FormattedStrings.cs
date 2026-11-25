@@ -350,7 +350,8 @@ internal sealed partial class Parser
         }
 
         expressionOffset = expressionSource.Length - expressionSource.TrimStart(FormattedStringLexicalScanner.Whitespace).Length;
-        expressionText = expressionSource.Trim(FormattedStringLexicalScanner.Whitespace);
+        // Keep the physical newline of a trailing explicit continuation.
+        expressionText = expressionSource[expressionOffset..];
         if (visibleExpression.Trim(FormattedStringLexicalScanner.Whitespace).Length == 0) return false;
 
         if (conversionIndex >= 0)
@@ -486,30 +487,32 @@ internal sealed partial class Parser
         expression = null;
         message = MalformedFormattedStringMessage;
         // The enclosing syntax pass supplies the real scope, including yield legality.
-        const string prefix = "value = (";
-        var tokens = PythonTokenization.Read(prefix + expressionText + "\n)\n", _cancellationToken);
-        if (tokens.HasInvalidTokens) return false;
-        var frontend = new Parser(tokens, _memoryGovernor, _cancellationToken)
+        var tokens = PythonTokenization.ReadFormattedField(expressionText, _cancellationToken);
+        if (tokens.HasInvalidTokens || tokens.GluedNumbers.Count != 0) return false;
+        var parser = new Parser(tokens, _memoryGovernor, _cancellationToken)
         {
             _privateNames = _privateNames,
             _nestingDepth = _nestingDepth + 1,
             _spanSourceTokens = _spanSourceTokens ?? _tokens,
-            _spanOffset = expressionStart - prefix.Length
-        }.Parse();
-        if (frontend.Script?.Statements is not [AssignmentStatementSyntax assignment] || frontend.Diagnostics.Count != 0)
+            _spanOffset = expressionStart
+        };
+        var field = parser.ParseTupleOrParenthesized();
+        parser.CheckCancellation();
+        if (field is null || parser.CurrentToken is not (Token.Eol or Token.End) || parser._diagnostics.Count != 0)
         {
-            if (frontend.Diagnostics.Any(diagnostic => diagnostic.Message == UnsupportedNamedUnicodeEscapeMessage))
+            if (parser._diagnostics.Any(diagnostic => diagnostic.Message == UnsupportedNamedUnicodeEscapeMessage))
                 message = UnsupportedNamedUnicodeEscapeMessage;
-            else if (frontend.Diagnostics.Any(diagnostic => diagnostic.Code == "LA0003"))
+            else if (parser._diagnostics.Any(diagnostic => diagnostic.Code == "LA0003"))
                 message = SyntaxNestingLimitMessage;
             return false;
         }
 
-        expression = assignment.Expression is ParenthesizedExpressionSyntax parenthesized ? parenthesized.Inner : assignment.Expression;
-        if (assignment.Expression is TupleLiteralExpressionSyntax tuple)
+        expression = field is ParenthesizedExpressionSyntax parenthesized ? parenthesized.Inner : field;
+        if (field is TupleLiteralExpressionSyntax tuple)
         {
             (_spanSourceTokens ?? _tokens).LineOfPosition(expressionStart, out var line, out var column);
-            expression = tuple with { Span = new LythonSourceSpan(expressionStart, expressionText.Length, line, column) };
+            expression = tuple with { Span = new LythonSourceSpan(expressionStart,
+                expressionText.AsSpan().TrimEnd(FormattedStringLexicalScanner.Whitespace).Length, line, column) };
         }
         return true;
     }

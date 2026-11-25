@@ -1,0 +1,10 @@
+{
+  "sources": 3,
+  "codeObjects": 5,
+  "instructions": 241,
+  "identical": true,
+  "coreSHA256": {
+    "reference": "b0a4b650c806b169ea600e220aa25c5fa315f90c0dab6903e08f78905154c9f4",
+    "candidate": "40f98230ffefe94649d7a01cbb39e88db09a1e5a80e4b419d9c87043b1200418"
+  }
+}

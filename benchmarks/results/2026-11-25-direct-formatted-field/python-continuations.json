@@ -1,0 +1,17 @@
+{
+  "version": "Python 3.13.2",
+  "results": {
+    "bareBeforeDelimiter": {
+      "source": "print(f\"{1 \\}\")",
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "  File \"<string>\", line 1\n    print(f\"{1 \\}\")\n                ^\nSyntaxError: unexpected character after line continuation character\n"
+    },
+    "realContinuationBeforeDelimiter": {
+      "source": "print(f\"{1 \\\n}\")",
+      "exitCode": 0,
+      "stdout": "1\n",
+      "stderr": ""
+    }
+  }
+}

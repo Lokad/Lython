@@ -68,6 +68,12 @@ public sealed class FormattedFieldLexicalTests
         };
         yield return new object[]
         {
+            "fstring_join_before_delimiter",
+            "print(f\"{1 \\\n}\")",
+            "1\n"
+        };
+        yield return new object[]
+        {
             "fstring_debug_control",
             "x=3\nprint(f\"{x=}\",f\"{x = :>3}\")",
             "x=3 x =   3\n"
@@ -277,6 +283,7 @@ public sealed class FormattedFieldLexicalTests
     [InlineData("print(f'{2:'>4}')")]
     [InlineData("print(f\"{1:\n}\")")]
     [InlineData("print(f\"{1 #comment\n+}\")")]
+    [InlineData("print(f\"{1 \\}\")")]
     public void MalformedCommentFieldsFailBeforeEffects(string source)
         => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source).IsValid);
 

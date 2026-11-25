@@ -51,6 +51,12 @@ Admission peaks match and allocation is essentially flat. Quoted invoice
 async CPU rises 1.33–4.05%. The other workloads span zero and the unchanged
 rules control has wide spread. The patch stays private.
 
+[B1725 direct f-string fields](results/2026-11-25-direct-formatted-field/README.md)
+eliminate synthetic assignment parsing and fix a bare-backslash diagnostic.
+The representative report allocates 3.91% less at compilation and the
+inspected tapes match. Compile-to-result elapsed spans zero. The 1,024-row
+warm report leans adverse. Retain the frontend change and the warm evidence.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
