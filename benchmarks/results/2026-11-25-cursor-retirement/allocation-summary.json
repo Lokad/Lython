@@ -1,0 +1,98 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "asynchronous": false,
+    "allocationBytes": [
+      737960,
+      737944
+    ],
+    "peakAdmission": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "asynchronous": false,
+    "allocationBytes": [
+      3280892,
+      3281310
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": true,
+    "allocationBytes": [
+      1315742,
+      1312814
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "asynchronous": true,
+    "allocationBytes": [
+      1518890,
+      1515480
+    ],
+    "peakAdmission": [
+      3115985,
+      3115985
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "allocationBytes": [
+      939800,
+      939792
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-retained-zip",
+    "asynchronous": true,
+    "allocationBytes": [
+      1223912,
+      1223736
+    ],
+    "peakAdmission": [
+      2892539,
+      2892539
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-generator-over-map",
+    "asynchronous": true,
+    "allocationBytes": [
+      1331936,
+      1328272
+    ],
+    "peakAdmission": [
+      2842396,
+      2842396
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks-sync",
+    "asynchronous": false,
+    "allocationBytes": [
+      1315468,
+      1312344
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  }
+]

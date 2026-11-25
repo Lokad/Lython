@@ -12,6 +12,13 @@ the closed single and paired default evaluator. Warm defaulted rules use
 more. Generated ordinary and live-alias definitions also slow.
 The patch stays private at matched admission.
 
+[B1700 private cursor retirement](results/2026-11-25-cursor-retirement/README.md)
+removes the inbound test-only async CLR adapter, deferred-disposal queue and
+instruction polls. Retain the simpler path with matched admission and
+2.92–6.07% less warm sync shipment CPU. The generator-over-map async lane
+uses 0.51–2.74% more CPU and file-fed map remains inconclusive. Real async
+file close, cancellation and refusal retain their focused regressions.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
