@@ -71,6 +71,12 @@ report is near parity warm and faster through result on the small input.
 Generated definitions still take about twice as long warm, with lower
 compile-to-result elapsed on the full script.
 
+[B1728 generated definition effects](results/2026-11-25-ordinary-definition-effects/README.md)
+retains default expression evaluation and keeps only the three returned
+functions in an output-equivalent diagnostic. Lython takes about 39% less
+warm time and CPython about 58% less. The remaining 2.883–3.029× gap directs
+profiling toward default evaluation and operand transport.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
