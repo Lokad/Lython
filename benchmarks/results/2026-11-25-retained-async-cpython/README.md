@@ -21,7 +21,7 @@ the elapsed clock. Startup and final teardown sit outside both.
 
 | Workload | Phase | Lython | CPython | Elapsed ratio | Wider CPU ratio |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Shipment callback report | Warm async | 2.61576–2.68352 ms | 1.61220–1.62845 ms | 1.606–1.664× | 1.601–1.649× |
+| Shipment callback report | Warm async | 2.61576–2.68352 ms | 1.61220–1.62845 ms | 1.606–1.665× | 1.601–1.649× |
 | Ordinary generated definitions | Warm | 0.31790–0.32041 ms | 0.14716–0.14855 ms | 2.140–2.177× | 2.134–2.193× |
 | Defaulted rule pairs | Warm | 0.89580–0.90843 ms | 0.68316–0.69232 ms | 1.294–1.330× | 1.305–1.346× |
 | Shipment callback report | Warm sync | 2.43455–2.50138 ms | 1.61714–1.64107 ms | 1.484–1.547× | 1.454–1.514× |

@@ -4,7 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration manifest | Two input files / 833 B | 0.18510–0.18554 ms | 0.15478–0.15563 ms | 1.189–1.199× | Diagnostic. [B1669]. |
 | Shipment callback report | 2,048 records / 27,350 B | 2.43455–2.50138 ms | 1.61714–1.64107 ms | 1.484–1.547× | Diagnostic. [B1694]. |
-| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.61576–2.68352 ms | 1.61220–1.62845 ms | 1.606–1.664× | Diagnostic. [B1694]. |
+| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.61576–2.68352 ms | 1.61220–1.62845 ms | 1.606–1.665× | Diagnostic. [B1694]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.01119–3.04841 ms | 1.67604–1.69917 ms | 1.772–1.819× | Diagnostic. [B1694]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1695](results/2026-11-25-csv-private-header/README.md) skips repeated
+`DictReader` header scans before a privately owned inferred header escapes.
+The file-fed async report uses 6.24–12.95% less CPU. The original async
+shipment uses 1.83–4.17% more, and the exposed-header invoice slows. The
+patch stays private at matching peak admission.
+
 [B1694](results/2026-11-25-retained-async-cpython/README.md) measures
 `f6cf9796c` against CPython in eleven independent phases. Shipment and
 defaulted rules still have compile-to-result gaps. Ordinary definitions
