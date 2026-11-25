@@ -1389,6 +1389,8 @@ the optional regex adapter owns its backend dependency. Python tokenization read
 normalized source directly and records physical token lines and invalid numeric
 adjacency as it scans. Ordinary parser spans use those prepared line indexes.
 The newline table supplies arbitrary offsets and embedded f-string coordinates.
+The parser reads conjunctions and disjunctions in one pass, retaining
+`and` precedence over `or` and the separate nesting limit for each chain.
 Indentation uses eight-column tab stops and checks alternate columns to reject
 ambiguous tab/space mixes. Blank and comment-only lines do not establish levels.
 

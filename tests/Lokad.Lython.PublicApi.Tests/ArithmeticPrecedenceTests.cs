@@ -7,6 +7,8 @@ public sealed class ArithmeticPrecedenceTests
     [Theory]
     [InlineData(" + ", "1 * 2", "128")]
     [InlineData(" | ", "1 & 3", "1")]
+    [InlineData(" or ", "0 and 1", "0")]
+    [InlineData(" and ", "1", "1")]
     public async Task MixedFlatChainsKeepIndependentPrecedenceBounds(string separator, string operand, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -40,11 +42,24 @@ public sealed class ArithmeticPrecedenceTests
     [InlineData("<<", "LA1064", "Expected expression after shift operator.")]
     [InlineData("+", "LA1041", "Expected expression after additive operator.")]
     [InlineData("*", "LA1042", "Expected expression after multiplicative operator.")]
+    [InlineData("or", "LA1037", "Expected expression after 'or'.")]
+    [InlineData("or 0 and", "LA1038", "Expected expression after 'and'.")]
     public void MissingOperandRetainsItsDiagnostic(string token, string code, string message)
     {
         using var script = new LythonEngine().Compile("value = 1 " + token);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == code && diagnostic.Message == message);
+    }
+
+    [Fact]
+    public void MissingConjunctionOperandKeepsBothDiagnosticAnchors()
+    {
+        const string source = "value = 1 or 0 and\n";
+        using var script = new LythonEngine().Compile(source);
+        Assert.False(script.IsValid);
+        var diagnostics = script.Diagnostics.Where(diagnostic => diagnostic.Code is "LA1038" or "LA1037").ToArray();
+        Assert.Equal(["LA1038", "LA1037"], diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.All(diagnostics, diagnostic => Assert.Equal(source.Length - 1, diagnostic.Span?.Start));
     }
 
     [Fact]

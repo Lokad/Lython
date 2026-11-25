@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1693](results/2026-11-25-boolean-linear/README.md) replaces recursive
+boolean precedence descent with a single pass. Sparse guards take
+1.00–2.98% less time through result. Mixed guards through result and the
+warm invoice control remain inconclusive. The revised parser is retained.
+
 [B1692](results/2026-11-25-async-map-prefix/README.md) starts the short
 async map continuation only at an incomplete pull or callback. All four
 affected async workloads use less CPU. The original shipment improves

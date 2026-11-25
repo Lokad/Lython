@@ -155,10 +155,8 @@ internal sealed partial class Parser
         return new TupleLiteralExpressionSyntax(items, Merge(first.Span, endSpan));
     }
 
-    private enum LeftAssociativeLayer
+    private enum ArithmeticLayer
     {
-        Or,
-        And,
         BitwiseOr,
         BitwiseXor,
         BitwiseAnd,
@@ -167,16 +165,48 @@ internal sealed partial class Parser
         Multiplicative,
     }
 
-    private readonly record struct LeftAssociativeDiagnostic(
-        LythonDiagnosticCode Code,
-        string Message,
-        bool AnchorAfterOperator);
-
     private ExpressionSyntax? ParseOrExpression()
-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.Or);
+    {
+        var term = ParseNotExpression();
+        if (term is null) return null;
+        // Each conjunction stays open until the next 'or'. Both chains
+        // associate from the left and keep independent operand limits.
+        ExpressionSyntax? disjunction = null;
+        var andOperands = 1;
+        var orOperands = 1;
+        while (CurrentToken is Token.And or Token.Or)
+        {
+            var and = CurrentToken == Token.And;
+            var operatorToken = ReadToken();
+            if ((and ? ++andOperands : ++orOperands) > MaxNestingDepth)
+            {
+                AddDiagnostic("LA0003", $"Expression chain exceeds the maximum of {MaxNestingDepth} operands.", operatorToken);
+                if (and && disjunction is not null)
+                    AddDiagnostic("LA1037", "Expected expression after 'or'.", _position);
+                return null;
+            }
+            var right = ParseNotExpression();
+            if (right is null)
+            {
+                if (and) AddDiagnostic("LA1038", "Expected expression after 'and'.", _position);
+                if (!and || disjunction is not null)
+                    AddDiagnostic("LA1037", "Expected expression after 'or'.", _position);
+                return null;
+            }
+            if (and)
+                term = new BinaryExpressionSyntax(term, BinaryOperatorSyntax.And, right, Merge(term.Span, right.Span));
+            else
+            {
+                disjunction = JoinDisjunction(disjunction, term);
+                term = right;
+                andOperands = 1;
+            }
+        }
+        return JoinDisjunction(disjunction, term);
 
-    private ExpressionSyntax? ParseAndExpression()
-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.And);
+        ExpressionSyntax JoinDisjunction(ExpressionSyntax? left, ExpressionSyntax right)
+            => left is null ? right : new BinaryExpressionSyntax(left, BinaryOperatorSyntax.Or, right, Merge(left.Span, right.Span));
+    }
 
     private ExpressionSyntax? ParseComparisonExpression()
     {
@@ -236,16 +266,16 @@ internal sealed partial class Parser
     }
 
     private ExpressionSyntax? ParseBitwiseOrExpression()
-        => ParseArithmeticExpression(LeftAssociativeLayer.BitwiseOr);
+        => ParseArithmeticExpression(ArithmeticLayer.BitwiseOr);
 
     // Descend only for tighter operators, rather than for every grammar level.
-    private ExpressionSyntax? ParseArithmeticExpression(LeftAssociativeLayer minimumLayer)
+    private ExpressionSyntax? ParseArithmeticExpression(ArithmeticLayer minimumLayer)
     {
         var expression = ParseUnaryExpression();
         if (expression is null) return null;
-        var precedingLayer = LeftAssociativeLayer.Multiplicative;
+        var precedingLayer = ArithmeticLayer.Multiplicative;
         var operandCount = 1;
-        while (LeftAssociativeOperator(CurrentToken) is { } operation && operation.Layer >= minimumLayer)
+        while (ArithmeticOperator(CurrentToken) is { } operation && operation.Layer >= minimumLayer)
         {
             var operatorToken = ReadToken();
             // Tighter operators occur in the right operand. Descending to a
@@ -263,7 +293,7 @@ internal sealed partial class Parser
             var right = ParseArithmeticExpression(operation.Layer + 1);
             if (right is null)
             {
-                var diagnostic = LeftAssociativeError(operation.Layer);
+                var diagnostic = ArithmeticError(operation.Layer);
                 AddDiagnostic(diagnostic.Code, diagnostic.Message, operatorToken);
                 return null;
             }
@@ -272,80 +302,33 @@ internal sealed partial class Parser
         return expression;
     }
 
-    private ExpressionSyntax? ParseLeftAssociativeExpression(LeftAssociativeLayer layer)
-    {
-        var expression = layer == LeftAssociativeLayer.Or ? ParseAndExpression() : ParseNotExpression();
-        if (expression is null)
-        {
-            return null;
-        }
-
-        var operandCount = 1;
-        while (LeftAssociativeOperator(CurrentToken) is { } operation && operation.Layer == layer)
-        {
-            var operatorToken = ReadToken();
-            operandCount++;
-            if (operandCount > MaxNestingDepth)
-            {
-                AddDiagnostic(
-                    "LA0003",
-                    $"Expression chain exceeds the maximum of {MaxNestingDepth} operands.",
-                    operatorToken);
-                return null;
-            }
-            var right = layer == LeftAssociativeLayer.Or ? ParseAndExpression() : ParseNotExpression();
-            if (right is null)
-            {
-                var diagnostic = LeftAssociativeError(layer);
-                AddDiagnostic(
-                    diagnostic.Code,
-                    diagnostic.Message,
-                    diagnostic.AnchorAfterOperator ? _position : operatorToken);
-                return null;
-            }
-
-            expression = new BinaryExpressionSyntax(
-                expression,
-                operation.Operator,
-                right,
-                Merge(expression.Span, right.Span));
-        }
-
-
-        return expression;
-    }
-
-    private static (LeftAssociativeLayer Layer, BinaryOperatorSyntax Operator)? LeftAssociativeOperator(Token token)
+    private static (ArithmeticLayer Layer, BinaryOperatorSyntax Operator)? ArithmeticOperator(Token token)
         => token switch
         {
-            Token.Or => (LeftAssociativeLayer.Or, BinaryOperatorSyntax.Or),
-            Token.And => (LeftAssociativeLayer.And, BinaryOperatorSyntax.And),
-            Token.Pipe => (LeftAssociativeLayer.BitwiseOr, BinaryOperatorSyntax.BitwiseOr),
-            Token.Caret => (LeftAssociativeLayer.BitwiseXor, BinaryOperatorSyntax.BitwiseXor),
-            Token.Ampersand => (LeftAssociativeLayer.BitwiseAnd, BinaryOperatorSyntax.BitwiseAnd),
-            Token.LessLess => (LeftAssociativeLayer.Shift, BinaryOperatorSyntax.LeftShift),
-            Token.GreaterGreater => (LeftAssociativeLayer.Shift, BinaryOperatorSyntax.RightShift),
-            Token.Plus => (LeftAssociativeLayer.Additive, BinaryOperatorSyntax.Add),
-            Token.Minus => (LeftAssociativeLayer.Additive, BinaryOperatorSyntax.Subtract),
-            Token.At => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.MatrixMultiply),
-            Token.Star => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.Multiply),
-            Token.Slash => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.Divide),
-            Token.SlashSlash => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.FloorDivide),
-            Token.Percent => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.Modulo),
+            Token.Pipe => (ArithmeticLayer.BitwiseOr, BinaryOperatorSyntax.BitwiseOr),
+            Token.Caret => (ArithmeticLayer.BitwiseXor, BinaryOperatorSyntax.BitwiseXor),
+            Token.Ampersand => (ArithmeticLayer.BitwiseAnd, BinaryOperatorSyntax.BitwiseAnd),
+            Token.LessLess => (ArithmeticLayer.Shift, BinaryOperatorSyntax.LeftShift),
+            Token.GreaterGreater => (ArithmeticLayer.Shift, BinaryOperatorSyntax.RightShift),
+            Token.Plus => (ArithmeticLayer.Additive, BinaryOperatorSyntax.Add),
+            Token.Minus => (ArithmeticLayer.Additive, BinaryOperatorSyntax.Subtract),
+            Token.At => (ArithmeticLayer.Multiplicative, BinaryOperatorSyntax.MatrixMultiply),
+            Token.Star => (ArithmeticLayer.Multiplicative, BinaryOperatorSyntax.Multiply),
+            Token.Slash => (ArithmeticLayer.Multiplicative, BinaryOperatorSyntax.Divide),
+            Token.SlashSlash => (ArithmeticLayer.Multiplicative, BinaryOperatorSyntax.FloorDivide),
+            Token.Percent => (ArithmeticLayer.Multiplicative, BinaryOperatorSyntax.Modulo),
             _ => null,
         };
 
-    private static LeftAssociativeDiagnostic LeftAssociativeError(LeftAssociativeLayer layer)
+    private static (LythonDiagnosticCode Code, string Message) ArithmeticError(ArithmeticLayer layer)
         => layer switch
         {
-            LeftAssociativeLayer.Or => new("LA1037", "Expected expression after 'or'.", AnchorAfterOperator: true),
-            LeftAssociativeLayer.And => new("LA1038", "Expected expression after 'and'.", AnchorAfterOperator: true),
-            LeftAssociativeLayer.BitwiseOr => new("LA1061", "Expected expression after bitwise '|'.", AnchorAfterOperator: false),
-            LeftAssociativeLayer.BitwiseXor => new("LA1062", "Expected expression after bitwise '^'.", AnchorAfterOperator: false),
-            LeftAssociativeLayer.BitwiseAnd => new("LA1063", "Expected expression after bitwise '&'.", AnchorAfterOperator: false),
-            LeftAssociativeLayer.Shift => new("LA1064", "Expected expression after shift operator.", AnchorAfterOperator: false),
-            LeftAssociativeLayer.Additive => new("LA1041", "Expected expression after additive operator.", AnchorAfterOperator: false),
-            LeftAssociativeLayer.Multiplicative => new("LA1042", "Expected expression after multiplicative operator.", AnchorAfterOperator: false),
+            ArithmeticLayer.BitwiseOr => ("LA1061", "Expected expression after bitwise '|'."),
+            ArithmeticLayer.BitwiseXor => ("LA1062", "Expected expression after bitwise '^'."),
+            ArithmeticLayer.BitwiseAnd => ("LA1063", "Expected expression after bitwise '&'."),
+            ArithmeticLayer.Shift => ("LA1064", "Expected expression after shift operator."),
+            ArithmeticLayer.Additive => ("LA1041", "Expected expression after additive operator."),
+            ArithmeticLayer.Multiplicative => ("LA1042", "Expected expression after multiplicative operator."),
             _ => throw new ArgumentOutOfRangeException(nameof(layer), layer, "Unknown binary precedence layer."),
         };
 
