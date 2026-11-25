@@ -3,28 +3,29 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration manifest | Two input files / 833 B | 0.18510–0.18554 ms | 0.15478–0.15563 ms | 1.189–1.199× | Diagnostic. [B1669]. |
-| Shipment callback report | 2,048 records / 27,350 B | 2.39440–2.39926 ms | 1.61504–1.64348 ms | 1.457–1.486× | Diagnostic. [B1705]. |
-| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.62524–2.63519 ms | 1.61938–1.63009 ms | 1.610–1.627× | Diagnostic. [B1705]. |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.66773–0.67879 ms | 1.36584–1.36624 ms | 0.489–0.497× | Diagnostic. [B1705]. |
+| Shipment callback report | 2,048 records / 27,350 B | 2.35417–2.39429 ms | 1.61364–1.61731 ms | 1.456–1.484× | Diagnostic. [B1713]. |
+| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.61774–2.63627 ms | 1.63253–1.63645 ms | 1.600–1.615× | Diagnostic. [B1713]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.62796–0.66850 ms | 1.35808–1.36582 ms | 0.460–0.492× | Diagnostic. Worker spread up to 6.45%. [B1713]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.01119–3.04841 ms | 1.67604–1.69917 ms | 1.772–1.819× | Diagnostic. [B1694]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
-| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.92332–0.95067 ms | 0.94036–0.94581 ms | 0.976–1.011× | Diagnostic. Ratio spans parity. [B1656]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.19140–6.21811 ms | 6.24889–6.35058 ms | 0.975–0.995× | Diagnostic. Near parity. [B1705]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.87737–0.90172 ms | 0.94829–0.95177 ms | 0.922–0.951× | Diagnostic. [B1713]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.23365–6.23861 ms | 6.32013–6.33260 ms | 0.984–0.987× | Diagnostic. [B1713]. |
 | Eager annotated rules | 2,048 rule groups | 0.43268–0.43905 ms | 0.40411–0.41482 ms | 1.043–1.086× | Diagnostic. [B1685]. |
 | Postponed nested annotated rules | 2,048 rule groups | 0.61825–0.66753 ms | 0.53118–0.53396 ms | 1.158–1.257× | Diagnostic. Worker spread up to 7.97%. [B1685]. |
 | Generated rules with captured locals | 2,048 rule groups | 0.89205–0.89483 ms | 0.76652–0.77553 ms | 1.150–1.167× | Diagnostic. [B1633]. |
-| Generated ordinary definitions | 96 definitions, built 16 times | 0.31710–0.31826 ms | 0.14767–0.14861 ms | 2.134–2.155× | Diagnostic. [B1705]. |
+| Generated ordinary definitions | 96 definitions, built 16 times | 0.32315–0.32420 ms | 0.14886–0.14890 ms | 2.170–2.178× | Diagnostic. [B1713]. |
 | Generated rules with defaults | 2,048 rule groups | 0.89580–0.90843 ms | 0.68316–0.69232 ms | 1.294–1.330× | Diagnostic. [B1694]. |
+| JSON Lines export with default options | 3,072 records / 189,441 B | 4.31705–4.40967 ms | 5.11480–5.16655 ms | 0.836–0.862× | Diagnostic. [B1713]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.1299–5.2194 ms | 6.5146–6.7011 ms | 0.766–0.801× | Diagnostic. [B1587]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The latest checkpoint, B1705, measures
-`96d54066a` on November 25, 2026 UTC. B1694 measures `f6cf9796c` earlier
-the same day, including the warm defaulted rules and bound shipment rows
-and the manifest through result. B1685 measures eager and postponed
-annotated warm execution at `c1984f96b`.
+two workers per engine. B1713 measures a source-equivalent build of
+qualified `75af75769` on November 25, 2026 UTC. B1705 measures
+`96d54066a` earlier that day. B1694 measures warm defaulted rules, the
+bound shipment report and the manifest through result at `f6cf9796c`.
+B1685 measures eager and postponed annotated warm execution at `c1984f96b`.
 Other rows retain their original revisions. B1669 measures the
 manifest at `a45b6da7f`. B1656 measures the short report and classifier
 at `6b41db7b3`. Comprehension compilation uses `b9b20aa98`. Earlier
@@ -32,8 +33,9 @@ standalone eager and captured rule phases use `d6a168491`. The earlier
 short report and invoice compile-only and invoice time-to-result phases
 use `6466fbb52`. The earlier manifest compile-only and sparse validator
 use `0bf516c79`. Postponed compilation and time to result use `5313f9e71`.
-JSON export uses `2cf721f73`, and the CSV meters use `8aef89b09`.
-[B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
+The expanded-options JSON export uses `2cf721f73`, and the CSV meters
+use `8aef89b09`.
+[B1713] · [B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -53,7 +55,7 @@ measurements cover the wider request.
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration manifest, 1,877 B of source | Compilation only | 0.11208–0.11333 ms | 0.16582–0.16676 ms | 0.672–0.683× | Diagnostic. [B1614]. |
 | Configuration manifest | Compile-to-result | 0.37025–0.37255 ms | 0.46072–0.46259 ms | 0.800–0.809× | Diagnostic. [B1694]. |
-| Shipment callback report | Compile-to-result | 2.55341–2.55451 ms | 1.90798–1.95218 ms | 1.308–1.339× | Diagnostic. [B1705]. |
+| Shipment callback report | Compile-to-result | 2.50925–2.59438 ms | 1.91198–1.92363 ms | 1.304–1.357× | Diagnostic. Worker spread up to 3.39%. [B1713]. |
 | Generated classifier, 6,991 B of source | Compilation only | 0.32944–0.33057 ms | 0.81943–0.82016 ms | 0.402–0.403× | Diagnostic. [B1656]. |
 | Generated comprehension rules, 17,995 B of source | Compilation only | 1.09478–1.10758 ms | 2.86768–2.89394 ms | 0.378–0.386× | Diagnostic. [B1643]. |
 | Sparse generated validator, 23,555 B of source | Compilation only | 1.27724–1.28559 ms | 1.81308–1.82159 ms | 0.701–0.709× | Diagnostic compiler workload. [B1614]. |
@@ -65,10 +67,10 @@ measurements cover the wider request.
 | Eager annotated rules | Compile-to-result | 0.48583–0.48941 ms | 0.43524–0.43622 ms | 1.114–1.124× | Diagnostic. [B1633]. |
 | Postponed nested annotated rules, 465 B | Compilation only | 0.02137–0.02188 ms | 0.03949–0.03962 ms | 0.539–0.554× | Diagnostic. [B1593]. |
 | Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
-| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.57164–0.57350 ms | 0.94477–0.94915 ms | 0.602–0.607× | Diagnostic. [B1705]. |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.57485–0.57872 ms | 0.94452–0.95286 ms | 0.603–0.613× | Diagnostic. [B1713]. |
 | Generated rules with defaults, 427 B | Compilation only | 0.02210–0.02213 ms | 0.04138–0.04167 ms | 0.530–0.535× | Diagnostic. [B1705]. |
-| Generated ordinary definitions | Compile-to-result | 0.89955–0.91139 ms | 1.11883–1.12655 ms | 0.798–0.815× | Diagnostic. [B1705]. |
-| Generated rules with defaults | Compile-to-result | 0.91998–0.95816 ms | 0.73180–0.74067 ms | 1.242–1.309× | Diagnostic. Lython worker spread 4.15%. [B1705]. |
+| Generated ordinary definitions | Compile-to-result | 0.91658–0.91816 ms | 1.12381–1.12547 ms | 0.814–0.817× | Diagnostic. [B1713]. |
+| Generated rules with defaults | Compile-to-result | 0.91329–0.93323 ms | 0.73408–0.74795 ms | 1.221–1.271× | Diagnostic. [B1713]. |
 | Generated rules with captured locals, 446 B | Compilation only | 0.02626–0.02666 ms | 0.04672–0.04684 ms | 0.561–0.571× | Diagnostic. [B1633]. |
 | Generated rules with captured locals | Compile-to-result | 0.96229–0.97110 ms | 0.87069–0.87170 ms | 1.104–1.115× | Diagnostic. [B1633]. |
 | Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.06070–0.06112 ms | 0.10070–0.10165 ms | 0.597–0.607× | Diagnostic. [B1625]. |
@@ -166,5 +168,6 @@ document reproduction.
 [B1669]: ../benchmarks/results/2026-11-25-post-zip-cpython/README.md
 [B1677]: ../benchmarks/results/2026-11-25-ordinary-defaults-cpython/README.md
 [B1685]: ../benchmarks/results/2026-11-25-retained-defaults-cpython/README.md
+[B1713]: ../benchmarks/results/2026-11-25-retained-workspace-cpython/README.md
 [B1705]: ../benchmarks/results/2026-11-25-retained-csv-cpython/README.md
 [B1694]: ../benchmarks/results/2026-11-25-retained-async-cpython/README.md

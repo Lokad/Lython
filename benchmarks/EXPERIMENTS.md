@@ -135,6 +135,11 @@ five and sixteen seconds of warmup. Layout alone uses 0.14–6.09% more CPU.
 Prepared timing remains unresolved. Keep the source private and retain
 the CSV and allocation improvements as prototype evidence.
 
+[B1713 external checkpoint](results/2026-11-25-retained-workspace-cpython/README.md)
+measures fully qualified `75af75769` against CPython 3.13.16. The 308
+verified batches cover new text and JSON rows plus separate warm,
+compile-only and through-result clocks.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
