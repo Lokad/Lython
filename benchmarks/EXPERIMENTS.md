@@ -108,6 +108,11 @@ and appends. Warm profiles locate more samples nearest map advancement
 than frame entry or operand binding. The next prototype prepares one
 fully supplied callback per eligible map instead of selecting it per row.
 
+[B1733 prepared map callbacks](results/2026-11-25-prepared-map-callback/README.md)
+eliminates repeated selection on 4,096 shipment and 2,048 file-fed calls.
+All paired CPU and elapsed ranges cross zero, and the unchanged text
+control varies widely across workers. Keep the prototype private.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
