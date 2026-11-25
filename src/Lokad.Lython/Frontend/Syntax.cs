@@ -818,13 +818,13 @@ internal sealed record LambdaExpressionSyntax(
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     internal PyString? PreparedQualifiedName { get; set; }
     internal LoweredLambdaExpression? PreparedCallable { get; set; }
+    internal ExecutableCreateFunction? PreparedDefinition { get; set; }
     private FunctionParameterLayout? _parameterLayout;
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
     internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)
         => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken, Span);
 
-    // The prepared callable points back to this syntax. It is compilation
-    // metadata, not part of structural syntax equality or constant interning.
+    // Prepared callable and code metadata do not participate in syntax equality.
     public bool Equals(LambdaExpressionSyntax? other)
         => ReferenceEquals(this, other) || other is not null && base.Equals(other) &&
             EqualityComparer<IReadOnlyList<FunctionParameterSyntax>>.Default.Equals(Parameters, other.Parameters) &&

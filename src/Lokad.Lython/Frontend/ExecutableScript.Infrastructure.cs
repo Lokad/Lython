@@ -242,7 +242,7 @@ internal sealed partial class ExecutableScript
         private ExecutableCodeObject CompileFunctionCode(string name,
             FunctionParameterLayout parameterLayout, IReadOnlyList<StatementSyntax> body,
             ScopeDirectiveFacts scopeFacts, IReadOnlyCollection<string>? typeParameterNames = null,
-            bool generator = false, PyString? qualifiedName = null, LoweredLambdaExpression? lambda = null)
+            bool generator = false, PyString? qualifiedName = null, LambdaExpressionSyntax? lambda = null)
         {
             return new Builder(_compilation, parameterLayout, this, scopeFacts,
                 completeLexicalParent: _completeLexicalParent && typeParameterNames is null,

@@ -367,11 +367,11 @@ OR-pattern alternative. Source spellings distinguish slots even when they mangle
 to the same store destination. Analysis, lowering and class creation reuse the
 function/class/lambda facts as part of the compiled program. A function
 declaration also owns one flat parameter name/slot table, role counts and
-generator classification, shared by analysis,
-lowering and its created functions. Lowered definitions and lambdas keep the
-default expressions in layout order. Executable `def` and `lambda` sites use
-the same prepared definition and operand layout. Lambdas reached through
-lowered expressions reuse that definition, including its closure mode.
+generator classification, shared by analysis, lowering and its created
+functions. Executable `def` and `lambda` sites emit defaults from syntax in
+parameter layout order. Lambda syntax owns the shared compiled definition,
+including its closure mode. The compiler builds lowered lambda defaults only
+when a lowered expression evaluates that header.
 Flow-dependent analysis owns its bindings separately. A branch shares the
 incoming binding and sequence-length
 maps until it changes them. Each map detaches independently. Joins reuse the

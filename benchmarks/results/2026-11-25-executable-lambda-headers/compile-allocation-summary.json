@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      44952,
+      44952
+    ],
+    "retainedAdmission": [
+      63610,
+      63610
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1472968,
+      1444680
+    ],
+    "retainedAdmission": [
+      883617,
+      883617
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      152192,
+      152192
+    ],
+    "retainedAdmission": [
+      164576,
+      164576
+    ]
+  },
+  {
+    "case": "diagnostic.generated-live-definitions",
+    "allocationBytes": [
+      1513864,
+      1485576
+    ],
+    "retainedAdmission": [
+      971169,
+      971169
+    ]
+  }
+]

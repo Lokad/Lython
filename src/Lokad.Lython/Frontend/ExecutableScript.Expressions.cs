@@ -76,7 +76,7 @@ internal sealed partial class ExecutableScript
                     return CompileFormattedParts(formatted.Parts, formatted.Span, currentBlock);
 
                 case LambdaExpressionSyntax lambda:
-                    return CompileLambda((LoweredLambdaExpression)LoweredScript.LowerExpression(lambda), currentBlock);
+                    return CompileLambda(lambda, currentBlock);
 
                 case IdentifierExpressionSyntax identifier:
                     CompileLoadIdentifier(identifier.Name, identifier.Span, currentBlock);

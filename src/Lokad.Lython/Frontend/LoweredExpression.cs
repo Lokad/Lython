@@ -309,24 +309,12 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     {
         Lambda = lambda;
         DefaultValues = LoweredScript.LowerDefaults(lambda.Parameters, lambda.ParameterLayout);
-        ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
-        // Lazy annotation expressions reach lowering outside the statement
-        // yield-validation walk. Classify each lambda from its own body.
-        IsGenerator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
         lambda.PreparedCallable = this;
     }
 
     public LambdaExpressionSyntax Lambda { get; }
     public LoweredExpression[] DefaultValues { get; }
     public FunctionParameterLayout ParameterLayout => Lambda.ParameterLayout;
-    public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
-    public bool IsGenerator { get; }
-    internal ExecutableCreateFunction? PreparedDefinition { get; private set; }
-    internal ExecutableCreateFunction Definition => PreparedDefinition.RequireNotNull();
-
-    internal void CompleteCompilation(ExecutableCodeObject code, bool namespaceClosure = false)
-        => PreparedDefinition = new ExecutableCreateFunction(code, ParameterLayout, 0, IsGenerator, 0,
-            [], null, null, null,
-            Kind: namespaceClosure ? ExecutableDefinitionKind.NamespaceLambda : ExecutableDefinitionKind.Lambda);
+    internal ExecutableCreateFunction Definition => Lambda.PreparedDefinition.RequireNotNull();
 }

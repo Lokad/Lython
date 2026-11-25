@@ -163,17 +163,24 @@ internal sealed partial class ExecutableScript
             return annotations;
         }
 
-        private int CompileLambda(LoweredLambdaExpression lambda, int block)
+        private int CompileLambda(LambdaExpressionSyntax lambda, int block)
         {
-            block = CompileFunctionDefaults(lambda.Lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false,
+            block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false,
                 out _, out var definitionIndex);
-            if (lambda.PreparedDefinition is null && _classBody)
-                CompileNamespaceLambda(lambda, _compilation);
-            else if (lambda.PreparedDefinition is null)
-                lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
-                    [], lambda.ScopeFacts, generator: lambda.IsGenerator,
-                    qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda));
-            EmitDefinition(lambda.Definition, lambda.Span, block, definitionIndex);
+            var definition = lambda.PreparedDefinition;
+            if (definition is null)
+            {
+                if (_classBody) definition = CompileNamespaceLambda(lambda, _compilation);
+                else
+                {
+                    var generator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
+                    var code = CompileFunctionCode("<lambda>", lambda.ParameterLayout,
+                        [], ScopeDirectiveFactsCollector.ForLambda(lambda), generator: generator,
+                        qualifiedName: lambda.PreparedQualifiedName, lambda: lambda);
+                    definition = CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.Lambda);
+                }
+            }
+            EmitDefinition(definition, lambda.Span, block, definitionIndex);
             return block;
         }
 

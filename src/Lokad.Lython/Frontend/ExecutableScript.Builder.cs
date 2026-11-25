@@ -33,8 +33,8 @@ internal sealed partial class ExecutableScript
             switch (syntax)
             {
                 case LambdaExpressionSyntax lambdaSyntax:
-                    var lambda = lambdaSyntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerExpression(lambdaSyntax);
-                    if (lambda.PreparedDefinition is null) CompileNamespaceLambda(lambda, compilation);
+                    if (lambdaSyntax is { PreparedCallable: not null, PreparedDefinition: null })
+                        CompileNamespaceLambda(lambdaSyntax, compilation);
                     break;
                 case GeneratorExpressionSyntax generatorSyntax:
                     var generator = generatorSyntax.PreparedCallable ?? (LoweredGeneratorExpression)LoweredScript.LowerExpression(generatorSyntax);
@@ -54,9 +54,19 @@ internal sealed partial class ExecutableScript
     private static ScopeDirectiveFacts GeneratorFacts(LoweredGeneratorExpression expression)
         => expression.ScopeFacts with { LocalNames = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" } };
 
-    private static void CompileNamespaceLambda(LoweredLambdaExpression lambda, Compilation compilation)
-        => lambda.CompleteCompilation(new Builder(compilation, lambda.ParameterLayout, null, lambda.ScopeFacts, generator: lambda.IsGenerator)
-            .CompileCodeObject("<lambda>", [], qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda), namespaceClosure: true);
+    private static ExecutableCreateFunction CompileNamespaceLambda(LambdaExpressionSyntax lambda, Compilation compilation)
+    {
+        // Lazy annotation expressions are outside the statement yield walk.
+        var generator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
+        var code = new Builder(compilation, lambda.ParameterLayout, null, ScopeDirectiveFactsCollector.ForLambda(lambda), generator: generator)
+            .CompileCodeObject("<lambda>", [], qualifiedName: lambda.PreparedQualifiedName, lambda: lambda);
+        return CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.NamespaceLambda);
+    }
+
+    private static ExecutableCreateFunction CompleteLambdaDefinition(LambdaExpressionSyntax lambda,
+        ExecutableCodeObject code, bool generator, ExecutableDefinitionKind kind)
+        => lambda.PreparedDefinition = new ExecutableCreateFunction(code, lambda.ParameterLayout, 0, generator, 0,
+            [], null, null, null, Kind: kind);
 
     // Recursive emission has one active buffer set per builder. A compilation
     // keeps one spare for the next sibling. Only final arrays and per-scope
@@ -174,7 +184,7 @@ internal sealed partial class ExecutableScript
 
         public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<StatementSyntax> statements,
             LoweredGeneratorExpression? generatorExpression = null, PyString? qualifiedName = null,
-            LoweredLambdaExpression? lambda = null)
+            LambdaExpressionSyntax? lambda = null)
         {
             // A lexical super read also requests the hidden free __class__ cell.
             // Ordinary enclosing locals must be retained like explicit reads.
@@ -217,7 +227,7 @@ internal sealed partial class ExecutableScript
                     null, generatorExpression.Span, entryBlock, yielding: true);
             else if (lambda is not null)
             {
-                CompileReturnValue(lambda.Lambda.Body, entryBlock, lambda.Span);
+                CompileReturnValue(lambda.Body, entryBlock, lambda.Span);
                 exitBlock = null;
             }
             else exitBlock = CompileStatements(statements, entryBlock, docstring is null ? 0 : 1);

@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocationBytes": [
+      259416,
+      259416
+    ],
+    "peakAdmission": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      200296,
+      200296
+    ],
+    "peakAdmission": [
+      971730,
+      971730
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1311632,
+      1311806
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.generated-live-definitions",
+    "allocationBytes": [
+      215912,
+      215912
+    ],
+    "peakAdmission": [
+      1097970,
+      1097970
+    ]
+  }
+]
