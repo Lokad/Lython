@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1683](results/2026-11-25-borrowed-call-window/README.md) borrows forwarded
+call slots and avoids a repeated default check in exact integer updates.
+Ordinary and defaulted definitions use less warm CPU. Async shipment and
+invoice elapsed rise. Annotation cases have wide worker spread. Keep the
+broader candidate private and isolate the exact integer call/update change.
+
+[Optional 0.5.0 package replay](results/2026-11-25-regex-050-artifact-replay/README.md)
+finds missing funded-bridge APIs in the exact local `dcfe880ab` artifacts.
+The private `6edc01772` packages pass 514 focused checks per platform after
+correcting a lifetime assertion for a pull that releases all scratch. The
+record verifies package binaries in both the test and cancellation worker.
+
 [B1682](results/2026-11-25-tagged-default-ownership/README.md) carries slot
 ownership through construction and removes the two inline-default flags.
 Ordinary and eager definitions allocate 19.69% and 20.16% less, with lower

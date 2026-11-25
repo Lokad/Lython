@@ -1,0 +1,66 @@
+{
+  "localArtifact": {
+    "producerRevision": "dcfe880ab656b556ddf7e1dc464e837e845705b4",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0.nupkg": {
+        "sha256": "42f1c4f98171c456012ed99f8f5bc2dd304cfe024fb47606d4ae4d57575d9244",
+        "assemblies": {
+          "net10.0": "f213bea23b5ade5f3aff86ba665442eb077afd333dcb38506ae4542cb85a7f69",
+          "net11.0": "1b96ff921bcf17f863e3f27c06d5bb5d7aa729ceb75175edabcfc41d8a1cb8a8"
+        }
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0.nupkg": {
+        "sha256": "9370a9227faf74c469dc4d26317e1788e0bd48c721490201566c78b5198edcc2",
+        "assemblies": {
+          "net10.0": "358f1472ac8a1a1f271c4fe3608cf03b8c646129fbc44ce463b17f4123049dfe",
+          "net11.0": "b16a537080ef71907a3d546921ef8e0d93a6dfb73c708d2b89ce90831a175bcb"
+        }
+      }
+    },
+    "coreRevision": "c1984f96bd13609193bfe20f98291a113c152a8d"
+  },
+  "development": {
+    "producerRevision": "6edc01772ad6c6f3d55769f79504e48722a2600f",
+    "coreRevision": "c1984f96bd13609193bfe20f98291a113c152a8d",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0-dev.lython.6edc01772.nupkg": {
+        "sha256": "b9e9f177554ea509505e531e22f1c7f3c0d1c94d5eaaa4a7cf0fea1e63145fd7",
+        "assemblies": {
+          "net10.0": "0a09b8fcba0461311d8486daa1d2f35b57abdb3006b56cd73b95294afbd4c8c4",
+          "net11.0": "19d36d546cb7cb15d3332f1d6348d1af37d1b87cc7d323f281a42f46f46143e1"
+        }
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0-dev.lython.6edc01772.nupkg": {
+        "sha256": "0e461b289bb1b75bbab8b8c92d04b676aecd906e648f4b6bb54553b78a378060",
+        "assemblies": {
+          "net10.0": "2f246378c3cc4268755252af6dcd333d2a433e8b52c4df2ebd5dbb3814a3ec27",
+          "net11.0": "3fb3d42c921a89a9029b4c3f96e6e5e163a451146bffb2543eb04ca81d95b036"
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "platform": "windows",
+      "target": "net11.0",
+      "passed": 514,
+      "verifiedImages": [
+        "Lokad.Lython.PublicApi.Tests",
+        "Lokad.Lython.WorkerFixture"
+      ],
+      "coreBackendDependency": false
+    },
+    {
+      "platform": "ubuntu",
+      "target": "net10.0",
+      "passed": 514,
+      "verifiedImages": [
+        "Lokad.Lython.PublicApi.Tests",
+        "Lokad.Lython.WorkerFixture"
+      ],
+      "coreBackendDependency": false
+    }
+  ],
+  "developmentPatchSHA256": "2b4a05b8ad594decc4cf70c9a452fc6c2aa9cb9ce53e39aae450a7c51369a5d1",
+  "artifactPatchSHA256": "1b5442c9c10d8a70d5cb30212df3f04ef8fdb4fafde3055b5f7fab0d2f1cdddf"
+}
