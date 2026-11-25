@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
-internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableValue, IPyTruthyValue, IPyDynamicAttributes
+internal abstract class PyIteratorBase : IPyIteratorValue, IPyRenderableValue, IPyTruthyValue, IPyDynamicAttributes
 {
     // Iterator objects retain callbacks, cursors and spans per live iterator;
     // charge one constructed-value unit when a governor is present.
@@ -22,14 +22,8 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
 
     public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-    public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
-
     /// <summary>Advances once and supplies the current Python value when successful.</summary>
     public abstract PyIterationResult TryMoveNext();
-
-    /// <summary>Provides async iteration with semantics identical to <see cref="TryMoveNext"/>.</summary>
-    public virtual ValueTask<PyIterationResult> TryMoveNextAsync()
-        => new(TryMoveNext());
 
     public bool IsTruthy() => true;
 
@@ -42,7 +36,7 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
         => LythonRuntime.IteratorMembers.TryGetMember(this, name, out value);
 }
 
-internal sealed class PyChainIterator : PyIteratorBase
+internal sealed class PyChainIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private PyIteration.Cursor? _outer;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -97,7 +91,7 @@ internal sealed class PyChainIterator : PyIteratorBase
         return PyIterationResult.End;
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         while (_outer is not null)
         {
@@ -119,7 +113,7 @@ internal sealed class PyChainIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.chain object>");
 }
 
-internal sealed class PyIsliceIterator : PyIteratorBase
+internal sealed class PyIsliceIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private PyIteration.Cursor? _source;
     private readonly long? _stop;
@@ -149,7 +143,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
         return PyIterationResult.Yield(LythonRuntime.RuntimeValue(item));
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var source = _source;
         if (source is null) return PyIterationResult.End;

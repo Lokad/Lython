@@ -130,7 +130,7 @@ internal sealed class PyProductIterator : PyIteratorBase
     }
 }
 
-internal sealed class PyZipLongestIterator : PyIteratorBase
+internal sealed class PyZipLongestIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyIteration.Cursor[] _iterators;
     private readonly object _fillValue;
@@ -227,7 +227,7 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         return PyIterationResult.Yield(produced);
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_allocationSpan);
         if (_done || _remaining == 0)
@@ -343,7 +343,7 @@ internal sealed class PyRepeatIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.repeat object>");
 }
 
-internal sealed class PyCycleIterator : PyIteratorBase
+internal sealed class PyCycleIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private const long CachedItemBytes = 64;
 
@@ -392,7 +392,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
         return PyIterationResult.Yield(value!);
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
         if (!_sourceExhausted)

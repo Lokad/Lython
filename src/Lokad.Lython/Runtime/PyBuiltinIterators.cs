@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyEnumerableIterator : PyIteratorBase
+internal sealed class PyEnumerableIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyIteration.Cursor _source;
     private readonly string _displayName;
@@ -37,7 +37,7 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
         return next;
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var next = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!next.HasValue) { _exhausted = true; return next; }
@@ -52,7 +52,7 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     }
 }
 
-internal sealed class PyCallableSentinelIterator : PyIteratorBase
+internal sealed class PyCallableSentinelIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private LythonRuntime.ICallable? _callable;
     private object? _sentinel;
@@ -80,7 +80,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
         return PyIterationResult.Yield(result);
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
         var callable = _callable;
@@ -129,7 +129,7 @@ internal sealed class PyReversedIterator : PyIteratorBase
     }
 }
 
-internal sealed class PyMapIterator : PyIteratorBase
+internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly object _function;
     private readonly PyIteration.Cursor[] _iterators;
@@ -201,7 +201,7 @@ internal sealed class PyMapIterator : PyIteratorBase
         return PyIterationResult.Yield(callable.Invoke(arguments, _span, _context));
     }
 
-    public override ValueTask<PyIterationResult> TryMoveNextAsync()
+    public ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (_iterators.Length > LythonRuntime.InlineIterationOperandCount) return MoveWideRowAsync();
         try
@@ -282,7 +282,7 @@ internal sealed class PyMapIterator : PyIteratorBase
     }
 }
 
-internal sealed class PyFilterIterator : PyIteratorBase
+internal sealed class PyFilterIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly object? _function;
     private readonly PyIteration.Cursor _source;
@@ -319,7 +319,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
         return PyIterationResult.End;
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         while (true)
         {

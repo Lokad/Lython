@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 // Python's sequence fallback starts at zero, resolves the type's item slot
 // per pull, and becomes permanently exhausted after IndexError/StopIteration.
-internal sealed class PySequenceIterator : PyIteratorBase
+internal sealed class PySequenceIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyInstance _sequence;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -26,7 +26,7 @@ internal sealed class PySequenceIterator : PyIteratorBase
         return AdvanceAsync(false).GetAwaiter().GetResult();
     }
 
-    public override ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(true);
+    public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(true);
 
     private async ValueTask<PyIterationResult> AdvanceAsync(bool asynchronous)
     {

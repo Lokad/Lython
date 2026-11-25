@@ -6,7 +6,7 @@ internal sealed partial class LythonRuntime
 {
     // One explicit traversal for glob and pathlib. Frames own private native
     // storage; published UTF-8 results have independent execution ownership.
-    private sealed class PyGlobIterator : PyIteratorBase
+    private sealed class PyGlobIterator : PyIteratorBase, IPyAsyncIteratorValue
     {
         private sealed class Frame(string path, int segment, Frame? parent, long bytes, bool recursiveChild)
         {
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
             return MoveNext(false).GetAwaiter().GetResult();
         }
 
-        public override ValueTask<PyIterationResult> TryMoveNextAsync() => MoveNext(true);
+        public ValueTask<PyIterationResult> TryMoveNextAsync() => MoveNext(true);
 
         private async ValueTask<PyIterationResult> MoveNext(bool asynchronous)
         {

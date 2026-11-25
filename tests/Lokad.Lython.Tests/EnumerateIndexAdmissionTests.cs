@@ -107,7 +107,7 @@ public sealed class EnumerateIndexAdmissionTests(ITestOutputHelper output)
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class FiniteItems(int count = 1) : PyIteratorBase
+    private sealed class FiniteItems(int count = 1) : PyIteratorBase, IPyAsyncIteratorValue
     {
         public int Pulls { get; private set; }
         public override PyIterationResult TryMoveNext()
@@ -116,7 +116,7 @@ public sealed class EnumerateIndexAdmissionTests(ITestOutputHelper output)
             value = PyNone.Instance;
             return (++Pulls <= count) ? PyIterationResult.Yield(value!) : PyIterationResult.End;
         }
-        public override ValueTask<PyIterationResult> TryMoveNextAsync()
+        public ValueTask<PyIterationResult> TryMoveNextAsync()
             => ValueTask.FromResult(TryMoveNext());
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<one item>");
     }

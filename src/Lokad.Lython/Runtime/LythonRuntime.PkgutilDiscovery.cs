@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
     // One pull path for synchronous and asynchronous discovery. No host operation
     // is pending while a record is exposed; retained traversal scratch stays
     // funded until the iterator relinquishes it (or its execution owner ends).
-    private sealed class ModuleDiscoveryIterator : PyIteratorBase
+    private sealed class ModuleDiscoveryIterator : PyIteratorBase, IPyAsyncIteratorValue
     {
         private object? _paths, _prefix, _onerror;
         private ExecutionContext? _context;
@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
             return MoveNextAsync(false).GetAwaiter().GetResult();
         }
 
-        public override ValueTask<PyIterationResult> TryMoveNextAsync() => MoveNextAsync(true);
+        public ValueTask<PyIterationResult> TryMoveNextAsync() => MoveNextAsync(true);
 
         private async ValueTask<PyIterationResult> MoveNextAsync(bool asynchronous)
         {

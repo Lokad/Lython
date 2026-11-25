@@ -173,5 +173,4 @@ internal sealed class PyUserIterator : IPyAsyncIteratorValue
 
     public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-    public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 }

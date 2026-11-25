@@ -72,7 +72,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private sealed class XmlEventIterator : PyIteratorBase, IExecutionFile, IPyMutableDynamicAttributes
+        private sealed class XmlEventIterator : PyIteratorBase, IPyAsyncIteratorValue, IExecutionFile, IPyMutableDynamicAttributes
         {
             private readonly ExecutionContext _context;
             private readonly LythonSourceSpan _span;
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
                 return StepAsync(false).GetAwaiter().GetResult();
             }
 
-            public override ValueTask<PyIterationResult> TryMoveNextAsync() => StepAsync(true);
+            public ValueTask<PyIterationResult> TryMoveNextAsync() => StepAsync(true);
 
             private async ValueTask<PyIterationResult> StepAsync(bool asynchronous)
             {

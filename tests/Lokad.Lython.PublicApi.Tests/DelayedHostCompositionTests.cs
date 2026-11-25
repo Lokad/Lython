@@ -34,6 +34,36 @@ public sealed class DelayedHostCompositionTests
     }
 
     [Fact]
+    public async Task DelayedGeneratorOuterSharesTheNativeIteratorPosition()
+    {
+        using var script = new LythonEngine().Compile("""
+            shared = []
+            other = []
+            def choose(line):
+                return shared if line == 'a\n' else other
+            with open('/choices') as f:
+                source = map(choose, f)
+                items = (item for item in source)
+                first = next(items)
+                second = next(source)
+                remaining = list(items)
+            print(first is shared, second is other, len(remaining), remaining[0] is shared)
+            """);
+        Assert.True(script.IsValid);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/choices", "a\nb\na\n");
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True 1 True\n", result.StandardOutput);
+        }
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task DelayedAsyncJsonLoadOverOpenFile()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(

@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
     // container opener is consumable before later elements (and their default
     // hooks) are visited. The iterator owns reusable UTF-8 scratch; public chunks
     // are independent. Sort scratch ends when its frame is relinquished.
-    internal sealed class JsonEncodeIterator : PyIteratorBase
+    internal sealed class JsonEncodeIterator : PyIteratorBase, IPyAsyncIteratorValue
     {
         private const long StorageBytes = 224;
 
@@ -278,7 +278,7 @@ internal sealed partial class LythonRuntime
             return TryMoveNextCoreAsync(false).GetAwaiter().GetResult();
         }
 
-        public override ValueTask<PyIterationResult> TryMoveNextAsync() => TryMoveNextCoreAsync(true);
+        public ValueTask<PyIterationResult> TryMoveNextAsync() => TryMoveNextCoreAsync(true);
 
         internal async ValueTask WriteToAsync(ExecutionContext.TextFileHandle target, LythonSourceSpan span, bool asynchronous)
             => _ = await TryMoveNextCoreAsync(asynchronous, target, span).ConfigureAwait(false);

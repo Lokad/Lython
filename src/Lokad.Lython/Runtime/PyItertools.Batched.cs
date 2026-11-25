@@ -10,7 +10,7 @@ namespace Lokad.Lython.Runtime;
 // replacement and final copies.
 // An exhaustion latch stops allocating or pulling after the source ends.
 // Strict shortfall preserves ValueError semantics.
-internal sealed class PyBatchedIterator : PyIteratorBase
+internal sealed class PyBatchedIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyIteration.Cursor _source;
     private readonly long _size;
@@ -80,7 +80,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         return PyIterationResult.Yield(CreateBatch(buffer, count, storage));
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (_exhausted)
         {

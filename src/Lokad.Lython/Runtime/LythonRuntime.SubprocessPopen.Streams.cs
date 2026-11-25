@@ -278,8 +278,6 @@ internal sealed partial class LythonRuntime
         }
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
-
         public PyIterationResult TryMoveNext()
         {
             EnsureOpen(PopenSyntheticSpan);

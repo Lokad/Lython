@@ -109,7 +109,6 @@ public sealed class ZipStatePreflightTests
             return PyIterationResult.Yield(BigInteger.One);
         }
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
-        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
     }
 
     [Theory]

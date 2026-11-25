@@ -107,8 +107,6 @@ internal sealed partial class LythonRuntime
 
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-            public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
-
             public async ValueTask<PyIterationResult> TryMoveNextAsync()
             {
                 var token = await GetTokenCoreAsync(_creationSpan, true).ConfigureAwait(false);

@@ -115,7 +115,7 @@ public sealed class BatchedSharedAdmissionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class Source(int count) : PyIteratorBase
+    private sealed class Source(int count) : PyIteratorBase, IPyAsyncIteratorValue
     {
         internal int Pulls;
         internal bool PauseSecond;
@@ -130,7 +130,7 @@ public sealed class BatchedSharedAdmissionTests
             value = PyNone.Instance;
             return (Pulls <= count) ? PyIterationResult.Yield(value!) : PyIterationResult.End;
         }
-        public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             if (PauseSecond && Pulls == 1)
             {

@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 // The dictionary iterator captures the key version now, but reads each count
 // on its first pull. Repetition retains the original key without copying it.
-internal sealed class PyCounterElementsIterator : PyIteratorBase
+internal sealed class PyCounterElementsIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly IEnumerator<KeyValuePair<object, object>> _entries;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -29,7 +29,7 @@ internal sealed class PyCounterElementsIterator : PyIteratorBase
         return AdvanceAsync(false).GetAwaiter().GetResult();
     }
 
-    public override ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(true);
+    public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(true);
 
     private async ValueTask<PyIterationResult> AdvanceAsync(bool asynchronous)
     {

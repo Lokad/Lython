@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
     {
         // Fund one stack from the completed height or unfinished parser's
         // remaining depth bound. Callbacks never resize its private backing.
-        private sealed class TreeIterator : PyIteratorBase
+        private sealed class TreeIterator : PyIteratorBase, IPyAsyncIteratorValue
         {
             private readonly record struct Frame(Element Node, int NextChild);
             private readonly ExecutionContext _context;
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                 return _tag is null or PyString ? MoveNextNative() : MoveNextProtocol(false).GetAwaiter().GetResult();
             }
 
-            public override ValueTask<PyIterationResult> TryMoveNextAsync()
+            public ValueTask<PyIterationResult> TryMoveNextAsync()
                 => _tag is null or PyString ? ValueTask.FromResult(MoveNextNative()) : MoveNextProtocol(true);
 
             // Both host APIs keep native traversal synchronous. Only user tag

@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyGroupByIterator : PyIteratorBase
+internal sealed class PyGroupByIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyIteration.Cursor _source;
     private readonly object? _keyFunction;
@@ -65,7 +65,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         return PyIterationResult.Yield(CreateGroup());
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _groupId++;
         while (true)
@@ -80,7 +80,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.groupby object>");
 
-    private sealed class PyGroupIterator : PyIteratorBase
+    private sealed class PyGroupIterator : PyIteratorBase, IPyAsyncIteratorValue
     {
         private readonly PyGroupByIterator _parent;
         private readonly long _id;
@@ -97,7 +97,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
             if (!LythonRuntime.ElementEquals(_target, _parent._key, _parent._context, _parent._span) || !_parent._hasCurrent) return PyIterationResult.End;
             return PyIterationResult.Yield(_parent.TakeCurrent());
         }
-        public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             if (_parent._groupId != _id || !_parent._hasCurrent && !await _parent.AdvanceAsync().ConfigureAwait(false)) return PyIterationResult.End;
             if (!await LythonRuntime.ElementEqualsAsync(_target, _parent._key, _parent._context, _parent._span).ConfigureAwait(false) || !_parent._hasCurrent) return PyIterationResult.End;
@@ -107,7 +107,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
     }
 }
 
-internal sealed class PyTeeIterator : PyIteratorBase
+internal sealed class PyTeeIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyTeeSharedState _state;
     private readonly int _index;
@@ -124,7 +124,7 @@ internal sealed class PyTeeIterator : PyIteratorBase
             ? PyIterationResult.Yield(value) : PyIterationResult.End;
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
         => await _state.TryGetNextAsync(_index).ConfigureAwait(false);
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools._tee object>");

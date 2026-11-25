@@ -45,8 +45,6 @@ internal sealed partial class LythonRuntime
 
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
-
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
 
         public PyString RenderInterpolated(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
@@ -245,7 +243,6 @@ internal sealed partial class LythonRuntime
         }
 
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
-        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");

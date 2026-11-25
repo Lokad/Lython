@@ -145,20 +145,6 @@ internal static partial class PyIteration
         }
     }
 
-    public static async IAsyncEnumerable<object> EnumerateAsyncIterator(IPyAsyncIteratorValue iterator)
-    {
-        while (true)
-        {
-            var (hasValue, value) = await iterator.TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                yield break;
-            }
-
-            yield return value;
-        }
-    }
-
     private static IEnumerable<object> EnumerateUntyped(System.Collections.IEnumerable sequence)
     {
         foreach (var value in sequence)
@@ -414,13 +400,11 @@ internal static partial class PyIteration
                 return AcquireDeferredUserAsync();
             if (_asyncEnumerator is not null)
                 return PullAsyncEnumeratorAsync();
-            if (_iterator is IPyAsyncIteratorValue asyncIterator)
-            {
-                return asyncIterator.TryMoveNextAsync();
-            }
+            if (_iterator is { } iterator)
+                return iterator is IPyAsyncIteratorValue asynchronous
+                    ? asynchronous.TryMoveNextAsync() : new(iterator.TryMoveNext());
 
-            // Synchronous iterator slots precede asynchronous iterable fallback.
-            if (_iterator is null && _value is IPyAsyncIterableValue asyncIterable)
+            if (_value is IPyAsyncIterableValue asyncIterable)
             {
                 _asyncEnumerator = asyncIterable.IterateAsync().GetAsyncEnumerator();
                 return PullAsyncEnumeratorAsync();

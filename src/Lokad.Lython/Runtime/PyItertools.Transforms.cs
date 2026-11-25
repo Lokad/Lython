@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyAccumulateIterator : PyIteratorBase
+internal sealed class PyAccumulateIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyIteration.Cursor _source;
     private readonly object? _function;
@@ -64,7 +64,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         return PyIterationResult.Yield(_total);
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
         if (!_started)
@@ -102,7 +102,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.accumulate object>");
 }
 
-internal sealed class PyCompressIterator : PyIteratorBase
+internal sealed class PyCompressIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly PyIteration.Cursor _data;
     private readonly PyIteration.Cursor _selectors;
@@ -129,7 +129,7 @@ internal sealed class PyCompressIterator : PyIteratorBase
         return PyIterationResult.End;
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         while (true)
         {
@@ -162,7 +162,7 @@ internal enum PyPredicateIteratorMode
     TakeWhile,
 }
 
-internal sealed class PyPredicateIterator : PyIteratorBase
+internal sealed class PyPredicateIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly object? _predicate;
     private readonly PyIteration.Cursor _source;
@@ -234,7 +234,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         return PyIterationResult.End;
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
         if (_done)
@@ -303,7 +303,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
             : await LythonRuntime.IsTruthyAsync(await CallableInvocation.InvokeUnaryAsync(_predicate, item, _span, _context).ConfigureAwait(false), _context, _span).ConfigureAwait(false);
 }
 
-internal sealed class PyStarmapIterator : PyIteratorBase
+internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly object _function;
     private readonly PyIteration.Cursor _source;
@@ -385,7 +385,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         return PyIterationResult.Yield(LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(args, _span, _context)));
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
@@ -419,7 +419,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.starmap object>");
 }
 
-internal sealed class PyPairwiseIterator : PyIteratorBase
+internal sealed class PyPairwiseIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private PyIteration.Cursor? _source;
     private readonly MemoryGovernor _memoryGovernor;
@@ -449,7 +449,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         return PyIterationResult.Yield(value!);
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var source = _source;
         if (source is null) return PyIterationResult.End;

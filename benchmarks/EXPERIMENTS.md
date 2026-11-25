@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1698](results/2026-11-25-native-iterator-routing/README.md) removes
+inherited async wrappers and advances native generator-expression sources
+directly. The async generator-over-map case allocates 2,232 B less at
+matched admission. Affected timing is inconclusive. The simpler routing
+is retained.
+
 [B1697](results/2026-11-25-async-zip-pull/README.md) starts the zip
 continuation when a source actually suspends. Retained-tuple async
 elapsed falls 1.13–2.14%. The original async shipment CPU spans zero,

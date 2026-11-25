@@ -287,7 +287,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
                 : throw new LythonRuntimeException("TypeError", "slice indices must be integers", span);
 }
 
-internal sealed class PyEnumerateIterator : PyIteratorBase
+internal sealed class PyEnumerateIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private readonly MemoryGovernor _governor;
     private readonly LythonSourceSpan _span;
@@ -318,7 +318,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         return PyIterationResult.Yield(produced);
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var (hasValue, item) = await _cursor.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
@@ -344,7 +344,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<enumerate object>");
 }
 
-internal sealed class PyZipIterator : PyIteratorBase
+internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
 {
     private PyIteration.Cursor[] _cursors;
     private readonly MemoryGovernor _governor;
@@ -412,7 +412,7 @@ internal sealed class PyZipIterator : PyIteratorBase
         finally { _governor.ReleaseReserved(funding); }
     }
 
-    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (_finished || Arity == 0) return PyIterationResult.End;
         var funding = checked(32L + 80L * Arity);

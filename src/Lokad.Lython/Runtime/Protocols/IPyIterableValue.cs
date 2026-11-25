@@ -59,7 +59,9 @@ internal interface IPyIteratorValue : IPyIterableValue
     PyIterationResult TryMoveNext();
 }
 
-internal interface IPyAsyncIteratorValue : IPyIteratorValue, IPyAsyncIterableValue
+// The same Python iterator and current position can suspend while pulling.
+// A separate CLR async iterable can acquire and own its own enumerator.
+internal interface IPyAsyncIteratorValue : IPyIteratorValue
 {
     ValueTask<PyIterationResult> TryMoveNextAsync();
 }

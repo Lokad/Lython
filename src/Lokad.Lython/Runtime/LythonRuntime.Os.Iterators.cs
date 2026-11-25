@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
             => _stat ??= await HostStatAsync(_path, context, span).ConfigureAwait(false);
     }
 
-    private sealed class PyWalkIterator : PyIteratorBase
+    private sealed class PyWalkIterator : PyIteratorBase, IPyAsyncIteratorValue
     {
         private readonly bool _topdown;
         private readonly ICallable? _onerror;
@@ -308,7 +308,7 @@ internal sealed partial class LythonRuntime
             return PyIterationResult.End;
         }
 
-        public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             while (_frames.Count != 0)
             {

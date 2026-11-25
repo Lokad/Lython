@@ -102,7 +102,8 @@ internal sealed partial class LythonRuntime
             var result = new PyList(0, context.MemoryGovernor, span);
             if (asynchronous)
             {
-                await foreach (var token in lexer.IterateAsync().ConfigureAwait(false)) result.Add(token);
+                while (await lexer.TryMoveNextAsync().ConfigureAwait(false) is { HasValue: true } token)
+                    result.Add(token.Value);
             }
             else
             {

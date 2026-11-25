@@ -46,6 +46,7 @@ public sealed class CombinatoricTupleAdmissionTests
                     "permutations" => new PyPermutationsIterator(values, width, governor, Span, context),
                     _ => await PyZipLongestIterator.CreateAsync(sources, PyNone.Instance, Span, governor, context, false)
                 };
+                using var cursor = PyIteration.Cursor.Create(iterator, Span, context);
                 Assert.True(owner.TryReserve(limit - operation.ReservedBytes - 64, out var pin));
                 using (pin)
                 {
@@ -54,10 +55,10 @@ public sealed class CombinatoricTupleAdmissionTests
                     var before = GC.GetAllocatedBytesForCurrentThread();
                     var error = Assert.Throws<LythonRuntimeException>(() =>
                     {
-                        if (!asynchronous) iterator.TryMoveNext();
+                        if (!asynchronous) cursor.TryMoveNext();
                         else
                         {
-                            var pending = iterator.TryMoveNextAsync();
+                            var pending = cursor.TryMoveNextAsync();
                             Assert.True(pending.IsCompleted);
                             pending.GetAwaiter().GetResult();
                         }

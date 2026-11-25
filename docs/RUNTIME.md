@@ -1033,6 +1033,11 @@ growth and removal. These private loop states never escape as Python iterators.
 Exposed iterators, generator-expression outer acquisition, user protocols and
 resource-bearing/asynchronous iteration retain their ordinary cursors and cleanup.
 The additional workspace can reject a tighter allowance earlier.
+Native cursors pull from the acquired Python iterator directly, including
+generator-expression outers. Iterators that can suspend implement the async
+pull protocol. Synchronous iterators return a completed result through
+the same cursor. An independently acquired CLR async enumerator retains
+its own position and awaited disposal.
 
 Dictionary, word and optional total bindings must be distinct for whole-loop
 fusion; overlapping names use ordinary executable operations and Python errors.
