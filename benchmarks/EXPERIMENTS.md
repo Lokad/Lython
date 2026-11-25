@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1680](results/2026-11-25-current-definition-cpu/README.md) locates warm
+ordinary-definition CPU in dispatch and calls, with defaulted rules
+spending more samples in pair construction. Both distinct definition
+admission points remain visible on `a39d00228`.
+
 [B1678](results/2026-11-25-shared-map-operands/README.md) passes live operand
 slots through nested `map` callbacks. The scalar report allocates 96.66%
 less and keeps the same peak admission. Its first timing run fails the final
