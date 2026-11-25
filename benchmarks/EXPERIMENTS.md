@@ -50,6 +50,13 @@ owner. File-fed map warm async CPU falls 1.18–6.46% initially and
 conclusive and text-control signs reverse. Retain the targeted path
 and both blocks, including the original adverse control.
 
+[B1705 retained CSV versus CPython](results/2026-11-25-retained-csv-cpython/README.md)
+measures `96d54066a` across 10 phases and 280 verified batches. File-fed
+CSV map takes 0.489–0.497× CPython's elapsed time. Shipment callbacks take
+1.457–1.486× warm sync and 1.610–1.627× warm async. Generated ordinary
+definitions take 2.134–2.155× warm and 0.798–0.815× through result.
+Defaulted rules still take 1.242–1.309× through result.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
