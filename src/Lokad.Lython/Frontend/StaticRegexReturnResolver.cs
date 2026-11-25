@@ -263,7 +263,7 @@ internal static class StaticRegexReturnResolver
             // Encoded input plus cache/owned-handle capacity and growth overlap.
             var bytes = 512L + 3L * pattern.Length;
             storage = analysis.ReserveRegexStorage(bytes, span);
-            var encoded = Encoding.UTF8.GetBytes(pattern);
+            var encoded = EncodeConstantText(pattern, token, span);
             var program = LythonRuntime.RegexCompiler.ProviderCall((provider, encoded, options, analysis, token),
                 static state => state.provider.Compile(state.encoded, state.options, state.analysis.RegexMemoryOwner, state.token),
                 governor, token, span, operationName: "Regex pattern compilation", materializePatternError: false);
@@ -313,8 +313,7 @@ internal static class StaticRegexReturnResolver
         var analysis = bindings.AnalysisContext!;
         var token = analysis.CancellationToken;
         using var inputStorage = analysis.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
-        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-        var input = Encoding.UTF8.GetBytes(text);
+        var input = EncodeConstantText(text, token, span);
         var length = PyString.CountUtf8Units(input, false, token, span);
         var window = LythonRuntime.RegexCompiler.CreateWindow(input, length, pos, endPos, token, span);
         if (LythonRuntime.RegexCompiler.IsImpossibleWindow(operation, window.Pos, window.EndPos)) return false;
@@ -336,5 +335,43 @@ internal static class StaticRegexReturnResolver
             analysis.MemoryGovernor, token, span);
         if (error is not null) throw RuntimeErrors.Capability(error, span);
         return true;
+    }
+
+    // Both callers admit the UTF-8 capacity before entering. For large
+    // cancellable inputs, bound each count and encode operation while keeping
+    // the same exact-sized backing and UTF-8 replacement behavior.
+    private static byte[] EncodeConstantText(string text, CancellationToken token, LythonSourceSpan span)
+    {
+        const int chunkSize = 4096;
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        var encoding = Encoding.UTF8;
+        if (!token.CanBeCanceled || text.Length <= chunkSize) return encoding.GetBytes(text);
+
+        var count = 0;
+        for (var remaining = text.AsSpan(); !remaining.IsEmpty;)
+        {
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            var length = ChunkLength(remaining);
+            count = checked(count + encoding.GetByteCount(remaining[..length]));
+            remaining = remaining[length..];
+        }
+
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        var encoded = new byte[count];
+        var output = encoded.AsSpan();
+        for (var remaining = text.AsSpan(); !remaining.IsEmpty;)
+        {
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            var length = ChunkLength(remaining);
+            var written = encoding.GetBytes(remaining[..length], output);
+            remaining = remaining[length..];
+            output = output[written..];
+        }
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        return encoded;
+
+        static int ChunkLength(ReadOnlySpan<char> remaining)
+            => remaining.Length <= chunkSize ? remaining.Length
+                : char.IsSurrogatePair(remaining[chunkSize - 1], remaining[chunkSize]) ? chunkSize - 1 : chunkSize;
     }
 }

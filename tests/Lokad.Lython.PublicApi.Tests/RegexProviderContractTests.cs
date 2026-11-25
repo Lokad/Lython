@@ -1899,6 +1899,48 @@ public sealed class RegexProviderContractTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task ConstantUtf8EncodingKeepsSupplementaryScalarsAtChunkEdges()
+    {
+        var prefix = new string('a', 4095);
+        var pattern = prefix + "😀.";
+        var subject = prefix + "😀z";
+        var expectedPattern = Encoding.UTF8.GetBytes(pattern);
+        var expectedSubject = Encoding.UTF8.GetBytes(subject);
+        var preparations = 0;
+        using var cancellation = new CancellationTokenSource();
+        using var provider = new CooperatingProvider
+        {
+            ExpectedToken = cancellation.Token,
+            OnCompile = (input, _) => Assert.True(input.Span.SequenceEqual(expectedPattern)),
+            OnPrepare = (input, window) =>
+            {
+                Assert.True(input.Span.SequenceEqual(expectedSubject));
+                Assert.Equal(new LythonRegexWindow(0, 4097, 0, expectedSubject.Length), window);
+                preparations++;
+            },
+            MatchFactory = (input, _) => new([new(0, input.Length)], null),
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(provider).Compile($"import re\nprint(re.fullmatch('{pattern}', '{subject}').end())",
+                   budget, cancellation.Token))
+        {
+            Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+            Assert.Equal(1, provider.Compilations);
+            Assert.True(preparations > 0);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { CancellationToken = cancellation.Token };
+            using (var result = await script.RunAsync(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("4097\n", result.StandardOutput);
+            }
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static LythonRunOptions Options(CancellationToken token) => new()
     {
         Globals = new Dictionary<string, object?> { ["pattern"] = "x", ["text"] = "x" },
