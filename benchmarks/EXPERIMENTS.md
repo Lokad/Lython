@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1669](results/2026-11-25-post-zip-cpython/README.md) measures `a45b6da7f`
+against CPython 3.13.16. Shipment is 1.464–1.532× warm and 1.321–1.383×
+through result. Defaulted rules are 1.277–1.319× through result, and the
+quote-heavy invoice remains near parity.
+
 [B1668](results/2026-11-25-single-comparison/README.md) removes temporary
 comparison-chain storage from the ordinary binary case. Sparse compile
 allocation falls 15,360 B at equal retained admission. Timing is mixed.
