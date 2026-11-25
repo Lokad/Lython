@@ -29,11 +29,13 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
     {
         // The analysis preflight owns the input, key, table capacity and overlap.
         // Borrow the same encoded input instead of decoding runtime lookup keys.
-        var key = PyString.FromOwnedUtf8(encoded);
-        _ = key.GetHashCode(token, span);
+        var key = new RegexPatternKey(PyString.FromOwnedUtf8(encoded), options);
         // Once published, the lookup owns the handle. It must never replace
-        // a program that a compiler fact may still borrow.
-        (_entries ??= new(RegexPatternKey.Comparer.Instance)).Add(new(key, options), new Entry(program, captureSlotCount));
+        // a program that a compiler fact may still borrow. Use the same bounded
+        // hash and collision comparisons for insertion as for retrieval.
+        var entries = _entries ??= new(RegexPatternKey.Comparer.Instance);
+        if (!entries.GetAlternateLookup<RegexPatternKey.Lookup>().TryAdd(new(key, token, span), new(program, captureSlotCount)))
+            throw new InvalidOperationException("A compiled regex program is already retained for this key.");
     }
 
     internal Entry? Find(PyString pattern, LythonRegexOptions options, CancellationToken token, LythonSourceSpan span)
