@@ -19,6 +19,12 @@ preserves single-definition construction. Defaulted warm CPU rises
 2.30–6.52%, while compile-to-result CPU falls 1.63–5.79%. Postponed
 controls remain uncertain and the candidate stays private.
 
+[B1718 completed DictReader rows](results/2026-11-25-dictreader-completed-rows/README.md)
+removes the ordinary row and header async wrappers. The first block improves
+CPU in all six affected phases. In confirmation file-fed async elapsed is
+lower with wide candidate spread, while quoted invoice CPU rises 1.89–4.47%.
+The combined split stays private. The separate blank-row refund fix ships.
+
 [B1699](results/2026-11-25-closed-default-evaluation/README.md) shares
 the closed single and paired default evaluator. Warm defaulted rules use
 0.46–2.59% less CPU, while postponed annotated rules use 7.48–13.43%
