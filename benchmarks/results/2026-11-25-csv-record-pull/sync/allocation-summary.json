@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "asynchronous": false,
+    "allocationBytes": [
+      3281366,
+      3281366
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "asynchronous": true,
+    "allocationBytes": [
+      323328,
+      323328
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": true,
+    "allocationBytes": [
+      1312640,
+      1312584
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  }
+]

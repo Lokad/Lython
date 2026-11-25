@@ -28,8 +28,8 @@ Invoice uses 1.69–3.45% more CPU. File-fed map and list-fed meter
 cross zero on both clocks, and the unchanged text control has a
 10.57% candidate worker spread. Shipment reads its file through
 `DictReader` and uses 1.34–2.21% less async CPU. Keep this version
-private while testing whether the extra sync ValueTask handoff
-accounts for the invoice regression.
+private. The direct sync handoff is qualified separately.
+[B1706b](sync/README.md).
 
 Matched-hosting allocation and admission show unchanged peak charges
 and full allowance reuse. The file-fed lane differs by 56 bytes of CLR

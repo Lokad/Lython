@@ -61,6 +61,11 @@ Defaulted rules still take 1.242–1.309× through result.
 removes duplicate source progression and keeps complete pulls inline.
 The quote-heavy invoice uses 1.69–3.45% more CPU. File-fed map and list-fed
 meter are inconclusive. Peak admission matches. The source stays private.
+[B1706b](results/2026-11-25-csv-record-pull/sync/README.md) restores the
+direct sync return and retains shared progression. The first block fails
+the final quiet check. The valid repeat is inconclusive with matching peak
+admission. Retain the deletion and both blocks.
+
 
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
