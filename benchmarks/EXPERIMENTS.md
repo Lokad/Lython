@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1681](results/2026-11-25-keyword-default-operands/README.md) keeps a
+singleton keyword integer private until it needs a canonical box. Eager
+rules improve and the wider callable costs allocation on three controls.
+The first source stays private with the defaulted-rule CPU increase.
+
 [B1680](results/2026-11-25-current-definition-cpu/README.md) locates warm
 ordinary-definition CPU in dispatch and calls, with defaulted rules
 spending more samples in pair construction. Both distinct definition

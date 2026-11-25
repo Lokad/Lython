@@ -1,0 +1,44 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "tapes": 4,
+    "instructions": 58,
+    "retainedAdmission": 74175
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "tapes": 3,
+    "instructions": 38,
+    "retainedAdmission": 63610
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "tapes": 4,
+    "instructions": 45,
+    "retainedAdmission": 78622
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "tapes": 99,
+    "instructions": 1197,
+    "retainedAdmission": 883617
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "tapes": 4,
+    "instructions": 150,
+    "retainedAdmission": 157114
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "tapes": 4,
+    "instructions": 168,
+    "retainedAdmission": 164576
+  },
+  {
+    "case": "diagnostic.generated-default-free-definitions",
+    "tapes": 98,
+    "instructions": 419,
+    "retainedAdmission": 366977
+  }
+]
