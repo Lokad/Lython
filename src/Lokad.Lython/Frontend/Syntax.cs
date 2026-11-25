@@ -444,7 +444,6 @@ internal sealed record TryStatementSyntax(
 internal abstract record ExpressionSyntax(
     LythonSourceSpan Span)
 {
-    internal ScopeDirectiveFacts? PreparedComprehensionScopeFacts { get; set; }
     // A compiled Python string for an annotation in a future-annotations
     // module. The code owner funds the immutable spelling and its scalar index.
     public PyString? PostponedAnnotation { get; internal set; }
@@ -459,7 +458,15 @@ internal sealed record IdentifierExpressionSyntax(
 
 internal sealed record StringLiteralExpressionSyntax(
     string Value,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    internal byte[]? PreparedRegexUtf8 { get; set; }
+
+    public bool Equals(StringLiteralExpressionSyntax? other)
+        => ReferenceEquals(this, other) || other is not null && base.Equals(other) && Value == other.Value;
+
+    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value);
+}
 
 internal sealed record BytesLiteralExpressionSyntax(
     PyBytes Value,
@@ -558,15 +565,22 @@ internal sealed record ListLiteralExpressionSyntax(
     public bool HasUnpacking => Items.Any(static item => item.IsUnpacking);
 }
 
+internal abstract record ComprehensionExpressionSyntax(
+    IReadOnlyList<ComprehensionClauseSyntax> Clauses,
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
+}
+
 internal sealed record ListComprehensionExpressionSyntax(
     ExpressionSyntax ItemExpression,
     IReadOnlyList<ComprehensionClauseSyntax> Clauses,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ComprehensionExpressionSyntax(Clauses, Span);
 
 internal sealed record GeneratorExpressionSyntax(
     ExpressionSyntax ItemExpression,
     IReadOnlyList<ComprehensionClauseSyntax> Clauses,
-    LythonSourceSpan Span) : ExpressionSyntax(Span)
+    LythonSourceSpan Span) : ComprehensionExpressionSyntax(Clauses, Span)
 {
     internal LoweredGeneratorExpression? PreparedCallable { get; set; }
 
@@ -574,10 +588,9 @@ internal sealed record GeneratorExpressionSyntax(
     // from structural equality, as for lambda callables.
     public bool Equals(GeneratorExpressionSyntax? other)
         => ReferenceEquals(this, other) || other is not null && base.Equals(other) &&
-            EqualityComparer<ExpressionSyntax>.Default.Equals(ItemExpression, other.ItemExpression) &&
-            EqualityComparer<IReadOnlyList<ComprehensionClauseSyntax>>.Default.Equals(Clauses, other.Clauses);
+            EqualityComparer<ExpressionSyntax>.Default.Equals(ItemExpression, other.ItemExpression);
 
-    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ItemExpression, Clauses);
+    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ItemExpression);
 }
 
 internal abstract record LoopTargetSyntax;
@@ -633,7 +646,7 @@ internal sealed record SetLiteralExpressionSyntax(
 internal sealed record SetComprehensionExpressionSyntax(
     ExpressionSyntax ItemExpression,
     IReadOnlyList<ComprehensionClauseSyntax> Clauses,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ComprehensionExpressionSyntax(Clauses, Span);
 
 internal sealed record ComprehensionClauseSyntax(
     LoopTargetSyntax Target,
@@ -645,7 +658,7 @@ internal sealed record DictComprehensionExpressionSyntax(
     ExpressionSyntax KeyExpression,
     ExpressionSyntax ValueExpression,
     IReadOnlyList<ComprehensionClauseSyntax> Clauses,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ComprehensionExpressionSyntax(Clauses, Span);
 
 internal sealed record TupleLiteralExpressionSyntax(
     IReadOnlyList<CollectionDisplayItemSyntax> Items,

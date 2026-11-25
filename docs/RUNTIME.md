@@ -2631,6 +2631,11 @@ before projecting or slicing subject text. Lookbehind captures can precede
 `pos`, and an anchored empty match can succeed at `pos` in a reversed window.
 Constant matching during frontend analysis uses the same capture and window
 checks before accepting a provider result as a compiler fact.
+
+An accepted direct regex literal can share the compiled pattern key's
+immutable UTF-8 bytes with the executable constant. The compiled script or
+imported module funds the backing through execution.
+
 Lython counts UTF-8 scalars from nearby known endpoints or the iteration
 checkpoint, checking cancellation during long scans. It copies retained
 values from the original subject before a cursor can advance. Provider

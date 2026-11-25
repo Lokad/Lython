@@ -212,7 +212,7 @@ internal static class StaticRegexReturnResolver
         var options = default(LythonRegexOptions);
         flagsKnown = flagsKnown && LythonRuntime.RegexCompiler.TryNormalizeExactFlags(patternFlags, out options);
         summary = flagsKnown && TryCompileRegex(patternValue.RequireText(), options, bindings,
-            DiagnosticSpan(patternExpression, patternValue), out var compiled)
+            patternExpression, DiagnosticSpan(patternExpression, patternValue), out var compiled)
             ? compiled : AbstractRegexPatternSummary.Unknown;
         return true;
     }
@@ -248,11 +248,17 @@ internal static class StaticRegexReturnResolver
         return flagsValue.TryGetInt32(out flags);
     }
 
-    private static bool TryCompileRegex(string pattern, LythonRegexOptions options, AbstractState bindings, LythonSourceSpan span,
+    private static bool TryCompileRegex(string pattern, LythonRegexOptions options, AbstractState bindings,
+        ExpressionSyntax? expression, LythonSourceSpan span,
         [MaybeNullWhen(false)] out AbstractRegexPatternSummary regex)
     {
         var analysis = bindings.AnalysisContext;
-        if (analysis?.RegexPatterns.TryGetValue((pattern, options), out regex) == true) return true;
+        if (analysis?.RegexPatterns.TryGetValue((pattern, options), out var cached) == true)
+        {
+            regex = cached.Summary;
+            analysis.PrepareRegexLiteral(expression, pattern, cached.Utf8);
+            return true;
+        }
         var provider = analysis?.RegexProvider
             ?? throw RuntimeErrors.Capability("Python regex analysis requires a host-supplied Lython regex provider.", null);
         var governor = analysis.MemoryGovernor;
@@ -279,7 +285,8 @@ internal static class StaticRegexReturnResolver
             // exits before publishing the new fact. Its scope keeps the
             // reservation for the encoded key and table.
             storage = null;
-            analysis.RegexPatterns[(pattern, options)] = regex;
+            analysis.RegexPatterns[(pattern, options)] = (regex, encoded);
+            analysis.PrepareRegexLiteral(expression, pattern, encoded);
             return true;
         }
         catch (LythonRuntimeException error) when (error.ExceptionType is "PatternError" or "ValueError")

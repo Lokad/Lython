@@ -113,6 +113,14 @@ eliminates repeated selection on 4,096 shipment and 2,048 file-fed calls.
 All paired CPU and elapsed ranges cross zero, and the unchanged text
 control varies widely across workers. Keep the prototype private.
 
+[B1734 shared regex literals](results/2026-11-25-shared-regex-literals/README.md)
+uses one funded UTF-8 backing for a compiled pattern key and its direct
+executable literal. The initial probe allocates 120 B more on the manifest.
+The retained refinement stores comprehension scope facts on comprehension
+nodes and removes their lexical preparation item arrays. It saves 8,280 B
+on the 4,096-scalar regex case and 456–9,640 B across three non-regex
+controls. These are local allocation observations.
+
 [PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
 verifies package `d657d7e61` using the existing private adapter bridge.
 Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.

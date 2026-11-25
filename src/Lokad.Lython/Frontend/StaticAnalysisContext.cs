@@ -24,7 +24,7 @@ internal sealed class StaticAnalysisContext : IDisposable
 
     public ScriptSyntax Script { get; }
     internal ILythonRegexProvider? RegexProvider { get; }
-    internal Dictionary<(string Pattern, LythonRegexOptions Options), AbstractRegexPatternSummary> RegexPatterns { get; } = new();
+    internal Dictionary<(string Pattern, LythonRegexOptions Options), (AbstractRegexPatternSummary Summary, byte[] Utf8)> RegexPatterns { get; } = new();
     internal Runtime.MemoryGovernor? MemoryGovernor { get; }
     internal CancellationToken CancellationToken { get; }
     internal ILythonMemoryBudget RegexMemoryOwner => _regexPrograms.StorageOwner;
@@ -43,6 +43,15 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal void RetainRegexProgram(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program,
         int captureSlotCount, LythonSourceSpan span)
         => _regexPrograms.Add(encoded, options, program, captureSlotCount, CancellationToken, span);
+
+    internal void PrepareRegexLiteral(ExpressionSyntax? expression, string pattern, byte[] encoded)
+    {
+        // Only the caller-owned program table survives analysis. The script
+        // or imported module keeps its key bytes funded through execution.
+        if (!_ownsRegexPrograms && encoded.Length > Runtime.Text.PyString.InlineUtf8Capacity &&
+            expression is StringLiteralExpressionSyntax literal && ReferenceEquals(literal.Value, pattern))
+            literal.PreparedRegexUtf8 ??= encoded;
+    }
 
     internal List<CallExpressionSyntax>? GetPotentialMutations(StatementSyntax statement)
         => _statementFacts?.GetValueOrDefault(statement).PotentialMutations;

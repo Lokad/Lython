@@ -34,7 +34,8 @@ internal sealed partial class ExecutableScript
 
         private static object ScalarLiteral(ExpressionSyntax expression) => expression switch
         {
-            StringLiteralExpressionSyntax text => PyString.FromString(text.Value),
+            StringLiteralExpressionSyntax text => text.PreparedRegexUtf8 is { } encoded
+                ? PyString.FromOwnedUtf8(encoded) : PyString.FromString(text.Value),
             BytesLiteralExpressionSyntax bytes => bytes.Value,
             IntegerLiteralExpressionSyntax integer => integer.Value,
             ImaginaryLiteralExpressionSyntax imaginary => new PyComplex(0, imaginary.Value),
@@ -91,18 +92,18 @@ internal sealed partial class ExecutableScript
                     return CompileCallExpression(call, currentBlock);
 
                 case ListComprehensionExpressionSyntax comprehension:
-                    return CompileComprehension(comprehension, comprehension.Clauses,
+                    return CompileComprehension(comprehension,
                         comprehension.ItemExpression, null, ExecutableDisplayKind.List, comprehension.Span, currentBlock);
 
                 case GeneratorExpressionSyntax generator:
                     return CompileGeneratorExpression(generator, currentBlock);
 
                 case SetComprehensionExpressionSyntax comprehension:
-                    return CompileComprehension(comprehension, comprehension.Clauses,
+                    return CompileComprehension(comprehension,
                         comprehension.ItemExpression, null, ExecutableDisplayKind.Set, comprehension.Span, currentBlock);
 
                 case DictComprehensionExpressionSyntax comprehension:
-                    return CompileComprehension(comprehension, comprehension.Clauses,
+                    return CompileComprehension(comprehension,
                         comprehension.KeyExpression, comprehension.ValueExpression, ExecutableDisplayKind.Dictionary,
                         comprehension.Span, currentBlock);
 

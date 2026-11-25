@@ -33,10 +33,11 @@ internal sealed partial class ExecutableScript
                 }
                 && item.Name == variable.Name;
 
-        private int CompileComprehension(ExpressionSyntax syntax, IReadOnlyList<ComprehensionClauseSyntax> clauses, ExpressionSyntax item,
+        private int CompileComprehension(ComprehensionExpressionSyntax syntax, ExpressionSyntax item,
             ExpressionSyntax? value, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
         {
-            var facts = syntax.PreparedComprehensionScopeFacts.RequireNotNull();
+            var facts = syntax.PreparedScopeFacts.RequireNotNull();
+            var clauses = syntax.Clauses;
             // The outer iterable belongs to the caller's scope. All remaining
             // expressions stay in this executable frame under the existing
             // comprehension binding lifetime, rather than a new invocation.

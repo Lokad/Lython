@@ -1,0 +1,69 @@
+{
+  "initial": [
+    {
+      "id": "diagnostic.regex-literal-128",
+      "sharedBytes": 256,
+      "referenceBytes": 236632,
+      "candidateBytes": 236384,
+      "retainedAdmission": 168224
+    },
+    {
+      "id": "diagnostic.regex-literal-4096",
+      "sharedBytes": 8192,
+      "referenceBytes": 5975680,
+      "candidateBytes": 5967496,
+      "retainedAdmission": 2592672
+    },
+    {
+      "id": "scripts.file-manifest.small",
+      "sharedBytes": null,
+      "referenceBytes": 72776,
+      "candidateBytes": 72896,
+      "retainedAdmission": 82304
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "sharedBytes": null,
+      "referenceBytes": 1444680,
+      "candidateBytes": 1444688,
+      "retainedAdmission": 883617
+    }
+  ],
+  "refined": [
+    {
+      "id": "diagnostic.regex-literal-128",
+      "sharedBytes": 256,
+      "referenceBytes": 236632,
+      "candidateBytes": 236288,
+      "retainedAdmission": 168224
+    },
+    {
+      "id": "diagnostic.regex-literal-4096",
+      "sharedBytes": 8192,
+      "referenceBytes": 5975680,
+      "candidateBytes": 5967400,
+      "retainedAdmission": 2592672
+    },
+    {
+      "id": "scripts.file-manifest.small",
+      "sharedBytes": null,
+      "referenceBytes": 72776,
+      "candidateBytes": 72320,
+      "retainedAdmission": 82304
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "sharedBytes": null,
+      "referenceBytes": 1444680,
+      "candidateBytes": 1435040,
+      "retainedAdmission": 883617
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "sharedBytes": null,
+      "referenceBytes": 152192,
+      "candidateBytes": 151152,
+      "retainedAdmission": 164576
+    }
+  ]
+}

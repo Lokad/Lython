@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse admitted UTF-8 pattern bytes for directly analyzed regex literals.
+  Store comprehension scope facts on comprehension syntax.
 - Pass an exact computed integer argument directly to an eligible global
   function's scalar return. Preserve late binding, protocol fallback and
   managed stack admission.

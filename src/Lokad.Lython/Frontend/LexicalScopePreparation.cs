@@ -219,23 +219,34 @@ internal static class LexicalScopePreparation
                     DeclarationName: qualified ?? "<lambda>", UseLocalsQualifier: true);
                 pending.Push((lambda.Body, lambdaScope));
             }
-            else if (ComprehensionSyntaxFacts.TryGetParts(node, out var items, out var clauses, out var generator))
+            else if (node is ComprehensionExpressionSyntax comprehension)
             {
+                var clauses = comprehension.Clauses;
+                var generator = comprehension is GeneratorExpressionSyntax;
                 pending.Push((clauses[0].Iterable, scope));
                 // Lazy type expressions reach preparation through their own scope.
-                var facts = ComprehensionSyntaxFacts.PrepareBindings(node, clauses, generator);
+                var facts = ComprehensionSyntaxFacts.PrepareBindings(comprehension);
                 if (!generator && scope.IsModule && facts.LocalNames.Contains("super")) moduleUsesSuper = true;
                 if (generator)
                 {
                     (callables ??= []).Add(node);
                     facts = scope.BindGeneratorAssignments(node, facts);
-                    node.PreparedComprehensionScopeFacts = facts;
+                    comprehension.PreparedScopeFacts = facts;
                 }
                 var generatorName = generator
                     ? scope.QualifyDeclaration("<genexpr>", qualifiedNameWorkspace, node.Span, cancellationToken) ?? "<genexpr>" : null;
                 var bodyScope = new Scope(scope, facts, Function: generator || scope.Function,
                     Positional: generator || scope.Positional, DeclarationName: generatorName, Inlined: !generator);
-                foreach (var item in items) pending.Push((item, bodyScope));
+                switch (comprehension)
+                {
+                    case ListComprehensionExpressionSyntax list: pending.Push((list.ItemExpression, bodyScope)); break;
+                    case SetComprehensionExpressionSyntax set: pending.Push((set.ItemExpression, bodyScope)); break;
+                    case GeneratorExpressionSyntax gen: pending.Push((gen.ItemExpression, bodyScope)); break;
+                    case DictComprehensionExpressionSyntax dict:
+                        pending.Push((dict.KeyExpression, bodyScope));
+                        pending.Push((dict.ValueExpression, bodyScope));
+                        break;
+                }
                 for (var i = 0; i < clauses.Count; i++)
                 {
                     var clause = clauses[i];

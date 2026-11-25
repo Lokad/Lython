@@ -261,21 +261,12 @@ internal static class SyntaxValidityDiagnostics
                     expressions.Push(new(lambda.Body, null, iterable, InLambda: true));
                     continue;
                 }
-                var clauses = expression switch
-                {
-                    ListComprehensionExpressionSyntax c => c.Clauses,
-                    SetComprehensionExpressionSyntax c => c.Clauses,
-                    DictComprehensionExpressionSyntax c => c.Clauses,
-                    GeneratorExpressionSyntax c => c.Clauses,
-                    _ => null
-                };
-                if (clauses is not null)
+                if (expression is ComprehensionExpressionSyntax comprehension)
                 {
                     needsLexicalExpressions = true;
                     // Keep the comprehension's own bindings separate from
                     // the enclosing targets used to validate assignments.
-                    var facts = ComprehensionSyntaxFacts.PrepareBindings(expression, clauses,
-                        expression is GeneratorExpressionSyntax);
+                    var facts = ComprehensionSyntaxFacts.PrepareBindings(comprehension);
                     var nestedTargets = facts.LocalNames;
                     if (targets is not null)
                     {
@@ -285,7 +276,7 @@ internal static class SyntaxValidityDiagnostics
                     }
                     foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
                         expressions.Push(new(child, nestedTargets,
-                            iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child)), inLambda));
+                            iterable || comprehension.Clauses.Any(c => ReferenceEquals(c.Iterable, child)), inLambda));
                 }
                 else
                     foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))

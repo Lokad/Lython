@@ -430,7 +430,7 @@ internal static class StaticScopeDirectiveDiagnostics
             case AssignmentExpressionSyntax assignment:
                 names.Add(assignment.Name);
                 break;
-            case { PreparedComprehensionScopeFacts: { } facts }:
+            case ComprehensionExpressionSyntax { PreparedScopeFacts: { } facts }:
                 // The expression traversal below also visits target reads.
                 names.UnionWith(facts.LocalNames);
                 break;
