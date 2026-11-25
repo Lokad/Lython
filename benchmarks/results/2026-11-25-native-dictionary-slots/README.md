@@ -12,8 +12,8 @@ packed field without constructing its Python string.
 The reference is `6934aafb9`. Both 32-file frozen images differ only in the
 core DLL and independently verify six complete CPython goldens. The Azure
 F4as_v7 ran Ubuntu 24.04.4 and .NET 11 RC3 on November 25, 2026 UTC.
-Two processes per source warm for eight seconds and supply seven rotated
-timed batches each. Ranges span all four pairs of process medians.
+Two processes per source warm for five full-request seconds and supply
+seven rotated timed batches each. Ranges span all four pairs of process medians.
 Warm time includes mediated RAM-backed I/O, output and file verification,
 and result disposal. Wider process CPU also covers reset and request
 framing. The plain reader is an allocation and semantic control.

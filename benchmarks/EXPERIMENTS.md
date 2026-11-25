@@ -129,6 +129,12 @@ per invocation on either candidate. This reverses uninstrumented timing
 and leaves attribution unresolved. Compare all three images at two
 warmup depths in one uninstrumented collection.
 
+[B1712d text-control confirmation](results/2026-11-25-native-dictionary-slots/text-confirmation/README.md)
+finds 19.20–19.55% elapsed spread between identical prepared workers at
+five and sixteen seconds of warmup. Layout alone uses 0.14–6.09% more CPU.
+Prepared timing remains unresolved. Keep the source private and retain
+the CSV and allocation improvements as prototype evidence.
+
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources
 directly. The async generator-over-map case allocates 2,232 B less at
