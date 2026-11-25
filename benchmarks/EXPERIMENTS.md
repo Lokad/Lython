@@ -38,7 +38,10 @@ replaces all 6,144 mutable argument copies on invoice and file-fed
 map at matching admission. Invoice warm CPU falls 1.67–4.80%. Both
 file-fed map CPU comparisons span zero. Defaulted-rule CPU through
 result rises 0.59–4.13% with zero borrows. Keep the source private and
-refine where the compiler starts the proof.
+refine where the compiler starts the proof. The [gated follow-up](results/2026-11-25-borrowed-native-input/gated/README.md)
+preserves route coverage and improves file-fed async CPU by 1.64–4.29%.
+The earlier invoice result does not repeat and ordinary definitions
+use 0.93–2.34% more CPU through result. Both variants stay private.
 
 [B1698](results/2026-11-25-native-iterator-routing/README.md) removes
 inherited async wrappers and advances native generator-expression sources

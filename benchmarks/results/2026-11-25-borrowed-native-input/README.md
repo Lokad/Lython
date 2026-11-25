@@ -38,7 +38,9 @@ Invoice has lower measured CPU. Both file-fed map CPU ranges span
 zero, and defaulted rules take more CPU despite taking no borrows.
 The candidate includes a compiler proof walk over potential code
 objects. These observations do not locate the rule regression.
-Keep this source private while testing a cheaper preparation gate.
+The [gated follow-up](gated/README.md) preserves the copy reduction
+and shifts the observed warm gains between workloads. Both sources
+stay private.
 
 Windows .NET 11 and Ubuntu .NET 10 each pass 657 white-box and 2,804
 public focused checks. A delayed subscript can transition from a

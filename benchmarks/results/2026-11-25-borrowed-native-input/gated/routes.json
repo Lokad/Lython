@@ -1,0 +1,160 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 971730,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 971730,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 4096,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 4096,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 3115985,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 3115985,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 2048,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 2048,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-generator-over-map",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2842396,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-generator-over-map.async",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedInputs": 0,
+        "CopiedInputs": 0,
+        "BorrowedContinuations": 0
+      },
+      "peakExecutionMemoryBytes": 2842396,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}
