@@ -30,6 +30,12 @@ isolates header completion. Both file-fed CPU ranges cross zero. The
 unaffected text and plain reader controls use less CPU, so the invoice
 improvement cannot be assigned to the changed stage. Keep the source private.
 
+[PythonRe dev.117 adapter replay](results/2026-11-25-regex-dev117-replay/README.md)
+verifies package `d657d7e61` using the existing private adapter bridge.
+Windows .NET 11 and Ubuntu .NET 10 each pass 90 targeted Release checks.
+The optional adapter remains pinned to 0.4.0 and the measured core remains
+independent of the producer.
+
 [B1721 fixed admission for private definitions](results/2026-11-25-private-definition-admission/README.md)
 retains a single charge for fixed keyword-default and callable storage.
 The generated scripts make 1,536 and 4,096 fewer budget growth requests
