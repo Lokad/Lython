@@ -13,8 +13,10 @@ ordinary definitions allocate and spend more CPU with the wider slot.
 
 [Development regex allocation](results/2026-11-25-regex-050-funded-allocation/README.md)
 compares the funded 0.5.0 bridge and production 0.4.0 adapter on identical
-Lython core and workers. Log searches allocate 74.03–75.06% less. Peak
-execution admission matches and no CPU or elapsed result is inferred.
+Lython core and workers. Log searches allocate 74.03–75.06% less. B1671
+measures 16.99–20.63% less warm elapsed for the compiled and module forms,
+with supporting CPU. Peak execution admission matches. Final adapter
+qualification remains open.
 
 [B1669](results/2026-11-25-post-zip-cpython/README.md) measures `a45b6da7f`
 against CPython 3.13.16. Shipment is 1.464–1.532× warm and 1.321–1.383×
