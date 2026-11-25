@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1677](results/2026-11-25-ordinary-defaults-cpython/README.md) compares
+`2b1e8a6f2` with CPython 3.13.16. Ordinary definitions take 2.211–2.255×
+warm and 0.807–0.828× through result. Defaulted rules take 1.236–1.286×
+through result, shipment is 1.453–1.486× warm, and the invoice stays close
+to parity. Standalone CPython compilation of ordinary definitions has
+17.66% worker spread. All original phase timings remain available.
+
 [B1676](results/2026-11-25-shared-call-entry/README.md) resolves executable
 call targets before probing builtins. Ordinary-definition CPU falls
 3.05–4.11%. Defaulted-rule CPU rises 0.16–6.01%, with wider same-image
