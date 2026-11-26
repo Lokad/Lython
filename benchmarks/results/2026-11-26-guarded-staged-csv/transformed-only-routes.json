@@ -1,0 +1,94 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 3064
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": true,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 3064
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 2046
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 2046
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 2046
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 2046
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-plain-reader",
+      "asynchronous": false,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 0
+      },
+      "peakExecutionMemoryBytes": 8252450,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.invoice-plain-reader",
+      "asynchronous": true,
+      "routes": {
+        "TransformedRows": 0,
+        "NewlyEligibleRows": 0,
+        "AdoptedRows": 0
+      },
+      "peakExecutionMemoryBytes": 8252450,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

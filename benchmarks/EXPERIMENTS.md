@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1755 guarded staged CSV publication](results/2026-11-26-guarded-staged-csv/README.md)
+fixes reentry during staged parser admission and shares combined publication
+for 1,031 more quoted invoice rows in each API. Allocation and admission match.
+The sync target and plain-reader control improve together. Async invoice CPU
+is flat to 2.08% higher. Retain the correctness fix with mixed timing.
+
 [B1754 shipment integer stores](results/2026-11-26-shipment-integer-stores/README.md)
 transfers 2,045 fresh results into existing native slots per shipment in
 both hosting modes. It introduces 2,045 lazy read boxes in each case.

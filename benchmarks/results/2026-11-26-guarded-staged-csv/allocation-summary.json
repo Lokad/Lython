@@ -1,0 +1,54 @@
+[
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "records": 1024,
+    "inputBytes": 174147,
+    "allocationBytes": [
+      3019238,
+      3019238
+    ],
+    "peakAdmission": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "records": 2048,
+    "inputBytes": 27350,
+    "allocationBytes": [
+      1160870,
+      1160864
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "records": 2048,
+    "inputBytes": 27350,
+    "allocationBytes": [
+      808528,
+      808528
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.invoice-plain-reader",
+    "records": 1024,
+    "inputBytes": 174147,
+    "allocationBytes": [
+      2854510,
+      2854510
+    ],
+    "peakAdmission": [
+      8252450,
+      8252450
+    ]
+  }
+]
