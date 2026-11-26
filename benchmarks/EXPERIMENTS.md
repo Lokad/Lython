@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1767 current JSON attribution](results/2026-11-26-current-json-attribution/README.md)
+places JSON construction, UTF-8 token work and admitted storage in both
+JSON workloads. It locates a recurring decoder entry in JSON Lines.
+Test a direct ready result through the same parser before changing storage.
+
 [B1766 exact boolean increments](results/2026-11-26-post-update-shipment-profile/boolean-increments/README.md)
 reroutes 2,048 generic integer-plus-boolean updates per shipment through
 the existing integer path. Peak admission matches and allocation is
