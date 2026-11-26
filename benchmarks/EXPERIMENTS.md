@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1752 shipment CPU attribution](results/2026-11-26-remaining-shipment-cpu/README.md)
+locates the outer `starmap` and fixed-unpack async completion wrappers after
+direct zip operand delivery. Frame binding remains sparse. The profiles
+support a direct ready-result trial and give no speedup estimate.
+
 [B1751 wide JSON integer parsing](results/2026-11-26-wide-json-integer-parsing/README.md)
 uses a bounded stack bridge on short tokens and direct UTF-8 parsing on long
 .NET 11 tokens. The two wide reports allocate 14.21% and 32.74% less at equal
