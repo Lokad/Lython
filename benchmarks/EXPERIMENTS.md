@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1798 current async iterator attribution](results/2026-11-26-current-async-iterator-profile/README.md)
+profiles production shipment and file-fed map. Their nearest map
+advance samples number 95 and 152. CSV construction remains visible
+in both. Use the profiles to look for a removable completed-result
+handoff. The prior timing movement remains unexplained.
+
 [B1797 singleton keyword-default metadata](results/2026-11-26-single-keyword-default-metadata/README.md)
 removes the compile-time singleton tuple and its initializer array.
 The escaping-rule script retains 80 B less compiler admission, with the
