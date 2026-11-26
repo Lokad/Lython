@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1762 buffered CSV line scan](results/2026-11-26-buffered-csv-line-scan/README.md)
+shares the literal scan with physical-line discovery in the prototype.
+File-fed and quote-heavy elapsed improve in the pinned local block, but
+every CPU range spans zero and the unchanged text control varies widely.
+Keep the tested patch private pending a quiet comparison.
+
 [B1761 CSV physical-line scan source gate](results/2026-11-26-csv-window-source-gate/README.md)
 counts the existing literal field scan completing 2,047 of 2,048 buffered
 shipment reads, 4,088 of 4,096 meter reads and 3,064 of 4,096 quoted-invoice
