@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1757 file-fed comparison attribution](results/2026-11-26-file-fed-comparison-attribution/README.md)
+finds the same principal CSV, map and instruction routes on both B1756
+images. Neither profile has a resolved comparison frame. The repeated
+adverse timing stays open without a demonstrated cause.
+
 [B1756 shared identity comparisons](results/2026-11-26-direct-identity-comparisons/README.md)
 removes generic dispatch for `is` and `is not`. Warm async shipment CPU
 falls 5.28–7.58% in the initial block and 4.57–10.36% after reordering.
