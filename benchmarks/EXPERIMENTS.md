@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1774c callable checkpoint against CPython](results/2026-11-26-callable-checkpoint-cpython/README.md)
+measures `088cf9d37` across five scripts. Ordinary definitions take
+1.315–1.354× warm sync and 0.682–0.685× through result. Shipment takes
+1.127–1.135× warm sync and 1.050–1.065× through result. The first campaign's
+deadline ended it after eight lanes. The corrected run keeps the same images,
+inputs and per-lane settings.
+
 [B1773 literal defaults without execution staging](results/2026-11-26-compiled-default-operands/README.md)
 removes the immutable tuple load and 30 workspace slots in the ordinary
 factory. Quiet sync CPU falls 1.66–1.98% and async CPU rises 2.09–2.61%.
