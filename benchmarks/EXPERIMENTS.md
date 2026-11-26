@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1807 current wide async shipment profile](results/2026-11-26-current-wide-shipment-profile/README.md)
+locates list construction, map and starmap pulls and dictionary aggregation
+on `cb258fe7f`. Both fixture tapes build a list immediately before yielding
+it into starmap. Target that per-row handoff next.
+
+[B1806 closed starmap operands](results/2026-11-26-closed-starmap-row-operands/README.md)
+skips the inline workspace for eligible wider rows at matching peak
+admission. Local five-item sync CPU falls 0.27–2.87%. Async elapsed rises
+0.54–3.22%, async CPU spans zero and controls move. Keep the prototype private.
+
 [B1805 current script comparison against CPython](results/2026-11-26-post-starmap-cpython/README.md)
 measures `cb258fe7f` against CPython 3.13.16. The JSON Lines summary takes
 0.751–0.755× warm sync and 0.775–0.782× under `RunAsync`. The wide async

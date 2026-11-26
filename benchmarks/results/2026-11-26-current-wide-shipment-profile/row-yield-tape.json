@@ -1,0 +1,22 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "function": "<genexpr>",
+    "instruction": 8,
+    "count": 3,
+    "inputStart": 4,
+    "resultSlot": 4,
+    "yieldInput": 4,
+    "yieldLiveExtent": 5
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "function": "<genexpr>",
+    "instruction": 10,
+    "count": 5,
+    "inputStart": 4,
+    "resultSlot": 4,
+    "yieldInput": 4,
+    "yieldLiveExtent": 5
+  }
+]
