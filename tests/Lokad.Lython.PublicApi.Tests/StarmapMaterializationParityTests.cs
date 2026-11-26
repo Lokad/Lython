@@ -206,6 +206,41 @@ public sealed class StarmapMaterializationParityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task CompletedCallbackFailureLeavesTheNextRowAvailable(bool zipped)
+    {
+        const string source = """
+            from itertools import starmap
+            def callback(value):
+                if value == 0:
+                    raise LookupError('first row')
+                return value
+            rows = zip([0, 1]) if zipped else [(0,), (1,)]
+            mapped = starmap(callback, rows)
+            try:
+                next(mapped)
+            except LookupError as error:
+                print(str(error))
+            print(next(mapped), list(mapped))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions
+        {
+            MemoryBudget = budget,
+            Globals = new Dictionary<string, object?> { ["zipped"] = zipped },
+        };
+        using (var result = await script.RunAsync(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("first row\n1 []\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ZipAdvanceKeepsItsOperandsThroughSuspendedRowOrStrictTail(bool strictTail)
     {
         const string source = """

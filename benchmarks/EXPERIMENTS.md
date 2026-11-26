@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1753 ready async shipment rows](results/2026-11-26-ready-shipment-rows/README.md)
+retires the two ready completion wrappers in a trial. All four CPU ranges
+span zero and local CLR allocation and admission are unchanged within six
+bytes. Keep the patch with the evidence and leave the runtime trial unmerged.
+
 [B1752 shipment CPU attribution](results/2026-11-26-remaining-shipment-cpu/README.md)
 locates the outer `starmap` and fixed-unpack async completion wrappers after
 direct zip operand delivery. Frame binding remains sparse. The profiles
