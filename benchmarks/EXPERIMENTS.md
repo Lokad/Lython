@@ -10,7 +10,9 @@ original conditions retained. Current comparisons belong in
 shares the literal scan with physical-line discovery in the prototype.
 File-fed and quote-heavy elapsed improve in the pinned local block, but
 every CPU range spans zero and the unchanged text control varies widely.
-Keep the tested patch private pending a quiet comparison.
+The [quiet confirmation](results/2026-11-26-buffered-csv-line-scan/confirmation/README.md)
+finds 1.48–4.86% more file-fed CPU, no clear shipment improvement and
+inconclusive invoice timing. Keep the production scanner.
 
 [B1761 CSV physical-line scan source gate](results/2026-11-26-csv-window-source-gate/README.md)
 counts the existing literal field scan completing 2,047 of 2,048 buffered

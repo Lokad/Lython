@@ -27,7 +27,8 @@ and the persistent archive verified.
 All process CPU ranges span zero. Same-source CPU spread reaches 93.75%
 on the unchanged text control. The file-fed and invoice elapsed ranges
 favor the trial, with unstable controls. Leave the prototype unmerged.
-A quiet block could distinguish the route change from local variation.
+The quiet block finds file-fed CPU 1.48–4.86% higher and no clear
+shipment improvement. [Quiet confirmation](confirmation/README.md).
 
 Both full 32-file images pass independent CPython output and file goldens
 on five workloads. Local allocation differs by at most 174 B per run.
