@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1750 current short paths against CPython](results/2026-11-26-short-path-cpython/README.md)
+puts protected search at 1.044–1.070× through result and 1.345–1.400× warm.
+Bound `starmap` shipment takes 1.470–1.545× warm async. A generated 48-selector
+script takes 1.396–1.415× to compile and 0.836–0.847× through result. The
+separate phases account for eager regex analysis and runtime work.
+
 [Shared literal regex match facts](results/2026-11-26-regex-literal-match-facts/README.md)
 halve backend compile-time preparations and matches on a 48-selector script.
 Allocation falls 22.93%, with 9,408 B more temporary peak admission. Runtime
