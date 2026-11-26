@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1784 representative CPython checkpoint](results/2026-11-26-post-fixed-row-cpython/README.md)
+uses `0172ed7cf` and the B1774c inputs. Shipment through result is
+near parity. JSON document totals take 1.319–1.344× CPython warm, and
+ordinary definitions take 0.676–0.683× through result. Warm sync shipment
+and escaping rules have over 9% Lython worker spread. All 280 batches
+and both quiet gates pass.
+
 [B1783 fixed rows into private locals](results/2026-11-26-fixed-row-local-bindings/README.md)
 removes separate stores for 4,096 shipment and 20,480 CSV local
 assignments. Sync shipment elapsed falls in both blocks. Async
