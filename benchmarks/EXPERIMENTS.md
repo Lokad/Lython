@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1810 buffered generator advance](results/2026-11-26-generator-buffer-lifetime/README.md)
+attaches the yield destination after reentry and stack admission and
+removes an async wrapper. A rejected nested pull preserves the outer
+borrow. Allocation and admitted peaks match. Local elapsed ranges span
+zero with variable controls. Retain the ownership correction.
+
 [B1809 fixed list-display admission](results/2026-11-26-fixed-list-display-admission/README.md)
 removes the temporary lease object and adopts the final list backing directly.
 Shipment CLR allocation falls 4.64–4.76% at matching admitted peaks. Short

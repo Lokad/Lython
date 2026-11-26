@@ -1,0 +1,177 @@
+{
+  "sourceRevision": "8db70aa473b903a1eca481833cbf7267280913c0",
+  "sourcePatchSHA256": "0eea6bdbf0910d6ed008e80de34378f71933d25b97412236ec8feb1ec5ab0024",
+  "timedBatches": 112,
+  "quietQualified": false,
+  "collectionSeconds": 96.69333845190704,
+  "rows": [
+    {
+      "case": "diagnostic.file-lengths-generator-sum",
+      "lane": "warm-async",
+      "processMedianUs": {
+        "candidate": {
+          "elapsed": 1309.4500573248408,
+          "cpu": 1719.7452229299363
+        },
+        "reference": {
+          "elapsed": 1261.7080234375,
+          "cpu": 1718.75
+        },
+        "candidate-control": {
+          "elapsed": 1052.2683586206897,
+          "cpu": 1517.2413793103449
+        },
+        "reference-control": {
+          "elapsed": 1235.7658443113774,
+          "cpu": 1676.6467065868264
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          -16.59969350485668,
+          5.962635506771385
+        ],
+        "cpu": [
+          -11.724137931034484,
+          2.5705186533211855
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          2.0992795071609116,
+          24.440694866209235
+        ],
+        "cpu": [
+          2.5111607142856984,
+          13.346844238563982
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.shipment-starmap-wide-lists",
+      "lane": "warm-async",
+      "processMedianUs": {
+        "reference-control": {
+          "elapsed": 3961.921811111111,
+          "cpu": 4222.222222222223
+        },
+        "candidate-control": {
+          "elapsed": 3528.7991444444447,
+          "cpu": 3777.777777777778
+        },
+        "reference": {
+          "elapsed": 3686.0507032967034,
+          "cpu": 3956.043956043956
+        },
+        "candidate": {
+          "elapsed": 3745.992569620253,
+          "cpu": 4050.6329113924053
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          -10.93213564820953,
+          1.6261812749873261
+        ],
+        "cpu": [
+          -10.526315789473696,
+          2.390998593530247
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          7.484191890460856,
+          6.154882051525834
+        ],
+        "cpu": [
+          6.7283950617284205,
+          7.222635889798967
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.file-lengths-generator-sum",
+      "lane": "warm",
+      "processMedianUs": {
+        "candidate": {
+          "elapsed": 875.7741144781145,
+          "cpu": 1144.7811447811448
+        },
+        "reference": {
+          "elapsed": 863.9360762195122,
+          "cpu": 1158.5365853658536
+        },
+        "candidate-control": {
+          "elapsed": 846.1638853503185,
+          "cpu": 1146.4968152866243
+        },
+        "reference-control": {
+          "elapsed": 813.7398913043478,
+          "cpu": 1123.1884057971015
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          -2.0571187334788466,
+          7.623347931773594
+        ],
+        "cpu": [
+          -1.1873117136275035,
+          2.0752003287445975
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          6.168578614808307,
+          3.4993491970573887
+        ],
+        "cpu": [
+          3.1471282454760052,
+          0.14986886474335215
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.file-lengths-generator-join",
+      "lane": "warm-async",
+      "processMedianUs": {
+        "reference-control": {
+          "elapsed": 924.6219742489271,
+          "cpu": 1287.5536480686694
+        },
+        "candidate-control": {
+          "elapsed": 934.8550410256411,
+          "cpu": 1282.051282051282
+        },
+        "reference": {
+          "elapsed": 977.0150170212767,
+          "cpu": 1319.1489361702127
+        },
+        "candidate": {
+          "elapsed": 897.5123756613757,
+          "cpu": 1216.931216931217
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          -8.137299834171296,
+          1.1067297838152967
+        ],
+        "cpu": [
+          -7.748762587472246,
+          -0.42735042735042583
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          5.6664284682298005,
+          4.16068528712461
+        ],
+        "cpu": [
+          2.4539007092198695,
+          5.351170568561869
+        ]
+      }
+    }
+  ]
+}

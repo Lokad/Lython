@@ -1,0 +1,74 @@
+[
+  {
+    "mode": "sync",
+    "case": "diagnostic.file-lengths-generator-sum",
+    "bytes": [
+      470344,
+      470344
+    ],
+    "peak": [
+      440432,
+      440432
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "diagnostic.file-lengths-generator-join",
+    "bytes": [
+      585768,
+      585768
+    ],
+    "peak": [
+      507600,
+      507600
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "bytes": [
+      1358936,
+      1358936
+    ],
+    "peak": [
+      3795557,
+      3795557
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.file-lengths-generator-sum",
+    "bytes": [
+      470592,
+      470592
+    ],
+    "peak": [
+      440432,
+      440432
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.file-lengths-generator-join",
+    "bytes": [
+      586016,
+      586016
+    ],
+    "peak": [
+      507600,
+      507600
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "bytes": [
+      1359120,
+      1359120
+    ],
+    "peak": [
+      3795557,
+      3795557
+    ]
+  }
+]

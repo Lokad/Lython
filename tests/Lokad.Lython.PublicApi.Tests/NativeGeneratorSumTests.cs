@@ -52,6 +52,9 @@ public sealed class NativeGeneratorSumTests
         def values():
             try: raise KeyError('inner')
             except KeyError as original:
+                try: sum(g)
+                except ValueError as error: assert str(error) == 'generator already executing'
+                else: assert False
                 for i in range(37):
                     try: next(g)
                     except ValueError as error: assert str(error) == 'generator already executing'
