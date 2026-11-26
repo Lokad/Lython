@@ -253,6 +253,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             : TryStartDirectOperandReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments, _closureCells), span, out result);
     }
 
+    // The producer and the closed return share an unpublished machine integer.
+    // A slot is needed only if the function returns it to its caller.
+    internal bool TryStartIntegerOperandReturn(long argument, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+        => TryStartDirectOperandReturn(new LythonRuntime.SingleIntegerOperand(argument, _closureCells), span, out result);
+
     private bool TryStartDirectOperandReturn<T>(T operands, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
         where T : LythonRuntime.IIntegerOperands, allows ref struct
     {

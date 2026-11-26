@@ -1,0 +1,78 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "DirectSignedArguments": 2560
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "DirectSignedArguments": 2560
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-default-effects",
+      "asynchronous": false,
+      "routes": {
+        "DirectSignedArguments": 2560
+      },
+      "peakExecutionMemoryBytes": 30362,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-default-effects",
+      "asynchronous": true,
+      "routes": {
+        "DirectSignedArguments": 2560
+      },
+      "peakExecutionMemoryBytes": 30362,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": false,
+      "routes": {
+        "DirectSignedArguments": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": true,
+      "routes": {
+        "DirectSignedArguments": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "DirectSignedArguments": 0
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "DirectSignedArguments": 0
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

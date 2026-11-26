@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1775 direct transport of signed arguments](results/2026-11-26-direct-signed-argument/README.md)
+bypasses 2,560 temporary argument-slot constructions per ordinary factory
+run with matching target allocation and admission. The
+[quiet block](results/2026-11-26-direct-signed-argument/confirmation/README.md)
+shows 4.09–5.30% less warm sync CPU. Async reference spread is 11.41% and
+both controls move favorably despite taking zero new routes.
+
 [B1774c callable checkpoint against CPython](results/2026-11-26-callable-checkpoint-cpython/README.md)
 measures `088cf9d37` across five scripts. Ordinary definitions take
 1.315–1.354× warm sync and 0.682–0.685× through result. Shipment takes
