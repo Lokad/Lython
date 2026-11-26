@@ -1,0 +1,87 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 96b231e14..91d03b471 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -17,26 +17,45 @@ internal sealed partial class LythonRuntime
+         internal ValueTask<object> ParseJsonTextAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+             => ParseJsonTextCoreAsync(text, options, context, span, true);
+ 
+-        private async ValueTask<object> ParseJsonTextCoreAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
++        private ValueTask<object> ParseJsonTextCoreAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
++            => ReferenceEquals(options, JsonLoadOptions.Default) ? new(ParseDefaultJsonText(text, context, span))
++                : ParseJsonTextWithOptionsAsync(text, options, context, span, asynchronous);
++
++        private object ParseDefaultJsonText(PyString text, ExecutionContext context, LythonSourceSpan span)
++        {
++            context.EnterInterpreterFrame(span);
++            try
++            {
++                // The immutable default options have no guest callbacks.
++                var decoded = ReadJsonValueAsync(text, JsonLoadOptions.Default, context, span, 0, asynchronous: false)
++                    .GetAwaiter().GetResult();
++                return FinishJsonText(text, decoded, context, span);
++            }
++            finally { context.LeaveInterpreterFrame(); }
++        }
++
++        private async ValueTask<object> ParseJsonTextWithOptionsAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+         {
+             options = await options.PrepareAsync(context, span, asynchronous).ConfigureAwait(false);
+             context.EnterInterpreterFrame(span);
+             try
+             {
+                 var decoded = await ReadJsonValueAsync(text, options, context, span, 0, asynchronous).ConfigureAwait(false);
+-                context.CheckExecution(span);
+-                ExecutionState.EnsureInterpreterStack(span);
+-                var end = SkipJsonWhitespace(text.Utf8Span, decoded.End, context, span);
+-                if (end < text.ByteLength)
+-                {
+-                    throw CreateJsonTrailingDataError(text, end, span, context);
+-                }
+-
+-                return decoded.Value;
++                return FinishJsonText(text, decoded, context, span);
+             }
+             finally { context.LeaveInterpreterFrame(); }
+         }
+ 
++        private static object FinishJsonText(PyString text, (object Value, int End) decoded, ExecutionContext context, LythonSourceSpan span)
++        {
++            context.CheckExecution(span);
++            ExecutionState.EnsureInterpreterStack(span);
++            var end = SkipJsonWhitespace(text.Utf8Span, decoded.End, context, span);
++            if (end < text.ByteLength)
++                throw CreateJsonTrailingDataError(text, end, span, context);
++            return decoded.Value;
++        }
++
+         // Reads exactly one value at the given Python string index with no
+         // leading whitespace skip, returning the value and the absolute end
+         // index in the original string. The suffix is never materialized.
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs b/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs
+index 7fa5aca6a..ef8d201b2 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs
+@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
+                 if (arguments.Length == 1 && arguments.KeywordAt(0) is null)
+                 {
+                     if (ReferenceEquals(_signature, LythonKnownCallableSignatures.Json.Loads))
+-                        return Instance.LoadsDefault(arguments.ValueAt(0), span, context, asynchronous);
++                        return new(Instance.LoadsDefault(arguments.ValueAt(0), span, context));
+                     if (ReferenceEquals(_signature, LythonKnownCallableSignatures.Json.Dumps))
+                         return JsonEncodeIterator.EncodeToStringAsync(arguments.ValueAt(0),
+                             JsonDumpOptions.Default, context, span, asynchronous);
+@@ -248,11 +248,11 @@ internal sealed partial class LythonRuntime
+             return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
+         }
+ 
+-        private ValueTask<object> LoadsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
++        private object LoadsDefault(object value, LythonSourceSpan span, ExecutionContext context)
+         {
+             context.CheckExecution(span);
+             var text = RequireLoadsText(value, context, span);
+-            return ParseJsonTextCoreAsync(text, JsonLoadOptions.Default, context, span, asynchronous);
++            return ParseDefaultJsonText(text, context, span);
+         }
+ 
+         private object Dump(

@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "bytes": [
+      860412,
+      860412
+    ],
+    "peak": [
+      1909869,
+      1909869
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "bytes": [
+      1599896,
+      1599888
+    ],
+    "peak": [
+      3822014,
+      3822014
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "bytes": [
+      322856,
+      322856
+    ],
+    "peak": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "bytes": [
+      22744,
+      22744
+    ],
+    "peak": [
+      92040,
+      92040
+    ]
+  }
+]

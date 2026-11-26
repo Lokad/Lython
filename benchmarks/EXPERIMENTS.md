@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1780 immutable default JSON entry](results/2026-11-26-json-default-decoder/README.md)
+removes 4,096 entry state machine calls from the JSON Lines report.
+Sync elapsed and CPU fall in both quiet blocks. The Unicode control
+uses more CPU in both blocks, and async remains mixed. Keep the
+existing decoder. [Confirmation](results/2026-11-26-json-default-decoder/confirmation/README.md)
+
 [B1779 JSON record and decoder entry attribution](results/2026-11-26-json-record-attribution/README.md)
 finds the decoder entry still has 82 nearest samples in JSON Lines and
 four in the document totals after B1776. Record and string admission

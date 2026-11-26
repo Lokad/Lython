@@ -1,0 +1,86 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": false,
+      "routes": {
+        "DefaultDecodes": 1,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": true,
+      "routes": {
+        "DefaultDecodes": 1,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": false,
+      "routes": {
+        "DefaultDecodes": 4096,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": true,
+      "routes": {
+        "DefaultDecodes": 4096,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "DefaultDecodes": 0,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "DefaultDecodes": 0,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "DefaultDecodes": 0,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "DefaultDecodes": 0,
+        "OptionDecodes": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}
