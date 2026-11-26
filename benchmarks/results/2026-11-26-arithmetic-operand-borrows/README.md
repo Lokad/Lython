@@ -53,3 +53,5 @@ to retain the design. The diagnostic alone gives no CPU attribution.
 [Timing](summary.json) · [Route counts](routes.json) · [Allocation and admission](allocation-summary.json) ·
 [Identity](identity.json) · [Observations](observations.tar.xz) · [Terminal status](terminal-status.json) ·
 [Procedures](procedures.tar.xz) · [JIT diagnostic](jit-diagnostic.tar.xz).
+
+The [outlined refinement](outlining/README.md) preserves the original adverse result.

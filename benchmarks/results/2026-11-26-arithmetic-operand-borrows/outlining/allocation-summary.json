@@ -1,0 +1,54 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "records": 2048,
+    "inputBytes": 27350,
+    "allocationBytes": [
+      1160864,
+      1160864
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-unicode",
+    "records": 1024,
+    "inputBytes": 223267,
+    "allocationBytes": [
+      1189088,
+      1189032
+    ],
+    "peakAdmission": [
+      3552905,
+      3552905
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "records": 1024,
+    "inputBytes": 139299,
+    "allocationBytes": [
+      991896,
+      991902
+    ],
+    "peakAdmission": [
+      5171785,
+      5171785
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "records": 2048,
+    "inputBytes": 27350,
+    "allocationBytes": [
+      808528,
+      808528
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  }
+]

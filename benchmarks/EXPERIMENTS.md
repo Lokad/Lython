@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1758b outlined arithmetic operands](results/2026-11-26-arithmetic-operand-borrows/outlining/README.md)
+shrinks the optimized entry from 3,481 to 2,434 B. Pinned local typed-meter
+CPU still rises 2.01–4.78%, and the control has wide worker spread. Archive
+both variants and retain the existing production path.
+
 [B1758 arithmetic operand borrows](results/2026-11-26-arithmetic-operand-borrows/README.md)
 removes 18,432 arithmetic source reads per shipment and 12,288 per CSV
 meter in the trial. Global resolutions and peak admission match. Typed

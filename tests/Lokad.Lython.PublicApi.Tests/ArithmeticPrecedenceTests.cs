@@ -90,6 +90,57 @@ public sealed class ArithmeticPrecedenceTests
         }
     }
 
+    [Fact]
+    public async Task CapturedOperandKeepsItsIdentityAcrossReflectedArithmetic()
+    {
+        const string source = """
+            class Right:
+                def __init__(self, observe, change):
+                    self.observe = observe
+                    self.change = change
+                def __radd__(self, left):
+                    print(left is self.observe())
+                    self.change()
+                    with open('marker.txt') as marker:
+                        print(left, self.observe(), marker.read())
+
+            def run():
+                number = 1000
+                def change():
+                    nonlocal number
+                    number += 1
+                def observe(): return number
+                def add(right): return number + right
+                change()
+                add(Right(observe, change))
+            run()
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var sync = new MockLythonHost();
+            sync.SeedFile("/marker.txt", "read");
+            using (var result = script.Run(sync)) Check(result);
+            Assert.Equal(baseline, budget.ReservedBytes);
+
+            var delayed = new DelayedLythonHost();
+            delayed.SeedFile("/marker.txt", "read");
+            using (var result = await script.RunAsync(delayed)) Check(result);
+            Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(1, delayed.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        static void Check(LythonExecutionResult result)
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True\n1001 1002 read\n", result.StandardOutput);
+        }
+    }
+
     // Goldens from isolated CPython 3.13, independent of Lython's parser.
     [Theory]
     [InlineData("5 | 2 ^ 7 & 3", "5")]
