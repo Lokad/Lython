@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1791 representative CPython checkpoint](results/2026-11-26-post-ascii-cpython/README.md)
+measures `d370fef84` against CPython 3.13.16. JSON service totals take
+1.240–1.323× warm sync and 1.278–1.338× warm async. Generated ordinary
+definitions take 0.688–0.695× through result and shipment takes
+0.981–0.996× on that boundary. All 336 batches and both quiet checks pass.
+Async shipment has 7.61% Lython worker spread.
+
 [B1790 reuse one-byte JSON characters](results/2026-11-26-json-ascii-character/README.md)
 eliminates 802 string allocations per service-total run. CLR allocation
 falls 5.22% and admitted peak falls 5.42%. The reordered quiet run reduces
