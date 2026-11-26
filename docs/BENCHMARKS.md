@@ -3,9 +3,10 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration manifest | Two input files / 833 B | 0.18510–0.18554 ms | 0.15478–0.15563 ms | 1.189–1.199× | Diagnostic. [B1669]. |
-| Shipment callback report | 2,048 records / 27,350 B | 2.32550–2.40626 ms | 1.62525–1.63851 ms | 1.419–1.481× | Diagnostic. [B1736]. |
-| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.74330–2.87713 ms | 1.73829–1.74817 ms | 1.569–1.655× | Diagnostic. Lython worker spread is 4.88%. [B1736]. |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.59234–0.62370 ms | 1.36880–1.37651 ms | 0.430–0.456× | Diagnostic. Worker spread up to 5.30%. [B1720]. |
+| Shipment callback report | 2,048 records / 27,350 B | 2.22126–2.24476 ms | 1.62256–1.65026 ms | 1.346–1.383× | Diagnostic. [B1744]. |
+| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.34810–2.42338 ms | 1.63204–1.70608 ms | 1.376–1.485× | Diagnostic. Same-source worker spread up to 4.54%. [B1744]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.54147–0.54293 ms | 1.38057–1.38132 ms | 0.392–0.393× | Diagnostic. [B1744]. |
+| File search with early exit | 1,025 lines read / 42,010 B file | 0.23337–0.26912 ms | 0.13596–0.13848 ms | 1.685–1.979× | Diagnostic. Lython worker spread is 15.32%. [B1744]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.01119–3.04841 ms | 1.67604–1.69917 ms | 1.772–1.819× | Diagnostic. [B1694]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
@@ -22,7 +23,8 @@
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. B1736 measures `7f0c5b996` and B1727 measures
+two workers per engine. B1744 measures `a490e9d5f` on November 26, 2026 UTC.
+B1736 measures `7f0c5b996` and B1727 measures
 `857cc8001` on November 25, 2026 UTC. Earlier B1731 measures `a420c3e05`.
 B1720 measures `7120ee55e` on November 25, 2026 UTC.
 B1713 and B1705 measure earlier revisions `75af75769` and `96d54066a` the same
@@ -56,8 +58,9 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Configuration manifest, 1,877 B of source | Compilation only | 0.11208–0.11333 ms | 0.16582–0.16676 ms | 0.672–0.683× | Diagnostic. [B1614]. |
-| Configuration manifest | Compile-to-result | 0.37025–0.37255 ms | 0.46072–0.46259 ms | 0.800–0.809× | Diagnostic. [B1694]. |
+| Configuration manifest, 1,877 B of source | Compilation only | 0.09717–0.09837 ms | 0.15754–0.16056 ms | 0.605–0.624× | Diagnostic. [B1744]. |
+| Configuration manifest | Compile-to-result | 0.37382–0.37779 ms | 0.47152–0.47225 ms | 0.792–0.801× | Diagnostic. [B1744]. |
+| File search with early exit, 319 B of source | Compile-to-result | 0.31032–0.31328 ms | 0.21072–0.21076 ms | 1.472–1.487× | Diagnostic. Lython worker spread is 0.95%. [B1744]. |
 | Shipment callback report | Compile-to-result | 2.49544–2.51408 ms | 1.90542–1.92300 ms | 1.298–1.319× | Diagnostic. [B1720]. |
 | Generated classifier, 6,991 B of source | Compilation only | 0.32944–0.33057 ms | 0.81943–0.82016 ms | 0.402–0.403× | Diagnostic. [B1656]. |
 | Generated comprehension rules, 17,995 B of source | Compilation only | 1.09478–1.10758 ms | 2.86768–2.89394 ms | 0.378–0.386× | Diagnostic. [B1643]. |
@@ -184,6 +187,7 @@ document reproduction.
 [B1669]: ../benchmarks/results/2026-11-25-post-zip-cpython/README.md
 [B1677]: ../benchmarks/results/2026-11-25-ordinary-defaults-cpython/README.md
 [B1685]: ../benchmarks/results/2026-11-25-retained-defaults-cpython/README.md
+[B1744]: ../benchmarks/results/2026-11-26-file-processing-cpython/README.md
 [B1736]: ../benchmarks/results/2026-11-25-deferred-locals-cpython/README.md
 [B1731]: ../benchmarks/results/2026-11-25-arithmetic-call-cpython/README.md
 [B1727]: ../benchmarks/results/2026-11-25-formatted-report-cpython/README.md

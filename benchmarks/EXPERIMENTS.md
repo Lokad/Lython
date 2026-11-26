@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1744 file processing against CPython](results/2026-11-26-file-processing-cpython/README.md)
+measures `a490e9d5f` against stock CPython 3.13.16. Shipment takes
+1.346–1.383× warm sync and 1.376–1.485× warm async. File-fed map takes
+0.392–0.393× warm async. Configuration takes 0.605–0.624× compile-only and
+0.792–0.801× through result. All 140 observations and output checks pass.
+Protected file search takes 1.472–1.487× through result, with 0.95% Lython
+worker spread. Warm Lython spread is 15.32%. All 56 additional batches pass.
+
 [B1743 native cursor stack admission](results/2026-11-26-native-cursor-stack-admission/README.md)
 checks the advancing thread using the existing managed policy. Shipment and
 file-fed elapsed span zero. Warm text CPU rises 3.18–4.83% in the measured
