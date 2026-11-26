@@ -5,8 +5,12 @@ internal sealed class StaticAnalysisContext : IDisposable
     private readonly List<LythonDiagnostic> _diagnostics = new();
     private readonly CompiledRegexPrograms _regexPrograms;
     private readonly bool _ownsRegexPrograms;
-    private Runtime.MemoryGovernor.TemporaryMemoryReservation? _regexGroupFactsStorage;
+    private Runtime.MemoryGovernor.TemporaryMemoryReservation? _regexFactsStorage;
+    private Dictionary<StringLiteralExpressionSyntax, LiteralMatch>? _literalMatches;
     private readonly Dictionary<StatementSyntax, StatementFacts>? _statementFacts;
+
+    private readonly record struct LiteralMatch(ILythonRegexPattern Program, int Pos, int EndPos,
+        LythonRegexMatchMode Mode, bool Matched);
 
     public StaticAnalysisContext(ScriptSyntax script, ILythonRegexProvider? regexProvider = null,
         Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default,
@@ -35,7 +39,36 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal IReadOnlyDictionary<Runtime.Text.PyString, int> ReadRegexGroupFacts(ILythonRegexPattern program,
         int captureSlotCount, LythonSourceSpan span)
         => Runtime.LythonRuntime.RegexCompiler.CopyAnalysisNamedGroups(program, captureSlotCount, MemoryGovernor,
-            _regexGroupFactsStorage ??= MemoryGovernor?.ReserveTemporary(0, span), CancellationToken, span);
+            _regexFactsStorage ??= MemoryGovernor?.ReserveTemporary(0, span), CancellationToken, span);
+
+    internal bool TryReadLiteralMatch(StringLiteralExpressionSyntax literal, ILythonRegexPattern program, int pos,
+        int endPos, LythonRegexMatchMode mode, out bool matched)
+    {
+        CheckExecution();
+        if (_literalMatches?.TryGetValue(literal, out var fact) == true && ReferenceEquals(fact.Program, program) &&
+            fact.Pos == pos && fact.EndPos == endPos && fact.Mode == mode)
+        {
+            matched = fact.Matched;
+            return true;
+        }
+        matched = false;
+        return false;
+    }
+
+    internal void RememberLiteralMatch(StringLiteralExpressionSyntax literal, ILythonRegexPattern program, int pos,
+        int endPos, LythonRegexMatchMode mode, bool matched, LythonSourceSpan span)
+    {
+        if (_literalMatches?.ContainsKey(literal) != true)
+        {
+            // Retain one fact per literal for both analysis passes. Include
+            // dictionary capacity and growth overlap in the temporary charge.
+            var storage = _regexFactsStorage ??= MemoryGovernor?.ReserveTemporary(0, span);
+            storage?.Grow(_literalMatches is null ? 576 : 192, span);
+            CheckExecution();
+            _literalMatches ??= new(ReferenceEqualityComparer.Instance);
+        }
+        _literalMatches[literal] = new(program, pos, endPos, mode, matched);
+    }
 
     public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics;
 
@@ -68,7 +101,8 @@ internal sealed class StaticAnalysisContext : IDisposable
     public void Dispose()
     {
         RegexPatterns.Clear();
-        try { _regexGroupFactsStorage?.Dispose(); }
+        _literalMatches = null;
+        try { _regexFactsStorage?.Dispose(); }
         finally { if (_ownsRegexPrograms) _regexPrograms.Dispose(); }
     }
 

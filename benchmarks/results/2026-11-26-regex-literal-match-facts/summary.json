@@ -1,0 +1,183 @@
+{
+  "sourceRevision": "eee178f71b767a7616bdf1ec668afa587682ebb0",
+  "sourcePatchSha256": "861358dbd45f824cdd1872bdfdbb334800bd2ae86b3b0990dfcddb29592ec461",
+  "coreSHA256": {
+    "reference": "a7b8589c8a567d01c1eef724ae26b8874b5b932c1646ba5eda29a1cc29e7cb1b",
+    "prototype": "a30b08cdbd260a03a4cce087c2163272fdd2f48c97b7151cde44a55dbbcd534f"
+  },
+  "observedGeneratedPreparationAndMatchCounts": {
+    "before": 96,
+    "after": 48,
+    "runtimeBoth": 48
+  },
+  "cases": {
+    "diagnostic.regex-subject-4097-match": {
+      "reference": [
+        {
+          "allocatedBytes": 78440,
+          "peakAdmission": 529794,
+          "retainedAdmission": 500771,
+          "elapsedMedianMs": 0.2794
+        },
+        {
+          "allocatedBytes": 78440,
+          "peakAdmission": 529794,
+          "retainedAdmission": 500771,
+          "elapsedMedianMs": 0.2716
+        },
+        {
+          "allocatedBytes": 78440,
+          "peakAdmission": 529794,
+          "retainedAdmission": 500771,
+          "elapsedMedianMs": 0.2536
+        }
+      ],
+      "prototype": [
+        {
+          "allocatedBytes": 78240,
+          "peakAdmission": 529794,
+          "retainedAdmission": 500771,
+          "elapsedMedianMs": 0.261
+        },
+        {
+          "allocatedBytes": 78240,
+          "peakAdmission": 529794,
+          "retainedAdmission": 500771,
+          "elapsedMedianMs": 0.2341
+        },
+        {
+          "allocatedBytes": 78240,
+          "peakAdmission": 529794,
+          "retainedAdmission": 500771,
+          "elapsedMedianMs": 0.2398
+        }
+      ]
+    },
+    "diagnostic.regex-subject-4097-miss": {
+      "reference": [
+        {
+          "allocatedBytes": 72608,
+          "peakAdmission": 526914,
+          "retainedAdmission": 497891,
+          "elapsedMedianMs": 0.2292
+        },
+        {
+          "allocatedBytes": 72608,
+          "peakAdmission": 526914,
+          "retainedAdmission": 497891,
+          "elapsedMedianMs": 0.2156
+        },
+        {
+          "allocatedBytes": 72608,
+          "peakAdmission": 526914,
+          "retainedAdmission": 497891,
+          "elapsedMedianMs": 0.2268
+        }
+      ],
+      "prototype": [
+        {
+          "allocatedBytes": 72560,
+          "peakAdmission": 526914,
+          "retainedAdmission": 497891,
+          "elapsedMedianMs": 0.2217
+        },
+        {
+          "allocatedBytes": 72560,
+          "peakAdmission": 526914,
+          "retainedAdmission": 497891,
+          "elapsedMedianMs": 0.2257
+        },
+        {
+          "allocatedBytes": 72560,
+          "peakAdmission": 526914,
+          "retainedAdmission": 497891,
+          "elapsedMedianMs": 0.2016
+        }
+      ]
+    },
+    "scripts.file-manifest.small": {
+      "reference": [
+        {
+          "allocatedBytes": 72328,
+          "peakAdmission": 82304,
+          "retainedAdmission": 82304,
+          "elapsedMedianMs": 0.2202
+        },
+        {
+          "allocatedBytes": 72328,
+          "peakAdmission": 82304,
+          "retainedAdmission": 82304,
+          "elapsedMedianMs": 0.1983
+        },
+        {
+          "allocatedBytes": 72328,
+          "peakAdmission": 82304,
+          "retainedAdmission": 82304,
+          "elapsedMedianMs": 0.2229
+        }
+      ],
+      "prototype": [
+        {
+          "allocatedBytes": 72336,
+          "peakAdmission": 82304,
+          "retainedAdmission": 82304,
+          "elapsedMedianMs": 0.2251
+        },
+        {
+          "allocatedBytes": 72336,
+          "peakAdmission": 82304,
+          "retainedAdmission": 82304,
+          "elapsedMedianMs": 0.1836
+        },
+        {
+          "allocatedBytes": 72336,
+          "peakAdmission": 82304,
+          "retainedAdmission": 82304,
+          "elapsedMedianMs": 0.1892
+        }
+      ]
+    },
+    "diagnostic.generated-regex-record-selectors": {
+      "reference": [
+        {
+          "allocatedBytes": 2014144,
+          "peakAdmission": 19240287,
+          "retainedAdmission": 19080353,
+          "elapsedMedianMs": 3.8606
+        },
+        {
+          "allocatedBytes": 2014144,
+          "peakAdmission": 19240287,
+          "retainedAdmission": 19080353,
+          "elapsedMedianMs": 3.5859
+        },
+        {
+          "allocatedBytes": 2014144,
+          "peakAdmission": 19240287,
+          "retainedAdmission": 19080353,
+          "elapsedMedianMs": 3.5925
+        }
+      ],
+      "prototype": [
+        {
+          "allocatedBytes": 1552360,
+          "peakAdmission": 19249695,
+          "retainedAdmission": 19080353,
+          "elapsedMedianMs": 3.2446
+        },
+        {
+          "allocatedBytes": 1552360,
+          "peakAdmission": 19249695,
+          "retainedAdmission": 19080353,
+          "elapsedMedianMs": 2.7997
+        },
+        {
+          "allocatedBytes": 1552360,
+          "peakAdmission": 19249695,
+          "retainedAdmission": 19080353,
+          "elapsedMedianMs": 2.9061
+        }
+      ]
+    }
+  }
+}

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Shared literal regex match facts](results/2026-11-26-regex-literal-match-facts/README.md)
+halve backend compile-time preparations and matches on a 48-selector script.
+Allocation falls 22.93%, with 9,408 B more temporary peak admission. Runtime
+window and match counts agree. Local compile elapsed is diagnostic.
+
 [B1749 direct zip operands for starmap](results/2026-11-26-zip-starmap-operands/README.md)
 removes the temporary tuple and callback readback. Bound shipment allocates
 14.40% less and uses 9.41% less peak admission. Warm sync uses 8.25–10.05%

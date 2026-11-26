@@ -320,6 +320,8 @@ internal static class StaticRegexReturnResolver
         var analysis = bindings.AnalysisContext!;
         var token = analysis.CancellationToken;
         var literal = analysis.GetCompiledRegexLiteral(expression, text);
+        if (literal is not null && analysis.TryReadLiteralMatch(literal, pattern, pos, endPos, operation, out var known))
+            return known;
         var prepared = literal?.PreparedRegexUtf8;
         using var inputStorage = prepared is null ? analysis.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span) : null;
         var input = prepared ?? EncodeConstantText(text, token, span);
@@ -350,7 +352,11 @@ internal static class StaticRegexReturnResolver
         // compile estimate already funds the emitted literal's backing. Use
         // these bytes in its place before releasing the match's scratch charge.
         analysis.CheckExecution();
-        if (literal is not null && input.Length > PyString.InlineUtf8Capacity) literal.PreparedRegexUtf8 ??= input;
+        if (literal is not null)
+        {
+            if (input.Length > PyString.InlineUtf8Capacity) literal.PreparedRegexUtf8 ??= input;
+            analysis.RememberLiteralMatch(literal, pattern, pos, endPos, operation, matched, span);
+        }
         return matched;
     }
 

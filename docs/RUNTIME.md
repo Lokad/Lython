@@ -2946,6 +2946,9 @@ or report the limitation, without private timeout/work quotas or abandoned work.
 Retained patterns/caches and working/replacement peaks use supplied owners.
 Each successful provider `Compile` transfers a fresh disposable pattern handle.
 Public compilation retains successful constant programs until script disposal.
+Annotation and expression analysis share an evaluated literal match when the
+same literal, program, operation and bounds meet again. This temporary fact
+holds no prepared subject or captures and is released after analysis.
 Successful local import preparation makes its analyzed programs available to
 runtime regex calls in that module. The execution owns those programs through
 cleanup, including when functions escape a module body that raises. Invalid or
