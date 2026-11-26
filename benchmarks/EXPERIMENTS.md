@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1795 direct starmap sequence arguments](results/2026-11-26-starmap-direct-sequence/README.md)
+fills short operands or one admitted wide packet from exact list and
+tuple storage. Three-item sync elapsed falls 11.13–14.13%, and five-item
+async elapsed falls 5.16–10.67%. The zip control also moves favorably.
+List-row allocation falls in both APIs, and the source removes the exact-row
+cursor and drain. Keep the direct path and the earlier adverse trials.
+
 [B1794 starmap live row capacity](results/2026-11-26-starmap-row-capacity/README.md)
 avoids the first candidate's wide-row replacement. Three- and five-item
 async rows allocate 26.16% and 7.14% less than production. Quiet sync

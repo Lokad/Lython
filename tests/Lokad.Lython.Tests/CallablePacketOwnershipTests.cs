@@ -8,9 +8,10 @@ public sealed class CallablePacketOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
     [Theory]
-    [InlineData(false, 8)]
-    [InlineData(true, 8)]
-    public void RefusedCallStoragePreventsCallableEffects(bool bound, int width)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void RefusedCallStoragePreventsCallableEffects(bool bound, bool starmap)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -19,11 +20,15 @@ public sealed class CallablePacketOwnershipTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
             var callable = new PendingCallable();
             object target = bound ? new PyBoundMethod(PyNone.Instance, callable) : callable;
-            var arguments = Enumerable.Repeat(CallArgumentValue.Positional(PyNone.Instance), width).ToArray();
+            var arguments = Enumerable.Repeat(CallArgumentValue.Positional(PyNone.Instance), 8).ToArray();
+            var iterator = starmap ? CreateStarmap(target, new PyList(Enumerable.Repeat<object>(PyNone.Instance, 8)), context) : null;
             var baseline = budget.ReservedBytes;
             hook.RefuseGrowth = _ => true;
             var failure = Assert.Throws<LythonRuntimeException>(() =>
-                CallableInvocation.Invoke(target, arguments, Span, context));
+            {
+                if (iterator is not null) _ = iterator.TryMoveNext();
+                else _ = CallableInvocation.Invoke(target, arguments, Span, context);
+            });
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Equal(0, callable.Calls);
@@ -35,9 +40,10 @@ public sealed class CallablePacketOwnershipTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CancellationKeepsWideCallFundedUntilCleanupFinishes(bool bound)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task CancellationKeepsWideCallFundedUntilCleanupFinishes(bool bound, bool starmap)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -50,7 +56,9 @@ public sealed class CallablePacketOwnershipTests
             object target = bound ? new PyBoundMethod(value, callable) : callable;
             var arguments = Enumerable.Repeat(CallArgumentValue.Positional(value), 8).ToArray();
             var baseline = budget.ReservedBytes;
-            var pending = CallableInvocation.InvokeAsync(target, arguments, Span, context).AsTask();
+            Task pending = starmap
+                ? CreateStarmap(target, new PyList(Enumerable.Repeat(value, 8)), context).TryMoveNextAsync().AsTask()
+                : CallableInvocation.InvokeAsync(target, arguments, Span, context).AsTask();
             try
             {
                 await callable.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -131,6 +139,59 @@ public sealed class CallablePacketOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
         Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var reused));
         reused.Dispose();
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task StarmapReadsTheLiveListAfterAdmissionChangesItsLength(bool asynchronous, bool grow)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+        try
+        {
+            object[] original = [new(), new(), new(), new(), new()];
+            var row = new PyList(original);
+            var appended = new object();
+            var callable = new PositionalCount();
+            var iterator = CreateStarmap(callable, row, context);
+            var baseline = budget.ReservedBytes;
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                if (grow) row.Add(appended);
+                else row.RemoveAt(4);
+            };
+
+            var result = asynchronous ? await iterator.TryMoveNextAsync() : iterator.TryMoveNext();
+
+            Assert.True(result.HasValue);
+            Assert.Equal(grow ? 6 : 4, result.Value);
+            Assert.Equal(grow ? [.. original, appended] : original[..4], callable.Values);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        finally { context.State.CloseResources(); }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private static PyStarmapIterator CreateStarmap(object target, PyList row, LythonRuntime.ExecutionContext context)
+        => new(target, PyIteration.Cursor.Create(new PyList(new object[] { row }), Span, context), context, Span, borrowStorage: false);
+
+    private sealed class PositionalCount : LythonRuntime.ICallable
+    {
+        internal object[] Values { get; private set; } = [];
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            Values = arguments.Select(argument => argument.Value).ToArray();
+            return arguments.Length;
+        }
     }
 
     private sealed class RetainingCallable : LythonRuntime.ICallable

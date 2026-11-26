@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "allocatedBytes": [
+      2145406,
+      1391736
+    ],
+    "peak": [
+      3467273,
+      3467109
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "allocatedBytes": [
+      2719526,
+      1785464
+    ],
+    "peak": [
+      3795865,
+      3795745
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "allocatedBytes": [
+      1100280,
+      1100280
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "allocatedBytes": [
+      991808,
+      991808
+    ],
+    "peak": [
+      5171785,
+      5171785
+    ]
+  }
+]

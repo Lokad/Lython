@@ -327,24 +327,84 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     // the async shape reuses the leased drain and covers the exact final array.
     private const long ArgumentSlotBytes = 24;
 
-    private bool TryStartTupleCallback(object current, bool asynchronous, out PyIterationResult result,
+    private bool TryStartSequenceCallback(object current, bool asynchronous, out PyIterationResult result,
         out ValueTask<object> pending)
+    {
+        if (current is not (PyList or PyTuple))
+        {
+            result = default;
+            pending = default;
+            return false;
+        }
+
+        var row = (IPySequenceValue)current;
+        var count = row.Count;
+        if (count > LythonRuntime.InlineIterationOperandCount)
+            return TryStartWideSequenceCallback(row, count, asynchronous, out result, out pending);
+
+        // The exact row has no guest iteration protocol. Tuple loans preserve
+        // deferred scalar identity through binding or immediate return.
+        LythonRuntime.IterationOperands operands = default;
+        for (var i = 0; i < count; i++)
+        {
+            _context.CheckExecution(_span);
+            if (row is PyTuple tuple) _ = tuple.TryReadTrailingSlot(count - i, out operands[i]);
+            else operands[i] = LythonRuntime.ExecutableSlot.FromObject(row[i]);
+        }
+
+        result = LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
+            asynchronous, out pending);
+        return true;
+    }
+
+    private bool TryStartWideSequenceCallback(IPySequenceValue row, int count, bool asynchronous,
+        out PyIterationResult result, out ValueTask<object> pending)
     {
         result = default;
         pending = default;
-        if (current is not PyTuple tuple || tuple.Count > LythonRuntime.InlineIterationOperandCount) return false;
-
-        // Exact tuples own any deferred scalar identities. Keep those loans
-        // through binding or immediate return, before a callback can suspend.
-        LythonRuntime.IterationOperands operands = default;
-        for (var i = 0; i < tuple.Count; i++)
+        var storage = LythonRuntime.ReserveCallArgumentStorage(count, _context, _span);
+        CallArgumentValue[]? arguments = null;
+        var transferred = false;
+        try
         {
             _context.CheckExecution(_span);
-            _ = tuple.TryReadTrailingSlot(tuple.Count - i, out operands[i]);
+            // Admission can resize a live list. Until any item is read, the
+            // ordinary iterator can consume its new length without replay.
+            if (row.Count != count) return false;
+            arguments = new CallArgumentValue[count];
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if ((i & 255) == 0) _context.CheckExecution(_span);
+                arguments[i] = CallArgumentValue.Positional(row[i]);
+            }
+
+            _context.CheckExecution(_span);
+            var callable = _function as LythonRuntime.ICallable
+                ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
+            if (!asynchronous)
+            {
+                result = PyIterationResult.Yield(callable.Invoke(arguments, _span, _context));
+                return true;
+            }
+
+            var invocation = callable.InvokeAsync(arguments, _span, _context);
+            if (invocation.IsCompleted)
+                result = PyIterationResult.Yield(invocation.GetAwaiter().GetResult());
+            else
+            {
+                pending = LythonRuntime.CompleteBorrowedArguments(invocation, arguments, storage);
+                transferred = true;
+            }
+            return true;
         }
-        result = LythonRuntime.StartIterationCallback(_function, operands, tuple.Count, _borrowStorage, _span, _context,
-            asynchronous, out pending);
-        return true;
+        finally
+        {
+            if (!transferred)
+            {
+                if (arguments is not null) Array.Clear(arguments);
+                storage?.Dispose();
+            }
+        }
     }
 
     public override PyIterationResult TryMoveNext()
@@ -362,8 +422,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             return PyIterationResult.End;
         }
 
-        if (TryStartTupleCallback(current, asynchronous: false, out var tupleResult, out _))
-            return tupleResult;
+        if (TryStartSequenceCallback(current, asynchronous: false, out var rowResult, out _))
+            return rowResult;
 
         // The argument array duplicates the streamed element beside it; grow a
         // transient reservation with the backing list (mirroring the shared
@@ -405,8 +465,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             return PyIterationResult.End;
         }
 
-        if (TryStartTupleCallback(current, asynchronous: true, out var tupleResult, out var pending))
-            return tupleResult.HasValue ? tupleResult : PyIterationResult.Yield(await pending.ConfigureAwait(false));
+        if (TryStartSequenceCallback(current, asynchronous: true, out var rowResult, out var pending))
+            return rowResult.HasValue ? rowResult : PyIterationResult.Yield(await pending.ConfigureAwait(false));
 
         // N09: leased drain keeps the element list charged beside the argument array
         // and callback (reservation ends after the call, not before).
