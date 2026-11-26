@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1805 current script comparison against CPython](results/2026-11-26-post-starmap-cpython/README.md)
+measures `cb258fe7f` against CPython 3.13.16. The JSON Lines summary takes
+0.751–0.755× warm sync and 0.775–0.782× under `RunAsync`. The wide async
+shipment takes 1.413–1.544×, with 7.65% Lython worker spread. Ordinary
+definitions take 0.516–0.519× to compile and 0.675–0.688× through result.
+
 [B1804 exact starmap rows into native callback slots](results/2026-11-26-starmap-frame-inputs/README.md)
 removes the five-item row's temporary argument packet. Both APIs allocate
 about 20.2% less. Quiet sync elapsed falls 1.76–2.75% and async falls
