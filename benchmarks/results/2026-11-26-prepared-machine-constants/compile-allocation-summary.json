@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1437840,
+      1442480
+    ],
+    "retainedAdmission": [
+      883617,
+      887393
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      63328,
+      63648
+    ],
+    "retainedAdmission": [
+      74175,
+      74415
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      79808,
+      80152
+    ],
+    "retainedAdmission": [
+      92127,
+      92399
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      33088,
+      33104
+    ],
+    "retainedAdmission": [
+      51392,
+      51392
+    ]
+  }
+]

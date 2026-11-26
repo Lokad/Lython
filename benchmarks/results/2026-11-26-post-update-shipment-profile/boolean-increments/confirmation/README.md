@@ -41,6 +41,10 @@ pass on Windows .NET 11 and Ubuntu .NET 10, including a CPython golden
 for exact boolean increments with retained identity, overflow and
 custom dispatch.
 
+Delivery for df71fc295 passed Windows and Ubuntu Release on .NET 11
+and .NET 10, original stress and installed-package consumers.
+[Delivery](https://github.com/Lokad/Lython/actions/runs/45841883264).
+
 [First timing](initial-summary.json) · [First observations](initial-observations.tar.xz) ·
 [First terminal status](initial-terminal-status.json) · [Repeat timing](repeat-summary.json) ·
 [Repeat observations](repeat-observations.tar.xz) · [Repeat terminal status](repeat-terminal-status.json) ·

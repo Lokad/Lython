@@ -33,7 +33,8 @@ compiler constants. Each row has the same counts for both hosting APIs.
 
 Closed sequences also serve the text report's cased preparation. Include
 that report as a third affected script when measuring prepared constants.
-Use a separate unchanged control. The counts establish repeated
+The file-fed CSV map has zero successful machine-constant reads. Use it
+as the control. [Control route](control-routes.json). The counts establish repeated
 classification of immutable values. They provide no speedup estimate.
 The remaining default admission funds actual or potential published
 storage and stays outside this prototype.

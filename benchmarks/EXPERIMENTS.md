@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1770 prepared machine constants](results/2026-11-26-prepared-machine-constants/README.md)
+moves repeated constant classification into compilation. The ordinary
+factory uses 3,776 B more retained compiler admission. Execution peaks
+match. Local timing is inconclusive with 48.47% reference CPU worker
+spread on the unchanged file-fed control. Preserve all adverse results.
+
 [B1769 callable construction after deferral](results/2026-11-26-post-deferral-factory-cpu/README.md)
 separates computed-argument calls in ordinary definitions from pair
 construction in escaping rules. Both repeatedly classify immutable
