@@ -1,0 +1,102 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedCsvLoops": 0,
+        "BorrowedZipLoops": 0,
+        "BorrowedOrdinaryPulls": 0,
+        "BorrowedFixedUnpack": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedCsvLoops": 0,
+        "BorrowedZipLoops": 0,
+        "BorrowedOrdinaryPulls": 0,
+        "BorrowedFixedUnpack": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedCsvLoops": 0,
+        "BorrowedZipLoops": 0,
+        "BorrowedOrdinaryPulls": 0,
+        "BorrowedFixedUnpack": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedCsvLoops": 0,
+        "BorrowedZipLoops": 0,
+        "BorrowedOrdinaryPulls": 0,
+        "BorrowedFixedUnpack": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedCsvLoops": 0,
+        "BorrowedZipLoops": 0,
+        "BorrowedOrdinaryPulls": 0,
+        "BorrowedFixedUnpack": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedCsvLoops": 0,
+        "BorrowedZipLoops": 0,
+        "BorrowedOrdinaryPulls": 0,
+        "BorrowedFixedUnpack": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedCsvLoops": 1,
+        "BorrowedZipLoops": 16,
+        "BorrowedOrdinaryPulls": 2049,
+        "BorrowedFixedUnpack": 2064
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedCsvLoops": 1,
+        "BorrowedZipLoops": 16,
+        "BorrowedOrdinaryPulls": 2049,
+        "BorrowedFixedUnpack": 2064
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

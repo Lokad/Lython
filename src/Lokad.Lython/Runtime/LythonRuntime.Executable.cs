@@ -521,10 +521,11 @@ internal sealed partial class LythonRuntime
 
         internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
         {
-            if (source is PyStringOps.CasedWhitespaceIteration or ExecutionContext.TextFileHandle)
+            if (source is PyStringOps.CasedWhitespaceIteration ||
+                source is IPyIteratorValue && source is not (PyInstance or IPyProtocolIterator))
             {
-                // An exact text file is its own iterator. The loop borrows
-                // the handle and leaves closure to its existing owner.
+                // These values already carry their iterator state. Only
+                // protocol acquisition and CLR enumerators need a cursor.
                 PublishValue(slot, liveExtent, source);
                 return true;
             }

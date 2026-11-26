@@ -481,23 +481,21 @@ internal sealed partial class LythonRuntime
         private bool ExecuteForNext(in ExecutableInstruction instruction)
         {
             var iterator = _execution.Stack[instruction.InputStart];
-            if (iterator is TextFileHandle file)
-            {
-                State.CheckInterpreterStack(instruction.Span);
-                return CompleteForNextLine(file.ReadLine(), instruction);
-            }
-            var cursor = (PyIteration.Cursor)iterator;
-            return CompleteForNext(cursor.TryMoveNext(), cursor, instruction);
+            if (iterator is PyIteration.Cursor cursor)
+                return CompleteForNext(cursor.TryMoveNext(), instruction);
+            State.CheckInterpreterStack(instruction.Span);
+            return iterator is TextFileHandle file ? CompleteForNextLine(file.ReadLine(), instruction)
+                : CompleteForNext(((IPyIteratorValue)iterator).TryMoveNext(), instruction);
         }
 
-        private bool CompleteForNext(PyIterationResult next, PyIteration.Cursor iterator, in ExecutableInstruction instruction)
+        private bool CompleteForNext(PyIterationResult next, in ExecutableInstruction instruction)
         {
             if (next.HasValue)
             {
                 PublishInstructionResult(instruction, next.TakeSlotValue());
                 return false;
             }
-            return ExitForNext(instruction, iterator);
+            return ExitForNext(instruction);
         }
 
         private bool CompleteForNextLine(PyString line, in ExecutableInstruction instruction)
@@ -507,13 +505,13 @@ internal sealed partial class LythonRuntime
                 PublishInstructionResult(instruction, line);
                 return false;
             }
-            return ExitForNext(instruction, null);
+            return ExitForNext(instruction);
         }
 
-        private bool ExitForNext(in ExecutableInstruction instruction, PyIteration.Cursor? iterator)
+        private bool ExitForNext(in ExecutableInstruction instruction)
         {
-            _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
-            iterator?.Dispose();
+            if (_execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart) is PyIteration.Cursor cursor)
+                cursor.Dispose();
             _execution.InstructionIndex = instruction.TargetIndex;
             return true;
         }

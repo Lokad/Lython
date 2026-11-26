@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1782 borrowed iterator values in executable loops](results/2026-11-26-borrowed-loop-iterators/README.md)
+removes 17 shipment cursors and shares exhaustion across ordinary and
+fixed-unpack loops. Reordered sync shipment uses 4.71–6.53% less process
+CPU. Async shipment and the unused file-fed control use more CPU in
+confirmation, with matching admission. [Confirmation](results/2026-11-26-borrowed-loop-iterators/confirmation/README.md)
+
 [B1781 exact text file loops](results/2026-11-26-direct-text-file-loop/README.md)
 remove a private cursor and the per-line iterator-result handoff.
 Quiet async JSON Lines uses 1.57–4.69% less CPU with matching peak

@@ -319,9 +319,8 @@ internal sealed partial class LythonRuntime
                             goto case ExecutableOpCode.ForNext;
                         case ExecutableOpCode.ForNextUnpack:
                             if (invocation is null || execution.Stack.LiveExtent != instruction.ResultSlot ||
-                                execution.Stack.Values[instruction.InputStart].Reference is not
-                                    PyIteration.Cursor cursor ||
-                                !invocation.TryAdvanceFixedUnpack(cursor, instruction, asynchronous, out pending))
+                                !invocation.TryAdvanceFixedUnpack(execution.Stack.Values[instruction.InputStart].Reference,
+                                    instruction, asynchronous, out pending))
                                 goto case ExecutableOpCode.ForNext;
                             if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                             jumped = ConsumeOperation(ref pending);

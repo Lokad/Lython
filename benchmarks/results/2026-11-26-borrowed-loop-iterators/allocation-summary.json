@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113280,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "bytes": [
+      808740,
+      808534
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "bytes": [
+      22744,
+      22744
+    ],
+    "peak": [
+      92040,
+      92040
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "bytes": [
+      1094976,
+      1093480
+    ],
+    "peak": [
+      2817644,
+      2817644
+    ]
+  }
+]

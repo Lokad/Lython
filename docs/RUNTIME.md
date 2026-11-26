@@ -226,9 +226,10 @@ commands for long streams.
 Shared byte-line scanning uses managed bulk searches, selecting newline mode once;
 CRLF/window holdback and scalar read limits stay with the caller.
 Readline, file iteration and native CSV input share the same window scanner.
-Executable loops over exact text files borrow the handle and publish lines
-directly. The loop shares its position with `next()` and other reads. Its
-exit leaves closure with the file's existing owner.
+Executable loops borrow existing managed iterator values and share their
+position with `next()`. Exact text files publish lines directly and their
+existing owner closes the handle. Guest iteration protocols and owned CLR
+enumerators retain cursor-based acquisition and cleanup.
 Buffered asynchronous reads finish directly; a pending refill retains the private
 builder in one iterative continuation until the read settles. Native destinations
 remain owned by their caller throughout.
