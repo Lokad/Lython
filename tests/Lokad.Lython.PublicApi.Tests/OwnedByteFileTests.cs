@@ -289,8 +289,8 @@ public sealed class OwnedByteFileTests
     }
 
     [Theory]
-    [InlineData(false), InlineData(true)]
-    public async Task CancellationWaitsForActualReadAndUncancelledCloseBeforeRefund(bool text)
+    [InlineData(false, false), InlineData(true, false), InlineData(true, true)]
+    public async Task CancellationWaitsForActualReadAndUncancelledCloseBeforeRefund(bool text, bool loop)
     {
         var entered = Signal(); var readRelease = Signal(); var closing = Signal(); var closeRelease = Signal();
         using var cancellation = new CancellationTokenSource();
@@ -309,7 +309,9 @@ public sealed class OwnedByteFileTests
             closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync();
         };
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("f=open('source','" + (text ? "r" : "rb") + "'); return f.read(1)", budget);
+        var source = loop ? "with open('source') as f:\n for line in f:\n  return line"
+            : "f=open('source','" + (text ? "r" : "rb") + "'); return f.read(1)";
+        using var script = new LythonEngine().Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
         try

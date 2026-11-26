@@ -1,0 +1,99 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 251f9e179..e6fa40f8c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -1,4 +1,5 @@
+ using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+@@ -48,13 +49,24 @@ internal sealed partial class LythonRuntime
+ 
+         private ValueTask<bool> ExecuteForNextAsync(ExecutableInstruction instruction)
+         {
+-            var cursor = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
++            var iterator = _execution.Stack[instruction.InputStart];
++            if (iterator is TextFileHandle file)
++            {
++                State.CheckInterpreterStack(instruction.Span);
++                var line = file.ReadLineAsync(-1);
++                return line.IsCompleted ? new(CompleteForNextLine(line.GetAwaiter().GetResult(), instruction))
++                    : AwaitForNextLineAsync(line, instruction);
++            }
++            var cursor = (PyIteration.Cursor)iterator;
+             var next = cursor.TryMoveNextAsync();
+             return next.IsCompleted
+                 ? new(CompleteForNext(next.GetAwaiter().GetResult(), cursor, instruction))
+                 : AwaitForNextAsync(next, cursor, instruction);
+         }
+ 
++        private async ValueTask<bool> AwaitForNextLineAsync(ValueTask<PyString> pending, ExecutableInstruction instruction)
++            => CompleteForNextLine(await pending.ConfigureAwait(false), instruction);
++
+         private bool TryAdvanceFixedUnpack(PyIteration.Cursor cursor, in ExecutableInstruction iteration,
+             bool asynchronous, out ValueTask<bool> pending)
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index d6de9e97f..b21f9b0b6 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -480,9 +480,14 @@ internal sealed partial class LythonRuntime
+ 
+         private bool ExecuteForNext(in ExecutableInstruction instruction)
+         {
+-            var iterator = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
+-            var next = iterator.TryMoveNext();
+-            return CompleteForNext(next, iterator, instruction);
++            var iterator = _execution.Stack[instruction.InputStart];
++            if (iterator is TextFileHandle file)
++            {
++                State.CheckInterpreterStack(instruction.Span);
++                return CompleteForNextLine(file.ReadLine(), instruction);
++            }
++            var cursor = (PyIteration.Cursor)iterator;
++            return CompleteForNext(cursor.TryMoveNext(), cursor, instruction);
+         }
+ 
+         private bool CompleteForNext(PyIterationResult next, PyIteration.Cursor iterator, in ExecutableInstruction instruction)
+@@ -492,8 +497,23 @@ internal sealed partial class LythonRuntime
+                 PublishInstructionResult(instruction, next.TakeSlotValue());
+                 return false;
+             }
++            return ExitForNext(instruction, iterator);
++        }
++
++        private bool CompleteForNextLine(PyString line, in ExecutableInstruction instruction)
++        {
++            if (line.IsTruthy())
++            {
++                PublishInstructionResult(instruction, line);
++                return false;
++            }
++            return ExitForNext(instruction, null);
++        }
++
++        private bool ExitForNext(in ExecutableInstruction instruction, PyIteration.Cursor? iterator)
++        {
+             _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
+-            iterator.Dispose();
++            iterator?.Dispose();
+             _execution.InstructionIndex = instruction.TargetIndex;
+             return true;
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index 04ca02aea..a869bef8c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -521,8 +521,10 @@ internal sealed partial class LythonRuntime
+ 
+         internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
+         {
+-            if (source is PyStringOps.CasedWhitespaceIteration)
++            if (source is PyStringOps.CasedWhitespaceIteration or ExecutionContext.TextFileHandle)
+             {
++                // An exact text file is its own iterator. The loop borrows
++                // the handle and leaves closure to its existing owner.
+                 PublishValue(slot, liveExtent, source);
+                 return true;
+             }

@@ -480,9 +480,14 @@ internal sealed partial class LythonRuntime
 
         private bool ExecuteForNext(in ExecutableInstruction instruction)
         {
-            var iterator = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
-            var next = iterator.TryMoveNext();
-            return CompleteForNext(next, iterator, instruction);
+            var iterator = _execution.Stack[instruction.InputStart];
+            if (iterator is TextFileHandle file)
+            {
+                State.CheckInterpreterStack(instruction.Span);
+                return CompleteForNextLine(file.ReadLine(), instruction);
+            }
+            var cursor = (PyIteration.Cursor)iterator;
+            return CompleteForNext(cursor.TryMoveNext(), cursor, instruction);
         }
 
         private bool CompleteForNext(PyIterationResult next, PyIteration.Cursor iterator, in ExecutableInstruction instruction)
@@ -492,8 +497,23 @@ internal sealed partial class LythonRuntime
                 PublishInstructionResult(instruction, next.TakeSlotValue());
                 return false;
             }
+            return ExitForNext(instruction, iterator);
+        }
+
+        private bool CompleteForNextLine(PyString line, in ExecutableInstruction instruction)
+        {
+            if (line.IsTruthy())
+            {
+                PublishInstructionResult(instruction, line);
+                return false;
+            }
+            return ExitForNext(instruction, null);
+        }
+
+        private bool ExitForNext(in ExecutableInstruction instruction, PyIteration.Cursor? iterator)
+        {
             _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
-            iterator.Dispose();
+            iterator?.Dispose();
             _execution.InstructionIndex = instruction.TargetIndex;
             return true;
         }

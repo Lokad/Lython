@@ -1,0 +1,35 @@
+[
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "bytes": [
+      1600336,
+      1600304
+    ],
+    "peak": [
+      3822014,
+      3822014
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113368,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "bytes": [
+      808528,
+      808528
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  }
+]

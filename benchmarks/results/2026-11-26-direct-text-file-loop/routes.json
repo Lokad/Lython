@@ -1,0 +1,78 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedTextLoops": 1,
+        "DirectTextLines": 5120,
+        "DirectTextEnds": 1,
+        "AwaitedTextLoops": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedTextLoops": 1,
+        "DirectTextLines": 5120,
+        "DirectTextEnds": 1,
+        "AwaitedTextLoops": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedTextLoops": 1,
+        "DirectTextLines": 1025,
+        "DirectTextEnds": 0,
+        "AwaitedTextLoops": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedTextLoops": 1,
+        "DirectTextLines": 1025,
+        "DirectTextEnds": 0,
+        "AwaitedTextLoops": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "BorrowedTextLoops": 0,
+        "DirectTextLines": 0,
+        "DirectTextEnds": 0,
+        "AwaitedTextLoops": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "BorrowedTextLoops": 0,
+        "DirectTextLines": 0,
+        "DirectTextEnds": 0,
+        "AwaitedTextLoops": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

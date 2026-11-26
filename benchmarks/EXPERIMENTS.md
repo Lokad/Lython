@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1781 exact text file loops](results/2026-11-26-direct-text-file-loop/README.md)
+remove a private cursor and the per-line iterator-result handoff.
+Quiet async JSON Lines uses 1.57–4.69% less CPU with matching peak
+admission. Sync timings are mixed. Async search elapsed rises by
+up to 1.44% and the CSV control also uses less CPU.
+
 [B1780 immutable default JSON entry](results/2026-11-26-json-default-decoder/README.md)
 removes 4,096 entry state machine calls from the JSON Lines report.
 Sync elapsed and CPU fall in both quiet blocks. The Unicode control

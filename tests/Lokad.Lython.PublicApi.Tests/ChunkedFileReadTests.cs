@@ -46,6 +46,47 @@ public sealed class ChunkedFileReadTests
     }
 
     [Fact]
+    public async Task FileLoopExitLeavesTheSharedIteratorOpen()
+    {
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine().Compile(
+            """
+            with open('/a.txt') as stream:
+                alias = iter(stream)
+                for first in stream:
+                    second = next(alias)
+                    break
+                remaining = [line for line in alias]
+                assert stream.readline() == ''
+            return [first, second, remaining]
+            """, budget);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        const string first = "a retained café line\n";
+        const string input = first + "next\nlast";
+        var expected = new List<object?> { first, "next\n", new List<object?> { "last" } };
+        var sync = new MockLythonHost();
+        sync.SeedFile("/a.txt", input);
+        using (var result = script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.ReturnValue);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        var asynchronous = new DelayedLythonHost();
+        asynchronous.SeedFile("/a.txt", input);
+        using (var result = await script.RunAsync(asynchronous))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.ReturnValue);
+        }
+        Assert.True(asynchronous.CompletedAsynchronously > 0);
+        Assert.Equal(1, asynchronous.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task ReadlineSizesAndTellTrackTranslatedBytes()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(

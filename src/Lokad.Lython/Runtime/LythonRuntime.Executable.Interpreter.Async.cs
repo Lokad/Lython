@@ -1,4 +1,5 @@
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -48,12 +49,23 @@ internal sealed partial class LythonRuntime
 
         private ValueTask<bool> ExecuteForNextAsync(ExecutableInstruction instruction)
         {
-            var cursor = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
+            var iterator = _execution.Stack[instruction.InputStart];
+            if (iterator is TextFileHandle file)
+            {
+                State.CheckInterpreterStack(instruction.Span);
+                var line = file.ReadLineAsync(-1);
+                return line.IsCompleted ? new(CompleteForNextLine(line.GetAwaiter().GetResult(), instruction))
+                    : AwaitForNextLineAsync(line, instruction);
+            }
+            var cursor = (PyIteration.Cursor)iterator;
             var next = cursor.TryMoveNextAsync();
             return next.IsCompleted
                 ? new(CompleteForNext(next.GetAwaiter().GetResult(), cursor, instruction))
                 : AwaitForNextAsync(next, cursor, instruction);
         }
+
+        private async ValueTask<bool> AwaitForNextLineAsync(ValueTask<PyString> pending, ExecutableInstruction instruction)
+            => CompleteForNextLine(await pending.ConfigureAwait(false), instruction);
 
         private bool TryAdvanceFixedUnpack(PyIteration.Cursor cursor, in ExecutableInstruction iteration,
             bool asynchronous, out ValueTask<bool> pending)
