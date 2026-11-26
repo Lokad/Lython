@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1796 single-pass JSON string validation](results/2026-11-26-json-single-string-pass/README.md)
+combines bounded syntax scanning and raw UTF-8 validation with matching
+admitted peaks. Quiet service-total and JSON Lines timing spans zero.
+Raw Unicode report CPU rises 2.22–4.55% with worker spreads below 1.3%.
+Keep the prototype out of production and retain both runs.
+[Quiet confirmation](results/2026-11-26-json-single-string-pass/quiet/README.md).
+
 [B1795 direct starmap sequence arguments](results/2026-11-26-starmap-direct-sequence/README.md)
 fills short operands or one admitted wide packet from exact list and
 tuple storage. Three-item sync elapsed falls 11.13–14.13%, and five-item

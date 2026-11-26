@@ -1,0 +1,57 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "allocatedBytes": [
+      815500,
+      815500
+    ],
+    "peak": [
+      1806411,
+      1806411
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "allocatedBytes": [
+      1600030,
+      1600030
+    ],
+    "peak": [
+      3822014,
+      3822014
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      322768,
+      322824
+    ],
+    "peak": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.report-render.escaped-unicode.large",
+    "allocatedBytes": [
+      2587568,
+      2587686
+    ],
+    "peak": [
+      3551569,
+      3551569
+    ]
+  },
+  {
+    "case": "diagnostic.report-render.raw-unicode.large",
+    "allocatedBytes": [
+      2464024,
+      2464416
+    ],
+    "peak": [
+      3493201,
+      3493201
+    ]
+  }
+]
