@@ -106,8 +106,10 @@ public sealed class StarmapMaterializationParityTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task ExactTupleCallbackKeepsBorrowUntilSuspendedCallFinishes()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExactRowCallbackKeepsBorrowUntilSuspendedCallFinishes(bool zipped)
     {
         const string source = """
             from itertools import starmap
@@ -116,8 +118,8 @@ public sealed class StarmapMaterializationParityTests
                     stream.read()
                 return value
             marker = []
-            row = (marker,)
-            print(next(starmap(use, [row])) is marker)
+            rows = zip([marker]) if zipped else [(marker,)]
+            print(next(starmap(use, rows)) is marker)
             """;
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
@@ -126,8 +128,11 @@ public sealed class StarmapMaterializationParityTests
         blocked.SeedFile("/pause", "content");
         var started = blocked.PauseReadUntilCancellation("/pause");
         using var cancellation = new CancellationTokenSource();
-        var pending = script.RunAsync(blocked,
-            new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token });
+        var globals = new Dictionary<string, object?> { ["zipped"] = zipped };
+        var pending = script.RunAsync(blocked, new LythonRunOptions
+        {
+            MemoryBudget = budget, Globals = globals, CancellationToken = cancellation.Token
+        });
         try
         {
             await started.WaitAsync(TimeSpan.FromSeconds(10));
@@ -146,12 +151,112 @@ public sealed class StarmapMaterializationParityTests
 
         var host = new DelayedLythonHost();
         host.SeedFile("/pause", "content");
-        using (var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }))
+        using (var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget, Globals = globals }))
         {
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal("True\n", result.StandardOutput);
         }
         Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ZipOperandsSurviveReentrantPullsAndRetainedSource(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            first = [[], [], []]
+            events = []
+            class Interleave:
+                def __init__(self):
+                    self.step = 0
+                def __iter__(self):
+                    return self
+                def __next__(self):
+                    self.step += 1
+                    if self.step == 1:
+                        item, text = next(stars)
+                        events.append((item is first[1], text))
+                        return 'outer'
+                    if self.step == 2:
+                        return 'inner'
+                    return 'tail'
+            rows = zip(first, Interleave())
+            stars = starmap(lambda a, b: (a, b), rows)
+            item, text = next(stars)
+            last = next(rows)
+            print(item is first[0], text, events, last[0] is first[2], last[1], list(stars))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True outer [(True, 'inner')] True tail []\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ZipAdvanceKeepsItsOperandsThroughSuspendedRowOrStrictTail(bool strictTail)
+    {
+        const string source = """
+            from itertools import starmap
+            marker = []
+            first = [] if strict_tail else [marker]
+            def classify(value, line):
+                return (value is marker, line.strip())
+            with open('/pause') as stream:
+                try:
+                    item = next(starmap(classify, zip(first, stream, strict=strict_tail)))
+                    print(item)
+                except ValueError as error:
+                    print(str(error))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var globals = new Dictionary<string, object?> { ["strict_tail"] = strictTail };
+        var blocked = new DelayedLythonHost();
+        blocked.SeedFile("/pause", "ready\n");
+        var started = blocked.PauseReadUntilCancellation("/pause");
+        using var cancellation = new CancellationTokenSource();
+        var run = script.RunAsync(blocked, new LythonRunOptions
+        {
+            MemoryBudget = budget, Globals = globals, CancellationToken = cancellation.Token
+        });
+        try
+        {
+            await started.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var interrupted = await run;
+            Assert.Equal(LythonFailureReason.Cancelled, interrupted.FailureAttribution?.Reason);
+            Assert.Empty(interrupted.StandardOutput);
+        }
+        Assert.Equal(1, blocked.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        var ready = new DelayedLythonHost();
+        ready.SeedFile("/pause", "ready\n");
+        using (var result = await script.RunAsync(ready, new LythonRunOptions { MemoryBudget = budget, Globals = globals }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(strictTail ? "zip() argument 2 is longer than argument 1\n" : "(True, 'ready')\n", result.StandardOutput);
+        }
+        Assert.Equal(1, ready.ClosedFileCount);
         Assert.Equal(0, budget.ReservedBytes);
     }
 }

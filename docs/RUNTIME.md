@@ -858,10 +858,13 @@ when arithmetic, namespace state or pending cleanup require them.
 
 `map` and `itertools.starmap` pass short operand spans to the same callback
 entry. `starmap` reads up to three elements directly from an exact tuple,
-preserving identities owned by the tuple. Bound guest methods pass their
-receiver alongside those operands. The binder copies any inputs needed
-after suspension into admitted storage. Wider rows and arbitrary iterables
-use the general argument drain.
+preserving identities owned by the tuple. A short native `zip` can write
+the row into those operands directly. Zip uses the same ordered pulls and
+strict-length checks for tuple consumers, fixed unpacking and direct callbacks.
+A suspended or reentrant pull keeps its own partial row. Bound guest methods
+pass their receiver alongside those operands. The binder copies any inputs
+needed after suspension into admitted storage. Wider rows and arbitrary
+iterables use the general argument drain.
 
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume

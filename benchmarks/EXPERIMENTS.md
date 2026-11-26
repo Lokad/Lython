@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1749 direct zip operands for starmap](results/2026-11-26-zip-starmap-operands/README.md)
+removes the temporary tuple and callback readback. Bound shipment allocates
+14.40% less and uses 9.41% less peak admission. Warm sync uses 8.25–10.05%
+less process CPU. The unchanged file-fed control also improves, which limits
+attribution of the warm async results. Both launch conditions are preserved.
+
 [Direct JSON hook continuation](results/2026-11-26-direct-json-hook-continuation/README.md)
 removes one forwarding async operation per suspended nested hook. The local
 hook workload allocates 4.36% less and peak admission matches. The callback-free

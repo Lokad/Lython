@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "allocationBytes": [
+      1364272,
+      1167876
+    ],
+    "peakAdmission": [
+      3115985,
+      2822785
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-retained-zip",
+    "allocationBytes": [
+      1092536,
+      1092592
+    ],
+    "peakAdmission": [
+      2892539,
+      2892539
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1160864,
+      1160864
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      808528,
+      808528
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  }
+]

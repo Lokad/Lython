@@ -400,13 +400,13 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
 
     public override PyIterationResult TryMoveNext()
     {
-        if (_finished || Arity == 0) return PyIterationResult.End;
+        if (!CanPull) return PyIterationResult.End;
         var funding = checked(32L + 80L * Arity);
         _governor.Reserve(funding, _span);
         try
         {
             var items = new object[Arity];
-            return Pull(new(items, default))
+            return Pull(new(items, default, reverse: false))
                 ? PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _governor, _span)) : PyIterationResult.End;
         }
         finally { _governor.ReleaseReserved(funding); }
@@ -414,13 +414,13 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        if (_finished || Arity == 0) return PyIterationResult.End;
+        if (!CanPull) return PyIterationResult.End;
         var funding = checked(32L + 80L * Arity);
         _governor.Reserve(funding, _span);
         try
         {
             var items = new object[Arity];
-            return await PullAsync(new(items, default)).ConfigureAwait(false)
+            return await PullAsync(items, default).ConfigureAwait(false)
                 ? PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _governor, _span)) : PyIterationResult.End;
         }
         finally { _governor.ReleaseReserved(funding); }
@@ -428,67 +428,123 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
 
     internal int Arity => _cursors.Length;
 
+    private bool CanPull => !_finished && Arity != 0;
+
     internal int UnpackNext(Memory<LythonRuntime.ExecutableSlot> destination)
-        => !_finished && Pull(new(null, destination)) ? Arity : -1;
+        => CanPull && Pull(new(null, destination.Span, reverse: true)) ? Arity : -1;
 
     internal async ValueTask<int> UnpackNextAsync(Memory<LythonRuntime.ExecutableSlot> destination)
-        => !_finished && await PullAsync(new(null, destination)).ConfigureAwait(false) ? Arity : -1;
+        => CanPull && await PullAsync(null, destination).ConfigureAwait(false) ? Arity : -1;
 
-    // The VM's fixed unpack has admitted destination slots. Both destinations
-    // use the same input order and strict termination for each execution mode.
-    private readonly struct Row(object[]? items, Memory<LythonRuntime.ExecutableSlot> slots)
+    internal bool TryPullOperands(ref LythonRuntime.IterationOperands operands, bool asynchronous,
+        out bool hasRow, out ValueTask<(bool HasRow, LythonRuntime.IterationOperands Operands)> pending)
     {
+        pending = default;
+        hasRow = false;
+        if (!CanPull) return true;
+        PullPosition position = default;
+        if (TryCompletePull(new(null, operands, reverse: false), asynchronous, ref position, out hasRow, out var next))
+            return true;
+        // A suspended pull owns the prefix from this particular advance. A
+        // reentrant next() starts with its own storage and the live cursors.
+        pending = ResumeOperandPullAsync(operands, position, next);
+        return false;
+    }
+
+    // Fixed unpack consumes its first target from the top of the stack. A
+    // callback takes the same values in parameter order without making a tuple.
+    private readonly ref struct Row(object[]? items, Span<LythonRuntime.ExecutableSlot> slots, bool reverse)
+    {
+        private readonly Span<LythonRuntime.ExecutableSlot> _slots = slots;
+
         internal void Set(int index, PyIterationResult item)
         {
-            // Fixed unpack consumes its first target from the top of the stack.
-            if (items is null) slots.Span[slots.Length - 1 - index] = item.TakeSlotValue();
-            else items[index] = item.Value;
+            if (items is not null) items[index] = item.Value;
+            else _slots[reverse ? _slots.Length - 1 - index : index] = item.TakeSlotValue();
         }
+    }
+
+    private struct PullPosition
+    {
+        internal int Index;
+        internal bool CheckingTail;
     }
 
     private bool Pull(Row row)
     {
-        for (var i = 0; i < Arity; i++)
+        PullPosition position = default;
+        TryCompletePull(row, false, ref position, out var hasRow, out _);
+        return hasRow;
+    }
+
+    private ValueTask<bool> PullAsync(object[]? items, Memory<LythonRuntime.ExecutableSlot> destination)
+    {
+        PullPosition position = default;
+        return TryCompletePull(new(items, destination.Span, reverse: true), true, ref position, out var hasRow, out var next)
+            ? new(hasRow) : ResumePullAsync(items, destination, position, next);
+    }
+
+    private bool TryCompletePull(Row row, bool asynchronous, ref PullPosition position, out bool hasRow,
+        out ValueTask<PyIterationResult> pending)
+    {
+        pending = default;
+        hasRow = false;
+        while (position.Index < Arity)
         {
-            var next = _cursors[i].TryMoveNext();
-            if (next.HasValue)
+            var cursor = _cursors[position.Index];
+            var next = asynchronous ? cursor.TryMoveNextAsync() : new(cursor.TryMoveNext());
+            if (!next.IsCompleted)
             {
-                row.Set(i, next);
-                continue;
+                pending = next;
+                return false;
             }
-            if (MustPeek(i))
-                for (var j = 1; j < Arity; j++)
-                    if (_cursors[j].TryMoveNext().HasValue) throw UnevenLength(j, "longer");
-            return false;
+            if (!AcceptPull(row, ref position, next.GetAwaiter().GetResult())) return true;
+        }
+        hasRow = !position.CheckingTail;
+        return true;
+    }
+
+    private bool AcceptPull(Row row, ref PullPosition position, PyIterationResult item)
+    {
+        var index = position.Index++;
+        if (position.CheckingTail)
+        {
+            if (item.HasValue) throw UnevenLength(index, "longer");
+        }
+        else if (item.HasValue) row.Set(index, item);
+        else
+        {
+            _finished = true;
+            if (!_strict) return false;
+            if (index != 0) throw UnevenLength(index, "shorter");
+            position.CheckingTail = true;
         }
         return true;
     }
 
-    private async ValueTask<bool> PullAsync(Row row)
+    private async ValueTask<bool> ResumePullAsync(object[]? items, Memory<LythonRuntime.ExecutableSlot> destination,
+        PullPosition position, ValueTask<PyIterationResult> pending)
     {
-        for (var i = 0; i < Arity; i++)
+        while (true)
         {
-            var next = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
-            if (next.HasValue)
-            {
-                row.Set(i, next);
-                continue;
-            }
-            if (MustPeek(i))
-                for (var j = 1; j < Arity; j++)
-                    if ((await _cursors[j].TryMoveNextAsync().ConfigureAwait(false)).HasValue)
-                        throw UnevenLength(j, "longer");
-            return false;
+            var item = await pending.ConfigureAwait(false);
+            var row = new Row(items, destination.Span, reverse: true);
+            if (!AcceptPull(row, ref position, item)) return false;
+            if (TryCompletePull(row, true, ref position, out var hasRow, out pending)) return hasRow;
         }
-        return true;
     }
 
-    private bool MustPeek(int index)
+    private async ValueTask<(bool, LythonRuntime.IterationOperands)> ResumeOperandPullAsync(LythonRuntime.IterationOperands operands,
+        PullPosition position, ValueTask<PyIterationResult> pending)
     {
-        _finished = true;
-        if (!_strict) return false;
-        if (index > 0) throw UnevenLength(index, "shorter");
-        return true;
+        while (true)
+        {
+            var item = await pending.ConfigureAwait(false);
+            var row = new Row(null, operands, reverse: false);
+            if (!AcceptPull(row, ref position, item)) return default;
+            if (TryCompletePull(row, true, ref position, out var hasRow, out pending))
+                return hasRow ? (true, operands) : default;
+        }
     }
 
     private LythonRuntimeException UnevenLength(int index, string comparison)

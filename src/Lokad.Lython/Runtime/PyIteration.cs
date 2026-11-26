@@ -357,6 +357,15 @@ internal static partial class PyIteration
 
         internal IPyIteratorValue? DirectUnpackSource => !_disposed ? _iterator : null;
 
+        internal PyZipIterator? ShortZipForPull()
+        {
+            if (DirectUnpackSource is not PyZipIterator { Arity: <= LythonRuntime.InlineIterationOperandCount } zip)
+                return null;
+            CheckExecution();
+            CheckStackForPull();
+            return zip;
+        }
+
         private PyIterationResult TryMoveNextCore()
         {
             if (_disposed || _value is null) return PyIterationResult.End;

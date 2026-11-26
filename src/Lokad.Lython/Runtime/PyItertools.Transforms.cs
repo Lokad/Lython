@@ -350,6 +350,13 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
+        if (_source.ShortZipForPull() is { } zip)
+        {
+            LythonRuntime.IterationOperands operands = default;
+            zip.TryPullOperands(ref operands, asynchronous: false, out var hasRow, out _);
+            return hasRow ? LythonRuntime.StartIterationCallback(_function, operands, zip.Arity, _borrowStorage,
+                _span, _context, asynchronous: false, out _) : PyIterationResult.End;
+        }
         if (!(_source.TryMoveNext() is { HasValue: true, Value: var current }))
         {
             return PyIterationResult.End;
@@ -390,6 +397,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
+        if (_source.ShortZipForPull() is { } zip)
+            return await StartZipRowAsync(zip).ConfigureAwait(false);
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
@@ -417,6 +426,31 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         var value = LythonRuntime.RuntimeValue(await (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).InvokeAsync(args, _span, _context).ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
+
+    private ValueTask<PyIterationResult> StartZipRowAsync(PyZipIterator zip)
+    {
+        LythonRuntime.IterationOperands operands = default;
+        if (!zip.TryPullOperands(ref operands, asynchronous: true, out var hasRow, out var pending))
+            return ResumeZipRowAsync(pending, zip.Arity);
+        return hasRow ? InvokeZipRowAsync(operands, zip.Arity) : new(PyIterationResult.End);
+    }
+
+    private async ValueTask<PyIterationResult> ResumeZipRowAsync(
+        ValueTask<(bool HasRow, LythonRuntime.IterationOperands Operands)> pending, int count)
+    {
+        var (hasRow, operands) = await pending.ConfigureAwait(false);
+        return hasRow ? await InvokeZipRowAsync(operands, count).ConfigureAwait(false) : PyIterationResult.End;
+    }
+
+    private ValueTask<PyIterationResult> InvokeZipRowAsync(Span<LythonRuntime.ExecutableSlot> operands, int count)
+    {
+        var result = LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
+            asynchronous: true, out var pending);
+        return result.HasValue ? new(result) : CompleteCallbackAsync(pending);
+    }
+
+    private static async ValueTask<PyIterationResult> CompleteCallbackAsync(ValueTask<object> pending)
+        => PyIterationResult.Yield(await pending.ConfigureAwait(false));
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.starmap object>");
 }
