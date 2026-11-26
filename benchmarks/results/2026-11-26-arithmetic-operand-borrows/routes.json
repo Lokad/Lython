@@ -1,0 +1,274 @@
+[
+  {
+    "id": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": false,
+    "arithmeticSourceReads": [
+      38944,
+      20512
+    ],
+    "globalResolutions": [
+      4264,
+      4264
+    ],
+    "admittedPeaks": [
+      2817644,
+      2817644
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 14368,
+        "Floating": 8192,
+        "ObjectRead": 16384,
+        "Fallback": 0,
+        "Global": 4264
+      },
+      "candidate": {
+        "Borrow": 20512,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 4264
+      }
+    }
+  },
+  {
+    "id": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": true,
+    "arithmeticSourceReads": [
+      38944,
+      20512
+    ],
+    "globalResolutions": [
+      4264,
+      4264
+    ],
+    "admittedPeaks": [
+      2817644,
+      2817644
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 14368,
+        "Floating": 8192,
+        "ObjectRead": 16384,
+        "Fallback": 0,
+        "Global": 4264
+      },
+      "candidate": {
+        "Borrow": 20512,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 4264
+      }
+    }
+  },
+  {
+    "id": "scripts.csv-meter-report.typed-unicode",
+    "asynchronous": false,
+    "arithmeticSourceReads": [
+      45056,
+      32768
+    ],
+    "globalResolutions": [
+      4102,
+      4102
+    ],
+    "admittedPeaks": [
+      3552905,
+      3552905
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 20480,
+        "Floating": 24576,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 4102
+      },
+      "candidate": {
+        "Borrow": 32768,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 4102
+      }
+    }
+  },
+  {
+    "id": "scripts.csv-meter-report.typed-unicode",
+    "asynchronous": true,
+    "arithmeticSourceReads": [
+      45056,
+      32768
+    ],
+    "globalResolutions": [
+      4102,
+      4102
+    ],
+    "admittedPeaks": [
+      3552905,
+      3552905
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 20480,
+        "Floating": 24576,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 4102
+      },
+      "candidate": {
+        "Borrow": 32768,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 4102
+      }
+    }
+  },
+  {
+    "id": "scripts.csv-meter-report.explicit-float",
+    "asynchronous": false,
+    "arithmeticSourceReads": [
+      45056,
+      32768
+    ],
+    "globalResolutions": [
+      16390,
+      16390
+    ],
+    "admittedPeaks": [
+      5171785,
+      5171785
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 20480,
+        "Floating": 24576,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 16390
+      },
+      "candidate": {
+        "Borrow": 32768,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 16390
+      }
+    }
+  },
+  {
+    "id": "scripts.csv-meter-report.explicit-float",
+    "asynchronous": true,
+    "arithmeticSourceReads": [
+      45056,
+      32768
+    ],
+    "globalResolutions": [
+      16390,
+      16390
+    ],
+    "admittedPeaks": [
+      5171785,
+      5171785
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 20480,
+        "Floating": 24576,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 16390
+      },
+      "candidate": {
+        "Borrow": 32768,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 16390
+      }
+    }
+  },
+  {
+    "id": "diagnostic.shipment-file-fed-map",
+    "asynchronous": false,
+    "arithmeticSourceReads": [
+      0,
+      0
+    ],
+    "globalResolutions": [
+      2052,
+      2052
+    ],
+    "admittedPeaks": [
+      2270071,
+      2270071
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 2052
+      },
+      "candidate": {
+        "Borrow": 0,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 2052
+      }
+    }
+  },
+  {
+    "id": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "arithmeticSourceReads": [
+      0,
+      0
+    ],
+    "globalResolutions": [
+      2052,
+      2052
+    ],
+    "admittedPeaks": [
+      2270071,
+      2270071
+    ],
+    "routes": {
+      "reference": {
+        "Borrow": 0,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 2052
+      },
+      "candidate": {
+        "Borrow": 0,
+        "IntegerHead": 0,
+        "Floating": 0,
+        "ObjectRead": 0,
+        "Fallback": 0,
+        "Global": 2052
+      }
+    }
+  }
+]

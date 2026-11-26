@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1758 arithmetic operand borrows](results/2026-11-26-arithmetic-operand-borrows/README.md)
+removes 18,432 arithmetic source reads per shipment and 12,288 per CSV
+meter in the trial. Global resolutions and peak admission match. Typed
+meter warm process CPU rises 2.19–4.69%. Shipment and the file-fed control
+span zero. Preserve the original scope and adverse result.
+
 [B1757 file-fed comparison attribution](results/2026-11-26-file-fed-comparison-attribution/README.md)
 finds the same principal CSV, map and instruction routes on both B1756
 images. Neither profile has a resolved comparison frame. The repeated
