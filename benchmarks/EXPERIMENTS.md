@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1754 shipment integer stores](results/2026-11-26-shipment-integer-stores/README.md)
+transfers 2,045 fresh results into existing native slots per shipment in
+both hosting modes. It introduces 2,045 lazy read boxes in each case.
+Allocation and admission remain effectively unchanged. Preserve the route
+evidence and patch without qualifying or merging the trial.
+
 [B1753 ready async shipment rows](results/2026-11-26-ready-shipment-rows/README.md)
 retires the two ready completion wrappers in a trial. All four CPU ranges
 span zero and local CLR allocation and admission are unchanged within six
