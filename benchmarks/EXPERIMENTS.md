@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1790 reuse one-byte JSON characters](results/2026-11-26-json-ascii-character/README.md)
+eliminates 802 string allocations per service-total run. CLR allocation
+falls 5.22% and admitted peak falls 5.42%. The reordered quiet run reduces
+sync and async elapsed with mixed CPU and wide control-worker spread. Keep
+the reuse and the evidence from the initial VM disk failure.
+
 [B1789 deferred-definition site placement](results/2026-11-26-deferred-site-placement/README.md)
 collects placement sites during linearization and retires the separate
 whole-tape scan. The checked instruction and scratch-capacity snapshots

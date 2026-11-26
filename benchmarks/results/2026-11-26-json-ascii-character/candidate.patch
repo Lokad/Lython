@@ -1,0 +1,52 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 96b231e14..6a1879dc0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -179,6 +179,7 @@ internal sealed partial class LythonRuntime
+             var original = input.Utf8Span;
+             var end = position + 1;
+             var reduction = 0;
++            var escapedScalar = 0;
+             escaped = false;
+             var closed = false;
+             var unpairedSurrogate = false;
+@@ -196,9 +197,9 @@ internal sealed partial class LythonRuntime
+                 {
+                     escaped = true;
+                     var start = end - 1;
+-                    var scalar = ReadJsonEscape(input, ref end, position, context, span);
+-                    unpairedSurrogate |= scalar is >= 0xd800 and <= 0xdfff;
+-                    var width = scalar < 0x80 ? 1 : scalar < 0x800 ? 2 : scalar < 0x10000 ? 3 : 4;
++                    escapedScalar = ReadJsonEscape(input, ref end, position, context, span);
++                    unpairedSurrogate |= escapedScalar is >= 0xd800 and <= 0xdfff;
++                    var width = escapedScalar < 0x80 ? 1 : escapedScalar < 0x800 ? 2 : escapedScalar < 0x10000 ? 3 : 4;
+                     reduction += end - start - width;
+                 }
+                 else
+@@ -217,17 +218,21 @@ internal sealed partial class LythonRuntime
+             // internal storage as well; never publish an invalid guest string.
+             if (!Utf8.IsValid(content)) throw new DecoderFallbackException("JSON string contains invalid UTF-8.");
+             context.CheckExecution(span);
+-            if (!escaped)
+-            {
+-                var existing = expectedPropertyNames?.FindName(content, expectedPosition, context, span);
+-                var plain = existing ?? input.CopyOrBorrowUtf8Range(position + 1, content.Length, context.MemoryGovernor, span);
++            var length = content.Length - reduction;
++            if (!escaped || length == 1)
++            {
++                // A one-byte result is ASCII. If escaped, the sizing pass
++                // already read the only scalar, so there is nothing to fill.
++                var character = length == 1 ? PyString.FromAsciiCharacter(escaped ? (byte)escapedScalar : content[0]) : null;
++                var existing = expectedPropertyNames?.FindName(escaped ? character!.Utf8Span : content,
++                    expectedPosition, context, span);
++                var plain = existing ?? character ?? input.CopyOrBorrowUtf8Range(position + 1, length, context.MemoryGovernor, span);
+                 context.CheckExecution(span);
+                 return (plain, end);
+             }
+ 
+             // Validate/measure before admitting the exact final string. No
+             // rewritten token, backend parser or temporary unescaped copy.
+-            var length = content.Length - reduction;
+             var bytes = PyString.EstimateApproximateBytes(length);
+             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+             context.CheckExecution(span);

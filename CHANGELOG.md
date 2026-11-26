@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse existing immutable character values for one-byte JSON strings, including
+  ASCII escapes. Skip per-token allocation and admission for these values.
 - Complete simple `startswith` and `endswith` helpers on exact strings without
   a callee workspace. Preserve managed stack checks and guest method dispatch.
 - Check managed stack availability before a cursor advances a native iterator.

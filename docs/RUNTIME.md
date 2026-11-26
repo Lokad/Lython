@@ -2098,9 +2098,10 @@ Shorter prefixes can keep their initial storage. A narrower record that does gro
 can retain spare hinted capacity or be refused earlier; that capacity stays funded.
 Refusal never retries a smaller allocation. Changed shapes retain ordinary
 admitted dictionary growth.
-Mutable records remain independent. Equal decoded strings have no interning or
-cross-decode identity guarantee; duplicate dictionary entries retain their first
-key and last value. Value strings use the ordinary decoder.
+Mutable records remain independent. Duplicate dictionary entries retain their
+first key and last value. Validated one-byte ASCII strings reuse the existing
+immutable character values, including a single ASCII escape. Other decoded
+strings can have different identities across decodes.
 Layouts and key payloads remain charged to the execution/result owner through
 nested, reentrant and suspended callbacks. Different order, duplicates and changed
 fields retain ordinary dictionary behavior. New metadata is admitted before
@@ -2108,8 +2109,9 @@ allocation. Replaced layout
 metadata stays conservatively charged until the bounded execution owner ends,
 so changing schemas can reject earlier. There is no separate cache allowance,
 admission fallback or collector-dependent refund.
-Escaped JSON strings validate original bytes and escapes, measure decoded storage before
-allocation, then fill the admitted final UTF-8 string. Lenient controls and valid
+Escaped JSON strings validate original bytes and escapes and measure decoded
+storage. The sizing pass supplies a single ASCII character directly. Other
+escaped tokens fill an admitted final UTF-8 string. Lenient controls and valid
 surrogate pairs follow the same decoder. String errors report Python messages and
 original scalar coordinates. Unpaired surrogates raise `ValueError` because
 surrogate-valued strings are unsupported.

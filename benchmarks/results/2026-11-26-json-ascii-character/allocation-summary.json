@@ -1,0 +1,65 @@
+{
+  "documentSingleByteValues": 802,
+  "rows": [
+    {
+      "case": "diagnostic.json-service-quantity-totals",
+      "allocatedBytes": [
+        860412,
+        815500
+      ],
+      "peak": [
+        1909869,
+        1806411
+      ],
+      "admittedCompilerBytes": [
+        66272,
+        66272
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocatedBytes": [
+        1599974,
+        1599982
+      ],
+      "peak": [
+        3822014,
+        3822014
+      ],
+      "admittedCompilerBytes": [
+        91312,
+        91312
+      ]
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "allocatedBytes": [
+        322774,
+        322768
+      ],
+      "peak": [
+        603795,
+        603795
+      ],
+      "admittedCompilerBytes": [
+        92399,
+        92399
+      ]
+    },
+    {
+      "case": "diagnostic.report-render.escaped-unicode.large",
+      "allocatedBytes": [
+        2589200,
+        2588374
+      ],
+      "peak": [
+        3551569,
+        3551569
+      ],
+      "admittedCompilerBytes": [
+        76512,
+        76512
+      ]
+    }
+  ]
+}

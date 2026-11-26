@@ -6,6 +6,29 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonStringTokenBoundaryTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task JsonSingleAsciiCharacterReusesTheSameValue(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import json
+            first = json.loads(r'{"a":"\u0061","line":"\n","control":"\u0000"}')
+            second = json.loads(r'{"\u0061":"a","line":"\u000a","control":"\u0000"}')
+            decoder = json.JSONDecoder(strict=False)
+            control, end = decoder.raw_decode('"' + chr(0) + '" tail')
+            assert list(first)[0] is first['a'] and list(second)[0] is second['a']
+            assert first['a'] is second['a']
+            assert first['line'] is second['line']
+            assert first['control'] is second['control'] is control and end == 3
+            return [first['a'], first['line'], control]
+            """);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(new object?[] { "a", "\n", "\0" }, Assert.IsAssignableFrom<IReadOnlyList<object?>>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData(1021, false)]
     [InlineData(1021, true)]
     [InlineData(1022, false)]
