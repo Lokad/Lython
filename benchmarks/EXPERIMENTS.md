@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1809 fixed list-display admission](results/2026-11-26-fixed-list-display-admission/README.md)
+removes the temporary lease object and adopts the final list backing directly.
+Shipment CLR allocation falls 4.64–4.76% at matching admitted peaks. Short
+async improves locally. Wide timing spans zero and the zip control reverses
+on repeat. Retain the simpler construction path and both observations.
+
 [B1808 generator row transfer](results/2026-11-26-starmap-generator-yield-inputs/README.md)
 removes per-row list construction. Shipment CLR allocation falls 19.68–21.52%
 and peak admission falls 14.04–21.46%. Five-item local async elapsed rises

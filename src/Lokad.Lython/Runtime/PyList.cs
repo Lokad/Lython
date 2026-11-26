@@ -55,11 +55,16 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     // The caller funds this exact array and commits its capacity before
     // publishing the result. Adoption copies no storage and refunds nothing.
     internal static PyList FromTransferredArray(object[] items, MemoryGovernor? governor, LythonSourceSpan? span)
-        => new()
-        {
-            _items = items, _count = items.Length, _memoryGovernor = governor,
-            _allocationSpan = span, _committedBytes = governor is null ? 0 : EstimateCapacityBytes(items.Length),
-        };
+        => new(items, governor, span, governor is null ? 0 : EstimateCapacityBytes(items.Length));
+
+    private PyList(object[] items, MemoryGovernor? governor, LythonSourceSpan? span, long committedBytes)
+    {
+        _items = items;
+        _count = items.Length;
+        _memoryGovernor = governor;
+        _allocationSpan = span;
+        _committedBytes = committedBytes;
+    }
 
     // Only unpublished constructor storage can be refunded; contained aliases
     // retain their independent owners. Drop the backing before returning funding.

@@ -279,16 +279,23 @@ internal sealed partial class LythonRuntime
     private static PyList CreateSlotList(Span<ExecutableSlot> values, ExecutionContext context, LythonSourceSpan span)
     {
         var bytes = PyList.EstimateCapacityBytes(values.Length);
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-        context.CheckExecution(span);
-        var items = values.IsEmpty ? Array.Empty<object>() : new object[values.Length];
-        for (var i = 0; i < items.Length; i++)
+        var governor = context.MemoryGovernor;
+        governor.Reserve(bytes, span);
+        try
         {
-            if ((i & 1023) == 0) context.CheckExecution(span);
-            items[i] = values[i].Object.RequireNotNull();
+            context.CheckExecution(span);
+            var items = values.IsEmpty ? Array.Empty<object>() : new object[values.Length];
+            for (var i = 0; i < items.Length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                items[i] = values[i].Object.RequireNotNull();
+            }
+
+            var list = PyList.FromTransferredArray(items, governor, span);
+            governor.Commit(bytes);
+            return list;
         }
-        storage.Commit(bytes);
-        return PyList.FromTransferredArray(items, context.MemoryGovernor, span);
+        catch { governor.ReleaseReserved(bytes); throw; }
     }
 
     // Prove a closed hash/equality path without traversing composite keys or

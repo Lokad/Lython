@@ -1,0 +1,98 @@
+[
+  {
+    "mode": "sync",
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "bytes": [
+      1391736,
+      1325656
+    ],
+    "peak": [
+      3467109,
+      3467109
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "bytes": [
+      1425016,
+      1358936
+    ],
+    "peak": [
+      3795557,
+      3795557
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "diagnostic.shipment-bound-starmap",
+    "bytes": [
+      1100342,
+      1099736
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "scripts.csv-meter-report.explicit-float",
+    "bytes": [
+      991808,
+      991814
+    ],
+    "peak": [
+      5171785,
+      5171785
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "bytes": [
+      1392132,
+      1325840
+    ],
+    "peak": [
+      3467109,
+      3467109
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "bytes": [
+      1425200,
+      1359120
+    ],
+    "peak": [
+      3795557,
+      3795557
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.shipment-bound-starmap",
+    "bytes": [
+      1100464,
+      1099920
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "scripts.csv-meter-report.explicit-float",
+    "bytes": [
+      992024,
+      992024
+    ],
+    "peak": [
+      5171785,
+      5171785
+    ]
+  }
+]
