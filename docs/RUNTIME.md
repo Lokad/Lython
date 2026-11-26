@@ -1599,6 +1599,10 @@ remain in the existing slot as funded UTF-8. An adjacent call to the exact
 builtin `float` consumes the bytes directly. A guest read, alias or dynamic
 call publishes the canonical string. The frame owns those slots through
 cancellation and cleanup. Numeric readers publish their remaining text directly.
+Fixed zip and CSV rows with consecutive private local targets transfer their
+completed operands directly to those locals after arity validation, in
+assignment order with cancellation checks between stores. Captured or
+mirrored bindings and other targets use ordinary assignment.
 Source and parse errors consume the failed item and discard its unfinished
 record; already returned rows remain valid and funded.
 Escaped line endings keep the record open across source items. Non-strict

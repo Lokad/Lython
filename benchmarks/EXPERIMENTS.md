@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1783 fixed rows into private locals](results/2026-11-26-fixed-row-local-bindings/README.md)
+removes separate stores for 4,096 shipment and 20,480 CSV local
+assignments. Sync shipment elapsed falls in both blocks. Async
+shipment and the CSV meter use less CPU in the reordered block,
+which retains the initial adverse CSV and file-search observations.
+[Confirmation](results/2026-11-26-fixed-row-local-bindings/confirmation/README.md)
+
 [B1782 borrowed iterator values in executable loops](results/2026-11-26-borrowed-loop-iterators/README.md)
 removes 17 shipment cursors and shares exhaustion across ordinary and
 fixed-unpack loops. Reordered sync shipment uses 4.71–6.53% less process

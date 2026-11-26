@@ -1,0 +1,106 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 94f767e42..7ce3eddb3 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -424,8 +424,10 @@ internal readonly record struct ExecutableInstruction
+         => new(ExecutableOpCode.ForNext, span, targetBlockIndex);
+ 
+     // Applied after physical slots and the loop's exit address are known.
+-    internal ExecutableInstruction WithFixedUnpack()
+-        => new(ExecutableOpCode.ForNextUnpack, Span, _primaryOperand, _secondaryOperand, _inputStart, _resultSlot, _liveExtent);
++    internal int FixedUnpackLocalStart => _secondaryOperand;
++
++    internal ExecutableInstruction WithFixedUnpack(int localStart)
++        => new(ExecutableOpCode.ForNextUnpack, Span, _primaryOperand, localStart, _inputStart, _resultSlot, _liveExtent);
+ 
+     // Final-layout preparation changes no positions or storage capacity. The
+     // ordinary body remains the continuation for protocols and admission.
+diff --git a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+index ab7e05aa5..774e37165 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+@@ -155,7 +155,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+                         => instruction.WithArithmeticCall(),
+                     ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(positions[instruction.TargetIndex].Offset),
+                     ExecutableOpCode.ForNext when j + 1 < source.Count && CanUnpackIteration(instruction, source[j + 1])
+-                        => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)).WithFixedUnpack(),
++                        => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex))
++                            .WithFixedUnpack(unpackedWidth == 0 ? -1 : unpackedStart),
+                     ExecutableOpCode.Binary when !instruction.HasResultConsumer && j + 1 < source.Count &&
+                         CanContinueInteger(source[j + 1], instruction.ResultSlot, layout.FirstTemporarySlot)
+                         => instruction.WithIntegerContinuation(),
+@@ -191,8 +192,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+                 && next.InputStart == iteration.ResultSlot && next.ResultSlot == iteration.ResultSlot
+                 && next.UnpackLayout is { HasStarredTarget: false, TargetCount: > 0 };
+ 
+-        // Only the fixed local targets in this block can receive the parser's
+-        // deferred text slots. Other blocks retain their ordinary instructions.
++        // Identify adjacent private stores that consume the row slots in
++        // assignment order. The ordinary tape remains available.
+         static (int Start, int Width) GetUnpackedLocals(ExecutableCodeObject code,
+             List<ExecutableInstruction> block, int unpackIndex)
+         {
+@@ -204,8 +205,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+             for (var i = 0; i < width; i++)
+             {
+                 var store = block[unpackIndex + 1 + i];
++                var input = block[unpackIndex].LiveExtent - 1 - i;
+                 if (store.OpCode != ExecutableOpCode.StoreLocal || store.StoresCapturedLocal ||
+-                    store.LocalSlot != start + i)
++                    store.LocalSlot != start + i || store.InputStart != input || store.LiveExtent != input)
+                     return default;
+             }
+             return (start, width);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 145cc3bc0..6514b39cf 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
+ 
+         private bool CompleteIterationUnpack(int count, in ExecutableInstruction instruction)
+         {
+-            if (count >= 0) return CompleteFixedUnpack(count);
++            if (count >= 0) return CompleteFixedUnpack(count, instruction.FixedUnpackLocalStart);
+             _execution.Stack.RetireTo(instruction.ResultSlot);
+             return ExitForNext(instruction);
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index c67fc74de..b58ccf129 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -516,7 +516,7 @@ internal sealed partial class LythonRuntime
+             return true;
+         }
+ 
+-        private bool CompleteFixedUnpack(int count)
++        private bool CompleteFixedUnpack(int count, int localStart)
+         {
+             var index = ++_execution.InstructionIndex;
+             ref readonly var unpack = ref _execution.Code.Instructions[index];
+@@ -524,7 +524,25 @@ internal sealed partial class LythonRuntime
+             var layout = unpack.UnpackLayout;
+             if (!layout.AcceptsValueCount(count))
+                 throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(count), unpack.Span);
+-            _execution.InstructionIndex = index + 1;
++            var next = index + 1;
++            if (localStart >= 0 && GlobalNamespace is null && !MirrorLocalStores)
++            {
++                // The complete row is private until arity has been checked.
++                // If execution stops between stores, resume at the original
++                // instruction with the remaining row slots still live.
++                var locals = _execution.Locals.AsSpan(localStart, count);
++                var inputs = _execution.Stack.Values.AsSpan(unpack.ResultSlot, count);
++                var transferred = 0;
++                while (transferred < count && State.CanContinue)
++                {
++                    ref var value = ref inputs[count - 1 - transferred];
++                    locals[transferred++] = value;
++                    value = default;
++                }
++                _execution.Stack.RestoreNativeExtent(unpack.LiveExtent - transferred);
++                next += transferred;
++            }
++            _execution.InstructionIndex = next;
+             return true;
+         }
+ 

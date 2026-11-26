@@ -1,0 +1,94 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": false,
+      "routes": {
+        "CompletedFixedRows": 0,
+        "TransferredRows": 0,
+        "TransferredLocals": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": true,
+      "routes": {
+        "CompletedFixedRows": 0,
+        "TransferredRows": 0,
+        "TransferredLocals": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "CompletedFixedRows": 0,
+        "TransferredRows": 0,
+        "TransferredLocals": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "CompletedFixedRows": 0,
+        "TransferredRows": 0,
+        "TransferredLocals": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "CompletedFixedRows": 2048,
+        "TransferredRows": 2048,
+        "TransferredLocals": 4096
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "CompletedFixedRows": 2048,
+        "TransferredRows": 2048,
+        "TransferredLocals": 4096
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-meter-report.explicit-float",
+      "asynchronous": false,
+      "routes": {
+        "CompletedFixedRows": 4096,
+        "TransferredRows": 4096,
+        "TransferredLocals": 20480
+      },
+      "peakExecutionMemoryBytes": 5171785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-meter-report.explicit-float",
+      "asynchronous": true,
+      "routes": {
+        "CompletedFixedRows": 4096,
+        "TransferredRows": 4096,
+        "TransferredLocals": 20480
+      },
+      "peakExecutionMemoryBytes": 5171785,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

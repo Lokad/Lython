@@ -424,8 +424,10 @@ internal readonly record struct ExecutableInstruction
         => new(ExecutableOpCode.ForNext, span, targetBlockIndex);
 
     // Applied after physical slots and the loop's exit address are known.
-    internal ExecutableInstruction WithFixedUnpack()
-        => new(ExecutableOpCode.ForNextUnpack, Span, _primaryOperand, _secondaryOperand, _inputStart, _resultSlot, _liveExtent);
+    internal int FixedUnpackLocalStart => _secondaryOperand;
+
+    internal ExecutableInstruction WithFixedUnpack(int localStart)
+        => new(ExecutableOpCode.ForNextUnpack, Span, _primaryOperand, localStart, _inputStart, _resultSlot, _liveExtent);
 
     // Final-layout preparation changes no positions or storage capacity. The
     // ordinary body remains the continuation for protocols and admission.

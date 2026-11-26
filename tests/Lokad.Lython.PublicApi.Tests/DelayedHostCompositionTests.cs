@@ -110,13 +110,20 @@ public sealed class DelayedHostCompositionTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
-            with open("/c.csv") as one, open("/d.csv") as two:
+            def scan(one, two):
+                a = None
+                b = None
+                last_a = last_b = None
                 try:
                     for a, b in zip(csv.DictReader(one), csv.DictReader(two), strict=True):
-                        pass
+                        last_a = a
+                        last_b = b
                     return "no-error"
                 except ValueError:
+                    assert a is not None and a is last_a and b is last_b
                     return "longer"
+            with open("/c.csv") as one, open("/d.csv") as two:
+                return scan(one, two)
             """);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();

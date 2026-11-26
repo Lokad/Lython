@@ -155,7 +155,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                         => instruction.WithArithmeticCall(),
                     ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(positions[instruction.TargetIndex].Offset),
                     ExecutableOpCode.ForNext when j + 1 < source.Count && CanUnpackIteration(instruction, source[j + 1])
-                        => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)).WithFixedUnpack(),
+                        => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex))
+                            .WithFixedUnpack(unpackedWidth == 0 ? -1 : unpackedStart),
                     ExecutableOpCode.Binary when !instruction.HasResultConsumer && j + 1 < source.Count &&
                         CanContinueInteger(source[j + 1], instruction.ResultSlot, layout.FirstTemporarySlot)
                         => instruction.WithIntegerContinuation(),
@@ -191,8 +192,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 && next.InputStart == iteration.ResultSlot && next.ResultSlot == iteration.ResultSlot
                 && next.UnpackLayout is { HasStarredTarget: false, TargetCount: > 0 };
 
-        // Only the fixed local targets in this block can receive the parser's
-        // deferred text slots. Other blocks retain their ordinary instructions.
+        // Identify adjacent private stores that consume the row slots in
+        // assignment order. The ordinary tape remains available.
         static (int Start, int Width) GetUnpackedLocals(ExecutableCodeObject code,
             List<ExecutableInstruction> block, int unpackIndex)
         {
@@ -204,8 +205,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             for (var i = 0; i < width; i++)
             {
                 var store = block[unpackIndex + 1 + i];
+                var input = block[unpackIndex].LiveExtent - 1 - i;
                 if (store.OpCode != ExecutableOpCode.StoreLocal || store.StoresCapturedLocal ||
-                    store.LocalSlot != start + i)
+                    store.LocalSlot != start + i || store.InputStart != input || store.LiveExtent != input)
                     return default;
             }
             return (start, width);

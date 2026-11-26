@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113280,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "bytes": [
+      808366,
+      808528
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "bytes": [
+      1093080,
+      1093480
+    ],
+    "peak": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "bytes": [
+      990960,
+      991808
+    ],
+    "peak": [
+      5171785,
+      5171785
+    ]
+  }
+]

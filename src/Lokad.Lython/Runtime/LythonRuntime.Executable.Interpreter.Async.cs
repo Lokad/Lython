@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
 
         private bool CompleteIterationUnpack(int count, in ExecutableInstruction instruction)
         {
-            if (count >= 0) return CompleteFixedUnpack(count);
+            if (count >= 0) return CompleteFixedUnpack(count, instruction.FixedUnpackLocalStart);
             _execution.Stack.RetireTo(instruction.ResultSlot);
             return ExitForNext(instruction);
         }

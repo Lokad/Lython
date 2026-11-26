@@ -516,7 +516,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private bool CompleteFixedUnpack(int count)
+        private bool CompleteFixedUnpack(int count, int localStart)
         {
             var index = ++_execution.InstructionIndex;
             ref readonly var unpack = ref _execution.Code.Instructions[index];
@@ -524,7 +524,25 @@ internal sealed partial class LythonRuntime
             var layout = unpack.UnpackLayout;
             if (!layout.AcceptsValueCount(count))
                 throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(count), unpack.Span);
-            _execution.InstructionIndex = index + 1;
+            var next = index + 1;
+            if (localStart >= 0 && GlobalNamespace is null && !MirrorLocalStores)
+            {
+                // The complete row is private until arity has been checked.
+                // If execution stops between stores, resume at the original
+                // instruction with the remaining row slots still live.
+                var locals = _execution.Locals.AsSpan(localStart, count);
+                var inputs = _execution.Stack.Values.AsSpan(unpack.ResultSlot, count);
+                var transferred = 0;
+                while (transferred < count && State.CanContinue)
+                {
+                    ref var value = ref inputs[count - 1 - transferred];
+                    locals[transferred++] = value;
+                    value = default;
+                }
+                _execution.Stack.RestoreNativeExtent(unpack.LiveExtent - transferred);
+                next += transferred;
+            }
+            _execution.InstructionIndex = next;
             return true;
         }
 
