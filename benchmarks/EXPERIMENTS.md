@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1745 file-processing CPU profiles](results/2026-11-26-file-processing-profile/README.md)
+locate native helper workspace and dispatch alongside host I/O, line
+admission and compilation. The four-instruction search helper has five
+value slots. The profile supports a direct-return investigation with
+dynamic receiver and file-processing controls.
+
 [B1744 file processing against CPython](results/2026-11-26-file-processing-cpython/README.md)
 measures `a490e9d5f` against stock CPython 3.13.16. Shipment takes
 1.346–1.383× warm sync and 1.376–1.485× warm async. File-fed map takes
