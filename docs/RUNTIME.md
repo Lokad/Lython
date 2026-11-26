@@ -422,7 +422,10 @@ operands admits the callable and final annotation backing before allocating
 either. Refusal can arise from their combined estimate. A declaration with
 scalar literal positional defaults reads one immutable tuple directly from its
 compiled declaration. Reassigning `__defaults__` affects only that function.
-Each definition admits the backing for evaluated defaults before evaluation.
+When all keyword defaults are scalar literals, the compiled declaration supplies
+their values directly to each function's private backing after admission. The
+keyword mapping remains independently mutable for each function. Each definition
+admits the backing for evaluated defaults before evaluation.
 An executable definition with keyword defaults can admit the
 fixed callable shell at the same preflight when it has no captures,
 decorators or annotations. This can refuse the definition before a default

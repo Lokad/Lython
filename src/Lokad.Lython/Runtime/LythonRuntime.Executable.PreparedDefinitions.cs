@@ -131,17 +131,21 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject factory, ExecutionContext scope, long argument, object? keywordCapture)
     {
         var instructions = factory.Instructions;
-        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span, definition.PrepaysCallable);
+        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span,
+            definition.PrepaysCallable, definition.LiteralKeywordDefaults);
         try
         {
             var index = 1;
             var positional = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
             StoreFunctionDefault(ref defaults, 0, true, positional, scope.State, instructions[index++].Span);
-            var keyword = ExecutableSlot.FromObject(keywordCapture);
-            if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
-            else scope.CheckExecution(instructions[index++].Span);
-            scope.CheckExecution(instructions[index++].Span);
-            defaults = defaults with { Keywords = defaults.Keywords.WithInlineKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
+            if (definition.LiteralKeywordDefaults is null)
+            {
+                var keyword = ExecutableSlot.FromObject(keywordCapture);
+                if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
+                else scope.CheckExecution(instructions[index++].Span);
+                scope.CheckExecution(instructions[index++].Span);
+                defaults = defaults with { Keywords = defaults.Keywords.WithInlineKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
+            }
             var span = instructions[index].Span;
             scope.CheckExecution(span);
             var result = definition.EagerAnnotationReads is { } reads
@@ -208,9 +212,11 @@ internal sealed partial class LythonRuntime
         var layout = definition.ParameterLayout;
         // The pair owns these defaults immediately, including when further
         // evaluation or callable construction fails before returning a member.
-        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span, definition.PrepaysCallable);
+        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span,
+            definition.PrepaysCallable, definition.LiteralKeywordDefaults);
         var index = start + 1;
-        for (var i = 0; i < layout.Defaults.Length; i++)
+        var evaluated = definition.LiteralKeywordDefaults is null ? layout.Defaults.Length : layout.PositionalDefaultCount;
+        for (var i = 0; i < evaluated; i++)
         {
             ExecutableSlot value;
             ref readonly var first = ref instructions[index];

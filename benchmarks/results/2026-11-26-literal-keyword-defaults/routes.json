@@ -1,0 +1,94 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "LiteralKeywordAllocations": 0,
+        "LiteralKeywordValues": 0,
+        "LiteralClosedPairMembers": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "LiteralKeywordAllocations": 0,
+        "LiteralKeywordValues": 0,
+        "LiteralClosedPairMembers": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": false,
+      "routes": {
+        "LiteralKeywordAllocations": 2048,
+        "LiteralKeywordValues": 2048,
+        "LiteralClosedPairMembers": 2048
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": true,
+      "routes": {
+        "LiteralKeywordAllocations": 2048,
+        "LiteralKeywordValues": 2048,
+        "LiteralClosedPairMembers": 2048
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.definition-locals-default",
+      "asynchronous": false,
+      "routes": {
+        "LiteralKeywordAllocations": 0,
+        "LiteralKeywordValues": 0,
+        "LiteralClosedPairMembers": 0
+      },
+      "peakExecutionMemoryBytes": 14635,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.definition-locals-default",
+      "asynchronous": true,
+      "routes": {
+        "LiteralKeywordAllocations": 0,
+        "LiteralKeywordValues": 0,
+        "LiteralClosedPairMembers": 0
+      },
+      "peakExecutionMemoryBytes": 14635,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": false,
+      "routes": {
+        "LiteralKeywordAllocations": 0,
+        "LiteralKeywordValues": 0,
+        "LiteralClosedPairMembers": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": true,
+      "routes": {
+        "LiteralKeywordAllocations": 0,
+        "LiteralKeywordValues": 0,
+        "LiteralClosedPairMembers": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

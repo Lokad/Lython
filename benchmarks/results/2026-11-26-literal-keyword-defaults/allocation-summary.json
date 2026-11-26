@@ -1,0 +1,78 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "bytes": [
+      22744,
+      22744
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "retainedCompilerBytes": [
+      886881,
+      886881
+    ],
+    "compilerAllocatedBytes": [
+      1521120,
+      1521904
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "bytes": [
+      737944,
+      737944
+    ],
+    "peak": [
+      2786655,
+      2786655
+    ],
+    "retainedCompilerBytes": [
+      74415,
+      74495
+    ],
+    "compilerAllocatedBytes": [
+      63696,
+      61664
+    ]
+  },
+  {
+    "case": "diagnostic.definition-locals-default",
+    "bytes": [
+      19016,
+      19016
+    ],
+    "peak": [
+      14635,
+      14635
+    ],
+    "retainedCompilerBytes": [
+      98043,
+      98043
+    ],
+    "compilerAllocatedBytes": [
+      98480,
+      98520
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113280,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ],
+    "retainedCompilerBytes": [
+      63536,
+      63536
+    ],
+    "compilerAllocatedBytes": [
+      456744,
+      456752
+    ]
+  }
+]

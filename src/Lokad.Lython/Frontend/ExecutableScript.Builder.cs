@@ -55,19 +55,22 @@ internal sealed partial class ExecutableScript
         => expression.ScopeFacts with { LocalNames = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" } };
 
     private static ExecutableCreateFunction CompileNamespaceLambda(LambdaExpressionSyntax lambda, Compilation compilation,
-        PyTuple? literalPositionalDefaults = null)
+        PyTuple? literalPositionalDefaults = null, PyTuple? literalKeywordDefaults = null)
     {
         // Lazy annotation expressions are outside the statement yield walk.
         var generator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
         var code = new Builder(compilation, lambda.ParameterLayout, null, ScopeDirectiveFactsCollector.ForLambda(lambda), generator: generator)
             .CompileCodeObject("<lambda>", [], qualifiedName: lambda.PreparedQualifiedName, lambda: lambda);
-        return CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.NamespaceLambda, literalPositionalDefaults);
+        return CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.NamespaceLambda,
+            literalPositionalDefaults, literalKeywordDefaults);
     }
 
     private static ExecutableCreateFunction CompleteLambdaDefinition(LambdaExpressionSyntax lambda,
-        ExecutableCodeObject code, bool generator, ExecutableDefinitionKind kind, PyTuple? literalPositionalDefaults)
+        ExecutableCodeObject code, bool generator, ExecutableDefinitionKind kind, PyTuple? literalPositionalDefaults,
+        PyTuple? literalKeywordDefaults)
         => lambda.PreparedDefinition = new ExecutableCreateFunction(code, lambda.ParameterLayout, 0, generator, 0,
-            [], null, null, null, Kind: kind, LiteralPositionalDefaults: literalPositionalDefaults);
+            [], null, null, null, Kind: kind, LiteralPositionalDefaults: literalPositionalDefaults,
+            LiteralKeywordDefaults: literalKeywordDefaults);
 
     // Recursive emission has one active buffer set per builder. A compilation
     // keeps one spare for the next sibling. Only final arrays and per-scope

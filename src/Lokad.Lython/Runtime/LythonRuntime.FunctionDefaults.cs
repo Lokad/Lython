@@ -9,14 +9,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, LythonSourceSpan span)
     {
         var defaults = AllocateFunctionDefaults(definition.ParameterLayout, definition.LiteralPositionalDefaults is not null,
-            context, span, definition.PrepaysCallable);
+            context, span, definition.PrepaysCallable, definition.LiteralKeywordDefaults);
         if (!defaults.Positional.IsUnassigned) operands[0] = defaults.Positional;
         if (!defaults.Keywords.IsUnassigned) operands[^1] = defaults.Keywords;
     }
 
     // Admit the final backing, even when a singleton tuple is still implicit.
     private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, bool keywordsOnly,
-        ExecutionContext context, LythonSourceSpan span, bool prepayCallable = false)
+        ExecutionContext context, LythonSourceSpan span, bool prepayCallable = false, PyTuple? literalKeywords = null)
     {
         var positionalCount = keywordsOnly ? 0 : layout.PositionalDefaultCount;
         var keys = layout.PreparedKeywordDefaultKeys;
@@ -36,9 +36,25 @@ internal sealed partial class LythonRuntime
                 1 => ExecutableSlot.OwnPrivatePositionalDefault(ExecutableSlot.FromObject(PyNone.Instance)),
                 _ => ExecutableSlot.OwnPrivateDefault(PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes)),
             };
-            var keyword = keys is null ? default : keys.Count == 1
-                ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(PyNone.Instance), prepayCallable)
-                : ExecutableSlot.OwnPrivateKeywordStorage(new object?[keywordCapacity], prepayCallable);
+            ExecutableSlot keyword = default;
+            if (keys is { Count: 1 })
+            {
+                var value = literalKeywords is null ? PyNone.Instance : literalKeywords[0];
+                keyword = ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(value), prepayCallable);
+            }
+            else if (keys is not null)
+            {
+                var values = new object?[keywordCapacity];
+                if (literalKeywords is not null)
+                {
+                    for (var i = 0; i < literalKeywords.Count; i++)
+                    {
+                        if ((i & 63) == 0) context.CheckExecution(span);
+                        values[i] = literalKeywords[i];
+                    }
+                }
+                keyword = ExecutableSlot.OwnPrivateKeywordStorage(values, prepayCallable);
+            }
             governor.Commit(bytes);
             return new(positional, keyword);
         }

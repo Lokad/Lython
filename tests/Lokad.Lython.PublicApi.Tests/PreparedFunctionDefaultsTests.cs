@@ -109,6 +109,45 @@ public sealed class PreparedFunctionDefaultsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task LiteralKeywordDefaultsKeepIndependentDictionariesAcrossSuspendingPositionalDefaults(bool asynchronous)
+    {
+        const string source = """
+            def read(seed):
+                with open('/base.txt') as stream:
+                    return int(stream.read()) + seed
+            def make(seed):
+                return lambda value=read(seed), *, scale=(7), unit='base': (value * scale, unit)
+            first = make(2)
+            second = make(3)
+            assert first() == (28, 'base') and second() == (35, 'base')
+            defaults = first.__kwdefaults__
+            assert defaults is first.__kwdefaults__ and defaults is not second.__kwdefaults__
+            defaults['scale'] = 5
+            assert first() == (20, 'base') and second() == (35, 'base')
+            first.__kwdefaults__ = {'scale': 3, 'unit': 'other'}
+            assert first() == (12, 'other') and defaults['unit'] == 'base'
+            return second()
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost();
+        var delayed = new DelayedLythonHost();
+        host.SeedFile("/base.txt", "2");
+        delayed.SeedFile("/base.txt", "2");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(2, asynchronous ? delayed.ClosedFileCount : host.ClosedFileCount);
+        }
+        if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task KeywordDefaultCanBeADictionaryAndKeepItsIdentity(bool asynchronous)
     {
         const string source = """

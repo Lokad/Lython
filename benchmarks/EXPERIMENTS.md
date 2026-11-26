@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1788 initialize literal keyword defaults](results/2026-11-26-literal-keyword-defaults/README.md)
+removes the load and store for 2,048 literals per escaping-rule run. Warm
+async CPU falls in both quiet blocks with matching allocation and execution
+admission. The ordinary factory's compile-only and through-result CPU rise
+in the repeat. Keep the change and track the compile-side cost.
+[Confirmation](results/2026-11-26-literal-keyword-defaults/confirmation/README.md).
+
 [B1787 continue from the first integer operation](results/2026-11-26-seeded-integer-chain/README.md)
 bypasses continuation dispatch on 2,608 single-operation returns per ordinary
 factory run. Quiet factory timings span zero and the local invoice gain does

@@ -1,0 +1,269 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+index bb45eb3b2..4583fcdb3 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+@@ -55,19 +55,22 @@ internal sealed partial class ExecutableScript
+         => expression.ScopeFacts with { LocalNames = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" } };
+ 
+     private static ExecutableCreateFunction CompileNamespaceLambda(LambdaExpressionSyntax lambda, Compilation compilation,
+-        PyTuple? literalPositionalDefaults = null)
++        PyTuple? literalPositionalDefaults = null, PyTuple? literalKeywordDefaults = null)
+     {
+         // Lazy annotation expressions are outside the statement yield walk.
+         var generator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
+         var code = new Builder(compilation, lambda.ParameterLayout, null, ScopeDirectiveFactsCollector.ForLambda(lambda), generator: generator)
+             .CompileCodeObject("<lambda>", [], qualifiedName: lambda.PreparedQualifiedName, lambda: lambda);
+-        return CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.NamespaceLambda, literalPositionalDefaults);
++        return CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.NamespaceLambda,
++            literalPositionalDefaults, literalKeywordDefaults);
+     }
+ 
+     private static ExecutableCreateFunction CompleteLambdaDefinition(LambdaExpressionSyntax lambda,
+-        ExecutableCodeObject code, bool generator, ExecutableDefinitionKind kind, PyTuple? literalPositionalDefaults)
++        ExecutableCodeObject code, bool generator, ExecutableDefinitionKind kind, PyTuple? literalPositionalDefaults,
++        PyTuple? literalKeywordDefaults)
+         => lambda.PreparedDefinition = new ExecutableCreateFunction(code, lambda.ParameterLayout, 0, generator, 0,
+-            [], null, null, null, Kind: kind, LiteralPositionalDefaults: literalPositionalDefaults);
++            [], null, null, null, Kind: kind, LiteralPositionalDefaults: literalPositionalDefaults,
++            LiteralKeywordDefaults: literalKeywordDefaults);
+ 
+     // Recursive emission has one active buffer set per builder. A compilation
+     // keeps one spare for the next sibling. Only final arrays and per-scope
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.NativeSegments.cs b/src/Lokad.Lython/Frontend/ExecutableScript.NativeSegments.cs
+index d87b2f786..a8fa922dc 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.NativeSegments.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.NativeSegments.cs
+@@ -233,10 +233,12 @@ internal sealed partial class ExecutableCodeObject
+                 DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0, LiteralPositionalDefaults: null,
+                 CodeObject: { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false },
+                 ParameterLayout: { Defaults.Length: > 0 } layout,
+-            } || start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
++            } definition || start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
++        if (fixedKeyword && definition.LiteralKeywordDefaults is not null) return false;
+ 
+         var index = startIndex + 1;
+-        for (var i = 0; i < layout.Defaults.Length; i++)
++        var evaluated = definition.LiteralKeywordDefaults is null ? layout.Defaults.Length : layout.PositionalDefaultCount;
++        for (var i = 0; i < evaluated; i++)
+         {
+             PythonTokenization.CheckCancellation(token, index);
+             if (index >= Instructions.Length) return false;
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+index 7a3ac0094..ab7103657 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+@@ -9,7 +9,8 @@ internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject,
+     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
+     IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations,
+     ExecutableInstruction[]? EagerAnnotationReads, bool DirectKeywordDefault = false,
+-    ExecutableDefinitionKind Kind = ExecutableDefinitionKind.Statement, PyTuple? LiteralPositionalDefaults = null) : ExecutableOperation
++    ExecutableDefinitionKind Kind = ExecutableDefinitionKind.Statement, PyTuple? LiteralPositionalDefaults = null,
++    PyTuple? LiteralKeywordDefaults = null) : ExecutableOperation
+ {
+     internal int DefaultOperandCount => ParameterLayout.DefaultStorageCount - (LiteralPositionalDefaults is null ? 0 : 1);
+     internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + DefaultOperandCount);
+@@ -64,7 +65,7 @@ internal sealed partial class ExecutableScript
+             block = CompileFunctionDefaults(definition.Parameters,
+                 definition.ParameterLayout, definition.Span, block,
+                 allowDirectKeyword: emitAnnotations && (annotations.Length == 0 || annotations[0].Expression.PostponedAnnotation is not null),
+-                out var directKeywordDefault, out var definitionIndex, out var literals);
++                out var directKeywordDefault, out var definitionIndex, out var literals, out var keywordLiterals);
+             PyString[]? postponed = null;
+             ExecutableInstruction[]? reads = null;
+             // Lexical preparation attaches postponed text to every annotation in the declaration.
+@@ -99,7 +100,7 @@ internal sealed partial class ExecutableScript
+             EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
+                 definition.IsGenerator, postponed is null && reads is null ? annotations.Length : 0,
+                 deferredAnnotations, typeParameters, postponed, reads, directKeywordDefault,
+-                LiteralPositionalDefaults: literals), definition.Span, block, definitionIndex);
++                LiteralPositionalDefaults: literals, LiteralKeywordDefaults: keywordLiterals), definition.Span, block, definitionIndex);
+             // Module declarations update their live namespace and optional slot.
+             var name = definition.Name;
+             if (_parameterLayout is null)
+@@ -175,32 +176,35 @@ internal sealed partial class ExecutableScript
+         private int CompileLambda(LambdaExpressionSyntax lambda, int block)
+         {
+             block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false,
+-                out _, out var definitionIndex, out var literals);
++                out _, out var definitionIndex, out var literals, out var keywordLiterals);
+             var definition = lambda.PreparedDefinition;
+             if (definition is null)
+             {
+-                if (_classBody) definition = CompileNamespaceLambda(lambda, _compilation, literals);
++                if (_classBody) definition = CompileNamespaceLambda(lambda, _compilation, literals, keywordLiterals);
+                 else
+                 {
+                     var generator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
+                     var code = CompileFunctionCode("<lambda>", lambda.ParameterLayout,
+                         [], ScopeDirectiveFactsCollector.ForLambda(lambda), generator: generator,
+                         qualifiedName: lambda.PreparedQualifiedName, lambda: lambda);
+-                    definition = CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.Lambda, literals);
++                    definition = CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.Lambda, literals,
++                        keywordLiterals);
+                 }
+             }
+-            else if (literals is not null) definition = definition with { LiteralPositionalDefaults = literals };
++            else if (literals is not null || keywordLiterals is not null)
++                definition = definition with { LiteralPositionalDefaults = literals, LiteralKeywordDefaults = keywordLiterals };
+             EmitDefinition(definition, lambda.Span, block, definitionIndex);
+             return block;
+         }
+ 
+         private int CompileFunctionDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
+             FunctionParameterLayout layout, LythonSourceSpan span, int block, bool allowDirectKeyword, out bool directKeyword,
+-            out int definitionIndex, out PyTuple? literals)
++            out int definitionIndex, out PyTuple? literals, out PyTuple? keywordLiterals)
+         {
+             directKeyword = false;
+             definitionIndex = -1;
+-            literals = PrepareLiteralPositionalDefaults(parameters, layout, span);
++            literals = PrepareLiteralDefaults(parameters, layout, 0, layout.PositionalDefaultCount, span);
++            keywordLiterals = null;
+             if (layout.Defaults.Length == 0 || literals is not null && !layout.HasKeywordDefaults) return block;
+             if (allowDirectKeyword && (literals is not null || layout.PositionalDefaultCount == 0) &&
+                 layout.Defaults.Length == layout.PositionalDefaultCount + 1 &&
+@@ -213,11 +217,14 @@ internal sealed partial class ExecutableScript
+                 directKeyword = true;
+                 return CompileExpression(name, block);
+             }
++            keywordLiterals = PrepareLiteralDefaults(parameters, layout, layout.PositionalDefaultCount,
++                layout.Defaults.Length - layout.PositionalDefaultCount, span);
+             // Finalize this constant when annotation emission has determined
+             // the complete descriptor. The start and creation use one entry.
+             definitionIndex = AppendConstant(layout);
+             AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(definitionIndex, span));
+-            for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < layout.Defaults.Length; i++)
++            var end = keywordLiterals is null ? layout.Defaults.Length : layout.PositionalDefaultCount;
++            for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < end; i++)
+             {
+                 var slot = layout.Defaults[i];
+                 var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();
+@@ -248,10 +255,9 @@ internal sealed partial class ExecutableScript
+             return false;
+         }
+ 
+-        private PyTuple? PrepareLiteralPositionalDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
+-            FunctionParameterLayout layout, LythonSourceSpan span)
++        private PyTuple? PrepareLiteralDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
++            FunctionParameterLayout layout, int start, int count, LythonSourceSpan span)
+         {
+-            var count = layout.PositionalDefaultCount;
+             if (count == 0) return null;
+             var token = _compilation.CancellationToken;
+             for (var i = 0; i < count; i++)
+@@ -263,8 +269,8 @@ internal sealed partial class ExecutableScript
+             }
+ 
+             // Scalar literal values already live in the compiled constant pool.
+-            // One immutable tuple per declaration replaces execution-owned
+-            // tuple construction, without sharing mutable keyword defaults.
++            // Positional defaults can share this tuple. Keyword values only
++            // initialize each invocation's independently owned record.
+             var governor = _compilation.Governor;
+             var bytes = checked(64L + 16L * count);
+             governor?.Reserve(bytes, span);
+@@ -285,7 +291,7 @@ internal sealed partial class ExecutableScript
+ 
+             ExpressionSyntax LiteralAt(int index)
+             {
+-                var expression = parameters[layout.Defaults[index].ParameterIndex].DefaultValue.RequireNotNull();
++                var expression = parameters[layout.Defaults[start + index].ParameterIndex].DefaultValue.RequireNotNull();
+                 while (expression is ParenthesizedExpressionSyntax group) expression = group.Inner;
+                 return expression;
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+index 24b26db66..a5bcdf6dc 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+@@ -131,17 +131,21 @@ internal sealed partial class LythonRuntime
+         ExecutableCodeObject factory, ExecutionContext scope, long argument, object? keywordCapture)
+     {
+         var instructions = factory.Instructions;
+-        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span, definition.PrepaysCallable);
++        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, false, scope, instructions[0].Span,
++            definition.PrepaysCallable, definition.LiteralKeywordDefaults);
+         try
+         {
+             var index = 1;
+             var positional = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
+             StoreFunctionDefault(ref defaults, 0, true, positional, scope.State, instructions[index++].Span);
+-            var keyword = ExecutableSlot.FromObject(keywordCapture);
+-            if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
+-            else scope.CheckExecution(instructions[index++].Span);
+-            scope.CheckExecution(instructions[index++].Span);
+-            defaults = defaults with { Keywords = defaults.Keywords.WithInlineKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
++            if (definition.LiteralKeywordDefaults is null)
++            {
++                var keyword = ExecutableSlot.FromObject(keywordCapture);
++                if (keywordCapture is null) keyword = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
++                else scope.CheckExecution(instructions[index++].Span);
++                scope.CheckExecution(instructions[index++].Span);
++                defaults = defaults with { Keywords = defaults.Keywords.WithInlineKeywordDefault(FunctionDefaults.PrepareInlineValue(keyword)) };
++            }
+             var span = instructions[index].Span;
+             scope.CheckExecution(span);
+             var result = definition.EagerAnnotationReads is { } reads
+@@ -208,9 +212,11 @@ internal sealed partial class LythonRuntime
+         var layout = definition.ParameterLayout;
+         // The pair owns these defaults immediately, including when further
+         // evaluation or callable construction fails before returning a member.
+-        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span, definition.PrepaysCallable);
++        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span,
++            definition.PrepaysCallable, definition.LiteralKeywordDefaults);
+         var index = start + 1;
+-        for (var i = 0; i < layout.Defaults.Length; i++)
++        var evaluated = definition.LiteralKeywordDefaults is null ? layout.Defaults.Length : layout.PositionalDefaultCount;
++        for (var i = 0; i < evaluated; i++)
+         {
+             ExecutableSlot value;
+             ref readonly var first = ref instructions[index];
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.FunctionDefaults.cs b/src/Lokad.Lython/Runtime/LythonRuntime.FunctionDefaults.cs
+index be9e76f1f..2beead57f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.FunctionDefaults.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.FunctionDefaults.cs
+@@ -9,14 +9,14 @@ internal sealed partial class LythonRuntime
+         ExecutionContext context, LythonSourceSpan span)
+     {
+         var defaults = AllocateFunctionDefaults(definition.ParameterLayout, definition.LiteralPositionalDefaults is not null,
+-            context, span, definition.PrepaysCallable);
++            context, span, definition.PrepaysCallable, definition.LiteralKeywordDefaults);
+         if (!defaults.Positional.IsUnassigned) operands[0] = defaults.Positional;
+         if (!defaults.Keywords.IsUnassigned) operands[^1] = defaults.Keywords;
+     }
+ 
+     // Admit the final backing, even when a singleton tuple is still implicit.
+     private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, bool keywordsOnly,
+-        ExecutionContext context, LythonSourceSpan span, bool prepayCallable = false)
++        ExecutionContext context, LythonSourceSpan span, bool prepayCallable = false, PyTuple? literalKeywords = null)
+     {
+         var positionalCount = keywordsOnly ? 0 : layout.PositionalDefaultCount;
+         var keys = layout.PreparedKeywordDefaultKeys;
+@@ -36,9 +36,25 @@ internal sealed partial class LythonRuntime
+                 1 => ExecutableSlot.OwnPrivatePositionalDefault(ExecutableSlot.FromObject(PyNone.Instance)),
+                 _ => ExecutableSlot.OwnPrivateDefault(PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes)),
+             };
+-            var keyword = keys is null ? default : keys.Count == 1
+-                ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(PyNone.Instance), prepayCallable)
+-                : ExecutableSlot.OwnPrivateKeywordStorage(new object?[keywordCapacity], prepayCallable);
++            ExecutableSlot keyword = default;
++            if (keys is { Count: 1 })
++            {
++                var value = literalKeywords is null ? PyNone.Instance : literalKeywords[0];
++                keyword = ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(value), prepayCallable);
++            }
++            else if (keys is not null)
++            {
++                var values = new object?[keywordCapacity];
++                if (literalKeywords is not null)
++                {
++                    for (var i = 0; i < literalKeywords.Count; i++)
++                    {
++                        if ((i & 63) == 0) context.CheckExecution(span);
++                        values[i] = literalKeywords[i];
++                    }
++                }
++                keyword = ExecutableSlot.OwnPrivateKeywordStorage(values, prepayCallable);
++            }
+             governor.Commit(bytes);
+             return new(positional, keyword);
+         }

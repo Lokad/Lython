@@ -233,10 +233,12 @@ internal sealed partial class ExecutableCodeObject
                 DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0, LiteralPositionalDefaults: null,
                 CodeObject: { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false },
                 ParameterLayout: { Defaults.Length: > 0 } layout,
-            } || start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
+            } definition || start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;
+        if (fixedKeyword && definition.LiteralKeywordDefaults is not null) return false;
 
         var index = startIndex + 1;
-        for (var i = 0; i < layout.Defaults.Length; i++)
+        var evaluated = definition.LiteralKeywordDefaults is null ? layout.Defaults.Length : layout.PositionalDefaultCount;
+        for (var i = 0; i < evaluated; i++)
         {
             PythonTokenization.CheckCancellation(token, index);
             if (index >= Instructions.Length) return false;
