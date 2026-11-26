@@ -72,3 +72,6 @@ The two original archives remain available.
 [Image identity](identity.json) · [Timing and spreads](summary.json) ·
 [Observations](observations.tar.xz) · [Terminal status](terminal-status.json) ·
 [Procedures and exact patch](procedures.tar.xz).
+
+The [longer confirmation](confirmation/README.md) resolves the wide case
+adversely for this implementation. The candidate stays private.
