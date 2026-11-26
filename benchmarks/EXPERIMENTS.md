@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1779 JSON record and decoder entry attribution](results/2026-11-26-json-record-attribution/README.md)
+finds the decoder entry still has 82 nearest samples in JSON Lines and
+four in the document totals after B1776. Record and string admission
+remain visible. This profile is for choosing a design and carries no
+speedup claim.
+
 [B1778 exact UTF-8 copies](results/2026-11-26-exact-utf8-copy/README.md)
 bypasses writable-string completion on about 4,100 short JSON strings.
 Async CPU falls in the local diagnostic, sync timing is mixed and the
