@@ -1395,7 +1395,10 @@ Each execution shares one state containing host capabilities, caches, stream
 capture, exception state, cancellation, memory admission and nesting counters.
 Lexical frames and closure cells remain distinct from that shared state. Guard
 checks test terminal admission refusal before cancellation; nesting entry also
-checks the managed stack. Retained file owners use the same state without keeping
+checks the managed stack. Before advancing a native iterator, a cursor checks
+the existing interpreter depth and the managed stack on the advancing thread.
+This also covers native iterator chains and deferred acquisition after suspension.
+Retained file owners use the same state without keeping
 the lexical frame that opened them. Executable loops, native reductions and CLR
 collection builders share one cursor and cleanup lifetime. C# foreach uses the
 strongly typed cursor pattern; object builders use its single-pass CLR bridge.

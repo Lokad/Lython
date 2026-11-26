@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1743 native cursor stack admission](results/2026-11-26-native-cursor-stack-admission/README.md)
+checks the advancing thread using the existing managed policy. Shipment and
+file-fed elapsed span zero. Warm text CPU rises 3.18–4.83% in the measured
+block. Peak allowance matches and the bounded rejection and reuse checks pass.
+
 [B1742 direct native inputs](results/2026-11-25-composed-native-inputs/README.md)
 removes 80 cursor objects from shipment and saves 7,040 B per run. Shipment
 and file-fed timing span zero, native-map CPU rises, and unchanged text

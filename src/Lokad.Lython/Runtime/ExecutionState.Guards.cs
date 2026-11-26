@@ -69,6 +69,12 @@ internal sealed partial class ExecutionState
     public void EnterInterpreterFrame(LythonSourceSpan? span)
     {
         CheckExecution(span);
+        CheckInterpreterStack(span);
+        CurrentInterpreterDepth++;
+    }
+
+    internal void CheckInterpreterStack(LythonSourceSpan? span)
+    {
         if (CurrentInterpreterDepth >= MaxInterpreterDepth)
         {
             throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
@@ -77,7 +83,6 @@ internal sealed partial class ExecutionState
         }
 
         EnsureInterpreterStack(span);
-        CurrentInterpreterDepth++;
     }
 
     public void LeaveInterpreterFrame()

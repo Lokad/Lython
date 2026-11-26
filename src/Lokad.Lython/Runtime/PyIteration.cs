@@ -360,7 +360,7 @@ internal static partial class PyIteration
         private PyIterationResult TryMoveNextCore()
         {
             if (_disposed || _value is null) return PyIterationResult.End;
-            if (_iterator is { } iterator) return iterator.TryMoveNext();
+            if (IteratorForPull() is { } iterator) return iterator.TryMoveNext();
 
             if (_syncEnumerator is null && _value is (PyList or PyTuple))
             {
@@ -381,7 +381,7 @@ internal static partial class PyIteration
             if (_disposed) return ValueTask.FromResult(PyIterationResult.End);
             if (_iterator is null && _value is PyInstance or IPyProtocolIterator)
                 return AcquireDeferredUserAsync();
-            if (_iterator is { } iterator)
+            if (IteratorForPull() is { } iterator)
                 return iterator is IPyAsyncIteratorValue asynchronous
                     ? asynchronous.TryMoveNextAsync() : new(iterator.TryMoveNext());
 
@@ -390,8 +390,25 @@ internal static partial class PyIteration
 
         private async ValueTask<PyIterationResult> AcquireDeferredUserAsync()
         {
-            _iterator = await PyUserIterator.CreateAsync(_value!, _context!, _span).ConfigureAwait(false);
-            return await ((IPyAsyncIteratorValue)_iterator).TryMoveNextAsync().ConfigureAwait(false);
+            var iterator = await PyUserIterator.CreateAsync(_value!, _context!, _span).ConfigureAwait(false);
+            _iterator = iterator;
+            CheckStackForPull();
+            return await iterator.TryMoveNextAsync().ConfigureAwait(false);
+        }
+
+        private IPyIteratorValue? IteratorForPull()
+        {
+            var iterator = _iterator;
+            // Native iterators can pull other cursors before reaching any
+            // guest call or opcode, including during an async prefix.
+            if (iterator is not null) CheckStackForPull();
+            return iterator;
+        }
+
+        private void CheckStackForPull()
+        {
+            if (_context is { } context) context.State.CheckInterpreterStack(_span);
+            else ExecutionState.EnsureInterpreterStack(_span);
         }
 
         private void CheckExecution()

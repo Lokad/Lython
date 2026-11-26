@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Check managed stack availability before a cursor advances a native iterator.
+  Deep compositions report an interpreter stack limit in both hosting modes.
 - Reuse the UTF-8 backing of eligible constant regex subjects in analysis and
   emitted literals. End each provider borrow before publishing the backing.
 - Admit the buffered `DictReader` row and dictionary together when the inferred

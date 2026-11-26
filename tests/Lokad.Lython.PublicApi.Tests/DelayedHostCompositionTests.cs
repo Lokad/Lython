@@ -128,15 +128,19 @@ public sealed class DelayedHostCompositionTests
         Assert.True(host.CompletedAsynchronously > 0);
     }
 
-    [Fact]
-    public async Task CancelledZipUnpackUnwindsAWaitingPartialRow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelledZipUnpackUnwindsAWaitingPartialRowOrStrictProbe(bool strictProbe)
     {
-        using var script = new LythonEngine().Compile("""
+        var strict = strictProbe ? "True" : "False";
+        using var script = new LythonEngine().Compile($$"""
             def first():
                 print('left advanced')
-                yield ['retained']
+                if not {{strict}}:
+                    yield ['retained']
             with open('/paused') as later:
-                for left, right in zip(first(), later):
+                for left, right in zip(first(), later, strict={{strict}}):
                     print('row published')
             """);
         Assert.True(script.IsValid);
