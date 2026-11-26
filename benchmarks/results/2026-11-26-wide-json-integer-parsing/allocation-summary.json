@@ -1,0 +1,41 @@
+[
+  {
+    "case": "scripts.json-summary-helpers.decimal-40-digits",
+    "records": 4096,
+    "inputBytes": 270336,
+    "allocationBytes": [
+      2997940,
+      2571814
+    ],
+    "peakAdmission": [
+      4341968,
+      4341968
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.decimal-4096-digits",
+    "records": 16,
+    "inputBytes": 65952,
+    "allocationBytes": [
+      401708,
+      270176
+    ],
+    "peakAdmission": [
+      211381,
+      211381
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "records": 1024,
+    "inputBytes": 110592,
+    "allocationBytes": [
+      1599888,
+      1600062
+    ],
+    "peakAdmission": [
+      3822014,
+      3822014
+    ]
+  }
+]

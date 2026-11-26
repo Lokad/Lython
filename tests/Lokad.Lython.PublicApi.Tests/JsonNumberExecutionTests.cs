@@ -9,6 +9,7 @@ public sealed class JsonNumberExecutionTests
     {
         { "int-boundaries", "import json\nvalues=json.loads('[-9223372036854775808,9223372036854775807,9223372036854775808,-9223372036854775809]')\nprint(json.dumps(values))", "[-9223372036854775808, 9223372036854775807, 9223372036854775808, -9223372036854775809]\n" },
         { "large-int", "import json\nfor text in ['1'+'0'*200,'-1'+'0'*200]:\n value=json.loads(text)\n print(len(str(value)),str(value)==text)", "201 True\n202 True\n" },
+        { "wide-int-prefix", "import json\nd=json.JSONDecoder()\nfor text in ['9'*128,'-'+'9'*127,'9'*129,'-'+'9'*128]:\n value,end=d.raw_decode('é'+text+'e+ suffix',1)\n print(str(value)==text,end==len(text)+1)", "True True\nTrue True\nTrue True\nTrue True\n" },
         { "floats", "import json,math\nv=json.loads('[1.25,-0.0,1e-300,1e300]')\nprint(v[0]==1.25,math.copysign(1.0,v[1])==-1.0,0<v[2]<1,v[3]>10**299)", "True True True True\n" },
         { "fixed-point-rounding", "import json\nvalues=json.loads('[900719925474099.2,900719925474099.3,-0.000000000000000000,0.100000000000000005,1.000000000000000000001,1.25e-2]')\nprint(' '.join(value.hex() for value in values))", "0x1.999999999999ap+49 0x1.999999999999ap+49 -0x0.0p+0 0x1.999999999999ap-4 0x1.0000000000000p+0 0x1.999999999999ap-7\n" },
         { "overflow", "import json,math\nfor source in ['1e9999','-1e9999']:\n value=json.loads(source)\n print(math.isinf(value),value>0)", "True True\nTrue False\n" },

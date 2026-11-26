@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1751 wide JSON integer parsing](results/2026-11-26-wide-json-integer-parsing/README.md)
+uses a bounded stack bridge on short tokens and direct UTF-8 parsing on long
+.NET 11 tokens. The two wide reports allocate 14.21% and 32.74% less at equal
+admitted peaks. The short-wide report uses 1.19–3.53% less warm async CPU.
+Long-report timing is uncertain. The first byte-only prototype and adverse
+desktop results remain with the evidence.
+
 [B1750 current short paths against CPython](results/2026-11-26-short-path-cpython/README.md)
 puts protected search at 1.044–1.070× through result and 1.345–1.400× warm.
 Bound `starmap` shipment takes 1.470–1.545× warm async. A generated 48-selector

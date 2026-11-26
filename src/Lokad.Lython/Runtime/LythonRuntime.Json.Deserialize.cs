@@ -549,11 +549,13 @@ internal sealed partial class LythonRuntime
                 // Admit large-magnitude construction before any limb/text allocation.
                 // Larger tokens keep exact parsing, not a numeric input ceiling.
                 using var integerAdmission = GuardIntegerParseBytes(raw.Length, 4, context.MemoryGovernor, span);
-                // Only the text fallback allocates token-sized temporary storage.
-                // Span parsing needs no such lease; callback text already owns
-                // its funding before invocation, including retained aliases.
+                // Keep conservative working headroom for the opaque decimal
+                // parser, including the UTF-16 token on .NET 10.
                 using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * raw.Length), span);
-                return OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw), CultureInfo.InvariantCulture), context.MemoryGovernor, span);
+                context.CheckExecution(span);
+                var integer = ParseWideJsonInteger(raw);
+                context.CheckExecution(span);
+                return OwnFreshInteger(integer, context.MemoryGovernor, span);
             }
 
             // Up to 19 digits including the integer part leaves at most 18
@@ -566,6 +568,25 @@ internal sealed partial class LythonRuntime
             if (!Utf8Parser.TryParse(raw, out double floating, out var consumed) || consumed != raw.Length)
                 throw new InvalidOperationException("A validated JSON floating-point token did not parse completely.");
             return floating;
+        }
+
+        private static BigInteger ParseWideJsonInteger(ReadOnlySpan<byte> raw)
+        {
+            // The UTF-8 BCL overload has more fixed allocation than the
+            // character overload for these short, already validated tokens.
+            const int stackCapacity = 128;
+            if (raw.Length <= stackCapacity)
+            {
+                Span<char> characters = stackalloc char[stackCapacity];
+                var count = Encoding.UTF8.GetChars(raw, characters);
+                return BigInteger.Parse(characters[..count], CultureInfo.InvariantCulture);
+            }
+
+#if NET11_0_OR_GREATER
+            return BigInteger.Parse(raw, CultureInfo.InvariantCulture);
+#else
+            return BigInteger.Parse(Encoding.UTF8.GetString(raw), CultureInfo.InvariantCulture);
+#endif
         }
 
         private enum JsonIncompleteExpectation

@@ -84,6 +84,12 @@ keeps the frames funded until it completes or unwinds. Construction resumes
 at the saved UTF-8 byte offset before converting a public `raw_decode` end
 position to a Unicode scalar index.
 
+Default JSON integers outside the fast signed-64-bit path use the CLR's exact
+decimal parser. A short token uses a bounded stack buffer for the character
+parse. .NET 11 reads longer tokens directly from UTF-8, while .NET 10 converts
+them to CLR text. Both targets admit magnitude and parser workspace before
+conversion and check cancellation around the synchronous CLR call.
+
 JSON serialization admits traversal-frame and cycle-marker capacity before
 growth, including replacement overlap. It reuses frame slots across containers
 and returns the capacity when the traversal completes or fails. Builtin
