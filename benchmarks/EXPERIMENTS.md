@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1792 borrowed map sources](results/2026-11-26-borrowed-map-sources/README.md)
+removes 64 cursors and 5,632 B of CLR allocation per shipment run at
+matching admission. Quiet sync shipment elapsed falls 1.26–3.46%.
+All quiet CPU ranges include zero and async results are mixed.
+Keep the prototype out of production and preserve both blocks.
+
 [B1791 representative CPython checkpoint](results/2026-11-26-post-ascii-cpython/README.md)
 measures `d370fef84` against CPython 3.13.16. JSON service totals take
 1.240–1.323× warm sync and 1.278–1.338× warm async. Generated ordinary
