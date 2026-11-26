@@ -1,0 +1,146 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "ExecutableArithmetic": 8210,
+        "AugmentedAdd": 2064,
+        "AugmentedAddBooleanRhs": 2048,
+        "AugmentedAddBooleanMachineLeft": 2048,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 2048
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "ExecutableArithmetic": 8210,
+        "AugmentedAdd": 2064,
+        "AugmentedAddBooleanRhs": 2048,
+        "AugmentedAddBooleanMachineLeft": 2048,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 2048
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": false,
+      "routes": {
+        "ExecutableArithmetic": 8210,
+        "AugmentedAdd": 2064,
+        "AugmentedAddBooleanRhs": 2048,
+        "AugmentedAddBooleanMachineLeft": 2048,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 2048
+      },
+      "peakExecutionMemoryBytes": 2822785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": true,
+      "routes": {
+        "ExecutableArithmetic": 8210,
+        "AugmentedAdd": 2064,
+        "AugmentedAddBooleanRhs": 2048,
+        "AugmentedAddBooleanMachineLeft": 2048,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 2048
+      },
+      "peakExecutionMemoryBytes": 2822785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": false,
+      "routes": {
+        "ExecutableArithmetic": 2,
+        "AugmentedAdd": 0,
+        "AugmentedAddBooleanRhs": 0,
+        "AugmentedAddBooleanMachineLeft": 0,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": true,
+      "routes": {
+        "ExecutableArithmetic": 2,
+        "AugmentedAdd": 0,
+        "AugmentedAddBooleanRhs": 0,
+        "AugmentedAddBooleanMachineLeft": 0,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "ExecutableArithmetic": 0,
+        "AugmentedAdd": 0,
+        "AugmentedAddBooleanRhs": 0,
+        "AugmentedAddBooleanMachineLeft": 0,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "ExecutableArithmetic": 0,
+        "AugmentedAdd": 0,
+        "AugmentedAddBooleanRhs": 0,
+        "AugmentedAddBooleanMachineLeft": 0,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "ExecutableArithmetic": 18,
+        "AugmentedAdd": 4,
+        "AugmentedAddBooleanRhs": 0,
+        "AugmentedAddBooleanMachineLeft": 0,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "ExecutableArithmetic": 18,
+        "AugmentedAdd": 4,
+        "AugmentedAddBooleanRhs": 0,
+        "AugmentedAddBooleanMachineLeft": 0,
+        "AugmentedAddBooleanIntegerRoute": 0,
+        "AugmentedAddBooleanOtherRoute": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

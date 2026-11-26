@@ -6,6 +6,21 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1766 exact boolean increments](results/2026-11-26-post-update-shipment-profile/boolean-increments/README.md)
+reroutes 2,048 generic integer-plus-boolean updates per shipment through
+the existing integer path. Peak admission matches and allocation is
+effectively flat. The prototype awaits whole-script CPU evidence.
+
+[B1765 runtime attribution after dictionary updates](results/2026-11-26-post-update-shipment-profile/README.md)
+finds executable arithmetic and map advancement in current warm async
+shipment. The Unicode text report has its own casing and dictionary work.
+The profile locates routes without estimating removable CPU.
+
+[B1764 shipment and JSON totals against CPython](results/2026-11-26-converted-update-cpython/README.md)
+measures `7f7c4ed59`. Shipment takes 1.097–1.154× warm sync,
+1.208–1.248× warm async and 1.079–1.107× through result.
+JSON totals take 1.352–1.374× warm. All 140 diagnostic batches are archived.
+
 [B1763 converted dictionary update](results/2026-11-26-converted-dictionary-update/README.md)
 completes 2,046 of 2,048 updates directly in both shipment reports and
 the JSON totals. Warm CPU falls on all three targets and allocation
