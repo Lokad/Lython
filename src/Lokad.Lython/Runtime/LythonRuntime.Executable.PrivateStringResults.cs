@@ -18,12 +18,28 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        if (producer.ArgumentCount != 0 || !ReferenceEquals(method, StringMembers.SplitLinesMethod)
-            || values[start].Reference is not PyString source || index + 1 >= code.Instructions.Length)
-            return false;
+        if (producer.ArgumentCount != 0 || index + 1 >= code.Instructions.Length) return false;
 
         ref readonly var next = ref code.Instructions[index + 1];
-        if (next.OpCode != ExecutableOpCode.Call || next.HasForwardedCallOperands) return false;
+        if (next.OpCode == ExecutableOpCode.JumpIfFalse && next.InputStart == code.Instructions[index].ResultSlot &&
+            StringMembers.IsWhitespaceTrimmer(method) && values[start].Reference is PyString text)
+        {
+            // The branch consumes the only result. Keep the call and branch
+            // boundaries while skipping the unobservable string slice.
+            context.EnterInterpreterFrame(producer.CallSpan);
+            try
+            {
+                context.CheckExecution(producer.CallSpan);
+                using var ambient = PyStructuralGuard.PushAmbient(context, producer.CallSpan);
+                result.Object = RuntimeValue(PyStringOps.HasNonWhitespace(text.Utf8Span));
+                return true;
+            }
+            finally { context.LeaveInterpreterFrame(); }
+        }
+
+        if (!ReferenceEquals(method, StringMembers.SplitLinesMethod) || values[start].Reference is not PyString source ||
+            next.OpCode != ExecutableOpCode.Call || next.HasForwardedCallOperands)
+            return false;
         var consumer = code.CallSites[next.CallSiteIndex];
         if (consumer.HasReceiver || !consumer.IsPositionalOnly || consumer.ArgumentCount != 1
             || next.InputStart + consumer.TargetOffset >= start

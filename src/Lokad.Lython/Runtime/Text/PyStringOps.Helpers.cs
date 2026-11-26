@@ -57,25 +57,33 @@ internal static partial class PyStringOps
     private static PyString TrimDefaultWhitespace(PyString value, bool trimStart, bool trimEnd)
     {
         var source = value.Utf8Span;
-        var start = 0;
-        if (trimStart)
-        {
-            while (start < source.Length)
-            {
-                PyStructuralGuard.NoteWork();
-                if (source[start] < 0x80)
-                {
-                    if (!IsAsciiWhitespace(source[start])) break;
-                    start += AsciiWhitespaceRunLength(source.Slice(start, Math.Min(64, source.Length - start)), whitespace: true);
-                    continue;
-                }
-                Rune.DecodeFromUtf8(source[start..], out var rune, out var width);
-                if (!IsPythonWhitespace(rune)) break;
-                start += width;
-            }
-        }
+        var start = trimStart ? SkipDefaultWhitespace(source) : 0;
         var end = trimEnd ? TrimUtf8End(source, start, source.Length) : source.Length;
         return TrimmedSlice(value, start, end);
+    }
+
+    // The three default trimming methods are nonempty exactly when at
+    // least one scalar is outside the Python whitespace set.
+    internal static bool HasNonWhitespace(ReadOnlySpan<byte> source)
+        => SkipDefaultWhitespace(source) < source.Length;
+
+    private static int SkipDefaultWhitespace(ReadOnlySpan<byte> source)
+    {
+        var start = 0;
+        while (start < source.Length)
+        {
+            PyStructuralGuard.NoteWork();
+            if (source[start] < 0x80)
+            {
+                if (!IsAsciiWhitespace(source[start])) break;
+                start += AsciiWhitespaceRunLength(source.Slice(start, Math.Min(64, source.Length - start)), whitespace: true);
+                continue;
+            }
+            Rune.DecodeFromUtf8(source[start..], out var rune, out var width);
+            if (!IsPythonWhitespace(rune)) break;
+            start += width;
+        }
+        return start;
     }
 
     // Also consumes each private part in the default rstrip/split/join path.

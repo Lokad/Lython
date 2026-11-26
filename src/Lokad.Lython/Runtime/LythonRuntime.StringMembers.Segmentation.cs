@@ -101,6 +101,9 @@ internal sealed partial class LythonRuntime
         internal static readonly ReceiverMethod RStripMethod = CreateStripMethod("rstrip", PyStringOps.RStrip,
             LythonCallableSignature.Create("str.rstrip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
 
+        internal static bool IsWhitespaceTrimmer(ReceiverMethod method)
+            => ReferenceEquals(method, StripMethod) || ReferenceEquals(method, LStripMethod) || ReferenceEquals(method, RStripMethod);
+
         private static ValueTask<object> RSplit(PyString text, ReceiverArguments arguments,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {

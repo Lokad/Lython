@@ -1,0 +1,62 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "allocatedBytes": [
+      815500,
+      815500
+    ],
+    "peak": [
+      1806411,
+      1806411
+    ],
+    "compiledReservedBytes": [
+      66272,
+      66272
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "allocatedBytes": [
+      1599800,
+      1370432
+    ],
+    "peak": [
+      3822014,
+      3297534
+    ],
+    "compiledReservedBytes": [
+      91312,
+      91312
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      322768,
+      322768
+    ],
+    "peak": [
+      603795,
+      603795
+    ],
+    "compiledReservedBytes": [
+      92399,
+      92399
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "allocatedBytes": [
+      113168,
+      113168
+    ],
+    "peak": [
+      167072,
+      167072
+    ],
+    "compiledReservedBytes": [
+      63536,
+      63536
+    ]
+  }
+]

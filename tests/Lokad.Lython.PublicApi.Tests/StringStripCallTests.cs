@@ -25,6 +25,42 @@ public sealed class StringStripCallTests
         { "class C:\n    def strip(self,chars=None): return chars\nprint(C().strip(chars='x'))", "x\n" },
         { "text=' x '\nprint([text.strip() for i in range(2)])\ndef produce():\n    yield text.strip()\nprint(list(produce()))", "['x', 'x']\n['x']\n" },
         { "class C:\n    @property\n    def strip(self):\n        print('property')\n        return lambda: 'ok'\nprint(C().strip())", "property\nok\n" },
+        {
+            """
+            def count(value):
+                matches = 0
+                if value.strip():
+                    matches += 1
+                if value.lstrip():
+                    matches += 1
+                if value.rstrip():
+                    matches += 1
+                return matches
+
+            print([count(value) for value in ['', ' \t', '\x1c\u00a0\u2003', '\u200b', '\u2003café😀\u3000']])
+            if 'xx'.strip('x'):
+                print('unexpected')
+            else:
+                print('custom')
+            print(repr(' x '.strip() or 'fallback'), repr(' \t '.strip() and 'fallback'))
+
+            class Status:
+                def __bool__(self):
+                    print('truth callback')
+                    return False
+
+            class Dynamic:
+                def strip(self):
+                    print('dynamic strip')
+                    return Status()
+
+            if Dynamic().strip():
+                print('unexpected')
+            else:
+                print('dynamic false')
+            """,
+            "[0, 0, 0, 3, 3]\ncustom\n'x' ''\ndynamic strip\ntruth callback\ndynamic false\n"
+        },
     };
 
     [Theory]

@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "reference": {
+      "bytes": 815800,
+      "admittedPeak": 1806411
+    },
+    "candidate": {
+      "bytes": 815800,
+      "admittedPeak": 1806411
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "reference": {
+      "bytes": 1600638,
+      "admittedPeak": 3822014
+    },
+    "candidate": {
+      "bytes": 1371096,
+      "admittedPeak": 3297534
+    }
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "reference": {
+      "bytes": 323240,
+      "admittedPeak": 603795
+    },
+    "candidate": {
+      "bytes": 323240,
+      "admittedPeak": 603795
+    }
+  },
+  {
+    "case": "scripts.file-search.large",
+    "reference": {
+      "bytes": 113528,
+      "admittedPeak": 167072
+    },
+    "candidate": {
+      "bytes": 113528,
+      "admittedPeak": 167072
+    }
+  }
+]

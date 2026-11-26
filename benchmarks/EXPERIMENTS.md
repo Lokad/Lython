@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1802 default trimming in truth tests](results/2026-11-26-trim-truth-without-result/README.md)
+removes an unobserved string allocation for exact builtin calls that feed a
+branch. JSON Lines allocates 14.34% less and peak admission falls 13.72% in
+both APIs. Quiet CPU falls 1.46–6.72% sync and 1.75–6.98% async. The
+unchanged Unicode control uses 1.12–1.84% more quiet CPU. The file-search
+control spans zero. Both timing runs and the initial space failure are archived.
+
 [B1801 current JSON construction profile](results/2026-11-26-current-json-construction-profile/README.md)
 locates record creation, UTF-8 copying and aggregation on `29e078ddd`.
 Async JSON Lines also shows 33 nearest trim samples. Its blank-line

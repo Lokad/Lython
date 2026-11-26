@@ -1027,6 +1027,10 @@ string or receiver/method pair. Custom receivers
 keep ordinary method dispatch and suspension; intervening local bindings remain
 observable on ordinary execution. Final storage is admitted before allocation and
 keeps the current cancellation context and requesting source span.
+When an exact builtin `strip()`, `lstrip()` or `rstrip()` call feeds a branch
+directly, the shared whitespace scanner tests whether any non-whitespace scalar
+exists. The call and branch keep their stack and cancellation checks. Calls that
+expose the trimmed string or pass an explicit character set use ordinary trimming.
 An immediate `rstrip` with one ASCII character followed by `split` with a
 literal nonempty separator can pass the trimmed UTF-8 range into the same
 split scanner. Unchanged whole fields preserve the receiver's identity.
