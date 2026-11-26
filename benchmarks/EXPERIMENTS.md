@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1808 generator row transfer](results/2026-11-26-starmap-generator-yield-inputs/README.md)
+removes per-row list construction. Shipment CLR allocation falls 19.68–21.52%
+and peak admission falls 14.04–21.46%. Five-item local async elapsed rises
+9.98–14.61%, with slower sync and moving controls. Keep the candidate private.
+
 [B1807 current wide async shipment profile](results/2026-11-26-current-wide-shipment-profile/README.md)
 locates list construction, map and starmap pulls and dictionary aggregation
 on `cb258fe7f`. Both fixture tapes build a list immediately before yielding
