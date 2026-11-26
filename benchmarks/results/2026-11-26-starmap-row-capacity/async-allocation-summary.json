@@ -1,0 +1,62 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "production": {
+      "bytes": 2129200,
+      "admittedPeak": 3467257
+    },
+    "first": {
+      "bytes": 1572144,
+      "admittedPeak": 3467109
+    },
+    "capacity": {
+      "bytes": 1572144,
+      "admittedPeak": 3467109
+    }
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "production": {
+      "bytes": 2293608,
+      "admittedPeak": 3795785
+    },
+    "first": {
+      "bytes": 2588470,
+      "admittedPeak": 3796161
+    },
+    "capacity": {
+      "bytes": 2129942,
+      "admittedPeak": 3795905
+    }
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "production": {
+      "bytes": 1100520,
+      "admittedPeak": 2822785
+    },
+    "first": {
+      "bytes": 1100464,
+      "admittedPeak": 2822785
+    },
+    "capacity": {
+      "bytes": 1100470,
+      "admittedPeak": 2822785
+    }
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "production": {
+      "bytes": 992024,
+      "admittedPeak": 5171785
+    },
+    "first": {
+      "bytes": 992024,
+      "admittedPeak": 5171785
+    },
+    "capacity": {
+      "bytes": 992024,
+      "admittedPeak": 5171785
+    }
+  }
+]

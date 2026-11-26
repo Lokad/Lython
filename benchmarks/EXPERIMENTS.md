@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1794 starmap live row capacity](results/2026-11-26-starmap-row-capacity/README.md)
+avoids the first candidate's wide-row replacement. Three- and five-item
+async rows allocate 26.16% and 7.14% less than production. Quiet sync
+three-item CPU falls 1.16–6.11%. Async wide timing spans zero with
+9.38% candidate elapsed spread. Keep the candidate private.
+
 [B1793 shared starmap argument construction](results/2026-11-26-starmap-argument-buffer/README.md)
 removes the general row drain before invoking short callbacks or filling
 the existing wide call accumulator. Short list rows allocate 26.73% less
