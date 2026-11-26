@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1748 Unicode report attribution](results/2026-11-26-affix-text-attribution/README.md)
+finds identical executable tapes and no direct affix return in the report.
+One warmed CPU profile per image points to the same casing, dictionary and
+managed stack paths. The cause of the adverse B1747 text timing remains
+unresolved. Keep it with the original comparisons.
+
 [B1746 and B1747 direct affix returns](results/2026-11-26-direct-affix-return/README.md)
 remove the native workspace for an exact string predicate. Protected search
 reaches its result 23.17–29.17% sooner in confirmation. The first file-fed
