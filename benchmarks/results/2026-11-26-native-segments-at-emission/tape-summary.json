@@ -1,0 +1,105 @@
+{
+  "byteIdentical": true,
+  "snapshotSHA256": "7133fe3965c63def839c2ea0387a18bf431379d5b96e21c4c8e6b53edd3a48c7",
+  "rows": [
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "codeObjects": 99,
+      "instructionCount": 1165,
+      "removedScanSlots": 967,
+      "protectedRegions": 0,
+      "dictionaryCalls": 0,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 886881
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "codeObjects": 4,
+      "instructionCount": 56,
+      "removedScanSlots": 48,
+      "protectedRegions": 0,
+      "dictionaryCalls": 0,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 74495
+    },
+    {
+      "case": "diagnostic.definition-locals-default",
+      "codeObjects": 6,
+      "instructionCount": 76,
+      "removedScanSlots": 65,
+      "protectedRegions": 0,
+      "dictionaryCalls": 0,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 98043
+    },
+    {
+      "case": "scripts.file-search.large",
+      "codeObjects": 2,
+      "instructionCount": 57,
+      "removedScanSlots": 53,
+      "protectedRegions": 2,
+      "dictionaryCalls": 0,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 63536
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "codeObjects": 3,
+      "instructionCount": 89,
+      "removedScanSlots": 83,
+      "protectedRegions": 2,
+      "dictionaryCalls": 1,
+      "dictionaryLoops": 1,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 92399
+    },
+    {
+      "case": "closure-and-loop",
+      "codeObjects": 5,
+      "instructionCount": 68,
+      "removedScanSlots": 58,
+      "protectedRegions": 0,
+      "dictionaryCalls": 2,
+      "dictionaryLoops": 2,
+      "closureArithmetic": 1,
+      "compileAdmissionBytes": 80288
+    },
+    {
+      "case": "protected-native-tails",
+      "codeObjects": 5,
+      "instructionCount": 75,
+      "removedScanSlots": 65,
+      "protectedRegions": 3,
+      "dictionaryCalls": 2,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 1,
+      "compileAdmissionBytes": 98345
+    },
+    {
+      "case": "diagnostic.shipment-file-fed-map",
+      "codeObjects": 2,
+      "instructionCount": 37,
+      "removedScanSlots": 33,
+      "protectedRegions": 1,
+      "dictionaryCalls": 0,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 51392
+    },
+    {
+      "case": "diagnostic.shipment-routing-callbacks",
+      "codeObjects": 4,
+      "instructionCount": 166,
+      "removedScanSlots": 158,
+      "protectedRegions": 1,
+      "dictionaryCalls": 1,
+      "dictionaryLoops": 0,
+      "closureArithmetic": 0,
+      "compileAdmissionBytes": 165088
+    }
+  ]
+}

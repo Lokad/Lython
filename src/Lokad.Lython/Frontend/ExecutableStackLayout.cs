@@ -92,12 +92,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             => block.Count == 1 && block[0].OpCode == ExecutableOpCode.Jump ? block[0].TargetIndex : -1;
     }
 
-    internal static ExecutableInstruction[] Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token,
-        out ExecutableOperandSpan[] readSpans, out int[]? deferredDefinitionSites)
+    internal int AssignInstructionOffsets(IReadOnlyList<List<ExecutableInstruction>> blocks, CancellationToken token,
+        out ExecutableOperandSpan[] readSpans)
     {
-        var positions = layout.Blocks;
-        var reads = layout.OperandReads;
+        var positions = Blocks;
+        var reads = OperandReads;
         readSpans = reads.Count == 0 ? [] : new ExecutableOperandSpan[reads.Count];
         var nextRead = 0;
         var offset = 0;
@@ -119,7 +118,15 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             offset = checked(offset + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0));
         }
         positions[^1].Offset = offset;
-        var instructions = new ExecutableInstruction[offset];
+        System.Diagnostics.Debug.Assert(nextRead == readSpans.Length);
+        return offset;
+    }
+
+    internal int[]? Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
+        ExecutableCallSite[] sites, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token)
+    {
+        var positions = Blocks;
+        var instructions = code.Instructions;
         List<int>? deferredSites = null;
         for (var i = 0; i < blocks.Count; i++)
         {
@@ -167,33 +174,42 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                         => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex))
                             .WithFixedUnpack(unpackedWidth == 0 ? -1 : unpackedStart),
                     ExecutableOpCode.Binary when !instruction.HasResultConsumer && j + 1 < source.Count &&
-                        CanContinueInteger(source[j + 1], instruction.ResultSlot, layout.FirstTemporarySlot)
+                        CanContinueInteger(source[j + 1], instruction.ResultSlot, FirstTemporarySlot)
                         => instruction.WithIntegerContinuation(),
                     ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
                         ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)),
                     ExecutableOpCode.MatchCase => instruction.WithFailureIndex(ResolvedOffset(instruction.FailureIndex)),
                     _ => instruction
                 };
-                if (instruction.OpCode == ExecutableOpCode.Call && !code.RequiresLocalVariableMirroring)
-                    PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
-                if (instruction.OpCode == ExecutableOpCode.MakeTuple && hasNoExceptionRegions &&
-                    code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring &&
-                    code.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity)
-                    PrepareTupleReturn(code, instructions, source, position.Offset, j);
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.Call when !code.RequiresLocalVariableMirroring:
+                        PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
+                        break;
+                    case ExecutableOpCode.MakeTuple when hasNoExceptionRegions &&
+                        code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring &&
+                        code.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity:
+                        PrepareTupleReturn(code, instructions, source, position.Offset, j);
+                        break;
+                    // Stores and backedges bound subsequent operand rewrites.
+                    case ExecutableOpCode.StoreClosure:
+                    case ExecutableOpCode.StoreSubscript:
+                    case ExecutableOpCode.Jump:
+                        code.PrepareNativeTail(position.Offset + j, sites);
+                        break;
+                }
             }
             // Stored blocks never fell through. Preserve implicit completion
             // distinctly from a guest top-level return (not legal in imports).
             if (Completes(blocks[i]))
             {
-                var extent = source.Count == 0 ? checked(layout.FirstTemporarySlot + position.EntryDepth) : source[^1].LiveExtent;
+                var extent = source.Count == 0 ? checked(FirstTemporarySlot + position.EntryDepth) : source[^1].LiveExtent;
                 instructions[positions[i + 1].Offset - 1] = ExecutableInstruction.Complete(
                     source.Count == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span)
                     .WithStorageSlots(extent, extent, extent);
             }
         }
-        System.Diagnostics.Debug.Assert(nextRead == readSpans.Length);
-        deferredDefinitionSites = deferredSites?.ToArray();
-        return instructions;
+        return deferredSites?.ToArray();
 
         int ResolvedOffset(int block) => positions[ResolveTarget(blocks, positions, block, token)].Offset;
 
@@ -244,8 +260,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 (next.InputStart == resultSlot && next.SecondInput < firstTemporarySlot ||
                  next.SecondInput == resultSlot && next.InputStart < firstTemporarySlot);
 
-        static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 || !block[^1].TerminatesBlock;
     }
+
+    private static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 || !block[^1].TerminatesBlock;
 
     private static bool CanCallWithArithmeticArgument(ExecutableCodeObject code, in ExecutableInstruction target,
         in ExecutableInstruction argument, in ExecutableInstruction call)

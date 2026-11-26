@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1800 native segments during tape emission](results/2026-11-26-native-segments-at-emission/README.md)
+removes the separate native-segment scan after linearization. Nine tape
+snapshots and both allocation diagnostics match. Quiet ordinary compile
+elapsed falls 1.13–2.29% and CPU falls 0.54–2.94%. Through-result CPU
+spans zero and the protected search control takes more elapsed time.
+Retain the simpler traversal and both sets of observations.
+
 [B1799 completed short map result transport](results/2026-11-26-direct-map-result-handoff/README.md)
 passes ready results directly to nested maps and `sum`. Quiet file-fed
 map uses 0.90–2.34% less CPU, while async shipment uses 1.81–11.79% more.

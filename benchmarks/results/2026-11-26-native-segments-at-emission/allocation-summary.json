@@ -1,0 +1,77 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocatedBytes": [
+      22744,
+      22744
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiledReservedBytes": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocatedBytes": [
+      737944,
+      737944
+    ],
+    "peak": [
+      2786655,
+      2786655
+    ],
+    "compiledReservedBytes": [
+      74495,
+      74495
+    ]
+  },
+  {
+    "case": "diagnostic.definition-locals-default",
+    "allocatedBytes": [
+      19016,
+      19016
+    ],
+    "peak": [
+      14635,
+      14635
+    ],
+    "compiledReservedBytes": [
+      98043,
+      98043
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "allocatedBytes": [
+      113280,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ],
+    "compiledReservedBytes": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      322992,
+      322992
+    ],
+    "peak": [
+      603795,
+      603795
+    ],
+    "compiledReservedBytes": [
+      92399,
+      92399
+    ]
+  }
+]

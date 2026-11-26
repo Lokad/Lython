@@ -1,0 +1,57 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocationBytes": [
+      1442256,
+      1442256
+    ],
+    "retainedAdmission": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocationBytes": [
+      61640,
+      61640
+    ],
+    "retainedAdmission": [
+      74495,
+      74495
+    ]
+  },
+  {
+    "case": "diagnostic.definition-locals-default",
+    "allocationBytes": [
+      98496,
+      98496
+    ],
+    "retainedAdmission": [
+      98043,
+      98043
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "allocationBytes": [
+      47200,
+      47200
+    ],
+    "retainedAdmission": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      80184,
+      80184
+    ],
+    "retainedAdmission": [
+      92399,
+      92399
+    ]
+  }
+]

@@ -575,9 +575,11 @@ Compiler preparation owns one mutable instruction list per block through
 jump threading, operand forwarding and slot layout. Operand layout discovers
 reachable blocks through ordinary and exceptional edges. Protected entries keep
 their incoming operand depth for handlers, including entries that contain only
-a jump. Final linearization skips unreachable blocks in original order, creates
-the retained instruction array and maps protected ranges to instruction offsets.
-Original block widths keep nested cleanup ordered innermost first.
+a jump. Linearization assigns offsets to reachable blocks in original order and
+maps protected ranges before emitting the retained instruction array. Original
+block widths keep nested cleanup ordered innermost first. Native closure
+arithmetic and dictionary segments are prepared at their terminal store or loop
+backedge, using the resolved ranges and final operand slots.
 Declaration operands keep the body or deferred binding owned by their
 site. Literal values and reusable instructions share interned operands
 within the code object.

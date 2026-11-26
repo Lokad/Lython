@@ -627,8 +627,7 @@ internal sealed partial class ExecutableCodeObject
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(this, blocks, operandLayout, regionsByEntry.Length == 0,
-            deferredCandidates, cancellationToken, out _operandReadSpans, out var deferredSites);
+        Instructions = new ExecutableInstruction[operandLayout.AssignInstructionOffsets(blocks, cancellationToken, out _operandReadSpans)];
         var positions = operandLayout.Blocks;
         EntryIndex = positions[entryBlockIndex].Offset;
         // Original block widths preserve inner-first unwinding, including
@@ -654,13 +653,13 @@ internal sealed partial class ExecutableCodeObject
                     SuiteEndIndex = suiteEnd
                 };
             }).ToArray();
+        var deferredSites = operandLayout.Linearize(this, blocks, callSites, regionsByEntry.Length == 0, deferredCandidates, cancellationToken);
         // Native work can precede cleanup without owning its routing state.
         // A physical instruction frontier also covers normal fallthrough and
         // jumps: transfer once before entering any finally suite.
         NativePrefixEnd = Instructions.Length;
         foreach (var region in ExceptionRegions)
             if (region.FinallyIndex is int cleanup) NativePrefixEnd = Math.Min(NativePrefixEnd, cleanup);
-        PrepareNativeSegments(callSites);
         // Lexical/storage admission only. The native loop transfers at the
         // actual operation needing a frame, without a second opcode inventory.
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && EntryIndex < NativePrefixEnd

@@ -389,102 +389,121 @@ internal sealed partial class ExecutableCodeObject
             target.ResultSlot == call.InputStart + site.TargetOffset && field.ResultSlot == call.InputStart + site.ArgumentOffset;
     }
 
-    // A native get/add/store can reuse one table probe. Original instructions
-    // remain the pre-effect path for dynamic values, growth and other methods.
-    private void PrepareNativeSegments(ExecutableCallSite[] sites)
+    // Complete a native segment when emission reaches its store or loop
+    // backedge. All earlier slots and protected-region offsets are final.
+    internal void PrepareNativeTail(int index, ExecutableCallSite[] sites)
     {
-        for (var index = 0; index + 2 < Instructions.Length; index++)
+        ref readonly var tail = ref Instructions[index];
+        if (index < 2) return;
+        switch (tail.OpCode)
         {
-            ref readonly var call = ref Instructions[index];
-            ref readonly var add = ref Instructions[index + 1];
-            ref readonly var store = ref Instructions[index + 2];
-            if (call.OpCode == ExecutableOpCode.LoadClosure)
-            {
-                if (CanPrepareClosureArithmetic(index, call, add, store))
-                    Instructions[index] = call.WithClosureArithmetic(~add.SecondInput);
-                continue;
-            }
-            if (call.OpCode == ExecutableOpCode.Call && !call.HasResultConsumer &&
-                add.OpCode == ExecutableOpCode.LoadGlobal && CanPrepareConvertedDictionaryUpdate(index, call, sites))
-            {
-                sites[call.CallSiteIndex] = sites[call.CallSiteIndex] with { AccumulatesDictionary = true };
-                continue;
-            }
-
-            if (call.OpCode != ExecutableOpCode.Call || call.HasResultConsumer
-                || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasResultConsumer
-                || store.OpCode != ExecutableOpCode.StoreSubscript
-                || add.InputStart != call.ResultSlot || add.ResultSlot != call.ResultSlot || add.LiveExtent != call.LiveExtent
-                || store.InputStart != call.ResultSlot || store.LiveExtent != call.ResultSlot
-                || !IsUncapturedLocal(store.SecondInput) || !IsUncapturedLocal(store.ThirdInput)
-                || !(add.SecondInput < 0 || IsUncapturedLocal(add.SecondInput))) continue;
-            var site = sites[call.CallSiteIndex];
-            if (!site.HasReceiver || !site.IsPositionalOnly || site.ArgumentCount is not (1 or 2)) continue;
-            if (CrossesExceptionBoundary(index, index + 2)) continue;
-            sites[call.CallSiteIndex] = site with { AccumulatesDictionary = true };
-            PrepareDictionaryLoop(index, site, add, store);
+            case ExecutableOpCode.StoreClosure:
+                var loadIndex = index - 2;
+                ref readonly var load = ref Instructions[loadIndex];
+                ref readonly var arithmetic = ref Instructions[index - 1];
+                if (load.OpCode == ExecutableOpCode.LoadClosure &&
+                    CanPrepareClosureArithmetic(loadIndex, load, arithmetic, tail))
+                    Instructions[loadIndex] = load.WithClosureArithmetic(~arithmetic.SecondInput);
+                break;
+            case ExecutableOpCode.StoreSubscript:
+                PrepareDictionaryUpdate(index, tail, sites);
+                break;
+            case ExecutableOpCode.Jump:
+                PrepareDictionaryLoop(index, tail.TargetIndex);
+                break;
         }
-
-        bool IsUncapturedLocal(int slot) => slot >= 0 && slot < FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
-
-        void PrepareDictionaryLoop(int callIndex, ExecutableCallSite site,
-            in ExecutableInstruction add, in ExecutableInstruction store)
-        {
-            // One complete histogram body, optionally followed by a total.
-            // Only native iteration executes the segment; all other sources
-            // keep their existing ForNext/body, including actual suspension.
-            var headIndex = callIndex - 5;
-            // Deferred word/total publication requires independent bindings.
-            // Otherwise an assignment in the original body changes a receiver
-            // or operand before a later operation observes it.
-            if (headIndex < 0 || site.ArgumentCount != 2 || store.SecondInput == store.ThirdInput) return;
-            ref readonly var head = ref Instructions[headIndex];
-            ref readonly var binding = ref Instructions[headIndex + 1];
-            ref readonly var member = ref Instructions[headIndex + 2];
-            ref readonly var key = ref Instructions[headIndex + 3];
-            ref readonly var fallback = ref Instructions[headIndex + 4];
-            if (head.OpCode != ExecutableOpCode.ForNext || !head.HasResultConsumer
-                || binding.OpCode != ExecutableOpCode.StoreLocal || binding.LocalSlot != store.ThirdInput
-                || binding.InputStart != head.ResultSlot || binding.LiveExtent != head.ResultSlot
-                || head.LiveExtent != head.ResultSlot + 1 || Instructions[callIndex].InputStart != head.ResultSlot
-                || member.OpCode != ExecutableOpCode.LoadCallMember || member.InputStart != store.SecondInput
-                || Names[member.NameIndex] != "get" || member.ResultSlot != head.ResultSlot
-                || key.OpCode != ExecutableOpCode.LoadLocal || key.LocalSlot != binding.LocalSlot
-                || key.ResultSlot != head.ResultSlot + site.ArgumentOffset
-                || fallback.OpCode != ExecutableOpCode.LoadConst
-                || fallback.ResultSlot != key.ResultSlot + 1
-                || Constants[fallback.ConstantIndex] is not BigInteger
-                || add.SecondInput >= 0 || (uint)~add.SecondInput >= (uint)Constants.Length
-                || Constants[~add.SecondInput] is not BigInteger increment
-                || increment.GetByteCount() >= 8 || store.LiveExtent != head.ResultSlot) return;
-
-            var tailIndex = callIndex + 3;
-            if (tailIndex + 2 < Instructions.Length && Instructions[tailIndex].OpCode == ExecutableOpCode.Augmented)
-            {
-                ref readonly var total = ref Instructions[tailIndex];
-                ref readonly var totalStore = ref Instructions[tailIndex + 1];
-                if (total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasResultConsumer
-                    || !IsUncapturedLocal(total.InputStart) || total.SecondInput >= 0
-                    || total.InputStart == store.ThirdInput || total.InputStart == store.SecondInput
-                    || (uint)~total.SecondInput >= (uint)Constants.Length
-                    || Constants[~total.SecondInput] is not BigInteger totalIncrement || totalIncrement.GetByteCount() >= 8
-                    || totalStore.OpCode != ExecutableOpCode.StoreLocal || totalStore.LocalSlot != total.InputStart
-                    || total.ResultSlot != head.ResultSlot || totalStore.LiveExtent != head.ResultSlot) return;
-                tailIndex += 2;
-            }
-            if (tailIndex >= Instructions.Length || Instructions[tailIndex].OpCode != ExecutableOpCode.Jump
-                || Instructions[tailIndex].TargetIndex != headIndex) return;
-            if (CrossesExceptionBoundary(headIndex, tailIndex)) return;
-            Instructions[headIndex] = head.WithDictionaryLoop(callIndex);
-        }
-
     }
 
-    private bool CanPrepareConvertedDictionaryUpdate(int index, in ExecutableInstruction get,
-        ExecutableCallSite[] sites)
+    private void PrepareDictionaryUpdate(int index, in ExecutableInstruction store, ExecutableCallSite[] sites)
     {
-        if (index + 5 >= Instructions.Length ||
-            sites[get.CallSiteIndex] is not { HasReceiver: true, IsPositionalOnly: true, ArgumentCount: 2 } ||
+        // A native get/add/store can reuse one table probe. The emitted
+        // instructions remain the pre-effect path for dynamic values.
+        if (index >= 5)
+        {
+            var getIndex = index - 5;
+            ref readonly var get = ref Instructions[getIndex];
+            if (get is { OpCode: ExecutableOpCode.Call, HasResultConsumer: false } &&
+                Instructions[getIndex + 1].OpCode == ExecutableOpCode.LoadGlobal &&
+                CanPrepareConvertedDictionaryUpdate(getIndex, get))
+            {
+                sites[get.CallSiteIndex] = sites[get.CallSiteIndex] with { AccumulatesDictionary = true };
+                return;
+            }
+        }
+
+        var callIndex = index - 2;
+        ref readonly var call = ref Instructions[callIndex];
+        ref readonly var add = ref Instructions[index - 1];
+        if (call.OpCode != ExecutableOpCode.Call || call.HasResultConsumer
+            || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasResultConsumer
+            || add.InputStart != call.ResultSlot || add.ResultSlot != call.ResultSlot || add.LiveExtent != call.LiveExtent
+            || store.InputStart != call.ResultSlot || store.LiveExtent != call.ResultSlot
+            || !IsUncapturedLocal(store.SecondInput) || !IsUncapturedLocal(store.ThirdInput)
+            || !(add.SecondInput < 0 || IsUncapturedLocal(add.SecondInput))) return;
+        var site = sites[call.CallSiteIndex];
+        if (!site.HasReceiver || !site.IsPositionalOnly || site.ArgumentCount is not (1 or 2)) return;
+        if (CrossesExceptionBoundary(callIndex, index)) return;
+        sites[call.CallSiteIndex] = site with { AccumulatesDictionary = true };
+    }
+
+    private void PrepareDictionaryLoop(int tailIndex, int headIndex)
+    {
+        // One complete histogram body, optionally followed by a total.
+        // Other sources retain the general loop, including suspension.
+        var callIndex = headIndex + 5;
+        var tail = tailIndex - callIndex;
+        if (tail is not (3 or 5)) return;
+        ref readonly var head = ref Instructions[headIndex];
+        ref readonly var call = ref Instructions[callIndex];
+        ref readonly var add = ref Instructions[callIndex + 1];
+        ref readonly var store = ref Instructions[callIndex + 2];
+        if (head.OpCode != ExecutableOpCode.ForNext || !head.HasResultConsumer ||
+            call.OpCode != ExecutableOpCode.Call || store.OpCode != ExecutableOpCode.StoreSubscript ||
+            CallSites[call.CallSiteIndex] is not { AccumulatesDictionary: true, ArgumentCount: 2 } site ||
+            store.SecondInput == store.ThirdInput) return;
+
+        // Deferred word/total publication requires independent bindings.
+        ref readonly var binding = ref Instructions[headIndex + 1];
+        ref readonly var member = ref Instructions[headIndex + 2];
+        ref readonly var key = ref Instructions[headIndex + 3];
+        ref readonly var fallback = ref Instructions[headIndex + 4];
+        if (binding.OpCode != ExecutableOpCode.StoreLocal || binding.LocalSlot != store.ThirdInput
+            || binding.InputStart != head.ResultSlot || binding.LiveExtent != head.ResultSlot
+            || head.LiveExtent != head.ResultSlot + 1 || call.InputStart != head.ResultSlot
+            || member.OpCode != ExecutableOpCode.LoadCallMember || member.InputStart != store.SecondInput
+            || Names[member.NameIndex] != "get" || member.ResultSlot != head.ResultSlot
+            || key.OpCode != ExecutableOpCode.LoadLocal || key.LocalSlot != binding.LocalSlot
+            || key.ResultSlot != head.ResultSlot + site.ArgumentOffset
+            || fallback.OpCode != ExecutableOpCode.LoadConst
+            || fallback.ResultSlot != key.ResultSlot + 1
+            || Constants[fallback.ConstantIndex] is not BigInteger
+            || add.SecondInput >= 0 || (uint)~add.SecondInput >= (uint)Constants.Length
+            || Constants[~add.SecondInput] is not BigInteger increment
+            || increment.GetByteCount() >= 8 || store.LiveExtent != head.ResultSlot) return;
+
+        if (tail == 5)
+        {
+            ref readonly var total = ref Instructions[callIndex + 3];
+            ref readonly var totalStore = ref Instructions[callIndex + 4];
+            if (total.OpCode != ExecutableOpCode.Augmented
+                || total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasResultConsumer
+                || !IsUncapturedLocal(total.InputStart) || total.SecondInput >= 0
+                || total.InputStart == store.ThirdInput || total.InputStart == store.SecondInput
+                || (uint)~total.SecondInput >= (uint)Constants.Length
+                || Constants[~total.SecondInput] is not BigInteger totalIncrement || totalIncrement.GetByteCount() >= 8
+                || totalStore.OpCode != ExecutableOpCode.StoreLocal || totalStore.LocalSlot != total.InputStart
+                || total.ResultSlot != head.ResultSlot || totalStore.LiveExtent != head.ResultSlot) return;
+        }
+        if (CrossesExceptionBoundary(headIndex, tailIndex)) return;
+        Instructions[headIndex] = head.WithDictionaryLoop(callIndex);
+    }
+
+    private bool IsUncapturedLocal(int slot)
+        => (uint)slot < (uint)FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
+
+    private bool CanPrepareConvertedDictionaryUpdate(int index, in ExecutableInstruction get)
+    {
+        if (CallSites[get.CallSiteIndex] is not { HasReceiver: true, IsPositionalOnly: true, ArgumentCount: 2 } ||
             get.HasForwardedCallOperands) return false;
         ref readonly var target = ref Instructions[index + 1];
         ref readonly var field = ref Instructions[index + 2];
@@ -492,23 +511,21 @@ internal sealed partial class ExecutableCodeObject
         ref readonly var add = ref Instructions[index + 4];
         ref readonly var store = ref Instructions[index + 5];
         if (target.HasResultConsumer || field.HasResultConsumer || convert.HasResultConsumer || add.HasResultConsumer ||
-            field.OpCode != ExecutableOpCode.Subscript || !IsOrdinaryLocal(field.InputStart) ||
+            field.OpCode != ExecutableOpCode.Subscript || !IsUncapturedLocal(field.InputStart) ||
             (uint)~field.SecondInput >= (uint)Constants.Length || Constants[~field.SecondInput] is not PyString ||
             convert.OpCode != ExecutableOpCode.Call || convert.HasForwardedCallOperands ||
             add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add ||
-            store.OpCode != ExecutableOpCode.StoreSubscript || !IsOrdinaryLocal(store.SecondInput) ||
-            !IsOrdinaryLocal(store.ThirdInput)) return false;
+            store.OpCode != ExecutableOpCode.StoreSubscript || !IsUncapturedLocal(store.SecondInput) ||
+            !IsUncapturedLocal(store.ThirdInput)) return false;
 
         var right = get.ResultSlot + 1;
-        var conversion = sites[convert.CallSiteIndex];
+        var conversion = CallSites[convert.CallSiteIndex];
         return conversion is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1, UnpackedReturnCount: 0 } &&
             get.LiveExtent == right && convert.ResultSlot == right && target.ResultSlot == right + conversion.TargetOffset &&
             field.ResultSlot == right + conversion.ArgumentOffset && convert.LiveExtent == right + 1 &&
             add.InputStart == get.ResultSlot && add.SecondInput == right && add.ResultSlot == get.ResultSlot &&
             add.LiveExtent == right && store.InputStart == get.ResultSlot && store.LiveExtent == get.ResultSlot &&
             !CrossesExceptionBoundary(index, index + 5);
-
-        bool IsOrdinaryLocal(int slot) => (uint)slot < (uint)FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
     }
 
     private bool CanPrepareClosureArithmetic(int index, in ExecutableInstruction load,
