@@ -1,0 +1,47 @@
+[
+  {
+    "case": "scripts.file-search.large",
+    "allocatedBytes": [
+      113280,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ],
+    "compiledReservedBytes": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocatedBytes": [
+      808528,
+      808528
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiledReservedBytes": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocatedBytes": [
+      1093480,
+      1093480
+    ],
+    "peak": [
+      2817644,
+      2817644
+    ],
+    "compiledReservedBytes": [
+      165088,
+      165088
+    ]
+  }
+]

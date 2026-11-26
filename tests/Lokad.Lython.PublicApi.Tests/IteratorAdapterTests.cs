@@ -111,23 +111,37 @@ public sealed class IteratorAdapterTests
         Assert.Equal(0,budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task MapRowRetainsAliasesAndUnwindsWhenALaterSourceSuspends()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NestedMapIntoSumRetainsAliasesAndUnwindsWhenWorkSuspends(bool pauseInCallback)
     {
-        const string source = """
-            def late():
+        var source = $$"""
+            pause_in_callback = {{(pauseInCallback ? "True" : "False")}}
+
+            def wait_for_value():
                 with open('pause') as stream:
-                    yield int(stream.read())
+                    return int(stream.read())
+
+            def late():
+                yield 1 if pause_in_callback else wait_for_value()
 
             def choose(value, enabled):
+                if pause_in_callback:
+                    enabled = wait_for_value()
                 return value if enabled else None
 
             def increment(value):
                 return value + 1
 
             marker = []
-            values = list(map(choose, [marker, marker], late()))
-            print(values[0] is marker)
+            seen = []
+            def collect(value):
+                seen.append(value)
+                return 1
+
+            count = sum(map(collect, map(choose, [marker, marker], late())))
+            print(count, seen[0] is marker)
             print(list(map(int, map(increment, range(9223372036854775806, 9223372036854775808)))))
             """;
         using var script = new LythonEngine().Compile(source);
@@ -165,7 +179,7 @@ public sealed class IteratorAdapterTests
                 : script.Run(immediate, new LythonRunOptions { MemoryBudget = budget }))
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("True\n[9223372036854775807, 9223372036854775808]\n", result.StandardOutput);
+                Assert.Equal("1 True\n[9223372036854775807, 9223372036854775808]\n", result.StandardOutput);
             }
             Assert.Equal(0, budget.ReservedBytes);
         }

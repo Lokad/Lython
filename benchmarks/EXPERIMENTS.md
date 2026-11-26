@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1799 completed short map result transport](results/2026-11-26-direct-map-result-handoff/README.md)
+passes ready results directly to nested maps and `sum`. Quiet file-fed
+map uses 0.90–2.34% less CPU, while async shipment uses 1.81–11.79% more.
+The unchanged quiet control spans zero. Keep the runtime trial private
+and retain both suspension cases in the public regression suite.
+
 [B1798 current async iterator attribution](results/2026-11-26-current-async-iterator-profile/README.md)
 profiles production shipment and file-fed map. Their nearest map
 advance samples number 95 and 152. CSV construction remains visible
