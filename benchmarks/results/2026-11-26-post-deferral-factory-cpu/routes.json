@@ -1,0 +1,90 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "BigIntegerReads": 7728,
+        "ExecutableConstantReads": 5121,
+        "ExecutableMachineConstants": 5120,
+        "ClosedDefaultConstantReads": 0,
+        "ClosedDefaultMachineConstants": 0,
+        "ComputedScalarCalls": 2560
+      },
+      "peakExecutionMemoryBytes": 92760,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "BigIntegerReads": 7728,
+        "ExecutableConstantReads": 5121,
+        "ExecutableMachineConstants": 5120,
+        "ClosedDefaultConstantReads": 0,
+        "ClosedDefaultMachineConstants": 0,
+        "ComputedScalarCalls": 2560
+      },
+      "peakExecutionMemoryBytes": 92760,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": false,
+      "routes": {
+        "BigIntegerReads": 21163,
+        "ExecutableConstantReads": 0,
+        "ExecutableMachineConstants": 0,
+        "ClosedDefaultConstantReads": 14336,
+        "ClosedDefaultMachineConstants": 14336,
+        "ComputedScalarCalls": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": true,
+      "routes": {
+        "BigIntegerReads": 21163,
+        "ExecutableConstantReads": 0,
+        "ExecutableMachineConstants": 0,
+        "ClosedDefaultConstantReads": 14336,
+        "ClosedDefaultMachineConstants": 14336,
+        "ComputedScalarCalls": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "BigIntegerReads": 9226,
+        "ExecutableConstantReads": 6,
+        "ExecutableMachineConstants": 6,
+        "ClosedDefaultConstantReads": 6144,
+        "ClosedDefaultMachineConstants": 6144,
+        "ComputedScalarCalls": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "BigIntegerReads": 9226,
+        "ExecutableConstantReads": 6,
+        "ExecutableMachineConstants": 6,
+        "ClosedDefaultConstantReads": 6144,
+        "ClosedDefaultMachineConstants": 6144,
+        "ComputedScalarCalls": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

@@ -1,0 +1,20 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "BigIntegerReads": 0,
+        "ExecutableConstantReads": 1,
+        "ExecutableMachineConstants": 0,
+        "ClosedDefaultConstantReads": 0,
+        "ClosedDefaultMachineConstants": 0,
+        "ComputedScalarCalls": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

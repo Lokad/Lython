@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1769 callable construction after deferral](results/2026-11-26-post-deferral-factory-cpu/README.md)
+separates computed-argument calls in ordinary definitions from pair
+construction in escaping rules. Both repeatedly classify immutable
+integer constants, including 5,120 and 14,336 successful reads per run.
+Use a single prepared constant representation for the two numeric
+evaluators and account for its compile and retained-storage costs.
+
 [B1768 ready JSON decoder entry](results/2026-11-26-ready-json-decoder-entry/README.md)
 removes ready-entry state-machine work. Local async JSON Lines uses
 1.56–3.45% less CPU, sync elapsed rises 0.55–3.86% and text controls vary.
