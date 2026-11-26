@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1797 singleton keyword-default metadata](results/2026-11-26-single-keyword-default-metadata/README.md)
+removes the compile-time singleton tuple and its initializer array.
+The escaping-rule script retains 80 B less compiler admission, with the
+same warm allocation and peak. Its local compile CPU rises 1.06–5.13%.
+Warm async elapsed falls while CPU spans zero at the lower end.
+Keep the prototype private and leave the compilation cost open.
+
 [B1796 single-pass JSON string validation](results/2026-11-26-json-single-string-pass/README.md)
 combines bounded syntax scanning and raw UTF-8 validation with matching
 admitted peaks. Quiet service-total and JSON Lines timing spans zero.
