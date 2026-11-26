@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "bytes": [
+      860496,
+      827660
+    ],
+    "peak": [
+      1909869,
+      1615101
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "bytes": [
+      322768,
+      322768
+    ],
+    "peak": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "bytes": [
+      1600030,
+      1534280
+    ],
+    "peak": [
+      3822014,
+      3232334
+    ]
+  }
+]

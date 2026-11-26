@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1785 smaller JSON record capacity](results/2026-11-26-json-matched-record-capacity/README.md)
+lowers peak admission by 15.4% on both JSON fixtures and reduces allocation.
+Async JSON Lines elapsed rises in both local blocks. Repeat process CPU
+rises 4.83–8.06%. Keep the current starting capacity and the wider-record
+regression. [Confirmation](results/2026-11-26-json-matched-record-capacity/confirmation/README.md)
+
 [B1784 representative CPython checkpoint](results/2026-11-26-post-fixed-row-cpython/README.md)
 uses `0172ed7cf` and the B1774c inputs. Shipment through result is
 near parity. JSON document totals take 1.319–1.344× CPython warm, and

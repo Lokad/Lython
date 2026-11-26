@@ -1,0 +1,13 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs
+index ea404769d..6b70f6348 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs
+@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
+             var position = SkipJsonWhitespace(bytesView, opening + 1, context, state.Span);
+             var capacity = position < bytesView.Length && bytesView[position] == (byte)'"' ? 4 : 0;
+             object result = isObject && state.Options.ObjectPairsHook is null
+-                ? expected.Keys is { } keys && capacity != 0 ? keys.CreateRecord(context, state.Span, capacity)
++                ? expected.Keys is { } keys && capacity != 0 ? keys.CreateRecord(context, state.Span, Math.Min(capacity, keys.Count))
+                     : new PyDict(capacity, context.MemoryGovernor, state.Span)
+                 : new PyList([], context.MemoryGovernor, state.Span);
+             JsonFrames(ref state)[state.Depth++] = new(result, expected, position, isObject);
