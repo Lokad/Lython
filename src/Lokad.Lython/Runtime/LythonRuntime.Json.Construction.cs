@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
         // One construction loop owns both parent and child containers. Default
         // scalars arrive directly; only real callbacks transfer this work.
         private bool ContinueJsonConstruction(ref JsonDecodeState state,
-            out (object Value, int End) result, out ValueTask<(object Value, int End)> pending)
+            out (object Value, int End) result, out (ValueTask<object> Callback, int End) pending)
         {
             var input = state.Input;
             var options = state.Options;
@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
                         {
                             state.AwaitingContainer = true;
                             result = default;
-                            pending = CompleteJsonScalarAsync(converted, end);
+                            pending = (converted, end);
                             return false;
                         }
                         value = converted.GetAwaiter().GetResult();
@@ -175,33 +175,34 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
                 if (!TryReadJsonScalar(input, options, context, span, position, state.Asynchronous,
-                    out var decoded, out pending))
+                    out var scalar, out var scalarEnd, out var conversion))
                 {
                     state.AwaitingContainer = false;
                     result = default;
+                    pending = (conversion, scalarEnd);
                     return false;
                 }
-                AcceptJsonValue(ref state, decoded.Value, decoded.End);
+                AcceptJsonValue(ref state, scalar, scalarEnd);
             }
         }
 
         private async ValueTask<(object Value, int End)> CompleteJsonConstructionAsync(
-            JsonDecodeState state, ValueTask<(object Value, int End)> pending)
+            JsonDecodeState state, (ValueTask<object> Callback, int End) pending)
         {
             try
             {
                 while (true)
                 {
-                    var decoded = await pending.ConfigureAwait(false);
+                    var value = await pending.Callback.ConfigureAwait(false);
                     // Resume on the current managed stack before descending into
                     // construction; the operation's existing admission stays live.
                     state.Context.CheckExecution(state.Span);
                     ExecutionState.EnsureInterpreterStack(state.Span);
                     if (state.AwaitingContainer)
                     {
-                        if (FinishJsonContainer(ref state, decoded.Value, decoded.End, out var completed)) return completed;
+                        if (FinishJsonContainer(ref state, value, pending.End, out var completed)) return completed;
                     }
-                    else AcceptJsonValue(ref state, decoded.Value, decoded.End);
+                    else AcceptJsonValue(ref state, value, pending.End);
                     if (ContinueJsonConstruction(ref state, out var result, out pending)) return result;
                 }
             }

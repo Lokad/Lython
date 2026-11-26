@@ -89,15 +89,16 @@ internal sealed partial class LythonRuntime
                 return ReadJsonContainerAsync(input, options, context, span, position, bytes[position] == (byte)'{', asynchronous);
             }
 
-            return TryReadJsonScalar(input, options, context, span, position, asynchronous, out var result, out var pending)
-                ? new(result) : pending;
+            return TryReadJsonScalar(input, options, context, span, position, asynchronous,
+                out var value, out var end, out var pending)
+                ? new((value, end)) : CompleteRootJsonScalarAsync(pending, end);
         }
 
         // Default scalar values go straight into construction. Only an actual
-        // suspended callback needs a task carrying the value and its end offset.
+        // suspended callback returns a pending operation and its byte end.
         private static bool TryReadJsonScalar(PyString input, JsonLoadOptions options,
             ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous,
-            out (object Value, int End) result, out ValueTask<(object Value, int End)> pending)
+            [NotNullWhen(true)] out object? value, out int end, out ValueTask<object> pending)
         {
             context.CheckExecution(span);
             var bytes = input.Utf8Span;
@@ -108,36 +109,34 @@ internal sealed partial class LythonRuntime
             var first = bytes[position];
             if (first == (byte)'"')
             {
-                var (value, stringEnd) = ReadJsonString(input, (bool)options.Strict, position, context, span, out _);
-                result = (value, stringEnd);
+                (value, end) = ReadJsonString(input, (bool)options.Strict, position, context, span, out _);
                 return true;
             }
             if (first is (byte)'t' or (byte)'f' or (byte)'n')
             {
-                if (TryMatchJsonLiteral(bytes, position, "true", out var literalEnd))
-                    result = (true, literalEnd);
-                else if (TryMatchJsonLiteral(bytes, position, "false", out literalEnd))
-                    result = (false, literalEnd);
-                else if (TryMatchJsonLiteral(bytes, position, "null", out literalEnd))
-                    result = (PyNone.Instance, literalEnd);
+                if (TryMatchJsonLiteral(bytes, position, "true", out end))
+                    value = true;
+                else if (TryMatchJsonLiteral(bytes, position, "false", out end))
+                    value = false;
+                else if (TryMatchJsonLiteral(bytes, position, "null", out end))
+                    value = PyNone.Instance;
                 else throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
                 return true;
             }
 
             object? callback;
             PyString argument;
-            int end;
             if (TryMatchJsonConstant(bytes, position, out var constant, out end))
             {
                 callback = options.ParseConstant;
                 if (callback is null)
                 {
-                    result = (constant switch
+                    value = constant switch
                     {
                         "NaN" => PythonNaN,
                         "Infinity" => double.PositiveInfinity,
                         _ => double.NegativeInfinity,
-                    }, end);
+                    };
                     return true;
                 }
                 argument = CreateString(constant, context, span);
@@ -149,7 +148,7 @@ internal sealed partial class LythonRuntime
                 if (callback is null)
                 {
                     var raw = bytes.Slice(position, end - position);
-                    result = (ConvertJsonNumber(raw, significand, fractionDigits, context, span), end);
+                    value = ConvertJsonNumber(raw, significand, fractionDigits, context, span);
                     return true;
                 }
                 // Callback text remains execution/result-owned even on failure:
@@ -161,15 +160,15 @@ internal sealed partial class LythonRuntime
             var converted = InvokeJsonCallbackCoreAsync(callback, argument, context, span, asynchronous);
             if (converted.IsCompleted)
             {
-                result = (converted.GetAwaiter().GetResult(), end);
+                value = converted.GetAwaiter().GetResult();
                 return true;
             }
-            result = default;
-            pending = CompleteJsonScalarAsync(converted, end);
+            value = null;
+            pending = converted;
             return false;
         }
 
-        private static async ValueTask<(object Value, int End)> CompleteJsonScalarAsync(
+        private static async ValueTask<(object Value, int End)> CompleteRootJsonScalarAsync(
             ValueTask<object> converted, int end)
             => (await converted.ConfigureAwait(false), end);
 

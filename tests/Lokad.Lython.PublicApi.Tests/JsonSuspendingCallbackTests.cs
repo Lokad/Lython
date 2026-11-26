@@ -82,6 +82,34 @@ public sealed class JsonSuspendingCallbackTests
         Assert.Equal("\"v\"", host.ReadText("/output"));
     }
 
+    [Fact]
+    public async Task RawDecodeResumesAlternatingHooksAtOriginalOffsets()
+    {
+        using var compiled = new LythonEngine().Compile(Definitions + """
+
+            events = []
+            def parse(token):
+                read(token)
+                events.append('number:' + token)
+                return token
+            def convert(item):
+                value = item['é']
+                read(value)
+                events.append('object:' + value)
+                return value
+            decoder = json.JSONDecoder(parse_int=parse, object_hook=convert)
+            value, end = decoder.raw_decode('é.[{"é":7},8] trailing', 2)
+            return str((value, end, events))
+            """);
+        Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
+        var host = new DelayedLythonHost();
+        host.SeedFile("/value", "v");
+        using var result = await compiled.RunAsync(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("(['7', '8'], 13, ['number:7', 'object:7', 'number:8'])", result.ReturnValue);
+        Assert.True(host.CompletedAsynchronously > 0);
+    }
+
     [Theory]
     [InlineData("json.loads('7', parse_int=read)")]
     [InlineData("json.loads(b'7', parse_int=read)")]

@@ -77,6 +77,13 @@ builtin serializer. Explicit encoder objects and guest subclasses retain their
 mutable attributes and method dispatch. Separator iteration and option callbacks
 retain their evaluation order and finish before their owners are released.
 
+JSON decoding builds nested values with one iterative construction loop.
+The first four frames are inline. Deeper frame storage admits capacity and
+replacement overlap through the execution's allowance. A suspended hook
+keeps the frames funded until it completes or unwinds. Construction resumes
+at the saved UTF-8 byte offset before converting a public `raw_decode` end
+position to a Unicode scalar index.
+
 JSON serialization admits traversal-frame and cycle-marker capacity before
 growth, including replacement overlap. It reuses frame slots across containers
 and returns the capacity when the traversal completes or fails. Builtin
