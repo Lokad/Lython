@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1789 deferred-definition site placement](results/2026-11-26-deferred-site-placement/README.md)
+collects placement sites during linearization and retires the separate
+whole-tape scan. The checked instruction and scratch-capacity snapshots
+match. All quiet CPU ranges cross zero. Keep the simpler pass structure
+and leave the B1788 compile-side cost open.
+[Quiet confirmation](results/2026-11-26-deferred-site-placement/quiet/README.md).
+
 [B1788 initialize literal keyword defaults](results/2026-11-26-literal-keyword-defaults/README.md)
 removes the load and store for 2,048 literals per escaping-rule run. Warm
 async CPU falls in both quiet blocks with matching allocation and execution

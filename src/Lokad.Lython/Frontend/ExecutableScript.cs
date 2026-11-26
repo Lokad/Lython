@@ -619,7 +619,7 @@ internal sealed partial class ExecutableCodeObject
         // forms use this layout, including at a dynamic-operation transition.
         var regionsByEntry = exceptionRegions.Count == 0 ? [] :
             exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
-        var deferredCandidates = regionsByEntry.Length == 0 && blocks.Count == 1
+        var deferredCandidates = IsFunctionScope && !RequiresLocalVariableMirroring && regionsByEntry.Length == 0 && blocks.Count == 1
             ? FindDeferredDefinitionLocals(blocks[0], cancellationToken) : null;
         var operandLayout = ExecutableStackLayout.Prepare(this, blocks, callSites,
             regionsByEntry, entryBlockIndex, initialOperandDepth, cancellationToken);
@@ -628,7 +628,7 @@ internal sealed partial class ExecutableCodeObject
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
         Instructions = ExecutableStackLayout.Linearize(this, blocks, operandLayout, regionsByEntry.Length == 0,
-            cancellationToken, out _operandReadSpans);
+            deferredCandidates, cancellationToken, out _operandReadSpans, out var deferredSites);
         var positions = operandLayout.Blocks;
         EntryIndex = positions[entryBlockIndex].Offset;
         // Original block widths preserve inner-first unwinding, including
@@ -672,9 +672,10 @@ internal sealed partial class ExecutableCodeObject
             PrepareImmediatelyCalledDefinition(cancellationToken);
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out _definitionPairFirstCreation);
             DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
-            DeferredDefinitionSites = PrepareDeferredDefinitions(deferredCandidates, cancellationToken, out var valueCapacity);
-            ValueStorageCapacity = valueCapacity;
+            DeferredDefinitionSites = deferredSites;
+            ValueStorageCapacity = PlaceDeferredDefinitions(deferredSites, cancellationToken);
         }
+        else System.Diagnostics.Debug.Assert(deferredSites is null);
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
     }

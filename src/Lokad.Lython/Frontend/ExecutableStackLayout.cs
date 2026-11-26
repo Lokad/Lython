@@ -93,7 +93,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     }
 
     internal static ExecutableInstruction[] Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, bool hasNoExceptionRegions, CancellationToken token, out ExecutableOperandSpan[] readSpans)
+        ExecutableStackLayout layout, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token,
+        out ExecutableOperandSpan[] readSpans, out int[]? deferredDefinitionSites)
     {
         var positions = layout.Blocks;
         var reads = layout.OperandReads;
@@ -119,6 +120,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         }
         positions[^1].Offset = offset;
         var instructions = new ExecutableInstruction[offset];
+        List<int>? deferredSites = null;
         for (var i = 0; i < blocks.Count; i++)
         {
             PythonTokenization.CheckCancellation(token, i);
@@ -146,6 +148,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                         (uint)(instruction.ThirdInput - unpackedStart) < (uint)unpackedWidth)
                         instruction = instruction.WithBorrowableTextStore();
                 }
+                // The original tape proves the local has no ordinary read.
+                // Only mark its definition if its physical store still survives.
+                if (instruction is { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: true } &&
+                    deferredCandidates is not null && j + 1 < source.Count &&
+                    source[j + 1] is { OpCode: ExecutableOpCode.StoreLocal } store &&
+                    deferredCandidates[store.LocalSlot] == instruction.ConstantIndex + 1)
+                    (deferredSites ??= []).Add(position.Offset + j);
                 instructions[position.Offset + j] = instruction.OpCode switch
                 {
                     // Leave call-plus-update publication to its existing path.
@@ -183,6 +192,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             }
         }
         System.Diagnostics.Debug.Assert(nextRead == readSpans.Length);
+        deferredDefinitionSites = deferredSites?.ToArray();
         return instructions;
 
         int ResolvedOffset(int block) => positions[ResolveTarget(blocks, positions, block, token)].Offset;

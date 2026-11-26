@@ -46,26 +46,21 @@ internal sealed partial class ExecutableCodeObject
         return definitions;
     }
 
-    private int[]? PrepareDeferredDefinitions(int[]? candidates, CancellationToken token, out int valueCapacity)
+    private int PlaceDeferredDefinitions(int[]? sites, CancellationToken token)
     {
-        valueCapacity = ValueStorageCapacity;
-        if (candidates is null) return null;
-        List<int>? sites = null;
-        for (var i = 0; i + 1 < Instructions.Length; i++)
+        var valueCapacity = ValueStorageCapacity;
+        if (sites is null) return valueCapacity;
+        for (var i = 0; i < sites.Length; i++)
         {
             PythonTokenization.CheckCancellation(token, i);
-            var create = Instructions[i];
-            if (create is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: true } ||
-                Instructions[i + 1] is not { OpCode: ExecutableOpCode.StoreLocal } store ||
-                candidates[store.LocalSlot] != create.ConstantIndex + 1)
-                continue;
-            sites ??= [];
+            var index = sites[i];
+            ref var create = ref Instructions[index];
             var definition = (ExecutableCreateFunction)Constants[create.ConstantIndex]!;
-            // A shared tuple needs no slot. The local can hold the prepaid keyword default until publication.
-            var keywordSlot = definition.LiteralPositionalDefaults is null ? checked(valueCapacity++) : store.LocalSlot;
-            Instructions[i] = create.WithDeferredDefinition(keywordSlot);
-            sites.Add(i);
+            // A compiled positional tuple leaves the local free for the prepaid keyword default.
+            var keywordSlot = definition.LiteralPositionalDefaults is null
+                ? checked(valueCapacity++) : Instructions[index + 1].LocalSlot;
+            create = create.WithDeferredDefinition(keywordSlot);
         }
-        return sites?.ToArray();
+        return valueCapacity;
     }
 }

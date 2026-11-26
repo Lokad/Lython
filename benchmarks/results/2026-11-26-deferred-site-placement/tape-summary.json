@@ -1,0 +1,30 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "sites": 93,
+    "instructions": 1165,
+    "compileAdmissionBytes": 886881,
+    "completeSnapshotSHA256": "46527583c873e5cd29cdc9f8739a0dfe27763b5ff126adad8cb286cf08089ad7"
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "sites": 0,
+    "instructions": 56,
+    "compileAdmissionBytes": 74495,
+    "completeSnapshotSHA256": "46527583c873e5cd29cdc9f8739a0dfe27763b5ff126adad8cb286cf08089ad7"
+  },
+  {
+    "case": "diagnostic.definition-locals-default",
+    "sites": 2,
+    "instructions": 76,
+    "compileAdmissionBytes": 98043,
+    "completeSnapshotSHA256": "46527583c873e5cd29cdc9f8739a0dfe27763b5ff126adad8cb286cf08089ad7"
+  },
+  {
+    "case": "scripts.file-search.large",
+    "sites": 0,
+    "instructions": 57,
+    "compileAdmissionBytes": 63536,
+    "completeSnapshotSHA256": "46527583c873e5cd29cdc9f8739a0dfe27763b5ff126adad8cb286cf08089ad7"
+  }
+]

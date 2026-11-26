@@ -1,0 +1,121 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.DeferredDefinitions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.DeferredDefinitions.cs
+index 820927b56..8e1f02455 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.DeferredDefinitions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.DeferredDefinitions.cs
+@@ -46,26 +46,21 @@ internal sealed partial class ExecutableCodeObject
+         return definitions;
+     }
+ 
+-    private int[]? PrepareDeferredDefinitions(int[]? candidates, CancellationToken token, out int valueCapacity)
++    private int PlaceDeferredDefinitions(int[]? sites, CancellationToken token)
+     {
+-        valueCapacity = ValueStorageCapacity;
+-        if (candidates is null) return null;
+-        List<int>? sites = null;
+-        for (var i = 0; i + 1 < Instructions.Length; i++)
++        var valueCapacity = ValueStorageCapacity;
++        if (sites is null) return valueCapacity;
++        for (var i = 0; i < sites.Length; i++)
+         {
+             PythonTokenization.CheckCancellation(token, i);
+-            var create = Instructions[i];
+-            if (create is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: true } ||
+-                Instructions[i + 1] is not { OpCode: ExecutableOpCode.StoreLocal } store ||
+-                candidates[store.LocalSlot] != create.ConstantIndex + 1)
+-                continue;
+-            sites ??= [];
++            var index = sites[i];
++            ref var create = ref Instructions[index];
+             var definition = (ExecutableCreateFunction)Constants[create.ConstantIndex]!;
+-            // A shared tuple needs no slot. The local can hold the prepaid keyword default until publication.
+-            var keywordSlot = definition.LiteralPositionalDefaults is null ? checked(valueCapacity++) : store.LocalSlot;
+-            Instructions[i] = create.WithDeferredDefinition(keywordSlot);
+-            sites.Add(i);
++            // A compiled positional tuple leaves the local free for the prepaid keyword default.
++            var keywordSlot = definition.LiteralPositionalDefaults is null
++                ? checked(valueCapacity++) : Instructions[index + 1].LocalSlot;
++            create = create.WithDeferredDefinition(keywordSlot);
+         }
+-        return sites?.ToArray();
++        return valueCapacity;
+     }
+ }
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 7ce3eddb3..9862b7be7 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -619,7 +619,7 @@ internal sealed partial class ExecutableCodeObject
+         // forms use this layout, including at a dynamic-operation transition.
+         var regionsByEntry = exceptionRegions.Count == 0 ? [] :
+             exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
+-        var deferredCandidates = regionsByEntry.Length == 0 && blocks.Count == 1
++        var deferredCandidates = IsFunctionScope && !RequiresLocalVariableMirroring && regionsByEntry.Length == 0 && blocks.Count == 1
+             ? FindDeferredDefinitionLocals(blocks[0], cancellationToken) : null;
+         var operandLayout = ExecutableStackLayout.Prepare(this, blocks, callSites,
+             regionsByEntry, entryBlockIndex, initialOperandDepth, cancellationToken);
+@@ -628,7 +628,7 @@ internal sealed partial class ExecutableCodeObject
+         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
+         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
+         Instructions = ExecutableStackLayout.Linearize(this, blocks, operandLayout, regionsByEntry.Length == 0,
+-            cancellationToken, out _operandReadSpans);
++            deferredCandidates, cancellationToken, out _operandReadSpans, out var deferredSites);
+         var positions = operandLayout.Blocks;
+         EntryIndex = positions[entryBlockIndex].Offset;
+         // Original block widths preserve inner-first unwinding, including
+@@ -672,9 +672,10 @@ internal sealed partial class ExecutableCodeObject
+             PrepareImmediatelyCalledDefinition(cancellationToken);
+             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out _definitionPairFirstCreation);
+             DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
+-            DeferredDefinitionSites = PrepareDeferredDefinitions(deferredCandidates, cancellationToken, out var valueCapacity);
+-            ValueStorageCapacity = valueCapacity;
++            DeferredDefinitionSites = deferredSites;
++            ValueStorageCapacity = PlaceDeferredDefinitions(deferredSites, cancellationToken);
+         }
++        else System.Diagnostics.Debug.Assert(deferredSites is null);
+ 
+         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
+     }
+diff --git a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+index 774e37165..2a3db7862 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+@@ -93,7 +93,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+     }
+ 
+     internal static ExecutableInstruction[] Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
+-        ExecutableStackLayout layout, bool hasNoExceptionRegions, CancellationToken token, out ExecutableOperandSpan[] readSpans)
++        ExecutableStackLayout layout, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token,
++        out ExecutableOperandSpan[] readSpans, out int[]? deferredDefinitionSites)
+     {
+         var positions = layout.Blocks;
+         var reads = layout.OperandReads;
+@@ -119,6 +120,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+         }
+         positions[^1].Offset = offset;
+         var instructions = new ExecutableInstruction[offset];
++        List<int>? deferredSites = null;
+         for (var i = 0; i < blocks.Count; i++)
+         {
+             PythonTokenization.CheckCancellation(token, i);
+@@ -146,6 +148,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+                         (uint)(instruction.ThirdInput - unpackedStart) < (uint)unpackedWidth)
+                         instruction = instruction.WithBorrowableTextStore();
+                 }
++                // The original tape proves the local has no ordinary read.
++                // Only mark its definition if its physical store still survives.
++                if (instruction is { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: true } &&
++                    deferredCandidates is not null && j + 1 < source.Count &&
++                    source[j + 1] is { OpCode: ExecutableOpCode.StoreLocal } store &&
++                    deferredCandidates[store.LocalSlot] == instruction.ConstantIndex + 1)
++                    (deferredSites ??= []).Add(position.Offset + j);
+                 instructions[position.Offset + j] = instruction.OpCode switch
+                 {
+                     // Leave call-plus-update publication to its existing path.
+@@ -183,6 +192,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
+             }
+         }
+         System.Diagnostics.Debug.Assert(nextRead == readSpans.Length);
++        deferredDefinitionSites = deferredSites?.ToArray();
+         return instructions;
+ 
+         int ResolvedOffset(int block) => positions[ResolveTarget(blocks, positions, block, token)].Offset;
