@@ -877,6 +877,13 @@ Only an incomplete pull transfers the evaluated prefix to the resume
 path. The continuation consumes that pull once and resumes in source
 order. The existing binder owns the arguments for an incomplete callback.
 
+A helper can return a supported unary builtin applied to a native dictionary
+field directly from its supplied operands. It resolves the callable before
+reading the field. The ordinary instruction path admits the definition's
+lookup cache on first use. Once established, the direct path reads the live
+value through that cache and uses the existing builtin call entry. Rebound
+guest callables, custom subscripts and missing fields use ordinary execution.
+
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older

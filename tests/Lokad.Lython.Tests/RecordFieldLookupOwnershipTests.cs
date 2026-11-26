@@ -11,6 +11,80 @@ public sealed class RecordFieldLookupOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
 
     [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task FieldConversionKeepsTheCalleeCapturedBeforeCacheAdmission(bool asynchronous, bool refuse)
+    {
+        const string source = """
+            global conversion
+            conversion = int
+            def get(record): return conversion(record['a'])
+            first = get(row)
+            second = get(row)
+            conversion = int
+            return first, second, get(row)
+            """;
+        var compiled = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+        var function = Assert.Single(compiled.FunctionBindings()).CodeObject;
+        var cacheBytes = LythonRuntime.LookupCacheBytes(function.LookupCacheCount);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var key = PyString.FromString("a", context.MemoryGovernor, Span);
+            var previous = PyString.FromString("7", context.MemoryGovernor, Span);
+            var replacement = PyString.FromString("20", context.MemoryGovernor, Span);
+            var original = new PyDict(context.MemoryGovernor, Span);
+            original.SetItem(key, previous);
+            var layout = original.ShareRecordKeys(context, Span)!;
+            var row = layout.CreateRecord(context, Span, 1);
+            row.SetRecordItem(key, previous, context, Span);
+            context.Variables["row"] = row;
+            Assert.True(context.TryGetBuiltin("len", out var length));
+
+            var rebound = false;
+            if (refuse) hook.RefuseGrowth = bytes => bytes == cacheBytes;
+            else hook.AfterGrowth = bytes =>
+            {
+                if (bytes != cacheBytes) return;
+                hook.AfterGrowth = null;
+                rebound = true;
+                context.Variables["conversion"] = length;
+                row.SetItem(key, replacement);
+            };
+
+            try
+            {
+                if (refuse)
+                {
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { _ = await Run(); });
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                    Assert.Same(previous, row.GetItem(key));
+                }
+                else
+                {
+                    var result = Assert.IsType<PyTuple>(await Run());
+                    Assert.Equal([new BigInteger(20), new BigInteger(2), new BigInteger(20)], result.Cast<BigInteger>());
+                    Assert.Same(replacement, row.GetItem(key));
+                }
+                Assert.Equal(!refuse, rebound);
+                Assert.Same(previous, original.GetItem(key));
+                Assert.Null(context.CurrentExecutableFrame);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+
+            ValueTask<object?> Run() => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(compiled, context)
+                : new(LythonRuntime.ExecuteExecutableCodeObject(compiled, context, default, null));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("replace", false)] [InlineData("replace", true)]
     [InlineData("delete", false)] [InlineData("delete", true)]
     [InlineData("detach", false)] [InlineData("detach", true)]

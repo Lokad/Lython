@@ -302,6 +302,8 @@ internal sealed partial class ExecutableCodeObject
         ref readonly var first = ref Instructions[0];
         if (first.OpCode == ExecutableOpCode.LoadCallMember)
             return HasClosedStringAffixReturn();
+        if (first.OpCode == ExecutableOpCode.LoadGlobal)
+            return HasClosedFieldCallReturn();
         if (first.OpCode == ExecutableOpCode.JumpIfFalse)
         {
             var alternative = first.TargetIndex;
@@ -365,6 +367,24 @@ internal sealed partial class ExecutableCodeObject
         var site = CallSites[call.CallSiteIndex];
         return site is { HasReceiver: true, IsPositionalOnly: true, ArgumentCount: 1 } &&
             prefix.ResultSlot == call.InputStart + site.ArgumentOffset;
+    }
+
+    private bool HasClosedFieldCallReturn()
+    {
+        if (Instructions.Length != 4) return false;
+        ref readonly var target = ref Instructions[0];
+        ref readonly var field = ref Instructions[1];
+        ref readonly var call = ref Instructions[2];
+        ref readonly var returned = ref Instructions[3];
+        if (target.HasResultConsumer || field.HasResultConsumer || call.HasResultConsumer ||
+            field.OpCode != ExecutableOpCode.Subscript || (uint)field.InputStart >= (uint)FirstTemporarySlot ||
+            (uint)~field.SecondInput >= (uint)Constants.Length || Constants[~field.SecondInput] is not PyString ||
+            call.OpCode != ExecutableOpCode.Call || call.HasForwardedCallOperands ||
+            returned.OpCode != ExecutableOpCode.Return || returned.InputStart != call.ResultSlot) return false;
+
+        var site = CallSites[call.CallSiteIndex];
+        return site is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1, UnpackedReturnCount: 0 } &&
+            target.ResultSlot == call.InputStart + site.TargetOffset && field.ResultSlot == call.InputStart + site.ArgumentOffset;
     }
 
     // A native get/add/store can reuse one table probe. Original instructions

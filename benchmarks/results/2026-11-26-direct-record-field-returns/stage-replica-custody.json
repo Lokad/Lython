@@ -1,0 +1,32 @@
+{
+  "freeBeforeBytes": 8228864,
+  "freeAfterBytes": 20328448,
+  "requiredBytes": 15776786,
+  "actions": [
+    {
+      "action": "reference-identical-remote-copy",
+      "name": "identity-comparisons-confirmation-b1756-20261126/candidate/Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450"
+    },
+    {
+      "action": "reference-identical-remote-copy",
+      "name": "identity-comparisons-confirmation-b1756-20261126/candidate/Lokad.Lython.Benchmarks.dll",
+      "sha256": "c5d76bcf186edb5266491b6bb89dbe2bd487b16e044e751e440e8a4b964b6f8d"
+    },
+    {
+      "action": "reference-identical-remote-copy",
+      "name": "identity-comparisons-confirmation-b1756-20261126/candidate/Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+    },
+    {
+      "action": "reference-identical-remote-copy",
+      "name": "identity-comparisons-confirmation-b1756-20261126/candidate/Lokad.Lython.dll",
+      "sha256": "e04fa6fecd0aea1a05f183f00c424ed60b227943ff3c1eae267db999854d0568"
+    },
+    {
+      "action": "retire-remote-stage-copy-retained-in-verified-local-image",
+      "name": "arithmetic-operand-borrows-b1758-20261126/candidate/Lokad.Lython.dll",
+      "sha256": "9cca0796af526ac8778e1afacaf3e656f50a38d591078ba867125c6888af6e23"
+    }
+  ]
+}

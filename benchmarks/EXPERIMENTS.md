@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1759 direct native field returns](results/2026-11-26-direct-record-field-returns/README.md)
+skips 2,047 integer and 4,095 float helper bodies in the representative
+scripts. Warm CPU falls 9.06–12.36% on the file-fed map and 2.60–9.01%
+on the float meter. Peak admission and allocations match. Shipment
+control CPU rises 0.13–1.96%. Keep the adverse observation.
+
 [B1758b outlined arithmetic operands](results/2026-11-26-arithmetic-operand-borrows/outlining/README.md)
 shrinks the optimized entry from 3,481 to 2,434 B. Pinned local typed-meter
 CPU still rises 2.01–4.78%, and the control has wide worker spread. Archive

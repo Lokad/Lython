@@ -1,0 +1,41 @@
+[
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "records": 2048,
+    "inputBytes": 27350,
+    "allocationBytes": [
+      808528,
+      808528
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.csv-meter-field-helper",
+    "records": 4096,
+    "inputBytes": 139299,
+    "allocationBytes": [
+      2623086,
+      2623086
+    ],
+    "peakAdmission": [
+      6550745,
+      6550745
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "records": 2048,
+    "inputBytes": 27350,
+    "allocationBytes": [
+      1160864,
+      1160864
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  }
+]

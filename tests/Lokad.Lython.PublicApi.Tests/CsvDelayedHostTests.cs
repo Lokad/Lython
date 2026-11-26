@@ -11,6 +11,62 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// </summary>
 public sealed class CsvDelayedHostTests
 {
+    [Fact]
+    public async Task RecordConversionPreservesLiveFieldsAndAwaitsDynamicCalls()
+    {
+        const string source = """
+            import csv
+            transform = int
+            def convert(row): return transform(row['quantity'])
+
+            with open('rows.csv') as source:
+                rows = list(csv.DictReader(source))
+            print(list(map(convert, rows)))
+            rows[0]['quantity'] = '9'
+            print(convert(rows[0]))
+            del rows[0]['quantity']
+            try: convert(rows[0])
+            except KeyError as error: print(error)
+
+            class DynamicRow:
+                def __getitem__(self, key):
+                    with open('marker.txt') as marker: return marker.read()
+            print(convert(DynamicRow()))
+            transform = float
+            print(convert(rows[1]))
+            def offset(text):
+                with open('marker.txt') as marker: return int(text) + int(marker.read())
+            transform = offset
+            print(list(map(convert, rows[1:])))
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var sync = new MockLythonHost();
+            sync.SeedFile("/rows.csv", "quantity\n2\n3\n");
+            sync.SeedFile("/marker.txt", "7");
+            using (var result = script.Run(sync)) Check(result);
+            Assert.Equal(baseline, budget.ReservedBytes);
+
+            var delayed = new DelayedLythonHost();
+            delayed.SeedFile("/rows.csv", "quantity\n2\n3\n");
+            delayed.SeedFile("/marker.txt", "7");
+            using (var result = await script.RunAsync(delayed)) Check(result);
+            Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(3, delayed.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        static void Check(LythonExecutionResult result)
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("[2, 3]\n9\n'quantity'\n7\n3.0\n[10]\n", result.StandardOutput);
+        }
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(2)]

@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -6,11 +7,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal static bool TryEvaluateDirectOperandReturn<T>(ExecutableCodeObject code, T operands,
+    internal static bool TryEvaluateDirectOperandReturn<T>(PyExecutableFunction function, T operands,
         ExecutionContext scope, ExecutableCaptures captures, out ExecutableSlot value)
         where T : IIntegerOperands, allows ref struct
     {
         value = default;
+        var code = function.CodeObject;
         var start = 0;
         ref readonly var head = ref code.Instructions[0];
         if (head.OpCode == ExecutableOpCode.JumpIfFalse)
@@ -22,6 +24,8 @@ internal sealed partial class LythonRuntime
         }
         ref readonly var first = ref code.Instructions[start];
         scope.CheckExecution(first.Span);
+        if (first.OpCode == ExecutableOpCode.LoadGlobal)
+            return TryEvaluateDirectFieldCallReturn(function, operands, scope, out value);
         if (first.OpCode == ExecutableOpCode.LoadCallMember)
         {
             // The whole tape has already proved a constant string affix.
@@ -48,6 +52,32 @@ internal sealed partial class LythonRuntime
         System.Diagnostics.Debug.Assert(code.Instructions[end + 1].OpCode == ExecutableOpCode.Return);
         scope.CheckExecution(code.Instructions[end + 1].Span);
         value.SetInteger(result);
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TryEvaluateDirectFieldCallReturn<T>(PyExecutableFunction function, T operands,
+        ExecutionContext scope, out ExecutableSlot value) where T : IIntegerOperands, allows ref struct
+    {
+        value = default;
+        var code = function.CodeObject;
+        ref readonly var target = ref code.Instructions[0];
+        if (!TryResolveExecutableGlobal(code, target.NameIndex, scope, out var callable) || callable is not BuiltinCallable builtin)
+            return false;
+
+        ref readonly var field = ref code.Instructions[1];
+        scope.CheckExecution(field.Span);
+        if (operands.ReadLocal(field.InputStart).Reference is not PyDict { SupportsNativeStringReads: true } record ||
+            !function.TryReadDirectField(record, (PyString)code.Constants[~field.SecondInput]!, field, out var input))
+            return false;
+
+        ref readonly var call = ref code.Instructions[2];
+        scope.CheckExecution(call.Span);
+        if (!TryInvokeUnaryBuiltin(builtin, input, code.CallSites[call.CallSiteIndex].CallSpan, scope,
+            allowProtocol: false, out value)) return false;
+        if (value.Reference is LythonRuntimeException failure) throw failure;
+
+        scope.CheckExecution(code.Instructions[3].Span);
         return true;
     }
 

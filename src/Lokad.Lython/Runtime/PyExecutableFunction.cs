@@ -1,4 +1,5 @@
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Runtime;
 
 internal sealed class PyExecutableFunction : PyFunctionBase
@@ -23,6 +24,18 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal void ClearLookupCache(int index)
     {
         if (_lookupCaches is { } caches) caches[index] = default;
+    }
+
+    internal bool TryReadDirectField(PyDict record, PyString key, in ExecutableInstruction field, out object? value)
+    {
+        if (field.LookupCacheIndex < 0 || !record.HasSharedRecordKeys)
+            return record.TryReadNativeStringValue(key, Closure, field.Span, out value);
+
+        // The ordinary tape captures the callee across initial cache admission.
+        // Let it execute that first read before borrowing the established cache.
+        value = null;
+        return _lookupCaches is { } caches && record.TryReadRecordValue(key, ref caches[field.LookupCacheIndex],
+            Closure, field.Span, out value);
     }
 
     public PyExecutableFunction(
@@ -247,7 +260,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             Closure.EnterFunctionCall(span);
             try
             {
-                return LythonRuntime.TryEvaluateDirectOperandReturn(CodeObject, operands, Closure, _closureCells, out result);
+                return LythonRuntime.TryEvaluateDirectOperandReturn(this, operands, Closure, _closureCells, out result);
             }
             catch (LythonRuntimeException error)
             {
@@ -294,7 +307,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         const int capacity = LythonRuntime.InlineIterationOperandCount;
         var code = CodeObject;
-        if (!CanStartInline || code.HasDirectOperandReturn || PositionalCount > capacity ||
+        if (!CanStartInline || PositionalCount > capacity ||
+            code.HasDirectOperandReturn && code.Instructions[0].OpCode != ExecutableOpCode.LoadGlobal ||
             !HasCompletePositionalSupply(PositionalCount, receiver: null)) return false;
         if (code.EntryIndex != 0 || code.NativePrefixEnd != code.Instructions.Length || code.ExceptionRegions.Count != 0 ||
             code.CapturedLocalSlots.Count != 0 || code.FirstTemporarySlot > capacity ||

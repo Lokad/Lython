@@ -1,0 +1,110 @@
+[
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": false,
+    "admittedPeaks": [
+      2270071,
+      2270071
+    ],
+    "reference": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 2048,
+      "BorrowedIterationPrefixes": 2048
+    },
+    "candidate": {
+      "DirectFieldReturns": 2047,
+      "NativeFieldBodies": 1,
+      "BorrowedIterationPrefixes": 1
+    }
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "admittedPeaks": [
+      2270071,
+      2270071
+    ],
+    "reference": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 2048,
+      "BorrowedIterationPrefixes": 2048
+    },
+    "candidate": {
+      "DirectFieldReturns": 2047,
+      "NativeFieldBodies": 1,
+      "BorrowedIterationPrefixes": 1
+    }
+  },
+  {
+    "case": "diagnostic.csv-meter-field-helper",
+    "asynchronous": false,
+    "admittedPeaks": [
+      6550745,
+      6550745
+    ],
+    "reference": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 4096,
+      "BorrowedIterationPrefixes": 0
+    },
+    "candidate": {
+      "DirectFieldReturns": 4095,
+      "NativeFieldBodies": 1,
+      "BorrowedIterationPrefixes": 0
+    }
+  },
+  {
+    "case": "diagnostic.csv-meter-field-helper",
+    "asynchronous": true,
+    "admittedPeaks": [
+      6550745,
+      6550745
+    ],
+    "reference": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 4096,
+      "BorrowedIterationPrefixes": 0
+    },
+    "candidate": {
+      "DirectFieldReturns": 4095,
+      "NativeFieldBodies": 1,
+      "BorrowedIterationPrefixes": 0
+    }
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": false,
+    "admittedPeaks": [
+      2817644,
+      2817644
+    ],
+    "reference": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 0,
+      "BorrowedIterationPrefixes": 0
+    },
+    "candidate": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 0,
+      "BorrowedIterationPrefixes": 0
+    }
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "asynchronous": true,
+    "admittedPeaks": [
+      2817644,
+      2817644
+    ],
+    "reference": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 0,
+      "BorrowedIterationPrefixes": 0
+    },
+    "candidate": {
+      "DirectFieldReturns": 0,
+      "NativeFieldBodies": 0,
+      "BorrowedIterationPrefixes": 0
+    }
+  }
+]
