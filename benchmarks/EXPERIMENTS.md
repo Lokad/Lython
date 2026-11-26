@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1786 current warm callable attribution](results/2026-11-26-current-callable-profile/README.md)
+locates remaining computed-argument calls and prepaid default allocation in
+the ordinary factory. The escaping factory still spends time constructing
+closed pairs. Both profiles locate the direct return evaluator on the B1784
+runtime with verified goldens and image hashes.
+
 [B1785 smaller JSON record capacity](results/2026-11-26-json-matched-record-capacity/README.md)
 lowers peak admission by 15.4% on both JSON fixtures and reduces allocation.
 Async JSON Lines elapsed rises in both local blocks. Repeat process CPU
