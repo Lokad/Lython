@@ -653,8 +653,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             ExecutableOpCode.DeleteSubscript => (2, 0),
             ExecutableOpCode.DeleteSlice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 0),
             ExecutableOpCode.AppendFormattedText => (0, 0),
-            ExecutableOpCode.StartFunctionDefaults => (0, instruction.StartsKeywordDefaultsOnly ? 1
-                : ((ExecutableCreateFunction)constants[instruction.ConstantIndex]!).ParameterLayout.DefaultStorageCount),
+            ExecutableOpCode.StartFunctionDefaults => (0, ((ExecutableCreateFunction)constants[instruction.ConstantIndex]!).DefaultOperandCount),
             ExecutableOpCode.StoreFunctionDefault => (1, 0),
             ExecutableOpCode.FormatField => constants[instruction.ConstantIndex] is ExecutableFormatField field
                 ? (field.DynamicSpecifier ? 2 : 1, field.Append ? 0 : 1)

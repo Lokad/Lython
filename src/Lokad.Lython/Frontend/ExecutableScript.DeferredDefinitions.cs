@@ -46,8 +46,9 @@ internal sealed partial class ExecutableCodeObject
         return definitions;
     }
 
-    private int[]? PrepareDeferredDefinitions(int[]? candidates, CancellationToken token)
+    private int[]? PrepareDeferredDefinitions(int[]? candidates, CancellationToken token, out int valueCapacity)
     {
+        valueCapacity = ValueStorageCapacity;
         if (candidates is null) return null;
         List<int>? sites = null;
         for (var i = 0; i + 1 < Instructions.Length; i++)
@@ -59,7 +60,10 @@ internal sealed partial class ExecutableCodeObject
                 candidates[store.LocalSlot] != create.ConstantIndex + 1)
                 continue;
             sites ??= [];
-            Instructions[i] = create.WithDeferredDefinition(checked(ValueStorageCapacity + sites.Count));
+            var definition = (ExecutableCreateFunction)Constants[create.ConstantIndex]!;
+            // A shared tuple needs no slot. The local can hold the prepaid keyword default until publication.
+            var keywordSlot = definition.LiteralPositionalDefaults is null ? checked(valueCapacity++) : store.LocalSlot;
+            Instructions[i] = create.WithDeferredDefinition(keywordSlot);
             sites.Add(i);
         }
         return sites?.ToArray();

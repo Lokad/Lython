@@ -6,9 +6,10 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static void StartExecutableDefaults(ExecutableCreateFunction definition, Span<ExecutableSlot> operands,
-        bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
+        ExecutionContext context, LythonSourceSpan span)
     {
-        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, keywordsOnly, context, span, definition.PrepaysCallable);
+        var defaults = AllocateFunctionDefaults(definition.ParameterLayout, definition.LiteralPositionalDefaults is not null,
+            context, span, definition.PrepaysCallable);
         if (!defaults.Positional.IsUnassigned) operands[0] = defaults.Positional;
         if (!defaults.Keywords.IsUnassigned) operands[^1] = defaults.Keywords;
     }
@@ -44,13 +45,14 @@ internal sealed partial class LythonRuntime
         catch { governor.ReleaseReserved(bytes); throw; }
     }
 
-    private static FunctionDefaults ReadExecutableDefaults(FunctionParameterLayout layout, ReadOnlySpan<ExecutableSlot> operands,
-        bool directKeywordDefault = false)
+    private static FunctionDefaults ReadExecutableDefaults(ExecutableCreateFunction definition, ReadOnlySpan<ExecutableSlot> operands)
     {
-        System.Diagnostics.Debug.Assert(operands.Length == layout.DefaultStorageCount);
-        var positional = layout.PositionalDefaultCount == 0 ? default : operands[0];
+        System.Diagnostics.Debug.Assert(operands.Length == definition.DefaultOperandCount);
+        var layout = definition.ParameterLayout;
+        var positional = definition.LiteralPositionalDefaults is { } literals ? ExecutableSlot.FromObject(literals)
+            : layout.PositionalDefaultCount == 0 ? default : operands[0];
         var keyword = layout.HasKeywordDefaults ? operands[^1] : default;
-        return new(positional, directKeywordDefault
+        return new(positional, definition.DirectKeywordDefault
             ? ExecutableSlot.OwnPrivateKeywordDefault(ExecutableSlot.FromObject(RuntimeValue(keyword.Object))) : keyword);
     }
 

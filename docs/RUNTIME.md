@@ -414,10 +414,10 @@ Executable code owns immutable keyword-default and annotation key layouts
 prepared during compilation. An executable function with evaluated annotation
 operands admits the callable and final annotation backing before allocating
 either. Refusal can arise from their combined estimate. A declaration with
-scalar literal positional defaults shares one immutable tuple owned by the
-compiled code. Reassigning `__defaults__` still affects only that function.
-Each definition admits its positional and keyword default backing before
-evaluation. An executable definition with keyword defaults can admit the
+scalar literal positional defaults reads one immutable tuple directly from its
+compiled declaration. Reassigning `__defaults__` affects only that function.
+Each definition admits the backing for evaluated defaults before evaluation.
+An executable definition with keyword defaults can admit the
 fixed callable shell at the same preflight when it has no captures,
 decorators or annotations. This can refuse the definition before a default
 expression runs. Values complete into private storage that stays funded
@@ -451,8 +451,10 @@ In eligible straight-line functions, the lexical workspace can hold a write-only
 definition's evaluated defaults before constructing the callable. General calls
 and frame handoff materialize pending definitions before exposing local bindings.
 Private defaults and the prepaid callable charge return when a pending definition
-retires unpublished. Literal tuples keep their compilation owner. The extra
-workspace capacity is admitted up front and can lead to earlier refusal.
+retires unpublished. When the positional tuple belongs to compilation, the
+prepaid keyword default fits in the final local slot. A deferred definition
+with evaluated positional defaults needs an extra workspace slot. Its capacity
+is admitted up front and can lead to earlier refusal.
 Eligible single-target list comprehensions feed the yielded value directly into
 the expression. Their scope keeps the current binding for `locals()` snapshots,
 including during a custom iterator pull or suspended item operation. Capturing

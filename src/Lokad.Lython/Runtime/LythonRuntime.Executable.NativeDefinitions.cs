@@ -128,12 +128,15 @@ internal sealed partial class LythonRuntime
         private bool TryDeferDefinition(in ExecutableInstruction instruction)
         {
             var store = Code.Instructions[Index + 1];
-            var defaults = Values.Slice(instruction.InputStart, 2);
-            if ((!defaults[0].HasPrivatePositionalDefault && defaults[0].Reference is not PyTuple) ||
-                !defaults[1].HasPrepaidCallable || !defaults[1].HasPrivateKeywordDefault) return false;
+            var keywordSlot = instruction.DeferredKeywordSlot;
+            var sharedPositional = keywordSlot == store.LocalSlot;
+            var defaults = Values.Slice(instruction.InputStart, sharedPositional ? 1 : 2);
+            var keywords = defaults[^1];
+            if (!keywords.HasPrepaidCallable || !keywords.HasPrivateKeywordDefault ||
+                (!sharedPositional && !defaults[0].HasPrivatePositionalDefault)) return false;
             _scope.CheckExecution(store.Span);
-            Values[store.LocalSlot] = defaults[0];
-            Values[instruction.DeferredKeywordSlot] = defaults[1];
+            if (!sharedPositional) Values[store.LocalSlot] = defaults[0];
+            Values[keywordSlot] = keywords;
             defaults.Clear();
             Trim(instruction.InputStart);
             _hasDeferredDefinitions = true;
@@ -147,11 +150,12 @@ internal sealed partial class LythonRuntime
             {
                 ref readonly var create = ref Code.Instructions[index];
                 ref var keyword = ref Values[create.DeferredKeywordSlot];
-                if (keyword.IsUnassigned) continue;
+                if (!keyword.HasPrepaidCallable) continue;
                 ref var positional = ref Values[Code.Instructions[index + 1].LocalSlot];
                 var definition = (ExecutableCreateFunction)Code.Constants[create.ConstantIndex]!;
+                var positionalDefaults = definition.LiteralPositionalDefaults is { } literals ? ExecutableSlot.FromObject(literals) : positional;
                 var callable = CreateFunctionValue(definition.ParameterLayout, definition.CodeObject,
-                    GetGlobalContext(_scope), default, new(positional, keyword), false, _scope, create.Span);
+                    GetGlobalContext(_scope), default, new(positionalDefaults, keyword), false, _scope, create.Span);
                 keyword = default;
                 positional.Object = callable;
             }
@@ -164,10 +168,9 @@ internal sealed partial class LythonRuntime
             foreach (var index in Code.DeferredDefinitionSites!)
             {
                 ref var keyword = ref Values[Code.Instructions[index].DeferredKeywordSlot];
-                if (keyword.IsUnassigned) continue;
+                if (!keyword.HasPrepaidCallable) continue;
                 ref var positional = ref Values[Code.Instructions[index + 1].LocalSlot];
-                // A positional tuple loaded from the code pool stays funded
-                // by compilation. Only invocation-owned defaults retire here.
+                // Compiled positional tuples need no local slot or invocation charge.
                 var positionalBytes = positional.HasPrivatePositionalDefault
                     ? FunctionDefaults.InlinePositionalBytes(positional.ReadDefaultOperand()) : 0L;
                 bytes = checked(bytes + positionalBytes + FunctionValueBytes + PyDict.RecordKeys.SinglePreparedValueBytes);
@@ -232,9 +235,8 @@ internal sealed partial class LythonRuntime
                     uncapturedLocal = Values.Slice(captures[0], 1);
                 ExecutableCaptures cells = captures is null || !uncapturedLocal.IsEmpty ? default :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
-                var function = CreateLexicalFunctionValue(definition.ParameterLayout, code, cells, definition.IsGenerator,
-                    _scope, instruction.Span, Values.Slice(first, definition.InputCount), definition.PostponedAnnotations,
-                    preparedAnnotations, definition.DirectKeywordDefault, uncapturedLocal);
+                var function = CreateLexicalFunctionValue(definition, cells, _scope, instruction.Span,
+                    Values.Slice(first, definition.InputCount), preparedAnnotations, uncapturedLocal);
                 preparedAnnotations = default;
                 return function;
             }

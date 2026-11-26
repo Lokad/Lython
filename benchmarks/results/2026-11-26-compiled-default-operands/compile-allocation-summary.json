@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocatedBytes": [
+      1442480,
+      1441472
+    ],
+    "retainedAdmission": [
+      887393,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocatedBytes": [
+      63648,
+      63672
+    ],
+    "retainedAdmission": [
+      74415,
+      74415
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocatedBytes": [
+      150656,
+      150680
+    ],
+    "retainedAdmission": [
+      165088,
+      165088
+    ]
+  },
+  {
+    "case": "diagnostic.definition-locals-default",
+    "allocatedBytes": [
+      98472,
+      98456
+    ],
+    "retainedAdmission": [
+      98059,
+      98043
+    ]
+  }
+]

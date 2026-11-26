@@ -326,17 +326,16 @@ internal sealed partial class LythonRuntime
 
     // Inline and array-backed lexical calls have the same owner and operand
     // order. Only the caller retires the storage the operands came from.
-    private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
-        ExecutableCaptures cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
-        Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
-        PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
+    private static PyFunctionBase CreateLexicalFunctionValue(ExecutableCreateFunction definition, ExecutableCaptures cells,
+        ExecutionContext scope, LythonSourceSpan span, Span<ExecutableSlot> operands,
+        PreparedFunctionAnnotations preparedAnnotations = default,
         Span<ExecutableSlot> uncapturedLocal = default)
     {
-        var firstAnnotation = layout.DefaultStorageCount;
+        var firstAnnotation = definition.DefaultOperandCount;
         var defaults = operands[..firstAnnotation];
-        var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells,
-            ReadExecutableDefaults(layout, defaults, directKeywordDefault), generator, scope, span,
-            operands[firstAnnotation..], postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);
+        var function = CreateFunctionValue(definition.ParameterLayout, definition.CodeObject, GetGlobalContext(scope), cells,
+            ReadExecutableDefaults(definition, defaults), definition.IsGenerator, scope, span,
+            operands[firstAnnotation..], definition.PostponedAnnotations, preparedAnnotations, definition.DirectKeywordDefault, uncapturedLocal);
         defaults.Clear();
         return function;
     }
@@ -404,9 +403,8 @@ internal sealed partial class LythonRuntime
                 if (operation.EagerAnnotationReads is { } reads)
                     preparedAnnotations = ReadEagerFunctionAnnotations(reads, execution.Code, operation.CodeObject, scope, span);
                 var cells = CaptureExecutableCells(operation.CodeObject, scope, span, ref execution, captures);
-                function = CreateLexicalFunctionValue(operation.ParameterLayout, operation.CodeObject, cells, operation.IsGenerator,
-                    scope, span, execution.Stack.Slice(first, operation.InputCount).Span,
-                    operation.PostponedAnnotations, preparedAnnotations, operation.DirectKeywordDefault);
+                function = CreateLexicalFunctionValue(operation, cells, scope, span,
+                    execution.Stack.Slice(first, operation.InputCount).Span, preparedAnnotations);
                 preparedAnnotations = default;
             }
             finally
@@ -428,7 +426,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     var values = execution.Stack.Slice(first, operation.InputCount).Span;
-                    lambda = CreateLambdaFunction(operation, ReadExecutableDefaults(operation.ParameterLayout, values), context, span);
+                    lambda = CreateLambdaFunction(operation, ReadExecutableDefaults(operation, values), context, span);
                     values.Clear();
                 }
                 finally { execution.Stack.RetireTo(instruction.ResultSlot); }
@@ -444,7 +442,7 @@ internal sealed partial class LythonRuntime
                 var layout = operation.ParameterLayout;
                 var code = operation.CodeObject;
                 var defaultStart = first + operation.DecoratorCount;
-                var defaultCount = layout.DefaultStorageCount;
+                var defaultCount = operation.DefaultOperandCount;
                 var defaults = execution.Stack.Slice(defaultStart, defaultCount).Span;
                 var next = defaultStart + defaultCount;
 
@@ -457,7 +455,7 @@ internal sealed partial class LythonRuntime
                 ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0
                     ? execution.Stack.Slice(next, operation.AnnotationOperandCount).Span : default;
                 function = CreateFunctionValue(layout, code, closure, cells,
-                    ReadExecutableDefaults(layout, defaults, operation.DirectKeywordDefault),
+                    ReadExecutableDefaults(operation, defaults),
                     operation.IsGenerator, context, span, annotations: annotations,
                     postponedAnnotations: operation.PostponedAnnotations, preparedAnnotations: preparedAnnotations,
                     directKeywordDefault: operation.DirectKeywordDefault);

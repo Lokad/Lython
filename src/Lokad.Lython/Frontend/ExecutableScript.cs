@@ -198,7 +198,6 @@ internal readonly record struct ExecutableInstruction
     internal ExecutableInstruction WithDeferredDefinition(int keywordSlot)
         => new(ExecutableOpCode.ApplyDeferredDefinition, Span, _primaryOperand, keywordSlot,
             _inputStart, _resultSlot, _liveExtent);
-    internal bool StartsKeywordDefaultsOnly => _secondaryOperand != 0;
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadDictionaryGetKey or
@@ -299,8 +298,8 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
 
-    internal static ExecutableInstruction StartFunctionDefaults(int definition, bool keywordsOnly, LythonSourceSpan span)
-        => new(ExecutableOpCode.StartFunctionDefaults, span, definition, keywordsOnly ? 1 : 0);
+    internal static ExecutableInstruction StartFunctionDefaults(int definition, LythonSourceSpan span)
+        => new(ExecutableOpCode.StartFunctionDefaults, span, definition);
 
     internal static ExecutableInstruction StoreFunctionDefault(int depth, int index, LythonSourceSpan span)
         => new(ExecutableOpCode.StoreFunctionDefault, span, depth, index);
@@ -671,9 +670,8 @@ internal sealed partial class ExecutableCodeObject
             PrepareImmediatelyCalledDefinition(cancellationToken);
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out _definitionPairFirstCreation);
             DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
-            DeferredDefinitionSites = PrepareDeferredDefinitions(deferredCandidates, cancellationToken);
-            if (DeferredDefinitionSites is { } deferred)
-                ValueStorageCapacity = checked(ValueStorageCapacity + deferred.Length);
+            DeferredDefinitionSites = PrepareDeferredDefinitions(deferredCandidates, cancellationToken, out var valueCapacity);
+            ValueStorageCapacity = valueCapacity;
         }
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1773 literal defaults without execution staging](results/2026-11-26-compiled-default-operands/README.md)
+removes the immutable tuple load and 30 workspace slots in the ordinary
+factory. Quiet sync CPU falls 1.66–1.98% and async CPU rises 2.09–2.61%.
+Escaping-rule elapsed crosses zero after an adverse local result. The
+[quiet confirmation](results/2026-11-26-compiled-default-operands/confirmation/README.md)
+records the retention decision and async follow-up.
+
 [B1772 shared function discovery](results/2026-11-26-shared-name-binding-roots/README.md)
 removes a small separate walk and adds a temporary worklist. Sparse guards and
 generated rules use more compile CPU in a variable local comparison. The

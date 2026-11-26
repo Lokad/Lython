@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "bytes": [
+      23224,
+      22744
+    ],
+    "peak": [
+      92760,
+      92040
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "bytes": [
+      737944,
+      737944
+    ],
+    "peak": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "bytes": [
+      1094976,
+      1095206
+    ],
+    "peak": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.definition-locals-default",
+    "bytes": [
+      19032,
+      19016
+    ],
+    "peak": [
+      14659,
+      14635
+    ]
+  }
+]

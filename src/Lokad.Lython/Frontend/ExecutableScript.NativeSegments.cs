@@ -41,7 +41,7 @@ internal sealed partial class ExecutableCodeObject
         // The declaration captures the factory's only bound argument by value.
         // Its code still owns live function metadata and allocates a fresh callable.
         var capture = body.CaptureSources;
-        return definition is { InputCount: 0, EagerAnnotationReads: null, PostponedAnnotations: null } &&
+        return definition is { InputCount: 0, LiteralPositionalDefaults: null, EagerAnnotationReads: null, PostponedAnnotations: null } &&
             capture is { CanCaptureByValue: true, Slots: [0] } &&
             ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
     }
@@ -86,7 +86,7 @@ internal sealed partial class ExecutableCodeObject
             Instructions[nested] is not { OpCode: ExecutableOpCode.ApplyOperation, ImmediatelyCalledDefinitionCapture: 0 } ||
             Constants[Instructions[creation].ConstantIndex] is not ExecutableCreateFunction
             {
-                IsLambda: false, InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
+                IsLambda: false, InputCount: 0, LiteralPositionalDefaults: null, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
                 EagerAnnotationReads: null, PostponedAnnotations: null,
             } left ||
             left.CodeObject is not { UsesOnlyLexicalSlots: true, ScopeFacts.RequiresClassCell: false,
@@ -148,7 +148,7 @@ internal sealed partial class ExecutableCodeObject
             Instructions[start] is not { OpCode: ExecutableOpCode.ApplyOperation } create ||
             Constants[create.ConstantIndex] is not ExecutableCreateFunction
             {
-                IsLambda: false, InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
+                IsLambda: false, InputCount: 0, LiteralPositionalDefaults: null, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
                 EagerAnnotationReads: null, PostponedAnnotations: null, ParameterLayout.ParameterCount: 0,
             } definition ||
             !TryReadDefinitionStore(start, out var target) || CapturedLocalSlots.Contains(target) ||
@@ -197,7 +197,7 @@ internal sealed partial class ExecutableCodeObject
             Instructions[^2] is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: false } create ||
             create.InputStart != store.LiveExtent ||
             Constants[create.ConstantIndex] is not ExecutableCreateFunction
-                { Kind: ExecutableDefinitionKind.Lambda, InputCount: 0, IsGenerator: false } lambda ||
+                { Kind: ExecutableDefinitionKind.Lambda, InputCount: 0, LiteralPositionalDefaults: null, IsGenerator: false } lambda ||
             !lambda.CodeObject.UsesOnlyLexicalSlots || lambda.CodeObject.ScopeFacts.RequiresClassCell ||
             lambda.CodeObject.CaptureSources is not { Slots.Length: 1 } capture ||
             !ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) || capture.Slots[0] != store.LocalSlot ||
@@ -226,11 +226,11 @@ internal sealed partial class ExecutableCodeObject
     private bool TryReadClosedDefinition(int startIndex, bool fixedKeyword, bool pair, CancellationToken token, out int creationIndex)
     {
         creationIndex = -1;
-        if (Instructions[startIndex] is not { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start ||
+        if (Instructions[startIndex] is not { OpCode: ExecutableOpCode.StartFunctionDefaults } start ||
             Constants[start.ConstantIndex] is not ExecutableCreateFunction
             {
                 Kind: not ExecutableDefinitionKind.NamespaceLambda, DecoratorCount: 0, IsGenerator: false,
-                DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0,
+                DeferredAnnotations.Length: 0, TypeParameters: null, DirectKeywordDefault: false, AnnotationOperandCount: 0, LiteralPositionalDefaults: null,
                 CodeObject: { UsesOnlyLexicalSlots: true, ClosureNames.Count: 0, ScopeFacts.RequiresClassCell: false },
                 ParameterLayout: { Defaults.Length: > 0 } layout,
             } || start.LiveExtent != start.ResultSlot + layout.DefaultStorageCount) return false;

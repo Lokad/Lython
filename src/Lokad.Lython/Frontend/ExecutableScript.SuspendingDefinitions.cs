@@ -9,9 +9,10 @@ internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations,
     ExecutableInstruction[]? EagerAnnotationReads, bool DirectKeywordDefault = false,
-    ExecutableDefinitionKind Kind = ExecutableDefinitionKind.Statement) : ExecutableOperation
+    ExecutableDefinitionKind Kind = ExecutableDefinitionKind.Statement, PyTuple? LiteralPositionalDefaults = null) : ExecutableOperation
 {
-    internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
+    internal int DefaultOperandCount => ParameterLayout.DefaultStorageCount - (LiteralPositionalDefaults is null ? 0 : 1);
+    internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + DefaultOperandCount);
     internal bool IsLambda => Kind != ExecutableDefinitionKind.Statement;
 
     // The existing keyword operand can own the fixed callable admission
@@ -63,7 +64,7 @@ internal sealed partial class ExecutableScript
             block = CompileFunctionDefaults(definition.Parameters,
                 definition.ParameterLayout, definition.Span, block,
                 allowDirectKeyword: emitAnnotations && (annotations.Length == 0 || annotations[0].Expression.PostponedAnnotation is not null),
-                out var directKeywordDefault, out var definitionIndex);
+                out var directKeywordDefault, out var definitionIndex, out var literals);
             PyString[]? postponed = null;
             ExecutableInstruction[]? reads = null;
             // Lexical preparation attaches postponed text to every annotation in the declaration.
@@ -97,7 +98,8 @@ internal sealed partial class ExecutableScript
             // it still evaluates them in the definition's type scope.
             EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
                 definition.IsGenerator, postponed is null && reads is null ? annotations.Length : 0,
-                deferredAnnotations, typeParameters, postponed, reads, directKeywordDefault), definition.Span, block, definitionIndex);
+                deferredAnnotations, typeParameters, postponed, reads, directKeywordDefault,
+                LiteralPositionalDefaults: literals), definition.Span, block, definitionIndex);
             // Module declarations update their live namespace and optional slot.
             var name = definition.Name;
             if (_parameterLayout is null)
@@ -173,37 +175,33 @@ internal sealed partial class ExecutableScript
         private int CompileLambda(LambdaExpressionSyntax lambda, int block)
         {
             block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false,
-                out _, out var definitionIndex);
+                out _, out var definitionIndex, out var literals);
             var definition = lambda.PreparedDefinition;
             if (definition is null)
             {
-                if (_classBody) definition = CompileNamespaceLambda(lambda, _compilation);
+                if (_classBody) definition = CompileNamespaceLambda(lambda, _compilation, literals);
                 else
                 {
                     var generator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
                     var code = CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                         [], ScopeDirectiveFactsCollector.ForLambda(lambda), generator: generator,
                         qualifiedName: lambda.PreparedQualifiedName, lambda: lambda);
-                    definition = CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.Lambda);
+                    definition = CompleteLambdaDefinition(lambda, code, generator, ExecutableDefinitionKind.Lambda, literals);
                 }
             }
+            else if (literals is not null) definition = definition with { LiteralPositionalDefaults = literals };
             EmitDefinition(definition, lambda.Span, block, definitionIndex);
             return block;
         }
 
         private int CompileFunctionDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
             FunctionParameterLayout layout, LythonSourceSpan span, int block, bool allowDirectKeyword, out bool directKeyword,
-            out int definitionIndex)
+            out int definitionIndex, out PyTuple? literals)
         {
             directKeyword = false;
             definitionIndex = -1;
-            if (layout.Defaults.Length == 0) return block;
-            var literals = PrepareLiteralPositionalDefaults(parameters, layout, span);
-            if (literals is not null)
-            {
-                AddInstruction(block, ExecutableInstruction.LoadConst(AppendConstant(literals), span));
-                if (!layout.HasKeywordDefaults) return block;
-            }
+            literals = PrepareLiteralPositionalDefaults(parameters, layout, span);
+            if (layout.Defaults.Length == 0 || literals is not null && !layout.HasKeywordDefaults) return block;
             if (allowDirectKeyword && (literals is not null || layout.PositionalDefaultCount == 0) &&
                 layout.Defaults.Length == layout.PositionalDefaultCount + 1 &&
                 parameters[layout.Defaults[^1].ParameterIndex].DefaultValue is IdentifierExpressionSyntax name &&
@@ -218,8 +216,7 @@ internal sealed partial class ExecutableScript
             // Finalize this constant when annotation emission has determined
             // the complete descriptor. The start and creation use one entry.
             definitionIndex = AppendConstant(layout);
-            AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(definitionIndex,
-                keywordsOnly: literals is not null, span));
+            AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(definitionIndex, span));
             for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < layout.Defaults.Length; i++)
             {
                 var slot = layout.Defaults[i];
