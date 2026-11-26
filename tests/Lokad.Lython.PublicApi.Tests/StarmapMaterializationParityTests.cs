@@ -80,6 +80,8 @@ public sealed class StarmapMaterializationParityTests
                     return (value + offset) * scale
                 def identity(self, value):
                     return value
+                def identity_wide(self, a, b, c, d, value):
+                    return value
             policy = Policy()
             saved = policy.apply
             Policy.apply = lambda self, value: -1
@@ -91,6 +93,11 @@ public sealed class StarmapMaterializationParityTests
                 return (value + 1,)
             row = make_row(1000)
             print(next(starmap(policy.identity, [row])) is row[0])
+            def make_wide_row(value):
+                return (None, None, None, None, value + 1)
+            wide = make_wide_row(2000)
+            print(next(starmap(policy.identity_wide, [wide])) is wide[4],
+                  next(starmap(policy.identity_wide, [list(wide)])) is wide[4])
             """;
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
@@ -101,15 +108,16 @@ public sealed class StarmapMaterializationParityTests
             : script.Run(new MockLythonHost(), options))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("[4, 6] [4, 6]\n[18, 21] [18, 21]\nTrue\n", result.StandardOutput);
+            Assert.Equal("[4, 6] [4, 6]\n[18, 21] [18, 21]\nTrue\nTrue True\n", result.StandardOutput);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ExactRowCallbackKeepsBorrowUntilSuspendedCallFinishes(bool zipped)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ExactRowCallbackKeepsBorrowUntilSuspendedCallFinishes(bool zipped, bool wide)
     {
         const string source = """
             from itertools import starmap
@@ -117,9 +125,16 @@ public sealed class StarmapMaterializationParityTests
                 with open('pause') as stream:
                     stream.read()
                 return value
+            def use_wide(value, a, b, c, d):
+                return use(value)
             marker = []
-            rows = zip([marker]) if zipped else [(marker,)]
-            print(next(starmap(use, rows)) is marker)
+            if wide:
+                rows = [[marker, None, None, None, None]]
+                callback = use_wide
+            else:
+                rows = zip([marker]) if zipped else [(marker,)]
+                callback = use
+            print(next(starmap(callback, rows)) is marker)
             """;
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
@@ -128,7 +143,7 @@ public sealed class StarmapMaterializationParityTests
         blocked.SeedFile("/pause", "content");
         var started = blocked.PauseReadUntilCancellation("/pause");
         using var cancellation = new CancellationTokenSource();
-        var globals = new Dictionary<string, object?> { ["zipped"] = zipped };
+        var globals = new Dictionary<string, object?> { ["zipped"] = zipped, ["wide"] = wide };
         var pending = script.RunAsync(blocked, new LythonRunOptions
         {
             MemoryBudget = budget, Globals = globals, CancellationToken = cancellation.Token

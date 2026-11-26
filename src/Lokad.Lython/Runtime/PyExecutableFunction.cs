@@ -306,6 +306,36 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return StartPositionalCallbackWorkspace(arguments, receiver, span, out result, out frame, out owned);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal bool TryStartPositionalRow(IPySequenceValue row, int count, object? receiver,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result,
+        out LythonRuntime.ExecutionContext? frame, out BoundFunctionArguments owned)
+    {
+        result = default;
+        frame = null;
+        owned = default;
+        if (!CanStartInline || !HasCompletePositionalSupply(count, receiver)) return false;
+
+        context.CheckExecution(span);
+        NativeValues buffer = default;
+        Span<LythonRuntime.ExecutableSlot> values = buffer;
+        var first = 0;
+        if (receiver is not null) values[first++].Object = receiver;
+        var arguments = values.Slice(first, count);
+        for (var i = 0; i < count; i++)
+        {
+            if (row is PyTuple tuple) _ = tuple.TryReadTrailingSlot(count - i, out arguments[i]);
+            else arguments[i].Object = row[i];
+        }
+
+        // These are the callee's actual positional slots. A suspended prefix
+        // moves its live slots into the ordinary admitted continuation.
+        if (TryStartSuppliedOperandReturn(arguments, receiver, span, out result)) return true;
+        StartInline(values[..CodeObject.ValueStorageCapacity], null, span, false, default,
+            out _, out result, out frame, out owned);
+        return true;
+    }
+
     // Prove the actual physical footprint of a straight-line expression.
     // The ordinary frame can need more capacity. Transfer still rents that
     // complete frame before retaining any operand or resuming guest code.

@@ -340,7 +340,12 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         var row = (IPySequenceValue)current;
         var count = row.Count;
         if (count > LythonRuntime.InlineIterationOperandCount)
+        {
+            if (count <= LythonRuntime.NativeValueCapacity &&
+                LythonRuntime.TryStartIterationRow(_function, row, count, _span, _context, asynchronous, out result, out pending))
+                return true;
             return TryStartWideSequenceCallback(row, count, asynchronous, out result, out pending);
+        }
 
         // The exact row has no guest iteration protocol. Tuple loans preserve
         // deferred scalar identity through binding or immediate return.

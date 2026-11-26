@@ -50,14 +50,14 @@ fixtures removed and a verified persistent archive.
 | Five-item shipment rows | Warm sync | +2.29% to +6.70% | +1.05% to +5.08% |
 | Three-item shipment rows | Warm sync | −3.75% to +13.25% | −3.07% to +11.81% |
 
-Keep the prototype private. The five-item synchronous script takes
+The initial decision kept the prototype private. The five-item synchronous script takes
 2.29–6.70% more elapsed time and 1.05–5.08% more CPU across the worker
 pairs. Async timing crosses zero, with same-source CPU spreads above
 11% in both images. The zip control moves favorably in CPU and the
 three-item control has wide candidate spread. The comparison verifies
 substantial allocation savings and leaves their whole-script CPU tradeoff
 open. The same source pair and controls are available for a bounded
-confirmation on the quiet VM.
+confirmation on the quiet VM. [Quiet confirmation and retention decision](quiet/README.md).
 
 [Allocation and admission](allocation-summary.json) · [Timing and spreads](summary.json) ·
 [Frozen image hashes](identity.json) · [Raw observations](observations.tar.xz) ·

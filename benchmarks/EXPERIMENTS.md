@@ -8,8 +8,10 @@ original conditions retained. Current comparisons belong in
 
 [B1804 exact starmap rows into native callback slots](results/2026-11-26-starmap-frame-inputs/README.md)
 removes the five-item row's temporary argument packet. Both APIs allocate
-about 20.2% less. Local sync CPU rises 1.05–5.08%, async spans zero, and
-both timing controls move. Keep the prototype and the adverse data.
+about 20.2% less. Quiet sync elapsed falls 1.76–2.75% and async falls
+0.87–9.02%. Timing controls move favorably and async CPU spans zero.
+Retain the change and preserve the adverse local sync result.
+[Quiet confirmation](results/2026-11-26-starmap-frame-inputs/quiet/README.md).
 
 [B1802 default trimming in truth tests](results/2026-11-26-trim-truth-without-result/README.md)
 removes an unobserved string allocation for exact builtin calls that feed a

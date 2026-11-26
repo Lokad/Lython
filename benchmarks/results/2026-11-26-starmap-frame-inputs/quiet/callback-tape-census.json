@@ -1,0 +1,56 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "closed": true,
+    "parameters": 4,
+    "capacity": 8,
+    "opcodes": [
+      "JumpIfFalse",
+      "Jump",
+      "Return",
+      "Return"
+    ],
+    "inputIndexes": [
+      1,
+      4,
+      2,
+      3
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "closed": true,
+    "parameters": 6,
+    "capacity": 10,
+    "opcodes": [
+      "JumpIfFalse",
+      "Jump",
+      "Return",
+      "Return"
+    ],
+    "inputIndexes": [
+      1,
+      6,
+      2,
+      3
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "closed": true,
+    "parameters": 4,
+    "capacity": 8,
+    "opcodes": [
+      "JumpIfFalse",
+      "Jump",
+      "Return",
+      "Return"
+    ],
+    "inputIndexes": [
+      1,
+      4,
+      2,
+      3
+    ]
+  }
+]
