@@ -1,0 +1,74 @@
+[
+  {
+    "mode": "sync",
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113280,
+      56160
+    ],
+    "peak": [
+      167072,
+      36512
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "diagnostic.file-search-first-line",
+    "bytes": [
+      39288,
+      39288
+    ],
+    "peak": [
+      19556,
+      19556
+    ]
+  },
+  {
+    "mode": "sync",
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "bytes": [
+      322992,
+      322992
+    ],
+    "peak": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113496,
+      56408
+    ],
+    "peak": [
+      167072,
+      36512
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.file-search-first-line",
+    "bytes": [
+      39536,
+      39536
+    ],
+    "peak": [
+      19556,
+      19556
+    ]
+  },
+  {
+    "mode": "async",
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "bytes": [
+      323240,
+      323240
+    ],
+    "peak": [
+      603795,
+      603795
+    ]
+  }
+]

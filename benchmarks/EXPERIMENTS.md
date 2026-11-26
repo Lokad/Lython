@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1813 buffered prefix search](results/2026-11-26-buffered-prefix-search/README.md)
+halves CLR allocation and reduces admitted peak by 78.15% for the late
+match. Local warm elapsed falls 43.66–56.31%. The early-match repeat is
+3.90–12.76% slower at matching allocation. Keep the initial version private
+and move the runtime's fixed shape checks into emission.
+
 [B1812 protected search allocation](results/2026-11-26-protected-search-allocation/README.md)
 moves the match from line 1 to line 1,025 at identical file size and written
 output. The later match adds 73,992 CLR bytes and 147,516 admitted bytes in
