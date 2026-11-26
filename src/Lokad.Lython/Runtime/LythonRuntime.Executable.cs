@@ -443,6 +443,9 @@ internal sealed partial class LythonRuntime
             _state.MemoryGovernor.Release(bytes);
         }
 
+        internal readonly ExecutableLookupCache[]? ExistingLookupCaches
+            => _lookupStorage is PyExecutableFunction owner ? owner.ExistingLookupCaches : _lookupStorage as ExecutableLookupCache[];
+
         internal ExecutableLookupCache[] GetLookupCaches(int count, LythonSourceSpan span)
         {
             if (_lookupStorage is PyExecutableFunction owner) return owner.GetLookupCaches(span);

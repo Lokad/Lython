@@ -402,6 +402,13 @@ internal sealed partial class ExecutableCodeObject
                     Instructions[index] = call.WithClosureArithmetic(~add.SecondInput);
                 continue;
             }
+            if (call.OpCode == ExecutableOpCode.Call && !call.HasResultConsumer &&
+                add.OpCode == ExecutableOpCode.LoadGlobal && CanPrepareConvertedDictionaryUpdate(index, call, sites))
+            {
+                sites[call.CallSiteIndex] = sites[call.CallSiteIndex] with { AccumulatesDictionary = true };
+                continue;
+            }
+
             if (call.OpCode != ExecutableOpCode.Call || call.HasResultConsumer
                 || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasResultConsumer
                 || store.OpCode != ExecutableOpCode.StoreSubscript
@@ -469,6 +476,37 @@ internal sealed partial class ExecutableCodeObject
             Instructions[headIndex] = head.WithDictionaryLoop(callIndex);
         }
 
+    }
+
+    private bool CanPrepareConvertedDictionaryUpdate(int index, in ExecutableInstruction get,
+        ExecutableCallSite[] sites)
+    {
+        if (index + 5 >= Instructions.Length ||
+            sites[get.CallSiteIndex] is not { HasReceiver: true, IsPositionalOnly: true, ArgumentCount: 2 } ||
+            get.HasForwardedCallOperands) return false;
+        ref readonly var target = ref Instructions[index + 1];
+        ref readonly var field = ref Instructions[index + 2];
+        ref readonly var convert = ref Instructions[index + 3];
+        ref readonly var add = ref Instructions[index + 4];
+        ref readonly var store = ref Instructions[index + 5];
+        if (target.HasResultConsumer || field.HasResultConsumer || convert.HasResultConsumer || add.HasResultConsumer ||
+            field.OpCode != ExecutableOpCode.Subscript || !IsOrdinaryLocal(field.InputStart) ||
+            (uint)~field.SecondInput >= (uint)Constants.Length || Constants[~field.SecondInput] is not PyString ||
+            convert.OpCode != ExecutableOpCode.Call || convert.HasForwardedCallOperands ||
+            add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add ||
+            store.OpCode != ExecutableOpCode.StoreSubscript || !IsOrdinaryLocal(store.SecondInput) ||
+            !IsOrdinaryLocal(store.ThirdInput)) return false;
+
+        var right = get.ResultSlot + 1;
+        var conversion = sites[convert.CallSiteIndex];
+        return conversion is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1, UnpackedReturnCount: 0 } &&
+            get.LiveExtent == right && convert.ResultSlot == right && target.ResultSlot == right + conversion.TargetOffset &&
+            field.ResultSlot == right + conversion.ArgumentOffset && convert.LiveExtent == right + 1 &&
+            add.InputStart == get.ResultSlot && add.SecondInput == right && add.ResultSlot == get.ResultSlot &&
+            add.LiveExtent == right && store.InputStart == get.ResultSlot && store.LiveExtent == get.ResultSlot &&
+            !CrossesExceptionBoundary(index, index + 5);
+
+        bool IsOrdinaryLocal(int slot) => (uint)slot < (uint)FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
     }
 
     private bool CanPrepareClosureArithmetic(int index, in ExecutableInstruction load,

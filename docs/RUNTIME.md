@@ -884,6 +884,14 @@ lookup cache on first use. Once established, the direct path reads the live
 value through that cache and uses the existing builtin call entry. Rebound
 guest callables, custom subscripts and missing fields use ordinary execution.
 
+An exact string-keyed dictionary update can share one table probe for
+`get` and assignment when its right operand is a short decimal conversion
+of a native record field. The segment reads the prior integer before
+resolving the live converter. It borrows established lookup storage and
+publishes the new integer after conversion. Cases that need admission,
+promotion or a user protocol continue through the ordinary instructions
+with their existing evaluation order.
+
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older

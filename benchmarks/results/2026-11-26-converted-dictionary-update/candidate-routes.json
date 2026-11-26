@@ -1,0 +1,142 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "ConvertedFrameGetSites": 2048,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 2,
+        "NativeGetIntegers": 2,
+        "ShortIntText": 2,
+        "TemporaryIntegerStores": 2,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 3,
+        "CompletedConvertedUpdates": 2046
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "ConvertedFrameGetSites": 2048,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 2,
+        "NativeGetIntegers": 2,
+        "ShortIntText": 2,
+        "TemporaryIntegerStores": 2,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 3,
+        "CompletedConvertedUpdates": 2046
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": false,
+      "routes": {
+        "ConvertedFrameGetSites": 2048,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 2,
+        "NativeGetIntegers": 2,
+        "ShortIntText": 2,
+        "TemporaryIntegerStores": 2,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 3,
+        "CompletedConvertedUpdates": 2046
+      },
+      "peakExecutionMemoryBytes": 2822785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": true,
+      "routes": {
+        "ConvertedFrameGetSites": 2048,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 2,
+        "NativeGetIntegers": 2,
+        "ShortIntText": 2,
+        "TemporaryIntegerStores": 2,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 3,
+        "CompletedConvertedUpdates": 2046
+      },
+      "peakExecutionMemoryBytes": 2822785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": false,
+      "routes": {
+        "ConvertedFrameGetSites": 2048,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 2,
+        "NativeGetIntegers": 2,
+        "ShortIntText": 2,
+        "TemporaryIntegerStores": 2,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 3,
+        "CompletedConvertedUpdates": 2046
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": true,
+      "routes": {
+        "ConvertedFrameGetSites": 2048,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 2,
+        "NativeGetIntegers": 2,
+        "ShortIntText": 2,
+        "TemporaryIntegerStores": 2,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 3,
+        "CompletedConvertedUpdates": 2046
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "ConvertedFrameGetSites": 0,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 0,
+        "NativeGetIntegers": 0,
+        "ShortIntText": 2048,
+        "TemporaryIntegerStores": 0,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 0,
+        "CompletedConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "ConvertedFrameGetSites": 0,
+        "ConvertedNativePrefixGetSites": 0,
+        "NativeGet": 0,
+        "NativeGetIntegers": 0,
+        "ShortIntText": 2048,
+        "TemporaryIntegerStores": 0,
+        "NativePrefixIntegerStores": 0,
+        "LazyDictionaryIntegerReads": 0,
+        "CompletedConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

@@ -394,6 +394,15 @@ internal sealed partial class PyDict
         return false;
     }
 
+    // The caller retains the dictionary. A speculative field read does not
+    // publish a native integer that would otherwise remain private.
+    internal PyString? ReadNativeTextField(PyString key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!SupportsNativeStringReads || _nativeValues is null) return null;
+        var index = FindNativeIndex(key, HashNativeString(key, context, span), context, span);
+        return index < 0 ? null : _nativeValues[index] as PyString;
+    }
+
     // Raw scans are live; Python iteration separately checks dictionary version.
     private IEnumerable<KeyValuePair<object, object>> NativeEntries()
     {

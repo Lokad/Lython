@@ -220,6 +220,9 @@ internal sealed partial class LythonRuntime
             ExecutableCallSite call, int start, PyDict dictionary, PyString key)
         {
             ref readonly var add = ref execution.Code.Instructions[execution.InstructionIndex + 1];
+            if (add.OpCode == ExecutableOpCode.LoadGlobal)
+                return TryExecuteConvertedDictionaryUpdate(ref execution, context, call, start, dictionary, key);
+
             ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 2];
             // Future inputs are pure locals/constants. A missing or different
             // value leaves the original instructions to preserve read errors,
@@ -242,6 +245,71 @@ internal sealed partial class LythonRuntime
             // Outer iteration and its ownership stay below this result slot.
             execution.Stack.RetireTo(store.LiveExtent);
             execution.InstructionIndex += 2;
+            return true;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static bool TryExecuteConvertedDictionaryUpdate(ref ExecutableWorkState execution, ExecutionContext context,
+            ExecutableCallSite get, int start, PyDict dictionary, PyString key)
+        {
+            var code = execution.Code;
+            var index = execution.InstructionIndex;
+            ref readonly var store = ref code.Instructions[index + 5];
+            if (!ReferenceEquals(execution.Locals[store.SecondInput].Reference, dictionary) ||
+                !ReferenceEquals(execution.Locals[store.ThirdInput].Reference, key)) return false;
+
+            // Read the original left operand before resolving the converter.
+            // The probe and small-decimal conversion cannot admit or call
+            // Python. Any other work resumes the unchanged instruction tape.
+            var fallback = execution.Stack[start + get.ArgumentOffset + 1];
+            (int Index, uint Hash, long Prior) update;
+            context.EnterInterpreterFrame(get.CallSpan);
+            try
+            {
+                if (!dictionary.TryPrepareConvertedAccumulation(key, fallback, context, get.CallSpan, out update)) return false;
+            }
+            finally { context.LeaveInterpreterFrame(); }
+
+            ref readonly var target = ref code.Instructions[index + 1];
+            context.CheckExecution(target.Span);
+            if (!TryResolveExecutableGlobal(code, target.NameIndex, context, out var converter) ||
+                converter is not BuiltinCallable { Name: "int" }) return false;
+
+            ref readonly var field = ref code.Instructions[index + 2];
+            context.CheckExecution(field.Span);
+            if (execution.Locals[field.InputStart].Reference is not PyDict { SupportsNativeStringReads: true } record)
+                return false;
+            var fieldName = (PyString)code.Constants[~field.SecondInput]!;
+            PyString? value;
+            if (record.HasSharedRecordKeys && field.LookupCacheIndex >= 0)
+            {
+                // The ordinary instruction owns first admission and any
+                // reentry. Only borrow its already established backing.
+                if (execution.Stack.ExistingLookupCaches is not { } caches ||
+                    !record.TryReadRecordValue(fieldName, ref caches[field.LookupCacheIndex], context, field.Span,
+                        out var cached)) return false;
+                value = cached as PyString;
+            }
+            else value = record.ReadNativeTextField(fieldName, context, field.Span);
+            if (value is null) return false;
+
+            ref readonly var convert = ref code.Instructions[index + 3];
+            var conversion = code.CallSites[convert.CallSiteIndex];
+            context.CheckExecution(convert.Span);
+            long increment;
+            context.EnterInterpreterFrame(conversion.CallSpan);
+            try
+            {
+                if (!TryParseShortDecimal(value.Utf8Span, out increment) || increment < -(1L << 55) ||
+                    increment >= (1L << 55)) return false;
+            }
+            finally { context.LeaveInterpreterFrame(); }
+
+            context.CheckExecution(code.Instructions[index + 4].Span);
+            context.CheckExecution((LythonSourceSpan)code.Constants[store.TargetSpanIndex]!);
+            dictionary.CompleteConvertedAccumulation(key, update, increment);
+            execution.Stack.RetireTo(store.LiveExtent);
+            execution.InstructionIndex = index + 5;
             return true;
         }
     }

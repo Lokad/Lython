@@ -85,6 +85,95 @@ public sealed class RecordFieldLookupOwnershipTests
     }
 
     [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task ConvertedDictionaryUpdateHonorsLookupCacheAdmissionBeforePublication(bool asynchronous, bool refuse)
+    {
+        const string source = """
+            global conversion
+            conversion = int
+
+            def update(totals, category, row):
+                totals[category] = totals.get(category, 0) + conversion(row['a'])
+
+            update(totals, name, record)
+            first = totals[name]
+            update(totals, name, record)
+            second = totals[name]
+            conversion = int
+            update(totals, name, record)
+            return first, second, totals[name]
+            """;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+        var function = Assert.Single(code.FunctionBindings()).CodeObject;
+        var cacheBytes = LythonRuntime.LookupCacheBytes(function.LookupCacheCount);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var key = PyString.FromString("a", context.MemoryGovernor, Span);
+            var label = PyString.FromString("service", context.MemoryGovernor, Span);
+            var previous = PyString.FromString("7", context.MemoryGovernor, Span);
+            var changed = PyString.FromString("20", context.MemoryGovernor, Span);
+            var original = new PyDict(context.MemoryGovernor, Span);
+            original.SetItem(key, previous);
+            var layout = original.ShareRecordKeys(context, Span)!;
+            var row = layout.CreateRecord(context, Span, 1);
+            row.SetRecordItem(key, previous, context, Span);
+
+            var totals = new PyDict(context.MemoryGovernor, Span);
+            var retained = (object)new BigInteger(1000);
+            totals.SetItem(label, retained);
+            context.Variables["record"] = row;
+            context.Variables["totals"] = totals;
+            context.Variables["name"] = label;
+            Assert.True(context.TryGetBuiltin("len", out var length));
+
+            var reentered = false;
+            if (refuse) hook.RefuseGrowth = bytes => bytes == cacheBytes;
+            else hook.AfterGrowth = bytes =>
+            {
+                if (bytes != cacheBytes) return;
+                hook.AfterGrowth = null;
+                reentered = true;
+                totals.SetItem(label, new BigInteger(44444));
+                row.SetItem(key, changed);
+                context.Variables["conversion"] = length;
+            };
+
+            try
+            {
+                if (refuse)
+                {
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { _ = await Run(); });
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                    Assert.Same(retained, totals.GetItem(label));
+                    Assert.Same(previous, row.GetItem(key));
+                }
+                else
+                {
+                    var result = Assert.IsType<PyTuple>(await Run());
+                    // The shared lookup cache is first admitted before the get call.
+                    // Both the updated dictionary value and live converter are observed.
+                    Assert.Equal([new BigInteger(44446), new BigInteger(44448), new BigInteger(44468)], result.Cast<BigInteger>());
+                    Assert.Same(changed, row.GetItem(key));
+                }
+                Assert.Equal(!refuse, reentered);
+                Assert.Null(context.CurrentExecutableFrame);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+
+            ValueTask<object?> Run() => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : new(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("replace", false)] [InlineData("replace", true)]
     [InlineData("delete", false)] [InlineData("delete", true)]
     [InlineData("detach", false)] [InlineData("detach", true)]

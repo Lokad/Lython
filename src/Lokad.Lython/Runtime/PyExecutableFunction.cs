@@ -6,6 +6,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 {
     private readonly LythonRuntime.ExecutableCaptures _closureCells;
     private LythonRuntime.ExecutableLookupCache[]? _lookupCaches;
+    internal LythonRuntime.ExecutableLookupCache[]? ExistingLookupCaches => _lookupCaches;
 
     // Facts belong to this execution-owned definition, not each invocation.
     // Reentrant admission can establish the same backing before we return.

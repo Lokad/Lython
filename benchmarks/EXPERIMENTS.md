@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1763 converted dictionary update](results/2026-11-26-converted-dictionary-update/README.md)
+completes 2,046 of 2,048 updates directly in both shipment reports and
+the JSON totals. Warm CPU falls on all three targets and allocation
+falls by about 65 KB, with matching peak admission. Both control CPU
+ranges span zero. Keep the exact update segment.
+
 [B1762 buffered CSV line scan](results/2026-11-26-buffered-csv-line-scan/README.md)
 shares the literal scan with physical-line discovery in the prototype.
 File-fed and quote-heavy elapsed improve in the pinned local block, but

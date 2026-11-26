@@ -48,27 +48,49 @@ internal sealed partial class PyDict
     internal bool TryAppendBorrowedWord(PyString key, uint hash, object fallback, BigInteger increment)
         => TryAccumulateAt(-1, key, hash, fallback, increment);
 
-    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment)
+    // The exact get owns this probe. Its position remains usable only while
+    // the interpreter proves the remaining expression cannot call or admit.
+    internal bool TryPrepareConvertedAccumulation(PyString key, object fallback,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out (int Index, uint Hash, long Prior) update)
     {
-        // Both checked query entries established native storage and exclude
-        // callbacks/admission. Complete one finite update without redundant polls.
+        update = default;
+        if (!CanAccumulateBorrowedWords(context)) return false;
+        var hash = HashNativeString(key, context, span);
+        var index = FindNativeIndex(key, hash, context, span);
+        if (!TryReadAccumulationValue(index, fallback, out var prior)) return false;
+        update = (index, hash, prior);
+        return true;
+    }
+
+    internal void CompleteConvertedAccumulation(PyString key, (int Index, uint Hash, long Prior) update, long increment)
+        => StoreAccumulationValue(update.Index, key, update.Hash, update.Prior + increment);
+
+    private bool TryReadAccumulationValue(int index, object fallback, out long prior)
+    {
+        prior = 0;
         if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems!.Length)) return false;
-        long prior;
         if (index >= 0 && _recordKeys is null && _nativeValues![index] is null)
         {
             prior = _nativeItems![index].Integer;
-            if (prior < -(1L << 55) || prior >= (1L << 55)) return false;
-        }
-        else
-        {
-            var value = index < 0 ? fallback : ReadNativeValue(index);
-            if (value is not BigInteger integer || integer.GetByteCount() >= 8) return false;
-            prior = (long)integer;
+            return prior >= -(1L << 55) && prior < (1L << 55);
         }
 
-        // Both signed operands fit seven bytes. The exact result fits long;
-        // wider subsequent updates retain the ordinary promotion/admission path.
-        var sum = prior + (long)increment;
+        var value = index < 0 ? fallback : ReadNativeValue(index);
+        if (value is not BigInteger integer || integer.GetByteCount() >= 8) return false;
+        prior = (long)integer;
+        return true;
+    }
+
+    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment)
+    {
+        // Both signed operands fit seven bytes. The exact result fits long.
+        if (!TryReadAccumulationValue(index, fallback, out var prior)) return false;
+        StoreAccumulationValue(index, key, hash, prior + (long)increment);
+        return true;
+    }
+
+    private void StoreAccumulationValue(int index, PyString key, uint hash, long sum)
+    {
         var before = _nativeCount;
         if (_recordKeys is null)
         {
@@ -83,6 +105,5 @@ internal sealed partial class PyDict
         else
             PublishNativeValue(index, key, new BigInteger(sum), hash, protocol: false, replaceExisting: true);
         if (_nativeCount != before) _version++;
-        return true;
     }
 }
