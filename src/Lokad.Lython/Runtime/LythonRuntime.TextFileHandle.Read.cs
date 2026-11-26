@@ -220,12 +220,11 @@ internal sealed partial class LythonRuntime
                 var before = buffer.Length;
                 BeginRead();
                 ValueTask<PyString> pending = default;
-                int? borrowedFields = null;
-                var completed = false;
+                int? fields = null;
                 try
                 {
-                    if (before == 0 && source.CanBorrowNativeLine && TryConsumeBufferedCsvLine(source, destination, dictionary, out var fields))
-                        borrowedFields = fields;
+                    if (before == 0 && source.CanBorrowNativeLine && TryConsumeBufferedCsvLine(source, destination, dictionary, out var borrowed))
+                        fields = borrowed;
                     else
                         pending = ReadLineCore(-1, asynchronous, buffer);
 
@@ -233,44 +232,44 @@ internal sealed partial class LythonRuntime
                     {
                         _ = pending.GetAwaiter().GetResult();
                         pending = default;
+                        // Parser completion can admit storage. Keep the read
+                        // guard until the parser relinquishes its private row.
+                        fields ??= FinishStagedCsvLine(source, before, destination, dictionary);
                         if (!_released)
                         {
-                            // All consumers of the borrowed window are done.
                             _reading = false;
-                            completed = true;
+                            return new(fields.Value);
                         }
                     }
                 }
                 catch (Exception error) { pending = ValueTask.FromException<PyString>(error); }
 
-                return completed
-                    ? new(FinishCsvLine(source, before, borrowedFields, destination))
-                    : CompleteCsvLineAsync(pending, source, before, borrowedFields, destination, asynchronous);
+                return CompleteCsvLineAsync(pending, source, before, fields, destination, dictionary, asynchronous);
             }
 
             private async ValueTask<int> CompleteCsvLineAsync(ValueTask<PyString> pending, CsvRecordSource source,
-                int before, int? borrowedFields, Memory<ExecutableSlot>? destination, bool asynchronous)
+                int before, int? fields, Memory<ExecutableSlot>? destination, CsvDictReaderObject? dictionary, bool asynchronous)
             {
                 var failed = true;
                 try
                 {
                     if (asynchronous) _ = await pending.ConfigureAwait(false);
                     else _ = pending.GetAwaiter().GetResult();
+                    var completed = fields ?? FinishStagedCsvLine(source, before, destination, dictionary);
                     failed = false;
+                    return completed;
                 }
                 finally
                 {
                     if (asynchronous) await EndReadAsync(failed).ConfigureAwait(false);
                     else EndRead(failed);
                 }
-
-                return FinishCsvLine(source, before, borrowedFields, destination);
             }
 
-            private static int FinishCsvLine(CsvRecordSource source, int before, int? borrowedFields,
-                Memory<ExecutableSlot>? destination)
-                => borrowedFields ?? (source.NativeLineBuffer.Length == before
-                    ? CsvRecordSource.EndOfNativeInput : source.ConsumeStagedNativeLine(before, destination));
+            private static int FinishStagedCsvLine(CsvRecordSource source, int before,
+                Memory<ExecutableSlot>? destination, CsvDictReaderObject? dictionary)
+                => source.NativeLineBuffer.Length == before
+                    ? CsvRecordSource.EndOfNativeInput : source.ConsumeStagedNativeLine(before, destination, dictionary);
 
             private bool TryConsumeBufferedCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination,
                 CsvDictReaderObject? dictionary, out int fields)

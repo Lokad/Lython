@@ -448,11 +448,11 @@ internal sealed partial class LythonRuntime
         internal GovernedByteBuilder NativeLineBuffer => _parser.InputBuffer;
         internal bool CanBorrowNativeLine => _parser.CanDescribeLiteralRecord;
 
-        internal int ConsumeStagedNativeLine(int before, Memory<ExecutableSlot>? destination)
+        internal int ConsumeStagedNativeLine(int before, Memory<ExecutableSlot>? destination, CsvDictReaderObject? dictionary)
         {
             _context.CheckExecution(_span);
             PhysicalLineCount++;
-            return _parser.ConsumeStagedLine(before, destination);
+            return _parser.ConsumeStagedLine(before, destination, dictionary);
         }
 
         internal int ConsumeBorrowedNativeLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination,
@@ -568,8 +568,8 @@ internal sealed partial class LythonRuntime
         internal long StorageBytes => checked(16L * _fields.Capacity + _record.CommittedCapacity);
         internal GovernedByteBuilder InputBuffer => _record;
 
-        internal int ConsumeStagedLine(int before, Memory<ExecutableSlot>? destination)
-            => DescribeOwnedLine(before) ? PublishRecord(_record.WrittenSpan, destination) : -1;
+        internal int ConsumeStagedLine(int before, Memory<ExecutableSlot>? destination, CsvDictReaderObject? dictionary)
+            => DescribeOwnedLine(before) ? PublishRecord(_record.WrittenSpan, destination, dictionary) : -1;
 
         private int PublishRecord(ReadOnlySpan<byte> source, Memory<ExecutableSlot>? destination,
             CsvDictReaderObject? dictionary = null)
@@ -764,7 +764,8 @@ internal sealed partial class LythonRuntime
                 }
                 _record.Advance(prefix.Length);
             }
-            return ResumeRecordAtField(line, nextField) ? PublishRecord(_record.WrittenSpan, destination) : -1;
+            return ResumeRecordAtField(line, nextField)
+                ? PublishRecord(_record.WrittenSpan, destination, dictionary) : -1;
         }
 
         private bool DescribeLine(ReadOnlySpan<byte> text)

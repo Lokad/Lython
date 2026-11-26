@@ -61,15 +61,27 @@ public sealed class CsvRecordValueOwnershipTests
     }
 
     [Theory]
-    [InlineData(false, "adopt")]
-    [InlineData(true, "expose")]
-    [InlineData(false, "reenter")]
-    [InlineData(true, "cancel")]
-    [InlineData(true, "refuse")]
-    public async Task BufferedRecordKeepsItsHeaderAndInputValidDuringAdmission(bool asynchronous, string outcome)
+    [InlineData(false, "adopt", "literal")]
+    [InlineData(true, "expose", "literal")]
+    [InlineData(false, "reenter", "literal")]
+    [InlineData(true, "cancel", "literal")]
+    [InlineData(true, "refuse", "literal")]
+    [InlineData(false, "adopt", "transformed")]
+    [InlineData(true, "expose", "transformed")]
+    [InlineData(false, "reenter", "transformed")]
+    [InlineData(true, "cancel", "transformed")]
+    [InlineData(true, "refuse", "transformed")]
+    [InlineData(false, "adopt", "staged")]
+    [InlineData(true, "expose", "staged")]
+    [InlineData(false, "reenter", "staged")]
+    [InlineData(true, "reenter", "staged")]
+    [InlineData(true, "cancel", "staged")]
+    [InlineData(true, "refuse", "staged")]
+    public async Task NativeRecordKeepsItsHeaderAndInputValidDuringAdmission(bool asynchronous, string outcome, string form)
     {
+        var transformed = form == "transformed";
         var host = new MockLythonHost();
-        host.SeedFile("/csv", "a,b\n10,20\n30,40\n50,60\n");
+        host.SeedFile("/csv", transformed ? "a,b\n10,20\n30,\"4\"\"\"\n50,60\n" : "a,b\n10,20\n30,40\n50,60\n");
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
@@ -81,7 +93,7 @@ public sealed class CsvRecordValueOwnershipTests
         var file = await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync("/csv", context,
             LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
         var options = new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral, PyString.FromString("\""),
-            LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
+            LythonRuntime.CsvQuotingMode.Minimal, true, null, form == "staged", PyString.FromString("\n"), false);
         var source = new LythonRuntime.CsvRecordSource(file, options, Span, context);
         var reader = new LythonRuntime.CsvDictReaderObject(source, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
         async ValueTask<PyIterationResult> Next() => asynchronous ? await reader.TryMoveNextAsync() : reader.TryMoveNext();
@@ -129,7 +141,7 @@ public sealed class CsvRecordValueOwnershipTests
             else
             {
                 var second = Assert.IsType<PyDict>((await Next()).Value);
-                Assert.Equal(["30", "40"], second.Values.Cast<PyString>().Select(v => v.AsString()));
+                Assert.Equal(["30", transformed ? "4\"" : "40"], second.Values.Cast<PyString>().Select(v => v.AsString()));
                 Assert.Same(replacement ?? key, second.Keys.First());
                 Assert.Equal(combined, requests[0]);
                 if (outcome != "expose") Assert.Single(requests);

@@ -2526,8 +2526,11 @@ mutations remain visible; no duplicate string-only header arrays are maintained.
 Native string-list headers construct each dictionary directly at its admitted
 capacity and reuse immutable key metadata between matching rows. When header key
 identities and row width match, the dictionary adopts the funded final row array
-after admitting its shell and rechecking headers after admission callbacks. This
-avoids a second values allocation and per-field publication. Original conservative
+after admitting its shell and rechecking headers after admission callbacks. A
+native file read keeps its reentry guard through row publication, including
+staged and transformed lines. With a matching private layout, the parser admits
+the dictionary and values together. This avoids a second values allocation and
+per-field publication. Original conservative
 row-capacity funding stays with the dictionary, including capacity retained by
 clear; thresholds can change. Each row owns independent values; header edits
 remain visible. Short and extra-width records,
