@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1801 current JSON construction profile](results/2026-11-26-current-json-construction-profile/README.md)
+locates record creation, UTF-8 copying and aggregation on `29e078ddd`.
+Async JSON Lines also shows 33 nearest trim samples. Its blank-line
+guard consumes only truth, making the trimmed result an identifiable
+allocation to remove.
+
 [B1800 native segments during tape emission](results/2026-11-26-native-segments-at-emission/README.md)
 removes the separate native-segment scan after linearization. Nine tape
 snapshots and both allocation diagnostics match. Quiet ordinary compile
