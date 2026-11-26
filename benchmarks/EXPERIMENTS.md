@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1768 ready JSON decoder entry](results/2026-11-26-ready-json-decoder-entry/README.md)
+removes ready-entry state-machine work. Local async JSON Lines uses
+1.56–3.45% less CPU, sync elapsed rises 0.55–3.86% and text controls vary.
+Peak admission matches. Keep the patch private pending a simpler design or
+evidence that explains the sync cost.
+
 [B1767 current JSON attribution](results/2026-11-26-current-json-attribution/README.md)
 places JSON construction, UTF-8 token work and admitted storage in both
 JSON workloads. It locates a recurring decoder entry in JSON Lines.

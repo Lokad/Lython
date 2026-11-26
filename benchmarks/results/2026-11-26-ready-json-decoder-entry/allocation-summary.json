@@ -1,0 +1,35 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "allocationBytes": [
+      860496,
+      860412
+    ],
+    "peakAdmission": [
+      1909869,
+      1909869
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "allocationBytes": [
+      1599888,
+      1600062
+    ],
+    "peakAdmission": [
+      3822014,
+      3822014
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      322856,
+      322856
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  }
+]
