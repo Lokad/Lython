@@ -10,13 +10,18 @@ internal sealed partial class LythonRuntime
         => op is BinaryOperatorSyntax.Equal or BinaryOperatorSyntax.NotEqual or BinaryOperatorSyntax.Less
             or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual;
 
-    // Exact numbers and strings have no guest slots. Expressions and branches
-    // share this entry before structural/protocol setup.
+    // Identity and exact numeric or text comparisons need no guest dispatch.
+    // Expressions and branches share this entry before structural/protocol setup.
     private static bool TryEvaluateScalarComparison(BinaryOperatorSyntax op, object left, object right,
         ExecutionContext context, LythonSourceSpan span, out bool result)
     {
         result = false;
-        if (!IsScalarComparison(op)) return false;
+        if (!IsScalarComparison(op))
+        {
+            if (op is not (BinaryOperatorSyntax.Is or BinaryOperatorSyntax.IsNot)) return false;
+            result = AreIdentical(left, right) == (op == BinaryOperatorSyntax.Is);
+            return true;
+        }
         // Keep the existing numeric prefix small; the bulk text kernel does
         // not belong in every numeric comparison's dispatch body.
         if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))

@@ -63,8 +63,6 @@ internal sealed partial class LythonRuntime
         {
             BinaryOperatorSyntax.Less or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual
                 => EvaluateRichComparison(left, right, op, context, span),
-            BinaryOperatorSyntax.Is => RuntimeValue(AreIdentical(left, right)),
-            BinaryOperatorSyntax.IsNot => RuntimeValue(!AreIdentical(left, right)),
             BinaryOperatorSyntax.In => RuntimeValue(Contains(right, left, context, span)),
             BinaryOperatorSyntax.NotIn => RuntimeValue(!Contains(right, left, context, span)),
             BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, span),
@@ -119,8 +117,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (op == BinaryOperatorSyntax.Is) return RuntimeValue(AreIdentical(left, right));
-        if (op == BinaryOperatorSyntax.IsNot) return RuntimeValue(!AreIdentical(left, right));
         if ((left is PyComplex || right is PyComplex) && !(op == BinaryOperatorSyntax.Modulo && left is Runtime.Text.PyString)) return EvaluateComplexBinary(op, left, right, context, span);
         return op switch
         {
@@ -136,8 +132,6 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, context, span),
             BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, span),
             BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, context, span),
-            BinaryOperatorSyntax.Is => RuntimeValue(AreIdentical(left, right)),
-            BinaryOperatorSyntax.IsNot => RuntimeValue(!AreIdentical(left, right)),
             _ => throw new InvalidOperationException($"Unknown eager binary operator: {op}"),
         };
     }

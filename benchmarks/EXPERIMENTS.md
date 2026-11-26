@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1756 shared identity comparisons](results/2026-11-26-direct-identity-comparisons/README.md)
+removes generic dispatch for `is` and `is not`. Warm async shipment CPU
+falls 5.28–7.58% in the initial block and 4.57–10.36% after reordering.
+Sync timing spans zero. The file-fed control again moves adversely despite
+taking none of the changed comparison entries. Keep that regression debt.
+
 [B1755 guarded staged CSV publication](results/2026-11-26-guarded-staged-csv/README.md)
 fixes reentry during staged parser admission and shares combined publication
 for 1,031 more quoted invoice rows in each API. Allocation and admission match.
