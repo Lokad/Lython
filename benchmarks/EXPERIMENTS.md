@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1812 protected search allocation](results/2026-11-26-protected-search-allocation/README.md)
+moves the match from line 1 to line 1,025 at identical file size and written
+output. The later match adds 73,992 CLR bytes and 147,516 admitted bytes in
+both APIs. The diagnostic includes reader refill and loop work.
+
+[B1811 trailing repeat operands in map](results/2026-11-26-map-repeat-operands/README.md)
+removes 4,096 cursor pulls per shipment. Allocation falls by up to 2,354 B
+and admitted peak by up to 7,424 B. The initial wide async CPU improvement
+overlaps the file-fed control and disappears on repeat. Keep the prototype
+private and preserve both runs.
+
 [B1810 buffered generator advance](results/2026-11-26-generator-buffer-lifetime/README.md)
 attaches the yield destination after reentry and stack admission and
 removes an async wrapper. A rejected nested pull preserves the outer
