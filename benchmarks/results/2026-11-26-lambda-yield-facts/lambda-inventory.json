@@ -1,0 +1,18 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "lambdaBodies": 48
+  },
+  {
+    "case": "diagnostic.generated-record-rules-bindings",
+    "lambdaBodies": 64
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "lambdaBodies": 0
+  },
+  {
+    "case": "scripts.file-manifest.small",
+    "lambdaBodies": 0
+  }
+]

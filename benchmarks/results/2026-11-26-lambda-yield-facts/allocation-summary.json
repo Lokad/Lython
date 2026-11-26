@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "allocatedBytes": [
+      1441472,
+      1441856
+    ],
+    "retainedAdmission": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "diagnostic.generated-record-rules-bindings",
+    "allocatedBytes": [
+      1930352,
+      1930864
+    ],
+    "retainedAdmission": [
+      1003906,
+      1003906
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocatedBytes": [
+      2139568,
+      2139568
+    ],
+    "retainedAdmission": [
+      2297216,
+      2297216
+    ]
+  },
+  {
+    "case": "scripts.file-manifest.small",
+    "allocatedBytes": [
+      72344,
+      72344
+    ],
+    "retainedAdmission": [
+      82304,
+      82304
+    ]
+  }
+]
