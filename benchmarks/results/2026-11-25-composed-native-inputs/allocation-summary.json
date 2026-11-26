@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "allocationBytes": [
+      1160870,
+      1153830
+    ],
+    "peakAdmission": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      808528,
+      808440
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-native-map-control",
+    "allocationBytes": [
+      1008216,
+      1008446
+    ],
+    "peakAdmission": [
+      2662235,
+      2662235
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      323080,
+      323080
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  }
+]

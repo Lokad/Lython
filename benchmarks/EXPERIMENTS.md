@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1742 direct native inputs](results/2026-11-25-composed-native-inputs/README.md)
+removes 80 cursor objects from shipment and saves 7,040 B per run. Shipment
+and file-fed timing span zero, native-map CPU rises, and unchanged text
+moves favorably. Keep the prototype archived. An isolated probe of the
+same images identifies unguarded managed stack reentry in native pulls.
+
 [B1741 shared assignment bindings](results/2026-11-25-shared-assignment-bindings/README.md)
 removes the ordinary recursive binding walk and saves 0.5–0.8% compilation
 allocation on generated rules. Local timing and same-source control ranges
