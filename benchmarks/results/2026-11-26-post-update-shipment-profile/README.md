@@ -29,8 +29,9 @@ attribution. They give no estimate of removable CPU or a speedup.
 The shipment tape contains `reviewed += policy is review`. A separate
 route inventory locates 2,048 machine-integer updates with a boolean
 right operand in each shipment variant and API. All take the generic
-arithmetic path. The private trial sends each through the existing
-integer path. Its allocation effect is immaterial and timing is open.
+arithmetic path. B1766 sends each through the existing integer path.
+Its allocation effect is immaterial. Repeated whole-script comparisons
+show lower async shipment CPU with mixed sync CPU evidence.
 [B1766 source gate](boolean-increments/README.md).
 
 Independent output and file goldens and the full 32-file image verify

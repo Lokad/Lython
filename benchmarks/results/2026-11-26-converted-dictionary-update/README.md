@@ -66,6 +66,10 @@ reproduced the earlier admission, and the corrected test covers the
 observed order. Both full images pass five independent output and file
 goldens. The VM also verifies the candidate against the pinned CPython.
 
+Delivery for `7f7c4ed59` passed Windows and Ubuntu Release on .NET 11 and
+.NET 10, the original stress scales and installed-package consumers.
+[Delivery](https://github.com/Lokad/Lython/actions/runs/45836516565).
+
 [Timing](summary.json) · [Allocation](allocation-summary.json) ·
 [Reference routes](reference-routes.json) · [Candidate routes](candidate-routes.json) ·
 [Identity](identity.json) · [Observations](observations.tar.xz) · [Terminal status](terminal-status.json) ·

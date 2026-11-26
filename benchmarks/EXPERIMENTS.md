@@ -9,7 +9,9 @@ original conditions retained. Current comparisons belong in
 [B1766 exact boolean increments](results/2026-11-26-post-update-shipment-profile/boolean-increments/README.md)
 reroutes 2,048 generic integer-plus-boolean updates per shipment through
 the existing integer path. Peak admission matches and allocation is
-effectively flat. The prototype awaits whole-script CPU evidence.
+effectively flat. Warm async shipment CPU falls in both quiet blocks.
+Repeat sync CPU spans zero and the text control reverses. Keep the change
+and retain all control observations. [Timing](results/2026-11-26-post-update-shipment-profile/boolean-increments/confirmation/README.md).
 
 [B1765 runtime attribution after dictionary updates](results/2026-11-26-post-update-shipment-profile/README.md)
 finds executable arithmetic and map advancement in current warm async

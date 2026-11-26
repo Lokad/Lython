@@ -12,8 +12,17 @@ internal sealed partial class LythonRuntime
         value = default;
         ref readonly var instruction = ref code.Instructions[index];
         if (instruction.OpCode is not (ExecutableOpCode.Binary or ExecutableOpCode.Augmented)
-            || !TryReadMachineOperand(code, values, instruction.InputStart, context, out var left, captures)
-            || !TryReadMachineOperand(code, values, instruction.SecondInput, context, out var right, captures)) return false;
+            || !TryReadMachineOperand(code, values, instruction.InputStart, context, out var left, captures)) return false;
+        if (!TryReadMachineOperand(code, values, instruction.SecondInput, context, out var right, captures))
+        {
+            // A completed boolean comparison supplies an exact increment.
+            // Keep bool identity and boolean-only operations on their existing paths.
+            if (instruction.OpCode != ExecutableOpCode.Augmented ||
+                instruction.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add ||
+                instruction.SecondInput < 0 || values[instruction.SecondInput].Reference is not bool increment)
+                return false;
+            right = increment ? 1 : 0;
+        }
         if (instruction.OpCode == ExecutableOpCode.Binary)
         {
             if (IsScalarComparison(instruction.BinaryOperator))

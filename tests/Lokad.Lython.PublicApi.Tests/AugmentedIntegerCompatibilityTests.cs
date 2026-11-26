@@ -19,6 +19,20 @@ public sealed class AugmentedIntegerCompatibilityTests
             x *= 3
             print(x)
             """, "128 int\n-129 int\n18446744073709551616 int\n-18446744073709551616 int\n340282366920938463463374607431768211456 int\n3.25\n15\n"];
+        yield return ["boolean comparison increment and identity", """
+            def update(value, left, right):
+                old = value
+                value += left is right
+                return old, value, old is value, type(value).__name__
+            marker = object()
+            print(update(1000, marker, marker))
+            print(update(1001, marker, object()))
+            print(update(9223372036854775807, marker, marker))
+            class Custom:
+                def __iadd__(self, value):
+                    return value
+            print(update(Custom(), marker, marker)[1] is True)
+            """, "(1000, 1001, False, 'int')\n(1001, 1001, False, 'int')\n(9223372036854775807, 9223372036854775808, False, 'int')\nTrue\n"];
         yield return ["rich fallback and order", """
             events=[]
             class Left:
