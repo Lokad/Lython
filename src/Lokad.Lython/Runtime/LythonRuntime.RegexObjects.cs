@@ -13,6 +13,7 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private RegexMatcher.PreparedCursor? _cursor;
+        private bool _advancing;
         internal PyRegexFindIterator? NextResource;
 
         internal static PyRegexFindIterator Create(RePatternObject pattern, RegexSubjectRange range,
@@ -36,7 +37,11 @@ internal sealed partial class LythonRuntime
         public override PyIterationResult TryMoveNext()
         {
             _context.CheckExecution(_span);
+            if (_advancing) throw RuntimeErrors.Value("regular expression scanner already executing", _span);
 
+            // Admission may reenter before the cursor is installed or while
+            // a match still borrows its reusable capture slots.
+            _advancing = true;
             try
             {
                 if (_cursor is null)
@@ -53,6 +58,7 @@ internal sealed partial class LythonRuntime
                 return PyIterationResult.Yield(_cursor.CreateMatch());
             }
             catch { Dispose(); throw; }
+            finally { _advancing = false; }
         }
 
         public void Dispose()

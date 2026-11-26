@@ -3006,6 +3006,9 @@ refused preparation releases unpublished programs. Standalone frontend analysis
 closes its own programs. Execution closes imported and dynamic handles after
 active cursors, subjects and callbacks finish, including failure and cancellation.
 A failed runtime wrapper leaves its borrowed program with the owning scope.
+Each `finditer` advance owns its cursor through preparation and match projection.
+A nested pull on that iterator raises `ValueError` and leaves the active pull's
+capture slots intact.
 Dispose cursors before subjects and subjects before patterns. A provider may share
 underlying programs through a separately funded longer-lived cache; closing a
 handle must not refund storage that cache still retains. Metadata borrows also end
