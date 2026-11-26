@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1793 shared starmap argument construction](results/2026-11-26-starmap-argument-buffer/README.md)
+removes the general row drain before invoking short callbacks or filling
+the existing wide call accumulator. Short list rows allocate 26.73% less
+and improve quiet sync CPU 1.77–4.52%. Five-item async CPU rises
+4.30–15.08%. The zip control spans zero in the quiet repeat. Keep this
+version private and test whether a live capacity hint removes the growth.
+
 [B1792 borrowed map sources](results/2026-11-26-borrowed-map-sources/README.md)
 removes 64 cursors and 5,632 B of CLR allocation per shipment run at
 matching admission. Quiet sync shipment elapsed falls 1.26–3.46%.
