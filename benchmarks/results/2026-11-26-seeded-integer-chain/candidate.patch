@@ -1,0 +1,107 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerChains.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerChains.cs
+index 7836980b8..1d1d8a7ac 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerChains.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerChains.cs
+@@ -48,7 +48,10 @@ internal sealed partial class LythonRuntime
+         }
+         if (!operands.TryRead(code, first.InputStart, scope, out var left) ||
+             !operands.TryRead(code, first.SecondInput, scope, out var right) ||
+-            !TryIntegerChain(code, operands, start, left, right, scope, out var end, out var result)) return false;
++            !TryMachineBinary(first.BinaryOperator, left, right, out var result)) return false;
++        var end = start;
++        if (first.HasIntegerContinuation &&
++            !TryContinueIntegerChain(code, operands, start, first.ResultSlot, result, scope, out end, out result)) return false;
+         System.Diagnostics.Debug.Assert(code.Instructions[end + 1].OpCode == ExecutableOpCode.Return);
+         scope.CheckExecution(code.Instructions[end + 1].Span);
+         value.SetInteger(result);
+@@ -176,35 +179,27 @@ internal sealed partial class LythonRuntime
+             arithmetic.Span, code.Instructions[index + 2].Span);
+     }
+ 
+-    // Both executable forms follow the same closed arithmetic sequence. Only the
+-    // final result is published through the caller's ordinary lifetime machinery.
+-    private static bool TryIntegerChain(ExecutableCodeObject code, Span<ExecutableSlot> values,
+-        int index, long left, long right, ExecutionContext scope,
+-        out int end, out long result, ExecutableCaptures captures)
+-        => TryIntegerChain(code, new SlotIntegerOperands(values, captures), index, left, right, scope, out end, out result);
+-
+-    private static bool TryIntegerChain<T>(ExecutableCodeObject code, T operands,
+-        int index, long left, long right, ExecutionContext scope, out int end, out long result)
++    // The caller already computed the first result and proved a following
++    // instruction. A declined tail leaves that first result with its caller.
++    private static bool TryContinueIntegerChain<T>(ExecutableCodeObject code, T operands,
++        int index, int carriedSlot, long accumulator, ExecutionContext scope, out int end, out long result)
+         where T : IIntegerOperands, allows ref struct
+     {
+         end = index;
+         result = 0;
+-        ref readonly var first = ref code.Instructions[index];
+-        long accumulator;
+-        if (!TryMachineBinary(first.BinaryOperator, left, right, out accumulator)) return false;
+-        while (code.Instructions[end].HasIntegerContinuation)
++        do
+         {
+-            ref readonly var next = ref code.Instructions[end + 1];
++            ref readonly var next = ref code.Instructions[++end];
+             scope.CheckExecution(next.Span);
+             // Look ahead without raising an unbound-local error ahead of
+             // an earlier arithmetic error. No guest work has been published.
+-            var otherSlot = next.InputStart == first.ResultSlot ? next.SecondInput : next.InputStart;
++            var carryOnLeft = next.InputStart == carriedSlot;
++            var otherSlot = carryOnLeft ? next.SecondInput : next.InputStart;
+             if (!operands.TryRead(code, otherSlot, scope, out var operand)) return false;
+-            var a = next.InputStart == first.ResultSlot ? accumulator : operand;
+-            var b = next.SecondInput == first.ResultSlot ? accumulator : operand;
++            var a = carryOnLeft ? accumulator : operand;
++            var b = carryOnLeft ? operand : accumulator;
+             if (!TryMachineBinary(next.BinaryOperator, a, b, out accumulator)) return false;
+-            end++;
+-        }
++        } while (code.Instructions[end].HasIntegerContinuation);
+ 
+         // The caller boxes the one published value using existing minor-
+         // storage headroom. No object represents intermediate results.
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Integers.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Integers.cs
+index 573d1512c..03fd02981 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Integers.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Integers.cs
+@@ -23,21 +23,11 @@ internal sealed partial class LythonRuntime
+                 return false;
+             right = increment ? 1 : 0;
+         }
+-        if (instruction.OpCode == ExecutableOpCode.Binary)
++        if (instruction.OpCode == ExecutableOpCode.Binary && IsScalarComparison(instruction.BinaryOperator))
+         {
+-            if (IsScalarComparison(instruction.BinaryOperator))
+-            {
+-                context.CheckExecution(instruction.Span);
+-                value.Object = RuntimeValue(CompareOrderedResult(instruction.BinaryOperator, left.CompareTo(right)));
+-                return true;
+-            }
+-            if (instruction.HasIntegerContinuation &&
+-                TryIntegerChain(code, values, index, left, right, context, out var last, out var chained, captures))
+-            {
+-                end = last;
+-                value.SetInteger(chained);
+-                return true;
+-            }
++            context.CheckExecution(instruction.Span);
++            value.Object = RuntimeValue(CompareOrderedResult(instruction.BinaryOperator, left.CompareTo(right)));
++            return true;
+         }
+         // Matrix assignment must reach the Python protocol/error path, just
+         // as it did before closed integer operations shared this dispatcher.
+@@ -46,6 +36,13 @@ internal sealed partial class LythonRuntime
+         var operation = instruction.OpCode == ExecutableOpCode.Augmented
+             ? AugmentedBinaryOperator(instruction.AugmentedOperator) : instruction.BinaryOperator;
+         if (!TryMachineBinary(operation, left, right, out var result)) return false;
++        if (instruction.OpCode == ExecutableOpCode.Binary && instruction.HasIntegerContinuation &&
++            TryContinueIntegerChain(code, new SlotIntegerOperands(values, captures), index, instruction.ResultSlot,
++                result, context, out var last, out var chained))
++        {
++            end = last;
++            result = chained;
++        }
+         value.SetInteger(result);
+         return true;
+     }

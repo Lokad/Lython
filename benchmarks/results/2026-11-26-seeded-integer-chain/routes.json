@@ -1,0 +1,102 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "SingleOperationReturns": 2608,
+        "ContinuedReturns": 0,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "SingleOperationReturns": 2608,
+        "ContinuedReturns": 0,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": false,
+      "routes": {
+        "SingleOperationReturns": 0,
+        "ContinuedReturns": 3413,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.rule-default-closures",
+      "asynchronous": true,
+      "routes": {
+        "SingleOperationReturns": 0,
+        "ContinuedReturns": 3413,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 2786655,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "asynchronous": false,
+      "routes": {
+        "SingleOperationReturns": 0,
+        "ContinuedReturns": 8192,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 9039397,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "asynchronous": true,
+      "routes": {
+        "SingleOperationReturns": 0,
+        "ContinuedReturns": 8192,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 9039397,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": false,
+      "routes": {
+        "SingleOperationReturns": 0,
+        "ContinuedReturns": 0,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.file-search.large",
+      "asynchronous": true,
+      "routes": {
+        "SingleOperationReturns": 0,
+        "ContinuedReturns": 0,
+        "OrdinaryContinuationsSucceeded": 0,
+        "OrdinaryContinuationsAttempted": 0
+      },
+      "peakExecutionMemoryBytes": 167072,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "bytes": [
+      22744,
+      22744
+    ],
+    "peak": [
+      92040,
+      92040
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "bytes": [
+      737944,
+      737944
+    ],
+    "peak": [
+      2786655,
+      2786655
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "bytes": [
+      3016740,
+      3016790
+    ],
+    "peak": [
+      9039397,
+      9039397
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "bytes": [
+      113280,
+      113280
+    ],
+    "peak": [
+      167072,
+      167072
+    ]
+  }
+]

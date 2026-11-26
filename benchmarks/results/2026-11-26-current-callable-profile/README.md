@@ -10,11 +10,11 @@ verification and result cleanup. These scripts do no file I/O.
 | Observation | Ordinary definitions | Escaping rules |
 | --- | ---: | ---: |
 | Verified invocations during capture | 31,232 | 7,168 |
-| All-thread samples | 1,139 | 1,221 |
-| Samples with a resolved runtime ancestor | 1,119 | 1,199 |
+| All-thread samples | 1,138 | 1,220 |
+| Samples with a resolved runtime ancestor | 1,118 | 1,198 |
 | Nearest computed-argument call | 116 | 0 |
 | Nearest direct-operand return evaluator | 95 | 93 |
-| Nearest closed pair member construction | 0 | 197 |
+| Nearest closed pair member construction | 0 | 196 |
 | Nearest default allocation helper | 99 | 46 |
 | Nearest memory reservation | 145 | 77 |
 | Of those, allocation helper as nearest caller | 138 | 73 |
@@ -28,6 +28,10 @@ ordinary dispatch keep the first result when a later machine operation
 declines. Preserve both instruction checkpoints and the exact fallback.
 Inlined and unresolved work limit attribution. The counts give no
 prediction of removable CPU or elapsed improvement.
+
+The first analysis counted the final stack sample twice in each capture.
+The corrected parser agrees with the per-thread sample counts. The raw
+captures and the first analysis are preserved.
 
 Both independent CPython goldens and all 32 image files verify. Both quiet
 gates pass, workers and profilers join, and the persistent archive verifies

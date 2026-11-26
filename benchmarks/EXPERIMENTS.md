@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1787 continue from the first integer operation](results/2026-11-26-seeded-integer-chain/README.md)
+bypasses continuation dispatch on 2,608 single-operation returns per ordinary
+factory run. Quiet factory timings span zero and the local invoice gain does
+not reproduce. The invoice takes 0.13–1.32% longer in the quiet block with
+matching admission. Keep the existing runtime.
+[Confirmation](results/2026-11-26-seeded-integer-chain/confirmation/README.md)
+
 [B1786 current warm callable attribution](results/2026-11-26-current-callable-profile/README.md)
 locates remaining computed-argument calls and prepaid default allocation in
 the ordinary factory. The escaping factory still spends time constructing
