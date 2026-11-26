@@ -7,7 +7,10 @@ namespace Lokad.Lython.Frontend;
 // immutable programs/metadata; disposing the script requires all runs to finish.
 internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposable
 {
-    internal readonly record struct Entry(ILythonRegexPattern Program, int CaptureSlotCount);
+    // The exact provider list was validated during compilation and remains
+    // immutable and funded by Program until the last borrowing run ends.
+    internal readonly record struct NamedGroupEntries(IReadOnlyList<LythonRegexNamedGroup> Entries, int Count);
+    internal readonly record struct Entry(ILythonRegexPattern Program, int CaptureSlotCount, NamedGroupEntries Groups);
 
     private ILythonMemoryScope? _owner;
     private Dictionary<RegexPatternKey, Entry>? _entries;
@@ -25,7 +28,7 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
     }
 
     internal void Add(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program, int captureSlotCount,
-        CancellationToken token, LythonSourceSpan span)
+        NamedGroupEntries groups, CancellationToken token, LythonSourceSpan span)
     {
         // The analysis preflight owns the input, key, table capacity and overlap.
         // Borrow the same encoded input instead of decoding runtime lookup keys.
@@ -34,7 +37,7 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
         // a program that a compiler fact may still borrow. Use the same bounded
         // hash and collision comparisons for insertion as for retrieval.
         var entries = _entries ??= new(RegexPatternKey.Comparer.Instance);
-        if (!entries.GetAlternateLookup<RegexPatternKey.Lookup>().TryAdd(new(key, token, span), new(program, captureSlotCount)))
+        if (!entries.GetAlternateLookup<RegexPatternKey.Lookup>().TryAdd(new(key, token, span), new(program, captureSlotCount, groups)))
             throw new InvalidOperationException("A compiled regex program is already retained for this key.");
     }
 

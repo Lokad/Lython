@@ -2832,10 +2832,13 @@ this bridge does not add pattern conversions to successful matching.
 Providers receive borrowed UTF-8 data and shared memory owners. Immutable,
 concurrent-safe metadata includes effective Python flags (inline flags and implicit
 Unicode included), capture slots including zero and UTF-8 names in capture order.
-Lython validates, copies and hashes borrowed names under the active token. It
-owns the admitted names, once per frontend analysis program and once per runtime
-cached pattern. Frontend constant matching uses the prepared pattern and its
-effective flags. Runtime looks up that pattern under its original normalized options.
+Lython validates borrowed names under the active token. Compiled programs can
+reuse the validated provider list for runtime publication while the same handle
+remains alive. The frontend releases its name copies when analysis ends.
+Each runtime cached pattern owns its own admitted guest name strings.
+Dynamic patterns validate their metadata when they are published.
+Frontend constant matching uses the prepared pattern and its effective flags.
+Runtime looks up that pattern under its original normalized options.
 Invalid provider metadata fails explicitly (including a compilation exception
 for a broken host contract);
 ordinary guest pattern errors retain their Python diagnostics. The last-closed

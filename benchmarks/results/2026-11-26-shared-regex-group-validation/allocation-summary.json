@@ -1,0 +1,24 @@
+[
+  {
+    "case": "diagnostic.regex-compiled-group-names.1",
+    "allocationBytes": [
+      18728,
+      18728
+    ],
+    "peakAdmission": [
+      5612,
+      5612
+    ]
+  },
+  {
+    "case": "diagnostic.regex-compiled-group-names.24",
+    "allocationBytes": [
+      165248,
+      165248
+    ],
+    "peakAdmission": [
+      84926,
+      84926
+    ]
+  }
+]

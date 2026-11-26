@@ -130,7 +130,7 @@ public sealed class RegexCacheCapacityAccountingTests
         var governor = new MemoryGovernor(null);
         var key = RegexPatternCache.Key.Exact(lookup, null, 0, default, span);
         Assert.Same(pattern, await cache.GetOrAdd(RegexPatternCache.Key.Exact(inserted, null, 0, default, span), pattern, governor, span));
-        analysis.Add(Encoding.UTF8.GetBytes(text), options, pattern.Regex, 1, default, span);
+        analysis.Add(Encoding.UTF8.GetBytes(text), options, pattern.Regex, 1, new([], 0), default, span);
 
         using var previous = new CancellationTokenSource();
         using var current = new CancellationTokenSource();

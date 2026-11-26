@@ -36,7 +36,7 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal ILythonMemoryReservation ReserveRegexStorage(long bytes, LythonSourceSpan span)
         => _regexPrograms.Reserve(bytes, span);
 
-    internal IReadOnlyDictionary<Runtime.Text.PyString, int> ReadRegexGroupFacts(ILythonRegexPattern program,
+    internal (IReadOnlyDictionary<Runtime.Text.PyString, int> Names, CompiledRegexPrograms.NamedGroupEntries Groups) ReadRegexGroupFacts(ILythonRegexPattern program,
         int captureSlotCount, LythonSourceSpan span)
         => Runtime.LythonRuntime.RegexCompiler.CopyAnalysisNamedGroups(program, captureSlotCount, MemoryGovernor,
             _regexFactsStorage ??= MemoryGovernor?.ReserveTemporary(0, span), CancellationToken, span);
@@ -74,8 +74,8 @@ internal sealed class StaticAnalysisContext : IDisposable
 
     internal List<LythonDiagnostic> DiagnosticList => _diagnostics;
     internal void RetainRegexProgram(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program,
-        int captureSlotCount, LythonSourceSpan span)
-        => _regexPrograms.Add(encoded, options, program, captureSlotCount, CancellationToken, span);
+        int captureSlotCount, CompiledRegexPrograms.NamedGroupEntries groups, LythonSourceSpan span)
+        => _regexPrograms.Add(encoded, options, program, captureSlotCount, groups, CancellationToken, span);
 
     internal StringLiteralExpressionSyntax? GetCompiledRegexLiteral(ExpressionSyntax? expression, string text)
         => !_ownsRegexPrograms && expression is StringLiteralExpressionSyntax literal && ReferenceEquals(literal.Value, text)

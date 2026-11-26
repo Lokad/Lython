@@ -276,9 +276,9 @@ internal static class StaticRegexReturnResolver
             try
             {
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
-                regex = new(program, captureSlotCount,
-                    analysis.ReadRegexGroupFacts(program, captureSlotCount, span));
-                analysis.RetainRegexProgram(encoded, options, program, captureSlotCount, span);
+                var (names, groups) = analysis.ReadRegexGroupFacts(program, captureSlotCount, span);
+                regex = new(program, captureSlotCount, names);
+                analysis.RetainRegexProgram(encoded, options, program, captureSlotCount, groups, span);
             }
             catch { program.Dispose(); throw; }
             // The compiled lookup now owns the program, even if analysis

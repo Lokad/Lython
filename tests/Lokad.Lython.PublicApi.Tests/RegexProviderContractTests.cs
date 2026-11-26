@@ -698,6 +698,47 @@ public sealed class RegexProviderContractTests
     }
 
     [Fact]
+    public async Task CompiledGroupMetadataIsReadOnceAndRunNameTablesStayIndependent()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var reads = 0;
+        using var provider = new CooperatingProvider
+        {
+            CaptureSlots = 3,
+            GroupNames = [new("é"u8.ToArray(), 1), new("tail"u8.ToArray(), 2)],
+            OnMetadata = () => Interlocked.Increment(ref reads)
+        };
+        using (var script = new LythonEngine(provider).Compile("""
+            import re
+            p = re.compile('x')
+            names = p.groupindex
+            assert names is not p.groupindex
+            print(list(names.items()), names['é'])
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+            Assert.Equal(1, reads);
+            var baseline = budget.ReservedBytes;
+            var firstRun = script.RunAsync(new MockLythonHost());
+            var secondRun = script.RunAsync(new MockLythonHost());
+            using (var first = await firstRun)
+            using (var second = await secondRun)
+            {
+                Assert.True(first.Success, first.Failure?.Message);
+                Assert.True(second.Success, second.Failure?.Message);
+                Assert.Equal("[('é', 1), ('tail', 2)] 1\n", first.StandardOutput);
+                Assert.Equal(first.StandardOutput, second.StandardOutput);
+                Assert.Equal(1, reads);
+                Assert.Equal(1, provider.Compilations);
+                Assert.Equal(0, provider.ClosedPatterns);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void CompileOnlyGroupFactsReleaseTheirStorageBeforeTheProgramDisposes()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

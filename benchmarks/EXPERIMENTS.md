@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Validated regex group metadata](results/2026-11-26-shared-regex-group-validation/README.md)
+removes two duplicate provider reads across one compilation and two runs.
+The compiled handle funds the borrowed list, and analysis and runtime
+name copies retain their original lifetimes.
+
 [B1770 prepared machine constants](results/2026-11-26-prepared-machine-constants/README.md)
 moves repeated constant classification into compilation. The ordinary
 factory uses 3,776 B more retained compiler admission. Execution peaks
