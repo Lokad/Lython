@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1772 shared function discovery](results/2026-11-26-shared-name-binding-roots/README.md)
+removes a small separate walk and adds a temporary worklist. Sparse guards and
+generated rules use more compile CPU in a variable local comparison. The
+manifest CPU range crosses zero. Production keeps the existing traversal.
+
 [Validated regex group metadata](results/2026-11-26-shared-regex-group-validation/README.md)
 removes two duplicate provider reads across one compilation and two runs.
 The compiled handle funds the borrowed list, and analysis and runtime

@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.generated-record-rules-bindings",
+    "allocatedBytes": [
+      1908688,
+      1909792
+    ],
+    "retainedAdmission": [
+      987394,
+      987394
+    ]
+  },
+  {
+    "case": "scripts.file-manifest.small",
+    "allocatedBytes": [
+      72336,
+      72136
+    ],
+    "retainedAdmission": [
+      82304,
+      82304
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocatedBytes": [
+      2136320,
+      2136328
+    ],
+    "retainedAdmission": [
+      2294048,
+      2294048
+    ]
+  },
+  {
+    "case": "diagnostic.empty-compile-control",
+    "allocatedBytes": [
+      2856,
+      2856
+    ],
+    "retainedAdmission": [
+      32864,
+      32864
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "case": "diagnostic.generated-record-rules-bindings",
+    "originalDiscoveryStatements": 66,
+    "selectedRoots": 64,
+    "separateDiscoveryStatementsAfter": 0
+  },
+  {
+    "case": "scripts.file-manifest.small",
+    "originalDiscoveryStatements": 14,
+    "selectedRoots": 0,
+    "separateDiscoveryStatementsAfter": 0
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "originalDiscoveryStatements": 5,
+    "selectedRoots": 1,
+    "separateDiscoveryStatementsAfter": 0
+  },
+  {
+    "case": "diagnostic.empty-compile-control",
+    "originalDiscoveryStatements": 0,
+    "selectedRoots": 0,
+    "separateDiscoveryStatementsAfter": 0
+  }
+]
