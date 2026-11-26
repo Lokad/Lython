@@ -1,0 +1,46 @@
+{
+  "images": {
+    "before": {
+      "Probe.dll": "f5c97b1a84a824abc5f39626a6aa666eeefba635cf9c0da351bb8837df454992",
+      "Probe.deps.json": "0ed402d1995caf3a7e34425f6c0271d44768c07ac318ffd6977335dae727f029",
+      "Probe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "0b3d2eb91b623fa93b0f754237c1b670e0b4b80ee5a99e8ed631631f72bca4aa"
+    },
+    "after": {
+      "Probe.dll": "f5c97b1a84a824abc5f39626a6aa666eeefba635cf9c0da351bb8837df454992",
+      "Probe.deps.json": "0ed402d1995caf3a7e34425f6c0271d44768c07ac318ffd6977335dae727f029",
+      "Probe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "9b6a59093f074817f0db829d6d4729664320deafcd95a051272d77d6b4810343"
+    }
+  },
+  "median": {
+    "hooks": {
+      "before": {
+        "BytesPerRequest": 88834,
+        "PeakBytes": 76413,
+        "ElapsedMilliseconds": 3976.5396,
+        "CpuMilliseconds": 375
+      },
+      "after": {
+        "BytesPerRequest": 84960,
+        "PeakBytes": 76413,
+        "ElapsedMilliseconds": 4205.5808,
+        "CpuMilliseconds": 187.5
+      }
+    },
+    "default": {
+      "before": {
+        "BytesPerRequest": 21656,
+        "PeakBytes": 77969,
+        "ElapsedMilliseconds": 63.7893,
+        "CpuMilliseconds": 125
+      },
+      "after": {
+        "BytesPerRequest": 21656,
+        "PeakBytes": 77969,
+        "ElapsedMilliseconds": 65.3807,
+        "CpuMilliseconds": 125
+      }
+    }
+  }
+}

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Direct JSON hook continuation](results/2026-11-26-direct-json-hook-continuation/README.md)
+removes one forwarding async operation per suspended nested hook. The local
+hook workload allocates 4.36% less and peak admission matches. The callback-free
+control allocates the same amount. Host-timer and CPU results remain diagnostic.
+
 [B1748 Unicode report attribution](results/2026-11-26-affix-text-attribution/README.md)
 finds identical executable tapes and no direct affix return in the report.
 One warmed CPU profile per image points to the same casing, dictionary and
