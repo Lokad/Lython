@@ -3,9 +3,10 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration manifest | Two input files / 833 B | 0.18510–0.18554 ms | 0.15478–0.15563 ms | 1.189–1.199× | Diagnostic. [B1669]. |
-| Shipment callback report | 2,048 records / 27,350 B | 2.22126–2.24476 ms | 1.62256–1.65026 ms | 1.346–1.383× | Diagnostic. [B1744]. |
-| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.34810–2.42338 ms | 1.63204–1.70608 ms | 1.376–1.485× | Diagnostic. Same-source worker spread up to 4.54%. [B1744]. |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.54147–0.54293 ms | 1.38057–1.38132 ms | 0.392–0.393× | Diagnostic. [B1744]. |
+| Shipment callback report | 2,048 records / 27,350 B | 2.12759–2.23394 ms | 1.62084–1.63259 ms | 1.303–1.378× | Diagnostic. Lython worker spread is 5.00%. [B1760]. |
+| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22429–2.25398 ms | 1.62762–1.63293 ms | 1.362–1.385× | Diagnostic. [B1760]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.45152–0.48065 ms | 1.36416–1.36826 ms | 0.330–0.352× | Diagnostic. Lython worker spread is 6.45%. [B1760]. |
+| CSV meter with a float field helper | 4,096 records / 139,299 B | 4.25497–4.31230 ms | 5.27953–5.28402 ms | 0.805–0.817× | Diagnostic. [B1760]. |
 | File search with early exit | 1,025 lines read / 42,010 B file | 0.18709–0.18918 ms | 0.13516–0.13913 ms | 1.345–1.400× | Diagnostic. [B1750]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.52384–2.56812 ms | 1.66237–1.71676 ms | 1.470–1.545× | Diagnostic. [B1750]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
@@ -23,8 +24,9 @@
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. B1750 measures `0a0e32c16` and B1744 measures
-`a490e9d5f` on November 26, 2026 UTC. [B1750] · [B1744].
+two workers per engine. B1760 measures `bc93d4d74`, B1750 measures
+`0a0e32c16` and B1744 measures `a490e9d5f`, all on November 26, 2026 UTC.
+[B1760] · [B1750] · [B1744].
 B1736 measures `7f0c5b996` and B1727 measures
 `857cc8001` on November 25, 2026 UTC. Earlier B1731 measures `a420c3e05`.
 B1720 measures `7120ee55e` on November 25, 2026 UTC.
@@ -64,7 +66,8 @@ measurements cover the wider request.
 | File search with early exit, 319 B of source | Compile-to-result | 0.22328–0.22538 ms | 0.21057–0.21383 ms | 1.044–1.070× | Diagnostic. [B1750]. |
 | Generated regex selectors, 48 calls / 197,820 B of source | Compilation only | 0.79275–0.80053 ms | 0.56563–0.56772 ms | 1.396–1.415× | Diagnostic. Lython includes constant-match analysis. [B1750]. |
 | Generated regex selectors, 48 calls | Compile-to-result | 1.06505–1.07562 ms | 1.27062–1.27378 ms | 0.836–0.847× | Diagnostic. Both engines execute the regex calls. [B1750]. |
-| Shipment callback report | Compile-to-result | 2.49544–2.51408 ms | 1.90542–1.92300 ms | 1.298–1.319× | Diagnostic. [B1720]. |
+| Shipment callback report, 1,376 B of source | Compilation only | 0.06267–0.06401 ms | 0.11348–0.11376 ms | 0.551–0.564× | Diagnostic. [B1760]. |
+| Shipment callback report | Compile-to-result | 2.27511–2.33693 ms | 1.89620–1.92228 ms | 1.184–1.232× | Diagnostic. Lython uses the synchronous API. [B1760]. |
 | Generated classifier, 6,991 B of source | Compilation only | 0.32944–0.33057 ms | 0.81943–0.82016 ms | 0.402–0.403× | Diagnostic. [B1656]. |
 | Generated comprehension rules, 17,995 B of source | Compilation only | 1.09478–1.10758 ms | 2.86768–2.89394 ms | 0.378–0.386× | Diagnostic. [B1643]. |
 | Sparse generated validator, 23,555 B of source | Compilation only | 1.27724–1.28559 ms | 1.81308–1.82159 ms | 0.701–0.709× | Diagnostic compiler workload. [B1614]. |
@@ -116,6 +119,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Complete eligible record-field conversions from supplied operands | Warm CPU falls 9.06–12.36% on file-fed map and 2.60–9.01% on the float-helper meter. | Allocation and peak admission match. Shipment control CPU rises 0.13–1.96% with zero uses of the changed path. [B1759](../benchmarks/results/2026-11-26-direct-record-field-returns/README.md). |
 | Parse wide JSON integers without a CLR token string | The .NET 11 reports allocate 14.21% less for 40-digit values and 32.74% less for 4,096-digit values. The 40-digit report uses 1.19–3.53% less warm async CPU. | Peak admission matches. Timing for 4,096-digit values and the ordinary JSON control spans zero. Long inputs keep the CLR-string path on .NET 10. [B1751](../benchmarks/results/2026-11-26-wide-json-integer-parsing/README.md). |
 | Return exact string affixes without a callee workspace | Protected file search uses 19.12–25.06% less process CPU and 23.17–29.17% less elapsed through result in confirmation. | Memory matches. The file-fed control reverses between blocks. Unicode text uses 2.74–4.57% more CPU in confirmation. [B1746/B1747](../benchmarks/results/2026-11-26-direct-affix-return/README.md). |
 | Reuse compiled regex subjects | Both long literal cases allocate 16,496 B less during compilation. Two analysis preparations and one execution preparation share one 8,202 B backing. | Allocation diagnostic. Retained admission and three non-regex controls match. [B1740](../benchmarks/results/2026-11-25-compiled-regex-subject/README.md). |
@@ -194,6 +198,7 @@ document reproduction.
 [B1685]: ../benchmarks/results/2026-11-25-retained-defaults-cpython/README.md
 [B1744]: ../benchmarks/results/2026-11-26-file-processing-cpython/README.md
 [B1750]: ../benchmarks/results/2026-11-26-short-path-cpython/README.md
+[B1760]: ../benchmarks/results/2026-11-26-record-field-cpython/README.md
 [B1736]: ../benchmarks/results/2026-11-25-deferred-locals-cpython/README.md
 [B1731]: ../benchmarks/results/2026-11-25-arithmetic-call-cpython/README.md
 [B1727]: ../benchmarks/results/2026-11-25-formatted-report-cpython/README.md

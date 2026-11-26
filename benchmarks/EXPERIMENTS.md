@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1761 CSV physical-line scan source gate](results/2026-11-26-csv-window-source-gate/README.md)
+counts the existing literal field scan completing 2,047 of 2,048 buffered
+shipment reads, 4,088 of 4,096 meter reads and 3,064 of 4,096 quoted-invoice
+reads. This establishes eligibility for eliminating the separate line scan.
+CPU impact remains a hypothesis.
+
+[B1760 shipment and CSV conversion against CPython](results/2026-11-26-record-field-cpython/README.md)
+measures `bc93d4d74`. Shipment takes 1.362–1.385× as long warm async,
+0.551–0.564× to compile and 1.184–1.232× through result. The float-helper
+meter takes 0.805–0.817× warm sync and file-fed map takes 0.330–0.352× warm
+async. The failed initial manifest and 168 timed batches are preserved.
+
 [B1759 direct native field returns](results/2026-11-26-direct-record-field-returns/README.md)
 skips 2,047 integer and 4,095 float helper bodies in the representative
 scripts. Warm CPU falls 9.06–12.36% on the file-fed map and 2.60–9.01%

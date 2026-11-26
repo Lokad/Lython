@@ -1,0 +1,118 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvScan": 2048,
+        "BorrowedCsvLine": 2047,
+        "BorrowedCsvLineBytes": 27314,
+        "UniversalNonNumericCsvLine": 2047,
+        "LiteralCsvRecord": 2047,
+        "LiteralCsvRecordBytes": 27314
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvScan": 2048,
+        "BorrowedCsvLine": 2047,
+        "BorrowedCsvLineBytes": 27314,
+        "UniversalNonNumericCsvLine": 2047,
+        "LiteralCsvRecord": 2047,
+        "LiteralCsvRecordBytes": 27314
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.csv-meter-field-helper",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvScan": 4096,
+        "BorrowedCsvLine": 4088,
+        "BorrowedCsvLineBytes": 138972,
+        "UniversalNonNumericCsvLine": 4088,
+        "LiteralCsvRecord": 4088,
+        "LiteralCsvRecordBytes": 138972
+      },
+      "peakExecutionMemoryBytes": 6550745,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.csv-meter-field-helper",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvScan": 4096,
+        "BorrowedCsvLine": 4088,
+        "BorrowedCsvLineBytes": 138972,
+        "UniversalNonNumericCsvLine": 4088,
+        "LiteralCsvRecord": 4088,
+        "LiteralCsvRecordBytes": 138972
+      },
+      "peakExecutionMemoryBytes": 6550745,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvScan": 2048,
+        "BorrowedCsvLine": 2047,
+        "BorrowedCsvLineBytes": 27314,
+        "UniversalNonNumericCsvLine": 2047,
+        "LiteralCsvRecord": 2047,
+        "LiteralCsvRecordBytes": 27314
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-routing-callbacks",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvScan": 2048,
+        "BorrowedCsvLine": 2047,
+        "BorrowedCsvLineBytes": 27314,
+        "UniversalNonNumericCsvLine": 2047,
+        "LiteralCsvRecord": 2047,
+        "LiteralCsvRecordBytes": 27314
+      },
+      "peakExecutionMemoryBytes": 2817644,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "BufferedCsvScan": 4096,
+        "BorrowedCsvLine": 4087,
+        "BorrowedCsvLineBytes": 165524,
+        "UniversalNonNumericCsvLine": 4087,
+        "LiteralCsvRecord": 3064,
+        "LiteralCsvRecordBytes": 123581
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": true,
+      "routes": {
+        "BufferedCsvScan": 4096,
+        "BorrowedCsvLine": 4087,
+        "BorrowedCsvLineBytes": 165524,
+        "UniversalNonNumericCsvLine": 4087,
+        "LiteralCsvRecord": 3064,
+        "LiteralCsvRecordBytes": 123581
+      },
+      "peakExecutionMemoryBytes": 9040266,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}
