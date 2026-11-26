@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1778 exact UTF-8 copies](results/2026-11-26-exact-utf8-copy/README.md)
+bypasses writable-string completion on about 4,100 short JSON strings.
+Async CPU falls in the local diagnostic, sync timing is mixed and the
+low-exposure Unicode control takes longer. Allocation and admission remain
+effectively flat. Keep the current copy routine.
+
 [B1777 shared lambda yield facts](results/2026-11-26-lambda-yield-facts/README.md)
 removes a separate walk of each lambda body. Compiler allocation rises by
 8 B per lambda. Both target CPU ranges cross zero and the complete factory

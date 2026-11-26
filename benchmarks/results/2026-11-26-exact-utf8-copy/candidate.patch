@@ -1,0 +1,38 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyString.cs b/src/Lokad.Lython/Runtime/Text/PyString.cs
+index cd3cbb53a..a50e17be6 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyString.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyString.cs
+@@ -400,17 +400,26 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         {
+             context?.CheckExecution(allocationSpan);
+             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(allocationSpan);
+-            var result = CreateReservedUtf8(utf8.Length, governor);
+-            var destination = result.UnpublishedUtf8;
+-            for (var offset = 0; offset < utf8.Length;)
++            PyString result;
++            if (utf8.Length <= InlineUtf8Capacity)
+             {
+-                var length = Math.Min(16384, utf8.Length - offset);
+-                utf8.Slice(offset, length).CopyTo(destination[offset..]);
+-                offset += length;
++                result = new PyString(utf8, utf8.Length, governor);
+                 context?.CheckExecution(allocationSpan);
+                 if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(allocationSpan);
+             }
+-            result.CompleteUnpublishedUtf8(utf8.Length);
++            else
++            {
++                var bytes = new byte[utf8.Length];
++                for (var offset = 0; offset < utf8.Length;)
++                {
++                    var length = Math.Min(16384, utf8.Length - offset);
++                    utf8.Slice(offset, length).CopyTo(bytes.AsSpan(offset));
++                    offset += length;
++                    context?.CheckExecution(allocationSpan);
++                    if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(allocationSpan);
++                }
++                result = new PyString(bytes, bytes.Length, governor);
++            }
+             governor?.Commit(charge);
+             return result;
+         }

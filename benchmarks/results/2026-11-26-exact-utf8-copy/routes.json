@@ -1,0 +1,86 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": false,
+      "routes": {
+        "ExactCopyInline": 4103,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": true,
+      "routes": {
+        "ExactCopyInline": 4103,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": false,
+      "routes": {
+        "ExactCopyInline": 4101,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": true,
+      "routes": {
+        "ExactCopyInline": 4101,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "ExactCopyInline": 9,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "ExactCopyInline": 9,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": false,
+      "routes": {
+        "ExactCopyInline": 4,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "asynchronous": true,
+      "routes": {
+        "ExactCopyInline": 4,
+        "ExactCopyArray": 0
+      },
+      "peakExecutionMemoryBytes": 92040,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}
