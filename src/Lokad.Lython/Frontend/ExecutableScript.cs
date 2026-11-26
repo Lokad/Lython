@@ -590,12 +590,14 @@ internal sealed partial class ExecutableCodeObject
         int initialOperandDepth,
         PyString? functionName,
         PyString? docstring,
+        MemoryGovernor? governor,
         CancellationToken cancellationToken)
     {
         Name = name;
         FunctionName = functionName;
         Docstring = docstring;
         Constants = constants;
+        _machineConstants = PrepareMachineConstants(constants, governor, cancellationToken);
         Names = names;
         LocalNames = localNames;
         FirstTemporarySlot = localNames.Count;
@@ -686,6 +688,44 @@ internal sealed partial class ExecutableCodeObject
     // Builder-owned arrays are immutable after preparation. Operand reads use
     // their physical bounds directly, without another collection interface.
     public object?[] Constants { get; }
+    private readonly long?[]? _machineConstants;
+
+    // The original objects retain Python-visible identity and overflow
+    // behavior. Arithmetic can read exact signed literals without reclassifying
+    // their immutable BigInteger objects on each execution.
+    internal bool TryReadMachineConstant(int index, out long value)
+    {
+        if (_machineConstants is { } values && values[index] is { } integer)
+        {
+            value = integer;
+            return true;
+        }
+        value = 0;
+        return false;
+    }
+
+    private static long?[]? PrepareMachineConstants(object?[] constants, MemoryGovernor? governor, CancellationToken token)
+    {
+        for (var first = 0; first < constants.Length; first++)
+        {
+            PythonTokenization.CheckCancellation(token, first);
+            if (!LythonRuntime.TryMachineInteger(constants[first], out var initial)) continue;
+            var bytes = checked(32L + 16L * constants.Length);
+            using var storage = governor?.ReserveTemporary(bytes, null);
+            PythonTokenization.CheckCancellation(token, 0);
+            var prepared = new long?[constants.Length];
+            prepared[first] = initial;
+            for (var index = first + 1; index < prepared.Length; index++)
+            {
+                PythonTokenization.CheckCancellation(token, index);
+                if (LythonRuntime.TryMachineInteger(constants[index], out var integer))
+                    prepared[index] = integer;
+            }
+            storage?.Commit(bytes);
+            return prepared;
+        }
+        return null;
+    }
 
     public string[] Names { get; }
     internal int CaptureOperandBase => checked(Constants.Length + Names.Length);

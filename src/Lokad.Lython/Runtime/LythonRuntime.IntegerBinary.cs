@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    private static bool TryMachineInteger(object? value, out long result)
+    internal static bool TryMachineInteger(object? value, out long result)
     {
         if (value is BigInteger integer) return TryMachineInteger(integer, out result);
         result = 0;

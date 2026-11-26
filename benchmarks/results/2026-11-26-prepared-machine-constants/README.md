@@ -46,9 +46,10 @@ reference CPU workers, and one ordinary compile-to-result candidate worker
 takes more than three times the elapsed of its same-source peer. Keep
 the warm escaping-rule CPU increase and extreme compile-to-result result
 with the original observations. The measured compiled-storage cost and
-unchanged outputs are established independently of timing. Keep the
-prototype private pending a usable quiet comparison or a design that
-reduces retained metadata. All 196 batches verified and workers joined.
+unchanged outputs are established independently of timing. All 196
+batches verified and workers joined. A separate quiet confirmation uses
+the same frozen pair and supports keeping the change.
+[Quiet confirmation](confirmation/README.md).
 
 [Timing](summary.json) · [Compile allocation](compile-allocation-summary.json) ·
 [Execution allocation](allocation-summary.json) · [Identity](identity.json) ·

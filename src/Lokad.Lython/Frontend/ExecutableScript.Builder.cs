@@ -283,6 +283,7 @@ internal sealed partial class ExecutableScript
                 initialOperandDepth: generatorExpression is null ? 0 : 1,
                 functionName: callable ? name == "<lambda>" ? LambdaName : PyString.FromString(name) : null,
                 docstring: docstring,
+                governor: _compilation.Governor,
                 cancellationToken: _compilation.CancellationToken)
             {
                 QualifiedName = qualifiedName,

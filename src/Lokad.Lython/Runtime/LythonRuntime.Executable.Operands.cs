@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
         if (source >= 0) return values[source].TryGetInteger(out value);
         var index = ~source;
         var name = index - code.Constants.Length;
-        if (name < 0) return TryMachineInteger(code.Constants[index], out value);
+        if (name < 0) return code.TryReadMachineConstant(index, out value);
         if (name >= code.Names.Length) return captures.TryReadInteger(name - code.Names.Length, out value);
         // Missing-name diagnostics belong to the ordered ordinary reads. This
         // probe never raises a later operand's failure ahead of an earlier one.

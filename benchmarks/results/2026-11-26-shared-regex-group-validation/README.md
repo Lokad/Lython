@@ -23,5 +23,8 @@ group order and the scalar offsets of a Unicode subject. Runtime CLR
 allocation and peak admission match in the local diagnostics. CPU
 timing remains open.
 
+Standard Release CI and package consumers passed for 4f7c085cd on
+Windows and Ubuntu. [CI](https://github.com/Lokad/Lython/actions/runs/45847686103).
+
 [Allocation](allocation-summary.json) · [Image identity](identity.json) ·
 [Procedures and checks](procedures.tar.xz).

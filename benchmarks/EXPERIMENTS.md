@@ -15,7 +15,10 @@ name copies retain their original lifetimes.
 moves repeated constant classification into compilation. The ordinary
 factory uses 3,776 B more retained compiler admission. Execution peaks
 match. Local timing is inconclusive with 48.47% reference CPU worker
-spread on the unchanged file-fed control. Preserve all adverse results.
+spread on the unchanged file-fed control. The
+[quiet confirmation](results/2026-11-26-prepared-machine-constants/confirmation/README.md)
+supports retention. Warm ordinary definitions and Unicode text use less
+CPU, and both factories reach their result sooner.
 
 [B1769 callable construction after deferral](results/2026-11-26-post-deferral-factory-cpu/README.md)
 separates computed-argument calls in ordinary definitions from pair

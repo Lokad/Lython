@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
                 value = argument;
                 return true;
             }
-            return source < 0 ? TryMachineInteger(factory.Constants[~source], out value) : prior.TryGetInteger(out value);
+            return source < 0 ? factory.TryReadMachineConstant(~source, out value) : prior.TryGetInteger(out value);
         }
 
         object ReadObject(int source, ExecutableSlot prior) => TSource.IsArgument(factory, source) ? (BigInteger)argument : source < 0
