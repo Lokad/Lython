@@ -78,6 +78,8 @@ mutable attributes and method dispatch. Separator iteration and option callbacks
 retain their evaluation order and finish before their owners are released.
 
 JSON decoding builds nested values with one iterative construction loop.
+Ready scalars use the current frame and its established array position.
+Only a nested value or pending conversion needs a saved property key.
 The first four frames are inline. Deeper frame storage admits capacity and
 replacement overlap through the execution's allowance. A suspended hook
 keeps the frames funded until it completes or unwinds. Construction resumes

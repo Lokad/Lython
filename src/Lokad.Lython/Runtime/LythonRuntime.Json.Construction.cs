@@ -84,12 +84,19 @@ internal sealed partial class LythonRuntime
             JsonFrames(ref state)[state.Depth++] = new(result, expected, position, isObject);
         }
 
-        private static void AcceptJsonValue(ref JsonDecodeState state, object value, int end)
+        private static void AcceptJsonValue(ref JsonDecodeFrame frame, PyString? key, object value, int end,
+            ref JsonDecodeState state)
+        {
+            AppendJsonContainerValue(frame.Result, key, value, state.Context, state.Span);
+            frame.Position = NextJsonContainerToken(state.Input, end, frame.IsObject, state.Context, state.Span);
+        }
+
+        private static void AcceptPendingJsonValue(ref JsonDecodeState state, object value, int end)
         {
             ref var parent = ref JsonFrames(ref state)[state.Depth - 1];
-            AppendJsonContainerValue(parent.Result, parent.Key, value, state.Context, state.Span);
+            var key = parent.Key;
             parent.Key = null;
-            parent.Position = NextJsonContainerToken(state.Input, end, parent.IsObject, state.Context, state.Span);
+            AcceptJsonValue(ref parent, key, value, end, ref state);
         }
 
         private static bool FinishJsonContainer(ref JsonDecodeState state, object value, int end,
@@ -97,7 +104,7 @@ internal sealed partial class LythonRuntime
         {
             JsonFrames(ref state)[--state.Depth] = default;
             if (state.Depth == 0) { result = (value, end); return true; }
-            AcceptJsonValue(ref state, value, end);
+            AcceptPendingJsonValue(ref state, value, end);
             result = default;
             return false;
         }
@@ -160,29 +167,33 @@ internal sealed partial class LythonRuntime
                 if (position >= bytes.Length || frame.IsObject && bytes[position] != (byte)'"')
                     throw CreateJsonExpectingError(input, Math.Min(position, bytes.Length),
                         frame.IsObject ? JsonIncompleteExpectation.PropertyName : JsonIncompleteExpectation.Value, span, context);
+                PyString? key = null;
                 if (frame.IsObject)
                 {
                     var property = ReadJsonObjectKey(input, options, position, context, span, frame.Expected,
                         frame.Result is PyDict dictionary ? dictionary.Count : ((PyList)frame.Result).Count,
                         ref frame.PlainNames);
-                    frame.Key = property.Value;
-                    position = EnsureJsonColon(bytes, property.End, input, span, context) + 1;
+                    key = property.Value;
+                    position = SkipJsonWhitespace(bytes, EnsureJsonColon(bytes, property.End, input, span, context) + 1,
+                        context, span);
                 }
-                position = SkipJsonWhitespace(bytes, position, context, span);
+                // Array frames already point past whitespace after '[' or ','.
                 if (position < bytes.Length && bytes[position] is (byte)'{' or (byte)'[')
                 {
+                    frame.Key = key;
                     PushJsonContainer(ref state, position, bytes[position] == (byte)'{');
                     continue;
                 }
                 if (!TryReadJsonScalar(input, options, context, span, position, state.Asynchronous,
                     out var scalar, out var scalarEnd, out var conversion))
                 {
+                    frame.Key = key;
                     state.AwaitingContainer = false;
                     result = default;
                     pending = (conversion, scalarEnd);
                     return false;
                 }
-                AcceptJsonValue(ref state, scalar, scalarEnd);
+                AcceptJsonValue(ref frame, key, scalar, scalarEnd, ref state);
             }
         }
 
@@ -202,7 +213,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (FinishJsonContainer(ref state, value, pending.End, out var completed)) return completed;
                     }
-                    else AcceptJsonValue(ref state, value, pending.End);
+                    else AcceptPendingJsonValue(ref state, value, pending.End);
                     if (ContinueJsonConstruction(ref state, out var result, out pending)) return result;
                 }
             }

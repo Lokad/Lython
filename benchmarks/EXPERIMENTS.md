@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1777 shared lambda yield facts](results/2026-11-26-lambda-yield-facts/README.md)
+removes a separate walk of each lambda body. Compiler allocation rises by
+8 B per lambda. Both target CPU ranges cross zero and the complete factory
+reference varies. Keep the existing frontend.
+
+[B1776 ready JSON values in the active frame](results/2026-11-26-json-ready-construction/README.md)
+removes 4,096 property-key round trips and 2,048 repeated array position
+scans from document totals. Sync elapsed falls in both quiet blocks.
+Async timing remains mixed and the Unicode control varies by placement.
+[Confirmation](results/2026-11-26-json-ready-construction/confirmation/README.md).
+
 [B1775 direct transport of signed arguments](results/2026-11-26-direct-signed-argument/README.md)
 bypasses 2,560 temporary argument-slot constructions per ordinary factory
 run with matching target allocation and admission. The

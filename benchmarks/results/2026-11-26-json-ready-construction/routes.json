@@ -1,0 +1,78 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": false,
+      "routes": {
+        "ReadyJsonScalars": 4096,
+        "ReadyJsonObjectKeys": 4096,
+        "EstablishedJsonArrayPositions": 2048,
+        "PendingJsonScalars": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": true,
+      "routes": {
+        "ReadyJsonScalars": 4096,
+        "ReadyJsonObjectKeys": 4096,
+        "EstablishedJsonArrayPositions": 2048,
+        "PendingJsonScalars": 0
+      },
+      "peakExecutionMemoryBytes": 1909869,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": false,
+      "routes": {
+        "ReadyJsonScalars": 8192,
+        "ReadyJsonObjectKeys": 8192,
+        "EstablishedJsonArrayPositions": 0,
+        "PendingJsonScalars": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": true,
+      "routes": {
+        "ReadyJsonScalars": 8192,
+        "ReadyJsonObjectKeys": 8192,
+        "EstablishedJsonArrayPositions": 0,
+        "PendingJsonScalars": 0
+      },
+      "peakExecutionMemoryBytes": 3822014,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "routes": {
+        "ReadyJsonScalars": 0,
+        "ReadyJsonObjectKeys": 0,
+        "EstablishedJsonArrayPositions": 0,
+        "PendingJsonScalars": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": true,
+      "routes": {
+        "ReadyJsonScalars": 0,
+        "ReadyJsonObjectKeys": 0,
+        "EstablishedJsonArrayPositions": 0,
+        "PendingJsonScalars": 0
+      },
+      "peakExecutionMemoryBytes": 603795,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}
