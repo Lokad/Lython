@@ -484,8 +484,12 @@ internal sealed partial class LythonRuntime
             if (iterator is PyIteration.Cursor cursor)
                 return CompleteForNext(cursor.TryMoveNext(), instruction);
             State.CheckInterpreterStack(instruction.Span);
-            return iterator is TextFileHandle file ? CompleteForNextLine(file.ReadLine(), instruction)
-                : CompleteForNext(((IPyIteratorValue)iterator).TryMoveNext(), instruction);
+            if (iterator is TextFileHandle file)
+            {
+                if (instruction.HasBufferedPrefixSearch && TrySkipFilePrefixMismatches(file, instruction)) return true;
+                return CompleteForNextLine(file.ReadLine(), instruction);
+            }
+            return CompleteForNext(((IPyIteratorValue)iterator).TryMoveNext(), instruction);
         }
 
         private bool CompleteForNext(PyIterationResult next, in ExecutableInstruction instruction)

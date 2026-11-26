@@ -33,6 +33,8 @@ public sealed class LythonMemoryBudget : ILythonMemoryBudget
     /// <inheritdoc />
     public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation) => _root.TryReserve(bytes, out reservation);
 
+    internal static bool IsDirectReservation(ILythonMemoryReservation reservation) => reservation is Reservation;
+
     private sealed class State(long? limit)
     {
         internal readonly System.Threading.Lock Gate = new();

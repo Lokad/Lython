@@ -57,6 +57,7 @@ internal sealed partial class LythonRuntime
                 State.CheckInterpreterStack(instruction.Span);
                 if (iterator is TextFileHandle file)
                 {
+                    if (instruction.HasBufferedPrefixSearch && TrySkipFilePrefixMismatches(file, instruction)) return new(true);
                     var line = file.ReadLineAsync(-1);
                     return line.IsCompleted ? new(CompleteForNextLine(line.GetAwaiter().GetResult(), instruction))
                         : AwaitForNextLineAsync(line, instruction);

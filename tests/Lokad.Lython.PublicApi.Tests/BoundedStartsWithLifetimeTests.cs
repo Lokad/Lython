@@ -111,4 +111,89 @@ print('written')
                 { LythonFailureReason.RecursionDepthLimit, LythonFailureReason.InterpreterStackLimit });
         }
     }
+
+    [Theory]
+    [InlineData("early", 1, "needle result\n")]
+    [InlineData("late", 8, "needle result\n")]
+    [InlineData("missing", 8, "last unterminated")]
+    [InlineData("missing-terminated", 8, "last terminated\n")]
+    [InlineData("rebound", 1, "special!\n")]
+    public async Task ProtectedPrefixSearchKeepsTheLastLineAndCloses(string shape, int expectedCount, string expectedLast)
+    {
+        const string source = """
+def wanted(line):
+    return line.startswith('needle')
+def alternate(line):
+    return line.endswith('!\n')
+if rebound:
+    wanted = alternate
+scanned = 0
+match = ''
+with open('input.txt') as source:
+    for line in source:
+        scanned += 1
+        if wanted(line):
+            match = line
+            break
+print(scanned, line == match)
+with open('report.txt', 'w', newline='') as output:
+    output.write(line)
+""";
+        var prefix = "short café\r\nsecond line\rthird line\n" + new string('x', 9000) + "\n"
+            + "after boundary\nnext discarded\nlast discarded\n";
+        var input = shape switch
+        {
+            "early" => "needle result\n" + prefix,
+            "late" => prefix + "needle result\r\nignored\n",
+            "missing" => prefix + "last unterminated",
+            "missing-terminated" => prefix + "last terminated\r\n",
+            _ => "special!\r\n" + prefix
+        };
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["rebound"] = shape == "rebound" } };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var immediate = asynchronous ? null : new MockLythonHost();
+            if (delayed is not null) delayed.SeedFile("/input.txt", input);
+            else immediate!.SeedFile("/input.txt", input);
+            using (var result = asynchronous ? await script.RunAsync(delayed!, options) : script.Run(immediate!, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal($"{expectedCount} {(shape.StartsWith("missing", StringComparison.Ordinal) ? "False" : "True")}\n", result.StandardOutput);
+                Assert.Equal(expectedLast, delayed?.ReadText("/report.txt") ?? immediate!.ReadText("/report.txt"));
+            }
+            Assert.Equal(2, delayed?.ClosedFileCount ?? immediate!.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+    }
+
+    [Fact]
+    public async Task CountingLoopUsesItsGlobalIncrement()
+    {
+        const string source = """
+STEP = 2
+def search(lines):
+    def wanted(line):
+        return line.startswith('needle')
+    scanned = 0
+    for line in lines:
+        scanned += STEP
+        if wanted(line):
+            break
+    return scanned
+print(search(['no','needle']))
+""";
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        using var sync = script.Run(new MockLythonHost());
+        using var asynchronous = await script.RunAsync(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.True(asynchronous.Success, asynchronous.Failure?.Message);
+        Assert.Equal("4\n", sync.StandardOutput);
+        Assert.Equal(sync.StandardOutput, asynchronous.StandardOutput);
+    }
 }

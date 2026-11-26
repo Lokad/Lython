@@ -248,6 +248,10 @@ internal sealed partial class LythonRuntime
 
             public PyString ReadLine() => ReadLine(-1);
 
+            internal ChunkedTextFileReadState? BufferedSearchReader(ExecutionState state)
+                => !IsClosed && ReferenceEquals(_services, state) && _state is ChunkedTextFileReadState { CanBatchPrefixSearch: true } reader
+                    ? reader : null;
+
             public PyString ReadLine(int size)
             {
                 EnsureOpen();

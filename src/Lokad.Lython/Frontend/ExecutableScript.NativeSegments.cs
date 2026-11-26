@@ -411,7 +411,36 @@ internal sealed partial class ExecutableCodeObject
             case ExecutableOpCode.Jump:
                 PrepareDictionaryLoop(index, tail.TargetIndex);
                 break;
+            case ExecutableOpCode.JumpIfFalse:
+                PrepareBufferedPrefixSearch(index, tail, sites);
+                break;
         }
+    }
+
+    private void PrepareBufferedPrefixSearch(int tailIndex, in ExecutableInstruction tail, ExecutableCallSite[] sites)
+    {
+        var headIndex = tail.TargetIndex;
+        if (headIndex != tailIndex - 5 || headIndex < 0 || RequiresLocalVariableMirroring) return;
+        ref readonly var head = ref Instructions[headIndex];
+        if (head.OpCode != ExecutableOpCode.ForNext || !head.HasResultConsumer) return;
+
+        ref readonly var line = ref Instructions[headIndex + 1];
+        ref readonly var increment = ref Instructions[headIndex + 2];
+        ref readonly var counter = ref Instructions[headIndex + 3];
+        ref readonly var call = ref Instructions[headIndex + 4];
+        if (line.OpCode != ExecutableOpCode.StoreLocal || counter.OpCode != ExecutableOpCode.StoreLocal ||
+            !IsUncapturedLocal(line.LocalSlot) || !IsUncapturedLocal(counter.LocalSlot) || line.LocalSlot == counter.LocalSlot ||
+            increment.OpCode != ExecutableOpCode.Augmented || increment.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add ||
+            increment.InputStart != counter.LocalSlot || (uint)~increment.SecondInput >= (uint)Constants.Length ||
+            Constants[~increment.SecondInput] is not BigInteger { IsOne: true } || !increment.HasResultConsumer ||
+            line.InputStart != head.ResultSlot || line.LiveExtent != head.ResultSlot || counter.InputStart != increment.ResultSlot ||
+            call is not { OpCode: ExecutableOpCode.Call, HasForwardedCallOperands: true, HasResultConsumer: false } ||
+            call.SecondInput != line.LocalSlot || !IsUncapturedLocal(call.InputStart) ||
+            call.InputStart == line.LocalSlot || call.InputStart == counter.LocalSlot || tail.InputStart != call.ResultSlot ||
+            sites[call.CallSiteIndex] is not { IsPositionalOnly: true, ArgumentCount: 1, HasReceiver: false, UnpackedReturnCount: 0 } ||
+            CrossesExceptionBoundary(headIndex, tailIndex)) return;
+
+        Instructions[headIndex] = head.WithBufferedPrefixSearch(counter.LocalSlot);
     }
 
     private void PrepareDictionaryUpdate(int index, in ExecutableInstruction store, ExecutableCallSite[] sites)

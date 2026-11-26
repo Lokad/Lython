@@ -395,6 +395,43 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
+            internal bool CanBatchPrefixSearch => _windowConsumed < _window.Length && !_reading && !_released &&
+                _services.MemoryGovernor.HasDirectAdmission;
+
+            internal int SkipBufferedPrefixMismatches(ReadOnlySpan<byte> prefix, out PyString last)
+            {
+                last = PyString.Empty;
+
+                var bytes = _window.Span;
+                var end = _windowConsumed;
+                var lastStart = end;
+                var count = 0;
+                while (end < bytes.Length)
+                {
+                    _services.CheckExecution(null);
+                    var next = TextLineScanning.FindLineEndByte(bytes, end, _newline);
+                    if (next == bytes.Length && !EndsWithTerminator() || bytes[end..next].StartsWith(prefix)) break;
+                    lastStart = end;
+                    end = next;
+                    count++;
+                }
+                if (count < 2) return 0;
+
+                // No host callback may run between reading the window and
+                // publishing the final live line and its loop bindings.
+                BeginRead();
+                var failed = true;
+                try
+                {
+                    last = CreateWindowValue(lastStart, end);
+                    Advance(end);
+                    _services.CheckExecution(null);
+                    failed = false;
+                    return count;
+                }
+                finally { EndRead(failed); }
+            }
+
             public void Release()
             {
                 if (_released) return;

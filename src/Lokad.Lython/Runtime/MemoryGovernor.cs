@@ -10,6 +10,7 @@ internal sealed class MemoryGovernor
     // through an uncharged window; estimates intentionally need only be safe.
     private readonly ILythonMemoryReservation _ownership;
     internal ILythonMemoryBudget Budget { get; }
+    internal bool HasDirectAdmission => LythonMemoryBudget.IsDirectReservation(_ownership);
     private WorkspaceCache _functionWorkspace;
     private Text.PyStringOps.CasedWhitespaceIteration? _idleWords;
     private bool _wordReuseEnded;

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1814 compiled prefix search](results/2026-11-26-compiled-prefix-search/README.md)
+moves fixed shape checks into emission and retains the late-match savings.
+The initial prototype's warm elapsed falls 49.40–54.41% for the late match
+and rises 2.46–3.03% for the early match. The delivery build fixes a compiler
+error on a forwarded global increment and retains the allocation savings.
+[The corrected repeat](results/2026-11-26-compiled-prefix-search/correction/README.md)
+confirms the late async gain and shows mixed early-match CPU.
+
 [B1813 buffered prefix search](results/2026-11-26-buffered-prefix-search/README.md)
 halves CLR allocation and reduces admitted peak by 78.15% for the late
 match. Local warm elapsed falls 43.66–56.31%. The early-match repeat is

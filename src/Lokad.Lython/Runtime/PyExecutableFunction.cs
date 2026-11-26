@@ -258,6 +258,17 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal bool TryStartIntegerOperandReturn(long argument, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
         => TryStartDirectOperandReturn(new LythonRuntime.SingleIntegerOperand(argument, _closureCells), span, out result);
 
+    internal PyString? ReadConstantPrefix(ExecutionState state)
+    {
+        var code = CodeObject;
+        return ReferenceEquals(Closure.State, state) && HasCompletePositionalSupply(1, null) &&
+            code.HasDirectOperandReturn && code.Instructions.Length == 4 &&
+            code.Instructions[0].OpCode == ExecutableOpCode.LoadCallMember &&
+            code.Names[code.Instructions[0].NameIndex] == "startswith" &&
+            code.Instructions[1].OpCode == ExecutableOpCode.LoadConst
+                ? code.Constants[code.Instructions[1].ConstantIndex] as PyString : null;
+    }
+
     private bool TryStartDirectOperandReturn<T>(T operands, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
         where T : LythonRuntime.IIntegerOperands, allows ref struct
     {

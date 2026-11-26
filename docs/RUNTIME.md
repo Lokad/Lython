@@ -226,6 +226,10 @@ commands for long streams.
 Shared byte-line scanning uses managed bulk searches, selecting newline mode once;
 CRLF/window holdback and scalar read limits stay with the caller.
 Readline, file iteration and native CSV input share the same window scanner.
+A counted search with an exact constant-prefix helper can group rejected lines
+in a decoded window when the loop bindings are private and admission cannot
+call the host. It publishes the final rejected line and updated count before
+the next ordinary pull.
 Executable loops borrow existing managed iterator values and share their
 position with `next()`. Exact text files publish lines directly and their
 existing owner closes the handle. Guest iteration protocols and owned CLR

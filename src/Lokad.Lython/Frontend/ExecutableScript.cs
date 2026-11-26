@@ -261,6 +261,10 @@ internal readonly record struct ExecutableInstruction
         ? _primaryOperand : throw InvalidOperand("BlockIndex");
     internal int DictionaryLoopCallIndex => OpCode == ExecutableOpCode.ForNextDictionaryAccumulation
         ? _secondaryOperand : throw InvalidOperand(nameof(DictionaryLoopCallIndex));
+    internal bool HasBufferedPrefixSearch => OpCode == ExecutableOpCode.ForNext && _secondaryOperand != int.MaxValue;
+    internal int BufferedPrefixCounterSlot => _secondaryOperand;
+    internal ExecutableInstruction WithBufferedPrefixSearch(int counterSlot)
+        => new(OpCode, Span, _primaryOperand, counterSlot, _inputStart, _resultSlot, _liveExtent);
     public int CallSiteIndex => ReadPrimaryOperand(ExecutableOpCode.Call, nameof(CallSiteIndex));
     public int CleanupId => OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand
         : ReadPrimaryOperand(ExecutableOpCode.ExitContextManager, nameof(CleanupId));
