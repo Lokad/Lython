@@ -1,5 +1,6 @@
 using System.Numerics;
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -21,6 +22,19 @@ internal sealed partial class LythonRuntime
         }
         ref readonly var first = ref code.Instructions[start];
         scope.CheckExecution(first.Span);
+        if (first.OpCode == ExecutableOpCode.LoadCallMember)
+        {
+            // The whole tape has already proved a constant string affix.
+            // An instance can still resolve the member through guest code.
+            if (operands.ReadLocal(first.InputStart).Reference is not PyString receiver) return false;
+            ref readonly var prefix = ref code.Instructions[1];
+            scope.CheckExecution(prefix.Span);
+            var call = code.CallSites[code.Instructions[2].CallSiteIndex];
+            value = ExecutableSlot.FromObject(InvokeStringAffix(receiver, code.Constants[prefix.ConstantIndex]!,
+                call.CallSpan, scope, code.Names[first.NameIndex] == "startswith"));
+            scope.CheckExecution(code.Instructions[3].Span);
+            return true;
+        }
         if (first.OpCode == ExecutableOpCode.Return)
         {
             // Return an existing value without creating a callee workspace.

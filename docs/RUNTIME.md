@@ -445,9 +445,10 @@ the expression. Their scope keeps the current binding for `locals()` snapshots,
 including during a custom iterator pull or suspended item operation. Capturing
 and nested bodies use their existing namespace scope.
 An eligible native call can return a bound operand, finish exact integer
-arithmetic or return a closed lexical definition before preparing callee
-workspace or a tuple-unpack destination. Both executable drivers use the same
-completion check. A literal or an operand from supplied arguments, prepared
+arithmetic, evaluate a literal affix on an exact string or return a closed
+lexical definition before preparing callee workspace or a tuple-unpack
+destination. Both executable drivers use the same completion check.
+A literal or an operand from supplied arguments, prepared
 defaults or live captures can pass straight to the caller with its alias
 intact. A Boolean condition can select either operand directly. Function-call
 and stack admission still apply. Wide arithmetic and guest protocols use the

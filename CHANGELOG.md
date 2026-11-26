@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Complete simple `startswith` and `endswith` helpers on exact strings without
+  a callee workspace. Preserve managed stack checks and guest method dispatch.
 - Check managed stack availability before a cursor advances a native iterator.
   Deep compositions report an interpreter stack limit in both hosting modes.
 - Reuse the UTF-8 backing of eligible constant regex subjects in analysis and

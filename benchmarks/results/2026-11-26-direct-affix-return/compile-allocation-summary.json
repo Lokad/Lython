@@ -1,0 +1,34 @@
+[
+  {
+    "case": "scripts.file-search.large",
+    "allocationBytes": [
+      46992,
+      46992
+    ],
+    "retainedAdmission": 63392
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      79800,
+      79800
+    ],
+    "retainedAdmission": 92127
+  },
+  {
+    "case": "diagnostic.file-search-dynamic-receiver.large",
+    "allocationBytes": [
+      67384,
+      67384
+    ],
+    "retainedAdmission": 75760
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      33080,
+      33080
+    ],
+    "retainedAdmission": 51392
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.file-search.large",
+    "allocationBytes": [
+      113368,
+      113368
+    ],
+    "peakAdmission": [
+      167072,
+      167072
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocationBytes": [
+      323080,
+      323080
+    ],
+    "peakAdmission": [
+      603795,
+      603795
+    ]
+  },
+  {
+    "case": "diagnostic.file-search-dynamic-receiver.large",
+    "allocationBytes": [
+      1075216,
+      1075216
+    ],
+    "peakAdmission": [
+      168637,
+      168637
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "allocationBytes": [
+      808528,
+      808528
+    ],
+    "peakAdmission": [
+      2270071,
+      2270071
+    ]
+  }
+]

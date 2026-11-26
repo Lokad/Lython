@@ -1,0 +1,42 @@
+{
+  "reference": {
+    "coreSHA256": "bfe6c693e4ad75993afdafee2d53b9bb474d4024ef3722a778ebe80a671796e2",
+    "outcomes": [
+      {
+        "receiver": "\u00e9\ud83d\ude00",
+        "direct": false,
+        "result": null
+      },
+      {
+        "receiver": "z\u00e9",
+        "direct": false,
+        "result": null
+      },
+      {
+        "receiver": null,
+        "direct": false,
+        "result": null
+      }
+    ]
+  },
+  "candidate": {
+    "coreSHA256": "0b3d2eb91b623fa93b0f754237c1b670e0b4b80ee5a99e8ed631631f72bca4aa",
+    "outcomes": [
+      {
+        "receiver": "\u00e9\ud83d\ude00",
+        "direct": true,
+        "result": true
+      },
+      {
+        "receiver": "z\u00e9",
+        "direct": true,
+        "result": false
+      },
+      {
+        "receiver": null,
+        "direct": false,
+        "result": null
+      }
+    ]
+  }
+}

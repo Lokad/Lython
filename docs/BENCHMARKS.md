@@ -113,6 +113,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Return exact string affixes without a callee workspace | Protected file search uses 19.12–25.06% less process CPU and 23.17–29.17% less elapsed through result in confirmation. | Memory matches. The file-fed control reverses between blocks. Unicode text uses 2.74–4.57% more CPU in confirmation. [B1746/B1747](../benchmarks/results/2026-11-26-direct-affix-return/README.md). |
 | Reuse compiled regex subjects | Both long literal cases allocate 16,496 B less during compilation. Two analysis preparations and one execution preparation share one 8,202 B backing. | Allocation diagnostic. Retained admission and three non-regex controls match. [B1740](../benchmarks/results/2026-11-25-compiled-regex-subject/README.md). |
 | Admit buffered CSV fields and dictionary together | In the reordered block, file-fed map uses 10.00–13.40% less warm async CPU and shipment uses 4.00–7.43% less. | Quoted invoice and plain reader timing span zero. The text control also moves, and peak admission matches. [B1738c](../benchmarks/results/2026-11-25-combined-csv-admission/confirmation/README.md). |
 | Forward comprehension bindings directly | The shipment callback report allocates 19,712 B less. Warm CPU falls 0.49–3.38% sync and 4.02–5.15% async. | Time through result falls 1.58–4.45%, with CPU spanning zero. File-fed map async CPU rises 1.20–4.39%. [B1737i](../benchmarks/results/2026-11-25-forwarded-comprehension-binding/isolation/README.md). |

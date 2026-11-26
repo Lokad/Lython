@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1746 and B1747 direct affix returns](results/2026-11-26-direct-affix-return/README.md)
+remove the native workspace for an exact string predicate. Protected search
+reaches its result 23.17–29.17% sooner in confirmation. The first file-fed
+control slowdown reverses. Unicode text CPU rises 2.74–4.57% in confirmation.
+Both blocks and the aborted image check remain with the evidence.
+
 [B1745 file-processing CPU profiles](results/2026-11-26-file-processing-profile/README.md)
 locate native helper workspace and dispatch alongside host I/O, line
 admission and compilation. The four-instruction search helper has five

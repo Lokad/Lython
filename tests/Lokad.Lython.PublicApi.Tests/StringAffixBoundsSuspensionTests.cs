@@ -4,6 +4,58 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class StringAffixBoundsSuspensionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClosedAffixHelperKeepsGuestMemberSuspension(bool cancel)
+    {
+        using var script = new LythonEngine().Compile("""
+            def starts(value): return value.startswith('é')
+            def ends(value): return value.endswith('😀')
+            class Receiver:
+                @property
+                def startswith(self):
+                    with open('receiver.txt', 'a') as output:
+                        output.write('bound')
+                    return lambda prefix: prefix + '-guest'
+            print(starts('é😀'), ends('é😀'), starts(Receiver()))
+            """);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/receiver.txt", "before:");
+        var entered = cancel ? host.PauseWriteUntilCancellation("/receiver.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }, cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10)));
+                Assert.True(budget.ReservedBytes > 0);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            if (cancel)
+            {
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("True True é-guest\n", result.StandardOutput);
+            }
+            Assert.Equal(cancel ? "before:" : "before:bound", host.ReadText("/receiver.txt"));
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static IEnumerable<object[]> Suspensions()
     {
         foreach (var method in new[] { "startswith", "endswith" })
