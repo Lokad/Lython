@@ -8,6 +8,8 @@
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Diagnostic. [B1849]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Diagnostic. [B1858]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Diagnostic. [B1858]. |
 | CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Historical. Inconclusive around parity. [B1844]. |
 | File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
@@ -16,6 +18,11 @@ B1849 measures `9cee6f423` on November 27, 2026 UTC with comparison host
 `05c1059de`. The first six rows use this revision. The earlier B1844
 checkpoint used `a1b3a3325` with the same comparison host. Historical
 rows retain their original revisions and dates. [B1849] · [B1844].
+
+B1858 measures `c665a179e` with the same comparison host on November 27,
+2026 UTC. It uses the optional signed PythonRe 0.5.0 adapter for the log
+searches. Both log scripts search each line and consume a capture. Their
+timings include the host file path, matching and result processing. [B1858].
 
 Wide async shipment overlaps its earlier range. Nested JSON runs at
 1.148–1.155× CPython, up from 1.094–1.114× in B1844. B1848 compared the
@@ -132,6 +139,9 @@ use `8aef89b09`.
 | --- | --- | ---: | ---: | ---: | --- |
 | Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.56833–0.56893 ms | 0.95428–0.95543 ms | 0.595–0.596× | Diagnostic. [B1849]. |
 | Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.76639–0.76762 ms | 1.12265–1.13974 ms | 0.672–0.684× | Diagnostic. [B1849]. |
+| Generated comprehension report, 96 rules / 20,988 B source | Compilation only | 1.92082–1.94344 ms | 2.74657–2.75148 ms | 0.698–0.708× | Diagnostic. [B1858]. |
+| Generated comprehension report, 96 rules / 20,988 B source | Compile-to-result | 2.37403–2.38947 ms | 2.85875–2.89189 ms | 0.821–0.836× | Diagnostic. [B1858]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | Compile-to-result | 3.47070–3.54680 ms | 1.01756–1.06519 ms | 3.258–3.486× | Diagnostic. [B1858]. |
 | Generated guarded report, 96 rules / 24,587 B source | Compilation only | 1.07349–1.09714 ms | 1.86806–1.88237 ms | 0.570–0.587× | Historical diagnostic. [B1844]. |
 | Generated guarded report, 96 rules / 24,587 B source | Compile-to-result | 1.12661–1.13546 ms | 1.92108–1.92126 ms | 0.586–0.591× | Historical diagnostic. [B1844]. |
 | Five-item `starmap` shipment report | Compile-to-result | 2.39930–2.44152 ms | 2.14403–2.14737 ms | 1.117–1.139× | Historical diagnostic. [B1823]. |
@@ -323,5 +333,6 @@ document reproduction.
 [B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md
 
 [B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
+[B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md
 [B1844]: ../benchmarks/results/2026-11-27-post-csv-json-cpython/README.md
 [B1834]: ../benchmarks/results/2026-11-27-current-cpython/README.md

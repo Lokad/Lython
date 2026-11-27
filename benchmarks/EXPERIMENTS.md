@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1858 compare the shipped adapter and compiler with CPython](results/2026-11-27-compiler-regex-cpython/README.md)
+measures the `c665a179e` image with PythonRe 0.5.0. Warm compiled and
+module log searches take 3.286–3.458× and 2.345–2.416× CPython elapsed.
+The generated report takes 0.698–0.708× for compilation and 0.821–0.836×
+through result. All 140 batches verify.
+
 [B1856 reuse the comprehension binding proof](results/2026-11-27-comprehension-assignments/README.md)
 removes repeated outward-assignment scans for comprehensions with none.
 The generated report allocates 75,264 B less during compilation and

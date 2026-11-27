@@ -1,0 +1,26 @@
+{
+  "scripts.regex-log-search.compiled": {
+    "inputs": [
+      {
+        "name": "events.log",
+        "bytes": 86954,
+        "records": 3072
+      }
+    ],
+    "sourceBytes": 345
+  },
+  "diagnostic.generated-comprehension-report": {
+    "inputs": [],
+    "sourceBytes": 20988
+  },
+  "scripts.regex-log-search.module": {
+    "inputs": [
+      {
+        "name": "events.log",
+        "bytes": 86954,
+        "records": 3072
+      }
+    ],
+    "sourceBytes": 318
+  }
+}
