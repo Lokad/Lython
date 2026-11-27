@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Share the CSV writer row loop with `DictWriter` and validate eligible native
+  row keys against live field names without constructing temporary sets.
 - Share the admitted iterable reader between starred calls and `starmap`.
   Preserve expansion order and aliases through suspended generator pulls.
 - Collect arbitrary `starmap` rows into one admitted argument buffer.

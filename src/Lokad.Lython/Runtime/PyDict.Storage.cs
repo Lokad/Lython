@@ -358,6 +358,30 @@ internal sealed partial class PyDict
 
     internal bool SupportsNativeStringReads => _nativeItems is not null && !HasProtocolKeys;
 
+    internal bool TryHasExtraStringKeys(IPySequenceValue fields, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, out bool hasExtra)
+    {
+        hasExtra = false;
+        context.CheckExecution(span);
+        if (!SupportsNativeStringReads || NativeExtent > 64) return false;
+
+        // Prove both operands are protocol-free. The mask counts live dictionary
+        // slots once even when field names repeat or appear in a different order.
+        for (var i = 0; i < NativeExtent; i++)
+            if (IsNativeLive(i) && _nativeItems![i].Key is not PyString) return false;
+
+        ulong matched = 0;
+        for (var i = 0; i < fields.Count; i++)
+        {
+            context.CheckExecution(span);
+            if (fields[i] is not PyString field) return false;
+            var index = FindNativeIndex(field, HashNativeString(field, context, span), context, span);
+            if (index >= 0) matched |= 1UL << index;
+        }
+        hasExtra = BitOperations.PopCount(matched) != _nativeCount;
+        return true;
+    }
+
     internal bool SupportsBorrowedTextKeys => _recordKeys is null && _nativeValues is not null && SupportsNativeStringReads;
 
     internal object ReadBorrowedTextKey(ReadOnlySpan<byte> key, object fallback,

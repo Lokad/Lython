@@ -1,0 +1,175 @@
+{
+  "timedBatches": 112,
+  "quietQualified": false,
+  "collectionSeconds": 139.55744907900043,
+  "rows": [
+    {
+      "case": "diagnostic.shipment-file-fed-map",
+      "lane": "warm-async",
+      "percentChange": {
+        "elapsed": [
+          -4.991083908562333,
+          4.896636882678851
+        ],
+        "cpu": [
+          -4.697336561743349,
+          4.25929505767122
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          0.7377043829983831,
+          9.598636455368004
+        ],
+        "cpu": [
+          0.3224206349206282,
+          9.046503184923594
+        ]
+      },
+      "medianUs": {
+        "candidate": {
+          "elapsed": 512.9996698240866,
+          "cpu": 541.2719891745602
+        },
+        "reference": {
+          "elapsed": 492.6603046875,
+          "cpu": 520.8333333333334
+        },
+        "candidate-control": {
+          "elapsed": 468.07121549636804,
+          "cpu": 496.3680387409201
+        },
+        "reference-control": {
+          "elapsed": 489.05254264524103,
+          "cpu": 519.159456118665
+        }
+      }
+    },
+    {
+      "case": "diagnostic.shipment-dictwriter-report",
+      "lane": "warm-async",
+      "percentChange": {
+        "elapsed": [
+          -54.74222138460296,
+          -49.0755387995746
+        ],
+        "cpu": [
+          -52.85714285714286,
+          -47.928994082840234
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          6.171732023454224,
+          5.980095558379261
+        ],
+        "cpu": [
+          6.666666666666665,
+          3.5502958579881616
+        ]
+      },
+      "medianUs": {
+        "reference-control": {
+          "elapsed": 5275.99644,
+          "cpu": 5333.333333333333
+        },
+        "candidate-control": {
+          "elapsed": 2387.7987885714288,
+          "cpu": 2514.285714285714
+        },
+        "reference": {
+          "elapsed": 4969.304295454545,
+          "cpu": 5000.0
+        },
+        "candidate": {
+          "elapsed": 2530.5914378698226,
+          "cpu": 2603.550295857988
+        }
+      }
+    },
+    {
+      "case": "diagnostic.shipment-writer-report-control",
+      "lane": "warm-async",
+      "percentChange": {
+        "elapsed": [
+          0.6744036662466257,
+          2.7337556808306296
+        ],
+        "cpu": [
+          0.4444444444444473,
+          1.3725490196078605
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          0.7495344147370631,
+          1.286380426431566
+        ],
+        "cpu": [
+          0.9239979177511737,
+          0.0
+        ]
+      },
+      "medianUs": {
+        "candidate": {
+          "elapsed": 1441.6766488888888,
+          "cpu": 1466.6666666666667
+        },
+        "reference": {
+          "elapsed": 1413.8318042553192,
+          "cpu": 1446.8085106382978
+        },
+        "candidate-control": {
+          "elapsed": 1423.3667377777779,
+          "cpu": 1466.6666666666667
+        },
+        "reference-control": {
+          "elapsed": 1403.3134867256638,
+          "cpu": 1460.1769911504425
+        }
+      }
+    },
+    {
+      "case": "diagnostic.shipment-dictwriter-report",
+      "lane": "warm",
+      "percentChange": {
+        "elapsed": [
+          -55.931711709417,
+          -53.71372913572271
+        ],
+        "cpu": [
+          -55.11106540518305,
+          -52.81582952815831
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          4.71132656632165,
+          0.3072557577249224
+        ],
+        "cpu": [
+          4.161893852615495,
+          0.9132420091324089
+        ]
+      },
+      "medianUs": {
+        "reference-control": {
+          "elapsed": 4244.037532258064,
+          "cpu": 4354.8387096774195
+        },
+        "candidate-control": {
+          "elapsed": 1964.406707762557,
+          "cpu": 2054.794520547945
+        },
+        "reference": {
+          "elapsed": 4443.988,
+          "cpu": 4536.082474226804
+        },
+        "candidate": {
+          "elapsed": 1958.389443438914,
+          "cpu": 2036.1990950226245
+        }
+      }
+    }
+  ]
+}

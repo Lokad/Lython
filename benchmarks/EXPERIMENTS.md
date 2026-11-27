@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1868 validate CSV fields in native dictionary slots](results/2026-11-27-csv-dictwriter-native-validation/README.md)
+removes the keys view and three temporary sets from eligible dictionary rows.
+The report allocates 56.50–56.99% less and its admitted peak falls 65.82%.
+Local CPU falls 52.82–55.11% sync and 47.93–52.86% async. The unchanged
+plain writer takes 0.67–2.73% longer locally. File-fed timing spans zero.
+
 [B1867 share the CSV output row loop](results/2026-11-27-csv-dictwriter-row-loop/README.md)
 removes the async iterator that staged `DictWriter` fields. The full dictionary
 report uses 9.39–9.49% less CLR allocation at the same admitted peak. The local

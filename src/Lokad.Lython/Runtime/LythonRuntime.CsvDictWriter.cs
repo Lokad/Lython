@@ -55,14 +55,19 @@ internal sealed partial class LythonRuntime
                 : EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, writer.ExtrasAction, PyString.FromString("raise"), context, span);
             if (asynchronous ? await IsTruthyAsync(action, context, span).ConfigureAwait(false) : IsTruthy(action, context, span))
             {
-                var member = asynchronous ? await PyTextStream.ResolveMemberAsync(row, "keys", span, context).ConfigureAwait(false)
-                    : PyTextStream.ResolveMember(row, "keys", span, context);
-                var keys = asynchronous ? await InvokeCallableTargetAsync(member, span, span, context, Array.Empty<CallArgumentValue>()).ConfigureAwait(false)
-                    : InvokeCallableTarget(member, span, span, context, Array.Empty<CallArgumentValue>());
-                var wrong = asynchronous
-                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Subtract, keys, writer.FieldNames, context, span).ConfigureAwait(false)
-                    : EvaluateBinaryOperator(BinaryOperatorSyntax.Subtract, keys, writer.FieldNames, context, span);
-                if (asynchronous ? await IsTruthyAsync(wrong, context, span).ConfigureAwait(false) : IsTruthy(wrong, context, span))
+                if (row is not PyDict dictionary || writer.FieldNames is not IPySequenceValue fields ||
+                    fields is not (PyList or PyTuple) || !dictionary.TryHasExtraStringKeys(fields, context, span, out var hasExtra))
+                {
+                    var member = asynchronous ? await PyTextStream.ResolveMemberAsync(row, "keys", span, context).ConfigureAwait(false)
+                        : PyTextStream.ResolveMember(row, "keys", span, context);
+                    var keys = asynchronous ? await InvokeCallableTargetAsync(member, span, span, context, Array.Empty<CallArgumentValue>()).ConfigureAwait(false)
+                        : InvokeCallableTarget(member, span, span, context, Array.Empty<CallArgumentValue>());
+                    var wrong = asynchronous
+                        ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Subtract, keys, writer.FieldNames, context, span).ConfigureAwait(false)
+                        : EvaluateBinaryOperator(BinaryOperatorSyntax.Subtract, keys, writer.FieldNames, context, span);
+                    hasExtra = asynchronous ? await IsTruthyAsync(wrong, context, span).ConfigureAwait(false) : IsTruthy(wrong, context, span);
+                }
+                if (hasExtra)
                     throw new LythonRuntimeException("ValueError", "dict contains fields not in fieldnames", span);
             }
         }

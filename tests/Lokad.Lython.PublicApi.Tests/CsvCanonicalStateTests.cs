@@ -53,6 +53,41 @@ public sealed class CsvCanonicalStateTests
         yield return new object[] { "nonstring-fieldnames", "import csv\nr=csv.DictReader(['1,2'],fieldnames=[10,20])\nprint(next(r))", "{10: '1', 20: '2'}\n" };
         yield return new object[] { "set-fieldnames", "import csv\nr=csv.DictReader(['1,2'],fieldnames=['a'])\nr.fieldnames=['x','y']\nprint(next(r))", "{'x': '1', 'y': '2'}\n" };
         yield return new object[] { "dictwriter-fieldnames-alias", "import csv,io\nfields=['a']\ns=io.StringIO()\nw=csv.DictWriter(s,fields,lineterminator='\\n')\nprint(w.fieldnames is fields)\nfields.append('b')\nw.writerow({'a':'1','b':'2'})\nprint(repr(s.getvalue()))", "True\n'1,2\\n'\n" };
+        yield return ["dictwriter-live-key-coverage", """
+            import csv, io
+            row = next(csv.DictReader(['é,a,b', '1,2,3']))
+            del row['a']
+            fields = ['b', 'b', 'é', 'missing']
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fields, restval='?', lineterminator='\n')
+            writer.writerow(row)
+            fields[2] = 'b'
+            try:
+                writer.writerow(row)
+            except ValueError:
+                print('extra')
+            fields[2] = 'é'
+            fields[3] = []
+            try:
+                writer.writerow(row)
+            except TypeError:
+                print('unhashable field')
+            print(repr(output.getvalue()))
+            """, "extra\nunhashable field\n'3,3,1,?\\n'\n"];
+        yield return ["dictwriter-wide-key-coverage", """
+            import csv, io
+            for width in (64, 65):
+                fields = [str(i) for i in range(width)]
+                row = {key: 'x' for key in fields}
+                output = io.StringIO()
+                writer = csv.DictWriter(output, fields, lineterminator='\n')
+                writer.writerow(row)
+                fields[-1] = fields[0]
+                try:
+                    writer.writerow(row)
+                except ValueError:
+                    print(width, len(output.getvalue()))
+            """, "64 128\n65 130\n"];
         yield return new object[] { "none-quotechar", "import csv\nprint(list(csv.reader(['a,\"b\"'],quotechar=None)))", "[['a', '\"b\"']]\n" };
         yield return new object[] { "none-delimiter", "import csv\ntry:csv.reader(['a,b'],delimiter=None)\nexcept TypeError:print('TypeError')\nelse:print('accepted')", "TypeError\n" };
         yield return new object[] { "none-lineterminator", "import csv,io\ntry:csv.writer(io.StringIO(),lineterminator=None)\nexcept TypeError:print('TypeError')\nelse:print('accepted')", "TypeError\n" };
