@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1817 iterable starmap arguments](results/2026-11-27-starmap-iterable-arguments/README.md)
+uses the expanded-call accumulator in both APIs. Sync allocation falls
+by 32,768 bytes in either CSV script, while async allocation rises 4.53–5.19%
+at matching admitted peaks. Timing is inconclusive and the exact-list
+control has wide spread. Keep the trial private.
+
 [B1816 short file-script CPU attribution](results/2026-11-27-current-short-script-profile/README.md)
 finds 257–285 samples under file acquisition across three six-second
 captures. Most have unresolved kernel leaves. Builtin table creation has

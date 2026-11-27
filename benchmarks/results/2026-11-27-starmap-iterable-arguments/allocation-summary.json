@@ -1,0 +1,74 @@
+[
+  {
+    "case": "diagnostic.starmap-iterable-map",
+    "mode": "sync",
+    "clr": [
+      2300126,
+      2267358
+    ],
+    "peak": [
+      1863254,
+      1863254
+    ]
+  },
+  {
+    "case": "diagnostic.starmap-iterable-generator",
+    "mode": "sync",
+    "clr": [
+      2021416,
+      1988648
+    ],
+    "peak": [
+      2354774,
+      2354774
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "sync",
+    "clr": [
+      1358936,
+      1359110
+    ],
+    "peak": [
+      3795557,
+      3795557
+    ]
+  },
+  {
+    "case": "diagnostic.starmap-iterable-map",
+    "mode": "async",
+    "clr": [
+      2169104,
+      2267344
+    ],
+    "peak": [
+      1863254,
+      1863254
+    ]
+  },
+  {
+    "case": "diagnostic.starmap-iterable-generator",
+    "mode": "async",
+    "clr": [
+      1890734,
+      1988808
+    ],
+    "peak": [
+      2354774,
+      2354774
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "async",
+    "clr": [
+      1359120,
+      1359120
+    ],
+    "peak": [
+      3795557,
+      3795557
+    ]
+  }
+]

@@ -2,9 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N09: materialization results carry an explicit reservation lifetime.
-// Starmap sync/async share admission and cancellation; the async element
-// list stays leased beside the argument array and callback.
+// Starmap keeps its arguments admitted through pending iteration and callbacks.
 public sealed class StarmapMaterializationParityTests
 {
     private static LythonRunOptions Tiny() => new()
@@ -66,6 +64,58 @@ public sealed class StarmapMaterializationParityTests
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IterableRowSurvivesPendingSourceAndCallback(bool cancel)
+    {
+        const string source = """
+            from itertools import starmap
+            def arguments():
+                yield marker
+                with open('input.txt') as source:
+                    for line in source:
+                        yield line.strip()
+            def consume(value, first, second):
+                with open('pause') as source:
+                    source.read()
+                print(value is marker, first, second)
+            marker = []
+            next(starmap(consume, [arguments()]))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/input.txt", "first\nsecond\n");
+        host.SeedFile("/pause", "data");
+        using var cancellation = new CancellationTokenSource();
+        var started = cancel ? host.PauseReadUntilCancellation("/pause") : null;
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }, cancellation.Token);
+        try
+        {
+            if (started is not null)
+            {
+                await started.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.Equal(1, host.ClosedFileCount);
+                Assert.True(budget.ReservedBytes > 0);
+                cancellation.Cancel();
+            }
+            using var result = await pending;
+            Assert.Equal(!cancel, result.Success);
+            Assert.Equal(cancel ? "" : "True first second\n", result.StandardOutput);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending;
+        }
+        Assert.Equal(2, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
