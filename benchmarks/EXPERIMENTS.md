@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1886 attribute current log search](results/2026-11-27-log-search-profile/README.md)
+reuses the B1885 image. The producer accounts for about 25–27% of
+sampled managed stack time and the adapter 7–10%. Module search also
+reaches an ordinary binding array per call. All 57 profiled batches
+verify. Test removing the binding array before choosing another backend
+change.
+
 [B1885 compare current log searches with CPython](results/2026-11-27-wsl-log-cpython/README.md)
 measures warm compiled search at 2.576–2.629× CPython elapsed and warm
 module search at 1.900–1.961×. Module compile-to-result takes
