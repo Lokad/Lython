@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1825 preserve JSON key layouts across empty objects](results/2026-11-27-json-empty-record-layout/README.md)
+avoids rebuilding the next matching record's key table. Sparse document and
+Lines allocation fall 18.57–18.59% and 20.77–20.79%, respectively. Sparse warm
+sync document CPU falls 10.98–18.86% in the pinned repeat. The adverse dense
+document observation and the variable repeat leave dense timing unresolved.
+
 [B1824 reuse short escaped JSON names](results/2026-11-27-json-escaped-name-reuse/README.md)
 uses stack scratch to look up the admitted key before creating a string.
 Localized document and Lines allocation fall about 31% and 34% at matching

@@ -1,0 +1,14 @@
+[
+  {
+    "case": "diagnostic.json-service-sparse-records",
+    "dataRecords": 2048,
+    "emptyObjects": 512,
+    "inputBytes": 80291
+  },
+  {
+    "case": "diagnostic.json-lines-sparse-records",
+    "dataRecords": 4096,
+    "emptyObjects": 1024,
+    "inputBytes": 113664
+  }
+]

@@ -2166,7 +2166,8 @@ Final containers retain their ordinary storage and admission; callbacks use the
 same awaited path, including reentrant parsing and preserved property-name snapshots.
 Short escaped property names use bounded stack scratch for lookup in the
 current record layout. A hit reuses the admitted key. A miss admits a new
-UTF-8 value before allocation.
+UTF-8 value before allocation. Empty objects leave the last usable key layout
+available for later records in the same execution.
 Default objects admit their shell and first native table together when the initial
 property token is a quote, starting one four-entry block for the unknown width.
 Empty objects and invalid initial property tokens use

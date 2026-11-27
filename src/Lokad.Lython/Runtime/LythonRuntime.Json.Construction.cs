@@ -143,8 +143,12 @@ internal sealed partial class LythonRuntime
                 if (position < bytes.Length && bytes[position] == (frame.IsObject ? (byte)'}' : (byte)']'))
                 {
                     if (frame.IsObject)
-                        context.State.JsonRecordLayout = frame.Result is PyDict dictionary
-                            ? (dictionary.ShareRecordKeys(context, span), frame.PlainNames) : frame.Expected;
+                    {
+                        if (frame.Result is not PyDict dictionary)
+                            context.State.JsonRecordLayout = frame.Expected;
+                        else if (dictionary.ShareRecordKeys(context, span) is { } keys)
+                            context.State.JsonRecordLayout = (keys, frame.PlainNames);
+                    }
                     var value = frame.Result;
                     var end = position + 1;
                     var hook = frame.IsObject ? options.ObjectPairsHook ?? options.ObjectHook : null;

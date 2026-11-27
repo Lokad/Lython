@@ -60,17 +60,20 @@ public sealed class JsonPropertyNameStorageTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = budget });
         var code = ExecutableScript.Compile(LythonFrontend.Compile(
             "import json\nreturn json.loads(source)", regexProvider: Utf8RegexProvider.Instance).Script!);
-        var bytes = Encoding.UTF8.GetBytes("""[{"alpha":1},{"\u0061lpha":2},{"café😀":3},{"caf\u00e9\ud83d\ude00":4},{"":5},{"":6}]""");
+        var bytes = Encoding.UTF8.GetBytes("""[{"alpha":1},{"\u0061lpha":2},{"café😀":3},{"caf\u00e9\ud83d\ude00":4},{},{"café😀":5},{"":6},{"":7}]""");
         context.Variables["source"] = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, null);
         async Task<PyList> Read() => Assert.IsType<PyList>(asynchronous
             ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
             : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
         var first = await Read();
         var dictionaries = first.Select(item => Assert.IsType<PyDict>(item)).ToArray();
-        var keys = dictionaries.Select(dict => Assert.IsType<PyString>(dict.Items.Single().Key)).ToArray();
+        var keys = dictionaries.Where(dict => dict.Count != 0)
+            .Select(dict => Assert.IsType<PyString>(dict.Items.Single().Key)).ToArray();
         Assert.Same(keys[0], keys[1]);
         Assert.Same(keys[2], keys[3]);
-        Assert.Same(keys[4], keys[5]);
+        Assert.Empty(dictionaries[4].Items);
+        Assert.Same(keys[3], keys[4]);
+        Assert.Same(keys[5], keys[6]);
         Assert.NotSame(dictionaries[0], dictionaries[1]);
         dictionaries[0].SetItem(keys[0], PyNone.Instance);
         Assert.NotSame(PyNone.Instance, dictionaries[1].Items.Single().Value);

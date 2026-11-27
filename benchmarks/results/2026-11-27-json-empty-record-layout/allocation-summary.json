@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "mode": "sync",
+    "clr": [
+      815416,
+      815584
+    ],
+    "peak": [
+      1806411,
+      1806411
+    ],
+    "compiled": [
+      66272,
+      66272
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "mode": "sync",
+    "clr": [
+      1370432,
+      1370598
+    ],
+    "peak": [
+      3297534,
+      3297534
+    ],
+    "compiled": [
+      91312,
+      91312
+    ]
+  },
+  {
+    "case": "diagnostic.json-service-sparse-records",
+    "mode": "sync",
+    "clr": [
+      1122270,
+      913608
+    ],
+    "peak": [
+      2485020,
+      2068555
+    ],
+    "compiled": [
+      70400,
+      70400
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-sparse-records",
+    "mode": "sync",
+    "clr": [
+      2008976,
+      1591248
+    ],
+    "peak": [
+      4456905,
+      3628275
+    ],
+    "compiled": [
+      96496,
+      96496
+    ]
+  },
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "mode": "async",
+    "clr": [
+      815800,
+      815800
+    ],
+    "peak": [
+      1806411,
+      1806411
+    ],
+    "compiled": [
+      66272,
+      66272
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "mode": "async",
+    "clr": [
+      1371088,
+      1371144
+    ],
+    "peak": [
+      3297534,
+      3297534
+    ],
+    "compiled": [
+      91312,
+      91312
+    ]
+  },
+  {
+    "case": "diagnostic.json-service-sparse-records",
+    "mode": "async",
+    "clr": [
+      1122654,
+      914166
+    ],
+    "peak": [
+      2485020,
+      2068555
+    ],
+    "compiled": [
+      70400,
+      70400
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-sparse-records",
+    "mode": "async",
+    "clr": [
+      2009612,
+      1592312
+    ],
+    "peak": [
+      4456905,
+      3628275
+    ],
+    "compiled": [
+      96496,
+      96496
+    ]
+  }
+]
