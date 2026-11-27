@@ -1,0 +1,198 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "codeObjects": 99,
+    "instructions": 1165,
+    "machineTableEntries": 99,
+    "peak": [
+      889975,
+      889975
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 10,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "codeObjects": 4,
+    "instructions": 56,
+    "machineTableEntries": 8,
+    "peak": [
+      74495,
+      74495
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 9,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "codeObjects": 3,
+    "instructions": 145,
+    "machineTableEntries": 7,
+    "peak": [
+      150624,
+      150624
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 5,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "scripts.file-search.large",
+    "codeObjects": 2,
+    "instructions": 57,
+    "machineTableEntries": 2,
+    "peak": [
+      63536,
+      63536
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 3,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "capture-after-literal",
+    "codeObjects": 3,
+    "instructions": 24,
+    "machineTableEntries": 2,
+    "peak": [
+      46304,
+      46304
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 7,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "capture-snapshot-overlap",
+    "codeObjects": 3,
+    "instructions": 18,
+    "machineTableEntries": 2,
+    "peak": [
+      44844,
+      44844
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 7,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "signed-constant-boundaries",
+    "codeObjects": 3,
+    "instructions": 24,
+    "machineTableEntries": 3,
+    "peak": [
+      54336,
+      54336
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 4,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "declaration-in-default",
+    "codeObjects": 4,
+    "instructions": 23,
+    "machineTableEntries": 3,
+    "peak": [
+      47976,
+      47976
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 9,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "declaration-kinds",
+    "codeObjects": 6,
+    "instructions": 51,
+    "machineTableEntries": 2,
+    "peak": [
+      58646,
+      58646
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 9,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "deferral-through-layout",
+    "codeObjects": 5,
+    "instructions": 51,
+    "machineTableEntries": 21,
+    "peak": [
+      88410,
+      88410
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 8,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "return-forwarded-local",
+    "codeObjects": 6,
+    "instructions": 54,
+    "machineTableEntries": 21,
+    "peak": [
+      93333,
+      93333
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 9,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "rebound-definition",
+    "codeObjects": 5,
+    "instructions": 51,
+    "machineTableEntries": 21,
+    "peak": [
+      89466,
+      89466
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 8,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "explicit-read-before-forwarding",
+    "codeObjects": 5,
+    "instructions": 52,
+    "machineTableEntries": 21,
+    "peak": [
+      90234,
+      90234
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 8,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  },
+  {
+    "case": "scope-not-eligible",
+    "codeObjects": 5,
+    "instructions": 49,
+    "machineTableEntries": 21,
+    "peak": [
+      88794,
+      88794
+    ],
+    "sameAdmissionOrder": true,
+    "pressureTests": 8,
+    "sameFirstRefusal": true,
+    "differingRefusals": []
+  }
+]

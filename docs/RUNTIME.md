@@ -461,7 +461,8 @@ pair likewise refunds its unpublished functions, private cells and capture
 arrays before a catchable failure returns to its caller. Shared module
 storage keeps its existing owner.
 In eligible straight-line functions, the lexical workspace can hold a write-only
-definition's evaluated defaults before constructing the callable. General calls
+definition's evaluated defaults before constructing the callable. Operand layout
+checks those bindings before forwarding can erase reads. General calls
 and frame handoff materialize pending definitions before exposing local bindings.
 Private defaults and the prepaid callable charge return when a pending definition
 retires unpublished. When the positional tuple belongs to compilation, the

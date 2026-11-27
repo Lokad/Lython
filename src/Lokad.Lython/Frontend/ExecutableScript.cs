@@ -623,10 +623,8 @@ internal sealed partial class ExecutableCodeObject
         // forms use this layout, including at a dynamic-operation transition.
         var regionsByEntry = exceptionRegions.Count == 0 ? [] :
             exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
-        var deferredCandidates = IsFunctionScope && !RequiresLocalVariableMirroring && regionsByEntry.Length == 0 && blocks.Count == 1
-            ? FindDeferredDefinitionLocals(blocks[0], cancellationToken) : null;
         var operandLayout = ExecutableStackLayout.Prepare(this, blocks, callSites,
-            regionsByEntry, entryBlockIndex, initialOperandDepth, cancellationToken);
+            regionsByEntry, entryBlockIndex, initialOperandDepth, cancellationToken, out var deferredCandidates);
         OperandCapacity = operandLayout.MaximumDepth;
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);

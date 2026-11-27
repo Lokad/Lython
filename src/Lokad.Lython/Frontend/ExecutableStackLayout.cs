@@ -357,7 +357,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
 
     internal static ExecutableStackLayout Prepare(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
         ExecutableCallSite[] calls, ExecutableExceptionRegion[] regions,
-        int entryBlock, int initialDepth, CancellationToken token)
+        int entryBlock, int initialDepth, CancellationToken token, out int[]? deferredCandidates)
     {
         if (initialDepth < 0 || (uint)entryBlock >= (uint)blocks.Count)
             throw new InvalidOperationException("Invalid executable entry operand depth.");
@@ -366,6 +366,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         var firstTemporarySlot = code.FirstTemporarySlot;
         var canForwardReturn = code.IsFunctionScope && code.UsesOnlyLexicalSlots &&
             !code.RequiresLocalVariableMirroring && regions.Length == 0;
+        // Deferred definitions need one already array-backed lexical block.
+        // Observe its original instructions before forwarding erases reads.
+        deferredCandidates = canForwardReturn && blocks.Count == 1 &&
+            firstTemporarySlot > LythonRuntime.NativeValueCapacity &&
+            code.CapturedLocalSlots.Count == 0 && code.ClosureNames.Count == 0
+                ? new int[firstTemporarySlot] : null;
+        var previousDefinition = 0;
         List<OperandRead> reads = [];
         Queue<int>? pending = null;
         var maximum = initialDepth;
@@ -396,6 +403,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             {
                 PythonTokenization.CheckCancellation(token, index);
                 var instruction = instructions[index];
+                if (deferredCandidates is not null &&
+                    !code.TrackDeferredDefinition(in instruction, deferredCandidates, ref previousDefinition))
+                    deferredCandidates = null;
                 if (instruction.OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or
                     ExecutableOpCode.LoadClosure or ExecutableOpCode.LoadLocal)
                 {
@@ -442,6 +452,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     {
                         // This private assignment has no user after the read.
                         // The existing return consumes the evaluated operand.
+                        // Deferral still needs to account for the original read.
+                        if (deferredCandidates is not null) deferredCandidates[instruction.LocalSlot] = -1;
                         index++;
                         continue;
                     }

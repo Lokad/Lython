@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1826 collect deferred bindings during operand layout](results/2026-11-27-deferred-proof-layout/README.md)
+removes a separate pass over the original tape. Fourteen fixtures preserve
+their tapes and deferred sites, and 104 budget levels preserve diagnostics and
+admission behavior. Compile-only timing spans zero. The escaping-rules control
+moves substantially in the through-result comparison, leaving CPU impact open.
+
 [B1825 preserve JSON key layouts across empty objects](results/2026-11-27-json-empty-record-layout/README.md)
 avoids rebuilding the next matching record's key table. Sparse document and
 Lines allocation fall 18.57–18.59% and 20.77–20.79%, respectively. Sparse warm
