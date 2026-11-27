@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1896 compare current scripts on the quiet VM](results/2026-11-27-current-quiet-cpython/README.md)
+measures `36ed51e1b` against CPython 3.13.16. Async iterable shipment takes
+1.315–1.373× CPython elapsed, the nested document 1.090–1.133× and file-fed
+map 0.292–0.295×. The configuration edit takes 0.760–0.778× through result.
+All four goldens, 168 batches and both machine gates pass. The separate
+same-image WSL profile verifies 764 batches and locates 63.5% of resolved
+shipment samples under generator advancement, including guest work.
+
 [B1895 confirm generator-expression timing on the quiet VM](results/2026-11-27-generator-outer-quiet/README.md)
 reverses the adverse B1893 sync CPU result on the exact original images.
 The reduction uses 6.27–6.79% less CPU sync and 1.61–4.71% less async.

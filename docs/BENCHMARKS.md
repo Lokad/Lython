@@ -2,17 +2,19 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.63059–2.67883 ms | 1.95137–2.00121 ms | 1.315–1.373× | Quiet VM diagnostic. [B1896]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.74922–0.76740 ms | 0.67741–0.68762 ms | 1.090–1.133× | Quiet VM diagnostic. [B1896]. |
+| File-fed CSV quantity map | 2,048 records / 27,350 B | 0.39860–0.40201 ms | 1.36269–1.36308 ms | 0.292–0.295× | Quiet VM diagnostic. [B1896]. |
+| Configuration edit | 181 B input | 0.06942–0.06975 ms | 0.06181–0.06207 ms | 1.118–1.129× | Quiet VM diagnostic. [B1896]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 6.59418–7.32776 ms | 5.96587–6.06126 ms | 1.088–1.228× | Local WSL diagnostic. [B1881]. |
 | Five-item `starmap` shipment report | 2,048 records / 27,350 B | 7.04538–7.47891 ms | 5.97461–6.17809 ms | 1.140–1.252× | Local WSL diagnostic. [B1881]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.72813–1.81626 ms | 1.66921–1.66997 ms | 1.035–1.088× | Diagnostic. [B1849]. |
 | Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 3.42958–3.66051 ms | 2.25860–2.34191 ms | 1.464–1.621× | Local WSL diagnostic. [B1881]. |
-| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 4.14039–4.19706 ms | 2.23555–2.25895 ms | 1.833–1.877× | Local WSL diagnostic. [B1881]. |
 | CSV shipment re-export with `DictWriter` | 2,048 records / 27,350 B | 1.74944–1.76297 ms | 2.74569–2.75434 ms | 0.635–0.642× | Diagnostic. [B1869]. |
 | CSV shipment re-export with `DictWriter`, Lython `RunAsync` | 2,048 records / 27,350 B | 2.12564–2.14952 ms | 2.73113–2.75321 ms | 0.772–0.787× | Diagnostic. [B1869]. |
 | Default JSON Lines export | 768 records / 47,361 B input | 1.19990–1.30230 ms | 1.47476–1.54651 ms | 0.776–0.883× | Local WSL diagnostic. [B1880]. |
 | Default JSON Lines export, Lython `RunAsync` | 768 records / 47,361 B input | 1.25198–1.32638 ms | 1.49664–1.55189 ms | 0.807–0.886× | Local WSL diagnostic. [B1880]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 1.10825–1.11422 ms | 3.09238–3.14538 ms | 0.352–0.360× | Local WSL diagnostic. [B1881]. |
-| Nested-object JSON document summary | 2,048 records / 103,331 B | 1.01837–1.11356 ms | 0.76955–0.79924 ms | 1.274–1.447× | Local WSL confirmation. Initial timing varies. [B1888]. |
 | Nested-object JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 1.03631–1.11165 ms | 0.79008–0.79924 ms | 1.297–1.407× | Local WSL confirmation. Initial timing varies. [B1888]. |
 | Nested JSON Lines summary and export | 4,096 records / 159,744 B input | 3.55033–3.67051 ms | 4.66297–4.69670 ms | 0.756–0.787× | Local WSL diagnostic. [B1888]. |
 | Nested JSON Lines summary and export, Lython `RunAsync` | 4,096 records / 159,744 B input | 3.67599–3.70718 ms | 4.65803–4.73711 ms | 0.776–0.796× | Local WSL diagnostic. [B1888]. |
@@ -22,6 +24,13 @@
 | CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Historical. Inconclusive around parity. [B1844]. |
 | File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
+
+B1896 measures `36ed51e1b` against CPython 3.13.16 on the quiet Azure
+F4as_v7 on November 27, 2026 UTC. The configuration edit reads and
+rewrites JSON. Its warm elapsed is higher and its wider process CPU is
+0.932–0.945× CPython. Its compile-only and compile-to-result measurements
+are below. The remaining rows preserve their individual measurement
+revisions. [B1896].
 
 The bound shipment and Unicode rows use `9cee6f423` with comparison host
 `05c1059de` on November 27, 2026 UTC. The CSV line-generator summary uses
@@ -94,9 +103,9 @@ lanes below. Use the matched B1884 comparison for changes within Lython.
 
 B1888 measures `126d551c2` on the same WSL machine against CPython 3.13.16.
 The initial nested document varies by 59–66% between identical Lython
-workers. The table uses the same-image confirmation in reverse worker
-order. Both runs remain available. The Lines report also writes its
-aggregated output. [B1888].
+workers. The reported WSL timings use the same-image confirmation in
+reverse worker order. Both runs remain available. The Lines report also
+writes its aggregated output. [B1888].
 
 The first-line search gap is about 15–16 µs in B1834. A separate B1815
 diagnostic measured about 23 µs with verification and 29–30 µs before it.
@@ -110,6 +119,8 @@ The paired metadata measurement at fixed runtime is available separately.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 4.14039–4.19706 ms | 2.23555–2.25895 ms | 1.833–1.877× | Historical WSL diagnostic. [B1881]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 1.01837–1.11356 ms | 0.76955–0.79924 ms | 1.274–1.447× | Historical WSL confirmation. Initial timing varies. [B1888]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.21170–2.25079 ms | 1.81365–1.83653 ms | 1.204–1.241× | Historical quiet diagnostic. [B1849]. |
 | Five-item `starmap` shipment report | 2,048 records / 27,350 B | 1.88707–1.97045 ms | 1.82219–1.83011 ms | 1.031–1.081× | Historical quiet diagnostic. [B1849]. |
 | Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 2.60896–2.67250 ms | 1.97476–1.98458 ms | 1.315–1.353× | Historical quiet diagnostic. [B1865]. |
@@ -194,6 +205,8 @@ use `8aef89b09`.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration edit, 357 B source | Compilation only | 0.01654–0.01668 ms | 0.03377–0.03403 ms | 0.486–0.494× | Quiet VM diagnostic. [B1896]. |
+| Configuration edit, 181 B input | Compile-to-result | 0.09592–0.09717 ms | 0.12491–0.12615 ms | 0.760–0.778× | Quiet VM diagnostic. [B1896]. |
 | Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.63372–0.69575 ms | 1.04639–1.13268 ms | 0.559–0.665× | Local WSL diagnostic. [B1880]. |
 | Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.82209–0.84757 ms | 1.14554–1.22822 ms | 0.669–0.740× | Local WSL diagnostic. [B1880]. |
 | Generated comprehension report, 96 rules / 20,988 B source | Compilation only | 1.92082–1.94344 ms | 2.74657–2.75148 ms | 0.698–0.708× | Diagnostic. [B1858]. |
@@ -410,6 +423,7 @@ document reproduction.
 [B1881]: ../benchmarks/results/2026-11-27-wsl-shipment-cpython/README.md
 [B1885]: ../benchmarks/results/2026-11-27-wsl-log-cpython/README.md
 [B1888]: ../benchmarks/results/2026-11-27-wsl-nested-json-cpython/README.md
+[B1896]: ../benchmarks/results/2026-11-27-current-quiet-cpython/README.md
 [B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md
