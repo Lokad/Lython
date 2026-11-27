@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1853 share ready generator advancement](results/2026-11-27-ready-generator-advance/README.md)
+starts a generator continuation only when frame execution suspends. Both
+Release targets and the Python goldens pass at matching admission peaks.
+Wide async spans zero, bound async CPU rises 4.65–6.12% and the file-fed
+control varies. Withdraw the prototype and preserve the source and timing.
+
 [B1852 try direct ready fixed-unpack outcomes](results/2026-11-27-ready-fixed-unpack/README.md)
 removes the completed count and jump carriers. The quiet wide async lane
 uses 0.29–3.41% more CPU and bound async takes more elapsed time. The
