@@ -5,7 +5,9 @@
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.21170–2.25079 ms | 1.81365–1.83653 ms | 1.204–1.241× | Diagnostic. [B1849]. |
 | Five-item `starmap` shipment report | 2,048 records / 27,350 B | 1.88707–1.97045 ms | 1.82219–1.83011 ms | 1.031–1.081× | Diagnostic. [B1849]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.72813–1.81626 ms | 1.66921–1.66997 ms | 1.035–1.088× | Diagnostic. [B1849]. |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Diagnostic. [B1849]. |
+| Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 2.60896–2.67250 ms | 1.97476–1.98458 ms | 1.315–1.353× | Diagnostic. [B1865]. |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Diagnostic. [B1865]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Diagnostic. [B1865]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Diagnostic. [B1860]. |
@@ -15,9 +17,11 @@
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
 
 B1849 measures `9cee6f423` on November 27, 2026 UTC with comparison host
-`05c1059de`. The first six rows use this revision. The earlier B1844
+`05c1059de` for the exact-row shipment, nested JSON and Unicode report
+rows. B1865 measures `aae8992e0` with the same host and date for
+the two iterable-row shipment lanes and file-fed map. The earlier B1844
 checkpoint used `a1b3a3325` with the same comparison host. Historical
-rows retain their original revisions and dates. [B1849] · [B1844].
+rows retain their original revisions and dates. [B1865] · [B1849] · [B1844].
 
 B1860 measures `7305efabf` with the same comparison host on November 27,
 2026 UTC. Both log scripts use the optional signed PythonRe 0.5.0 adapter,
@@ -67,6 +71,7 @@ The paired metadata measurement at fixed runtime is available separately.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Historical diagnostic. [B1849]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Historical diagnostic. [B1858]. |
 | Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Historical diagnostic. [B1858]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22055–2.25324 ms | 1.82279–1.83105 ms | 1.213–1.236× | Diagnostic. [B1844]. |
@@ -340,6 +345,7 @@ document reproduction.
 [B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md
 
 [B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
+[B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md
 [B1844]: ../benchmarks/results/2026-11-27-post-csv-json-cpython/README.md

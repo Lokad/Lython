@@ -1,0 +1,22 @@
+{
+  "diagnostic.shipment-starmap-iterable-rows": {
+    "inputs": [
+      {
+        "name": "shipments.csv",
+        "bytes": 27350,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 490
+  },
+  "diagnostic.shipment-file-fed-map": {
+    "inputs": [
+      {
+        "name": "shipments.csv",
+        "bytes": 27350,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 194
+  }
+}

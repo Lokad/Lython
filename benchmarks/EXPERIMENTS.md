@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1865 compare iterable-row shipment with CPython](results/2026-11-27-iterable-starmap-cpython/README.md)
+measures `aae8992e0` against stock CPython 3.13.16. Warm shipment takes
+1.315–1.353× sync and 1.515–1.573× async. The file-fed anchor overlaps
+B1849. Both quiet gates and all 84 batches pass.
+
 [B1864 collect iterable `starmap` rows directly into the call packet](results/2026-11-27-iterable-starmap-arguments/README.md)
 removes the second collection for ordinary callbacks. The generated-row
 report allocates 4.96% less with a 224 B increase in peak admission.
