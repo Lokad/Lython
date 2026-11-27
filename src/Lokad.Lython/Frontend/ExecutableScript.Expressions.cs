@@ -341,7 +341,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileCallExpression(CallExpressionSyntax call, int currentBlock)
         {
-            if (call.Arguments.Any(argument => argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary))
+            if (call.OrdinaryPositionalCount < 0)
             {
                 return CompileExpandedCall(call, currentBlock);
             }

@@ -120,7 +120,7 @@ internal static class CallBinder
     internal static BoundBuiltinArguments BindExecutableArguments(Span<LythonRuntime.ExecutableSlot> operands,
         ExecutableCallSite call, LythonCallableSignature signature, PythonCallableKind callableKind,
         LythonRuntime.ExecutionContext context, bool preservePresence, bool useNullForOmittedArguments)
-        => BindNamedArgumentsCore(new OperandInputs(operands, call.Arguments, context), call.CallSpan,
+        => BindNamedArgumentsCore(new OperandInputs(operands, call.ArgumentForms, context), call.CallSpan,
             signature.Name, callableKind, signature.Parameters, out _, preservePresence,
             useNullForOmittedArguments: useNullForOmittedArguments);
 
@@ -243,10 +243,10 @@ internal static class CallBinder
     internal readonly ref struct OperandInputs : IBindingInputs
     {
         private readonly Span<LythonRuntime.ExecutableSlot> _operands;
-        private readonly CallArgumentForm[] _forms;
+        private readonly CallArgumentForm[]? _forms;
         private readonly LythonRuntime.ExecutionContext _context;
 
-        internal OperandInputs(Span<LythonRuntime.ExecutableSlot> operands, CallArgumentForm[] forms,
+        internal OperandInputs(Span<LythonRuntime.ExecutableSlot> operands, CallArgumentForm[]? forms,
             LythonRuntime.ExecutionContext context)
         {
             _operands = operands;
@@ -257,6 +257,7 @@ internal static class CallBinder
         public int Length => _operands.Length;
         public string? KeywordAt(int index)
         {
+            if (_forms is null) return null;
             var form = _forms[index];
             return form.Kind switch
             {
@@ -276,7 +277,7 @@ internal static class CallBinder
     internal static int BindFixedExecutableArguments(Span<LythonRuntime.ExecutableSlot> operands,
         ExecutableCallSite call, LythonCallableSignature signature, LythonRuntime.ExecutionContext context,
         scoped Span<object> values)
-        => BindArgumentValues(new OperandInputs(operands, call.Arguments, context),
+        => BindArgumentValues(new OperandInputs(operands, call.ArgumentForms, context),
             call.CallSpan, signature.Name, PythonCallableKind.Builtin, signature.Parameters,
             out _, out _, out _, values);
 

@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
             {
                 if (_call is not null)
                 {
-                    var label = _call.Arguments[index];
+                    var label = _call.ArgumentFormAt(index);
                     return label.Kind == CallArgumentKind.Keyword ? label.KeywordName : null;
                 }
 

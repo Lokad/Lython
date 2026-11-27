@@ -200,24 +200,21 @@ internal sealed partial class ExecutableScript
 
         private int InternCallSite(CallExpressionSyntax call, bool hasReceiver)
         {
-            var arguments = call.Arguments.Select(argument => argument.Form).ToArray();
-            var formatKeywords = call.Target is MemberExpressionSyntax { MemberName: "format" }
-                ? PrepareFormatKeywordIndices(arguments, call.Span) : null;
+            System.Diagnostics.Debug.Assert(call.OrdinaryPositionalCount >= 0);
+            var count = call.Arguments.Count;
+            var forms = call.OrdinaryPositionalCount == count
+                ? null : call.Arguments.Select(static argument => argument.Form).ToArray();
+            var formatKeywords = forms is not null && call.Target is MemberExpressionSyntax { MemberName: "format" }
+                ? PrepareFormatKeywordIndices(forms, call.OrdinaryPositionalCount, call.Span) : null;
             _buffers.CallSites.Add(formatKeywords is null
-                ? new ExecutableCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver)
-                : new ExecutableNamedFormatCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver, formatKeywords));
+                ? new ExecutableCallSite(count, forms, call.Target.Span, call.Span, hasReceiver)
+                : new ExecutableNamedFormatCallSite(count, forms!, call.Target.Span, call.Span, hasReceiver, formatKeywords));
             return _buffers.CallSites.Count - 1;
         }
 
-        private Dictionary<string, int>? PrepareFormatKeywordIndices(CallArgumentForm[] arguments, LythonSourceSpan span)
+        private Dictionary<string, int>? PrepareFormatKeywordIndices(CallArgumentForm[] arguments, int firstKeyword, LythonSourceSpan span)
         {
-            var firstKeyword = 0;
-            while (firstKeyword < arguments.Length && arguments[firstKeyword].Kind == CallArgumentKind.Positional)
-            {
-                PythonTokenization.CheckCancellation(_compilation.CancellationToken, firstKeyword);
-                firstKeyword++;
-            }
-            if (firstKeyword == arguments.Length) return null;
+            if (firstKeyword != 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
 
             // The code owner funds one index for ordinary named format calls.
             // The runtime borrows it only when the actual receiver is a string.

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1879 omit form arrays for positional executable calls](results/2026-11-27-executable-positional-forms/README.md)
+removes 163 arrays and 19,608 allocated bytes per generated definition
+compile. Named sites keep the original form arrays. Timing spans zero in
+the affected lanes and the unchanged nested read takes longer locally.
+
 [B1878 check the current checkpoint against CPython](results/2026-11-27-windows-current-cpython/README.md)
 records six short Windows comparisons against CPython 3.13.2. Timing spread
 leaves the comparison inconclusive. The exact-image WSL follow-up finds

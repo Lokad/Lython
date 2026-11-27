@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
 
             ValueTask<object> IOperandBoundCallable.InvokeFromOperands(Span<ExecutableSlot> operands,
                 ExecutableCallSite call, ExecutionContext context, bool asynchronous)
-                => InvokeFromInputs(new CallBinder.OperandInputs(operands, call.Arguments, context),
+                => InvokeFromInputs(new CallBinder.OperandInputs(operands, call.ArgumentForms, context),
                     call.CallSpan, context, asynchronous);
 
             private ValueTask<object> InvokeFromInputs<T>(T arguments, LythonSourceSpan span,

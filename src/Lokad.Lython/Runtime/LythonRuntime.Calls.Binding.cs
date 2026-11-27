@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
             var argument = argumentIndex < 0 ? CallArgumentValue.Positional(receiver!)
                 : callSite is null ? arguments.IsEmpty
                     ? CallArgumentValue.Positional(operands[argumentIndex].Object.RequireNotNull()) : arguments[argumentIndex]
-                : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].Object.RequireNotNull());
+                : CreateExecutableCallArgument(callSite.ArgumentFormAt(argumentIndex), operands[argumentIndex].Object.RequireNotNull());
             if (argument.IsPositional)
             {
                 if (positionalIndex >= plan.PositionalCount)
@@ -327,7 +327,7 @@ internal sealed partial class LythonRuntime
     private static bool IsSuppliedPositional(int index, ReadOnlySpan<CallArgumentValue> arguments, ExecutableCallSite? callSite)
         => index < 0 || (callSite is null
             ? arguments.IsEmpty || arguments[index].IsPositional
-            : callSite.Arguments[index].Kind == CallArgumentKind.Positional);
+            : callSite.ArgumentFormAt(index).Kind == CallArgumentKind.Positional);
 
     private static PyTuple CreateVariadicPositionalTuple(ReadOnlySpan<CallArgumentValue> arguments,
         ReadOnlySpan<ExecutableSlot> operands, ExecutableCallSite? callSite, object? receiver,

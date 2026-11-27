@@ -1,0 +1,249 @@
+{
+  "cases": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "scopes": 99,
+      "budgetLevels": 10,
+      "positionalArraysRemoved": 163,
+      "namedSites": 0,
+      "compileClr": [
+        1400816,
+        1381208
+      ],
+      "compiledPeak": 889975
+    },
+    {
+      "id": "diagnostic.generated-escaping-definitions",
+      "scopes": 99,
+      "budgetLevels": 10,
+      "positionalArraysRemoved": 163,
+      "namedSites": 0,
+      "compileClr": [
+        1435320,
+        1415712
+      ],
+      "compiledPeak": 973783
+    },
+    {
+      "id": "diagnostic.generated-guarded-report",
+      "scopes": 97,
+      "budgetLevels": 9,
+      "positionalArraysRemoved": 100,
+      "namedSites": 0,
+      "compileClr": [
+        2159504,
+        2147472
+      ],
+      "compiledPeak": 2410080
+    },
+    {
+      "id": "diagnostic.nested-json-document",
+      "scopes": 2,
+      "budgetLevels": 3,
+      "positionalArraysRemoved": 6,
+      "namedSites": 1,
+      "compileClr": [
+        48704,
+        47952
+      ],
+      "compiledPeak": 69840
+    },
+    {
+      "id": "diagnostic.static-keyword-form",
+      "scopes": 3,
+      "budgetLevels": 4,
+      "positionalArraysRemoved": 4,
+      "namedSites": 96,
+      "compileClr": [
+        559264,
+        558736
+      ],
+      "compiledPeak": 428560
+    },
+    {
+      "id": "diagnostic.static-expansion-form",
+      "scopes": 3,
+      "budgetLevels": 4,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        571768,
+        571240
+      ],
+      "compiledPeak": 362224
+    },
+    {
+      "id": "scripts.report-render.named-format-selectors.large",
+      "scopes": 2,
+      "budgetLevels": 4,
+      "positionalArraysRemoved": 6,
+      "namedSites": 2,
+      "compileClr": [
+        49072,
+        48352
+      ],
+      "compiledPeak": 76928
+    },
+    {
+      "id": "capture-after-literal",
+      "scopes": 3,
+      "budgetLevels": 7,
+      "positionalArraysRemoved": 2,
+      "namedSites": 0,
+      "compileClr": [
+        27304,
+        27048
+      ],
+      "compiledPeak": 46304
+    },
+    {
+      "id": "capture-snapshot-overlap",
+      "scopes": 3,
+      "budgetLevels": 7,
+      "positionalArraysRemoved": 1,
+      "namedSites": 0,
+      "compileClr": [
+        25864,
+        25744
+      ],
+      "compiledPeak": 44844
+    },
+    {
+      "id": "signed-constant-boundaries",
+      "scopes": 3,
+      "budgetLevels": 4,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        31064,
+        30552
+      ],
+      "compiledPeak": 54336
+    },
+    {
+      "id": "declaration-in-default",
+      "scopes": 4,
+      "budgetLevels": 9,
+      "positionalArraysRemoved": 2,
+      "namedSites": 0,
+      "compileClr": [
+        32208,
+        31968
+      ],
+      "compiledPeak": 47976
+    },
+    {
+      "id": "declaration-kinds",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        53392,
+        52912
+      ],
+      "compiledPeak": 58646
+    },
+    {
+      "id": "deferral-through-layout",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        80496,
+        80016
+      ],
+      "compiledPeak": 88410
+    },
+    {
+      "id": "return-forwarded-local",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "positionalArraysRemoved": 6,
+      "namedSites": 0,
+      "compileClr": [
+        88144,
+        87424
+      ],
+      "compiledPeak": 93333
+    },
+    {
+      "id": "rebound-definition",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        80536,
+        80056
+      ],
+      "compiledPeak": 89466
+    },
+    {
+      "id": "explicit-read-before-forwarding",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        81288,
+        80808
+      ],
+      "compiledPeak": 90234
+    },
+    {
+      "id": "scope-not-eligible",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "positionalArraysRemoved": 4,
+      "namedSites": 0,
+      "compileClr": [
+        79768,
+        79288
+      ],
+      "compiledPeak": 88794
+    },
+    {
+      "id": "deferred-before-returned-pair",
+      "scopes": 5,
+      "budgetLevels": 9,
+      "positionalArraysRemoved": 0,
+      "namedSites": 0,
+      "compileClr": [
+        72568,
+        72568
+      ],
+      "compiledPeak": 89308
+    },
+    {
+      "id": "namespace-protected-temporaries",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "positionalArraysRemoved": 2,
+      "namedSites": 0,
+      "compileClr": [
+        49784,
+        49528
+      ],
+      "compiledPeak": 62570
+    },
+    {
+      "id": "nested-protected-match-and-comprehension",
+      "scopes": 2,
+      "budgetLevels": 4,
+      "positionalArraysRemoved": 3,
+      "namedSites": 0,
+      "compileClr": [
+        32752,
+        32392
+      ],
+      "compiledPeak": 49648
+    }
+  ],
+  "cancellation": {
+    "granted": 33680,
+    "afterCancellation": 33632,
+    "afterDispose": 0
+  }
+}

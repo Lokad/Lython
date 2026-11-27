@@ -545,7 +545,7 @@ internal sealed record ExecutableExceptionRegion(
 
 internal record ExecutableCallSite(
     int ArgumentCount,
-    CallArgumentForm[] Arguments,
+    CallArgumentForm[]? ArgumentForms,
     LythonSourceSpan TargetSpan,
     LythonSourceSpan CallSpan,
     bool HasReceiver = false)
@@ -555,14 +555,16 @@ internal record ExecutableCallSite(
     public bool ReturnedDirectly { get; init; }
     public int UnpackedReturnCount { get; init; }
     public bool AccumulatesDictionary { get; init; }
-    public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
+    public bool IsPositionalOnly => ArgumentForms is null;
+    public CallArgumentForm ArgumentFormAt(int index)
+        => ArgumentForms is { } forms ? forms[index] : CallArgumentForm.Positional;
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
 }
 
-internal sealed record ExecutableNamedFormatCallSite(int ArgumentCount, CallArgumentForm[] Arguments,
+internal sealed record ExecutableNamedFormatCallSite(int ArgumentCount, CallArgumentForm[] ArgumentForms,
     LythonSourceSpan TargetSpan, LythonSourceSpan CallSpan, bool HasReceiver, Dictionary<string, int> KeywordIndices)
-    : ExecutableCallSite(ArgumentCount, Arguments, TargetSpan, CallSpan, HasReceiver);
+    : ExecutableCallSite(ArgumentCount, ArgumentForms, TargetSpan, CallSpan, HasReceiver);
 
 internal sealed record ExecutableMatchCaseBinding(
     LoweredRootPattern Pattern,

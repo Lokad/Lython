@@ -331,7 +331,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < callSite.ArgumentCount; i++)
         {
             if ((i & 1023) == 0) context.CheckExecution(callSite.CallSpan);
-            arguments[i] = CreateExecutableCallArgument(callSite.Arguments[i], stack[start + i + callSite.ArgumentOffset]);
+            arguments[i] = CreateExecutableCallArgument(callSite.ArgumentFormAt(i), stack[start + i + callSite.ArgumentOffset]);
         }
     }
 
