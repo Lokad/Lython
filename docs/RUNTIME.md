@@ -1328,14 +1328,15 @@ returns, escaping tuples, starred targets and mismatched counts keep ordinary
 tuple construction.
 Ownership admits the fixed whole-frame capacity and fresh cell/control storage
 before construction and retains them through suspension. A cache-eligible member
-lookup admits its frame's table before descriptor or protocol effects. Instances,
+lookup admits the table before descriptor or protocol effects. Instances,
 types, super objects, functions and contextual dynamic receivers keep uncached
 lookup and acquire no unused table; direct builtin receiver paths also need none.
 Refusal remains terminal, including this
 later admission after earlier body effects. Lookup facts occupy a flat admitted
-array, without individual member-cache objects. Modules and generators own their
-invocation's table; ordinary functions borrow their definition's table across
-calls. Function tables stay charged to the execution owner until cleanup,
+array. Modules and generator expressions own their invocation's table.
+Ordinary calls and instances of a generator function borrow their definition's
+table. Each generator still owns its suspended frame. Function tables stay
+charged to the execution owner until cleanup,
 including when guest names no longer reference the function. This conservative
 retention can reject tighter allowances earlier. Reentrant first admission reuses
 already-established backing and refunds only the unallocated pending reservation.

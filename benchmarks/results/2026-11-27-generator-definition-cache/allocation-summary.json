@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      2645406,
+      2399862
+    ],
+    "peak": [
+      4304400,
+      4304400
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "sync",
+    "clr": [
+      1091240,
+      1091240
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ],
+    "compiled": [
+      173532,
+      173532
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "sync",
+    "clr": [
+      1099872,
+      1099872
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ],
+    "compiled": [
+      181812,
+      181812
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      2645590,
+      2399816
+    ],
+    "peak": [
+      4304400,
+      4304400
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "async",
+    "clr": [
+      1091424,
+      1091480
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ],
+    "compiled": [
+      173532,
+      173532
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "async",
+    "clr": [
+      1100000,
+      1100000
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ],
+    "compiled": [
+      181812,
+      181812
+    ]
+  }
+]

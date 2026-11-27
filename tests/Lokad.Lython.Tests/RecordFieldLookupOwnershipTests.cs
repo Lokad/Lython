@@ -11,6 +11,96 @@ public sealed class RecordFieldLookupOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
 
     [Theory]
+    [InlineData(false, "read")] [InlineData(true, "read")]
+    [InlineData(false, "cancel")] [InlineData(true, "cancel")]
+    [InlineData(false, "refuse")] [InlineData(true, "refuse")]
+    public async Task InterleavedGeneratorsReadTheirLiveRecordLayouts(bool asynchronous, string outcome)
+    {
+        const string source = """
+            def read(row):
+                for _ in range(2):
+                    yield row['a']
+            return read(left_row), read(right_row)
+            """;
+        var compiled = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+        var function = Assert.Single(compiled.FunctionBindings()).CodeObject;
+        var cacheBytes = LythonRuntime.LookupCacheBytes(function.LookupCacheCount);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+            { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var key = PyString.FromString("a", context.MemoryGovernor, Span);
+            var other = PyString.FromString("b", context.MemoryGovernor, Span);
+            var leftTemplate = new PyDict(context.MemoryGovernor, Span);
+            leftTemplate.SetItem(key, BigInteger.Zero);
+            var rightTemplate = new PyDict(context.MemoryGovernor, Span);
+            rightTemplate.SetItem(other, BigInteger.Zero);
+            rightTemplate.SetItem(key, BigInteger.Zero);
+            var left = CreateRow(leftTemplate, 1);
+            var right = CreateRow(rightTemplate, 2);
+            context.Variables["left_row"] = left;
+            context.Variables["right_row"] = right;
+            try
+            {
+                var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(compiled, context)
+                    : LythonRuntime.ExecuteExecutableCodeObject(compiled, context, default, null);
+                var generators = Assert.IsType<PyTuple>(result);
+                var first = Assert.IsType<LythonRuntime.PyGenerator>(generators[0]);
+                var second = Assert.IsType<LythonRuntime.PyGenerator>(generators[1]);
+                var admissions = 0;
+                hook.AfterGrowth = bytes =>
+                {
+                    if (bytes != cacheBytes) return;
+                    admissions++;
+                    if (outcome == "cancel") cancellation.Cancel();
+                };
+                if (outcome == "refuse") hook.RefuseGrowth = bytes => bytes == cacheBytes;
+
+                if (outcome == "read")
+                {
+                    Assert.Equal(BigInteger.One, (await Advance(first)).Value);
+                    Assert.Equal(new BigInteger(2), (await Advance(second)).Value);
+                    left.SetItem(key, new BigInteger(9));
+                    Assert.Equal(new BigInteger(9), (await Advance(first)).Value);
+                    Assert.Equal(new BigInteger(2), (await Advance(second)).Value);
+                    Assert.False((await Advance(first)).HasValue);
+                    Assert.False((await Advance(second)).HasValue);
+                    Assert.Equal(1, admissions);
+                }
+                else
+                {
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { _ = await Advance(first); });
+                    if (outcome == "refuse") Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                    else Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                    Assert.Equal(BigInteger.One, left.GetItem(key));
+                    Assert.Equal(new BigInteger(2), right.GetItem(key));
+                }
+
+                Assert.Null(context.CurrentExecutableFrame);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+
+            PyDict CreateRow(PyDict template, int value)
+            {
+                var layout = template.ShareRecordKeys(context, Span)!;
+                var row = layout.CreateRecord(context, Span, 2);
+                row.SetRecordItem(key, new BigInteger(value), context, Span);
+                return row;
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        ValueTask<PyIterationResult> Advance(LythonRuntime.PyGenerator generator)
+            => asynchronous ? generator.TryMoveNextAsync() : new(generator.TryMoveNext());
+    }
+
+    [Theory]
     [InlineData(false, false)] [InlineData(true, false)]
     [InlineData(false, true)] [InlineData(true, true)]
     public async Task FieldConversionKeepsTheCalleeCapturedBeforeCacheAdmission(bool asynchronous, bool refuse)

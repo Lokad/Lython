@@ -5,27 +5,6 @@ namespace Lokad.Lython.Runtime;
 internal sealed class PyExecutableFunction : PyFunctionBase
 {
     private readonly LythonRuntime.ExecutableCaptures _closureCells;
-    private LythonRuntime.ExecutableLookupCache[]? _lookupCaches;
-    internal LythonRuntime.ExecutableLookupCache[]? ExistingLookupCaches => _lookupCaches;
-
-    // Facts belong to this execution-owned definition, not each invocation.
-    // Reentrant admission can establish the same backing before we return.
-    internal LythonRuntime.ExecutableLookupCache[] GetLookupCaches(LythonSourceSpan span)
-    {
-        if (_lookupCaches is { } cached) return cached;
-        var bytes = LythonRuntime.LookupCacheBytes(CodeObject.LookupCacheCount);
-        using var storage = Closure.MemoryGovernor.ReserveTemporary(bytes, span);
-        Closure.CheckExecution(span);
-        if (_lookupCaches is { } established) return established;
-        var caches = new LythonRuntime.ExecutableLookupCache[CodeObject.LookupCacheCount];
-        storage.Commit(bytes);
-        return _lookupCaches = caches;
-    }
-
-    internal void ClearLookupCache(int index)
-    {
-        if (_lookupCaches is { } caches) caches[index] = default;
-    }
 
     internal bool TryReadDirectField(PyDict record, PyString key, in ExecutableInstruction field, out object? value)
     {
@@ -35,7 +14,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // The ordinary tape captures the callee across initial cache admission.
         // Let it execute that first read before borrowing the established cache.
         value = null;
-        return _lookupCaches is { } caches && record.TryReadRecordValue(key, ref caches[field.LookupCacheIndex],
+        return ExistingLookupCaches is { } caches && record.TryReadRecordValue(key, ref caches[field.LookupCacheIndex],
             Closure, field.Span, out value);
     }
 

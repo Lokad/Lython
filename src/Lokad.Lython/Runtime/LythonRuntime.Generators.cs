@@ -64,7 +64,8 @@ internal sealed partial class LythonRuntime
         }
 
         internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
-            ExecutableCaptures closureCells = default, BoundFunctionArguments arguments = default)
+            ExecutableCaptures closureCells = default, BoundFunctionArguments arguments = default,
+            PyGeneratorFunction? lookupOwner = null)
         {
             // Fund locals, cells, caches and handler/delegation state. The fixed
             // operand workspace is admitted separately before construction.
@@ -72,13 +73,13 @@ internal sealed partial class LythonRuntime
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
             PyGenerator generator;
-            try { generator = new PyGenerator(code, frame, span, closureCells, arguments); }
+            try { generator = new PyGenerator(code, frame, span, closureCells, arguments, lookupOwner); }
             catch { frame.MemoryGovernor.Release(bytes); throw; }
             return generator;
         }
 
         private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
-            ExecutableCaptures closureCells, BoundFunctionArguments arguments)
+            ExecutableCaptures closureCells, BoundFunctionArguments arguments, PyGeneratorFunction? lookupOwner = null)
         {
             _frame = frame;
             // Mirrored namespaces remain authoritative for retained cells while
@@ -86,7 +87,7 @@ internal sealed partial class LythonRuntime
             frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
-            var execution = CreateExecutableWorkState(code, frame, arguments, closureCells);
+            var execution = CreateExecutableWorkState(code, frame, arguments, closureCells, lookupOwner);
             frame.AdoptGeneratorExecution(ref execution, arguments.StorageOwner);
         }
 

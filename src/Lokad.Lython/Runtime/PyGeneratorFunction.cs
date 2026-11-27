@@ -16,7 +16,7 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
     }
 
     protected override object ExecuteBody(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
-        => LythonRuntime.PyGenerator.Create(CodeObject, frame, span, _closureCells, arguments);
+        => LythonRuntime.PyGenerator.Create(CodeObject, frame, span, _closureCells, arguments, this);
 
     protected override ValueTask<object> ExecuteBodyAsync(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
         => new(ExecuteBody(frame, arguments, span));

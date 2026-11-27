@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1897 share lookup storage across generator calls](results/2026-11-27-generator-definition-cache/README.md)
+shares one definition-owned table across instances. Iterable shipment
+allocates 9.28–9.29% less at matching admission. Quiet CPU falls 6.28–10.99%
+sync and 5.32–7.96% async. The file-fed control spans zero, and bound async
+uses 2.15–3.92% more CPU on the quiet VM. The bound increase did not appear
+on WSL. Keep that result and the exact paired images. All 224 timed batches
+and four independent goldens verify.
+
 [B1896 compare current scripts on the quiet VM](results/2026-11-27-current-quiet-cpython/README.md)
 measures `36ed51e1b` against CPython 3.13.16. Async iterable shipment takes
 1.315–1.373× CPython elapsed, the nested document 1.090–1.133× and file-fed

@@ -7,6 +7,7 @@ namespace Lokad.Lython.Runtime;
 internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue, IPyBindableCallable, LythonRuntime.ISpanCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
 {
     private readonly LythonRuntime.ExecutionContext _closure;
+    private LythonRuntime.ExecutableLookupCache[]? _lookupCaches;
     // One optional value can live directly here: a custom dictionary or
     // a type-parameter tuple. Overrides or both values need the full record.
     private object? _attributes;
@@ -48,6 +49,27 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     protected LythonRuntime.ExecutionContext Closure => _closure;
+
+    internal LythonRuntime.ExecutableLookupCache[]? ExistingLookupCaches => _lookupCaches;
+
+    // Cache facts belong to the definition across calls and generator instances.
+    // Admission can reenter and establish the backing before this call returns.
+    internal LythonRuntime.ExecutableLookupCache[] GetLookupCaches(LythonSourceSpan span)
+    {
+        if (_lookupCaches is { } cached) return cached;
+        var bytes = LythonRuntime.LookupCacheBytes(CodeObject.LookupCacheCount);
+        using var storage = Closure.MemoryGovernor.ReserveTemporary(bytes, span);
+        Closure.CheckExecution(span);
+        if (_lookupCaches is { } established) return established;
+        var caches = new LythonRuntime.ExecutableLookupCache[CodeObject.LookupCacheCount];
+        storage.Commit(bytes);
+        return _lookupCaches = caches;
+    }
+
+    internal void ClearLookupCache(int index)
+    {
+        if (_lookupCaches is { } caches) caches[index] = default;
+    }
 
     // Lowered operand calls bind invocation-owned values. The executable
     // runner and exact positional callback entry can start in native slots.

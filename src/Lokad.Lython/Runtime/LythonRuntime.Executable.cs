@@ -400,7 +400,7 @@ internal sealed partial class LythonRuntime
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, ExecutableSlot[]? borrowedValues,
-            PyExecutableFunction? lookupOwner)
+            PyFunctionBase? lookupOwner)
         {
             _state = context.State;
             _firstTemporarySlot = firstTemporarySlot;
@@ -443,11 +443,11 @@ internal sealed partial class LythonRuntime
         }
 
         internal readonly ExecutableLookupCache[]? ExistingLookupCaches
-            => _lookupStorage is PyExecutableFunction owner ? owner.ExistingLookupCaches : _lookupStorage as ExecutableLookupCache[];
+            => _lookupStorage is PyFunctionBase owner ? owner.ExistingLookupCaches : _lookupStorage as ExecutableLookupCache[];
 
         internal ExecutableLookupCache[] GetLookupCaches(int count, LythonSourceSpan span)
         {
-            if (_lookupStorage is PyExecutableFunction owner) return owner.GetLookupCaches(span);
+            if (_lookupStorage is PyFunctionBase owner) return owner.GetLookupCaches(span);
             if (_lookupStorage is ExecutableLookupCache[] existing) return existing;
             var bytes = LookupCacheBytes(count);
             var ownedBytes = checked(_ownedStorageBytes + bytes);
@@ -467,7 +467,7 @@ internal sealed partial class LythonRuntime
 
         internal void ClearLookupCache(int index)
         {
-            if (_lookupStorage is PyExecutableFunction owner) owner.ClearLookupCache(index);
+            if (_lookupStorage is PyFunctionBase owner) owner.ClearLookupCache(index);
             else if (_lookupStorage is ExecutableLookupCache[] caches) caches[index] = default;
         }
 
@@ -806,7 +806,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
         ExecutableCaptures closureCells,
-        PyExecutableFunction? lookupOwner = null,
+        PyFunctionBase? lookupOwner = null,
         bool returnConsumedByIteration = false,
         bool borrowedInvocation = false, bool continuingNative = false)
     {
