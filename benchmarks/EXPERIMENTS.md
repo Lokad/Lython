@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1829 read existing staged row operands](results/2026-11-27-borrowed-list-return/README.md)
+removes callback workspace initialization and the row copy on eligible closed
+returns. Three-field async elapsed falls 3.33–5.17% locally, with CPU spanning
+zero. Five-field sync CPU rises 0.90–2.02%. The selection-only refinement has
+unsteady controls. Both trials are archived, and the alias and truth-protocol
+reentry regression stays with the runtime.
+
 [B1828 reuse file path metadata](results/2026-11-27-file-metadata-observation/README.md)
 removes repeated existence and attribute queries in the comparison host.
 With an identical Lython core, local configuration-edit elapsed falls

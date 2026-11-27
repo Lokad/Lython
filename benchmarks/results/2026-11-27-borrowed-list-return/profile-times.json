@@ -1,0 +1,30 @@
+[
+  {
+    "workload": "diagnostic.shipment-starmap-wide-lists",
+    "verifiedInvocations": 2560,
+    "sampledThreadMilliseconds": 42073.1915971843,
+    "ancestryThreadMilliseconds": {
+      "ExecuteInstructionPrefix": 5627.854993122431,
+      "PyStarmapIterator": 695.5971829530583,
+      "StartStagedListYield": 70.51930459838476,
+      "TryStartDirectOperandReturn": 92.40336280179528,
+      "PyMapIterator": 111.90361988061517,
+      "TryEvaluateDirectFieldCallReturn": 0.0,
+      "UnpackNextAsync": 784.2060934633778
+    }
+  },
+  {
+    "workload": "diagnostic.shipment-file-fed-map",
+    "verifiedInvocations": 10112,
+    "sampledThreadMilliseconds": 47837.210507347474,
+    "ancestryThreadMilliseconds": {
+      "ExecuteInstructionPrefix": 5008.803254282102,
+      "PyStarmapIterator": 0.0,
+      "StartStagedListYield": 0.0,
+      "TryStartDirectOperandReturn": 583.6194428292116,
+      "PyMapIterator": 4595.517974661051,
+      "TryEvaluateDirectFieldCallReturn": 453.9898010255401,
+      "UnpackNextAsync": 0.0
+    }
+  }
+]

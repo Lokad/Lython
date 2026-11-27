@@ -264,6 +264,47 @@ public sealed class StarmapMaterializationParityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task StagedSelectorKeepsAliasAndRetiresRowBeforeTruthProtocol(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            preferred, alternative = [], []
+            class Condition:
+                def __bool__(self):
+                    row = rows.send('sent')
+                    print(row[0], row[1] is preferred)
+                    return True
+            class Selector:
+                def select(self, flag, first, second):
+                    return first if flag else second
+            def produce():
+                yield [False, 23000 + len(preferred), alternative]
+                sent = yield [Condition(), preferred, alternative]
+                yield [sent, preferred]
+                yield [True, preferred, alternative]
+            rows = produce()
+            selected = starmap(Selector().select, rows)
+            print(next(selected) is alternative)
+            print(next(selected) is preferred)
+            print(next(selected) is preferred, list(selected))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True\nsent True\nTrue\nTrue []\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task GeneratorListYieldKeepsStorageThroughSuspendedSourceOrCallback(bool pauseCallback)
     {
         const string source = """

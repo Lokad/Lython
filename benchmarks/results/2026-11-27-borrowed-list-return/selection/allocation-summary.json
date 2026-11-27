@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "mode": "sync",
+    "clr": [
+      1112856,
+      1113068
+    ],
+    "peak": [
+      2845113,
+      2845113
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "sync",
+    "clr": [
+      1113368,
+      1113368
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "sync",
+    "clr": [
+      1099928,
+      1099928
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808720,
+      808720
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-short-lists",
+    "mode": "async",
+    "clr": [
+      1113040,
+      1113040
+    ],
+    "peak": [
+      2845113,
+      2845113
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "async",
+    "clr": [
+      1113552,
+      1113558
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "async",
+    "clr": [
+      1100112,
+      1100112
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808936,
+      808936
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  }
+]
