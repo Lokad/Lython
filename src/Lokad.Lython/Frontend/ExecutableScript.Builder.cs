@@ -147,6 +147,7 @@ internal sealed partial class ExecutableScript
         private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
         private int _lookupCacheCount;
         private int _protectedDepth;
+        private int _firstDefinitionIndex = int.MaxValue;
         private readonly bool _generator;
         private int _syntheticLocalCounter;
 
@@ -310,7 +311,7 @@ internal sealed partial class ExecutableScript
             var forwardsCaptures = false;
             var hasPlainModuleClass = false;
             HashSet<int>? captured = null;
-            for (var index = 0; index < _buffers.Constants.Count; index++)
+            for (var index = _firstDefinitionIndex; index < _buffers.Constants.Count; index++)
             {
                 if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
                 switch (_buffers.Constants[index])

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1822 start at the first emitted declaration](results/2026-11-27-declaration-scan-start/README.md)
+skips 51 of 57 visits in the manifest and keeps the existing compilation
+admission order. Nine cases match the reference tapes, captures and budget
+traces. Manifest compile-to-result CPU falls 1.28–4.82% locally. Ordinary
+compile-only CPU rises 2.17–7.88% with worker variability and remains open.
+
 [B1821 prepare literals during declaration preparation](results/2026-11-27-single-constant-walk/README.md)
 eliminates a full scan and preserves the instruction metadata and integer
 tables. The five local timing ranges are inconclusive. Earlier table admission

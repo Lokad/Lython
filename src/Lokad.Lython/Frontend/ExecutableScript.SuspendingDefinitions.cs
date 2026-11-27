@@ -43,6 +43,9 @@ internal sealed partial class ExecutableScript
         {
             if (constantIndex < 0) constantIndex = AppendConstant(operation);
             else _buffers.Constants[constantIndex] = operation;
+            // The default preparation can reserve this index before emitting
+            // a declaration inside one of its default expressions.
+            _firstDefinitionIndex = Math.Min(_firstDefinitionIndex, constantIndex);
             AddInstruction(block, ExecutableInstruction.ApplyOperation(constantIndex, span));
         }
 

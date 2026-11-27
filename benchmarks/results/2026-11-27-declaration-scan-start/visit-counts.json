@@ -1,0 +1,56 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "entriesBefore": 198,
+    "skippedEntries": 2,
+    "skippedNonemptyWalks": 1
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "entriesBefore": 11,
+    "skippedEntries": 0,
+    "skippedNonemptyWalks": 0
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "entriesBefore": 28,
+    "skippedEntries": 7,
+    "skippedNonemptyWalks": 2
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "entriesBefore": 57,
+    "skippedEntries": 51,
+    "skippedNonemptyWalks": 6
+  },
+  {
+    "case": "capture-after-literal",
+    "entriesBefore": 4,
+    "skippedEntries": 1,
+    "skippedNonemptyWalks": 0
+  },
+  {
+    "case": "capture-snapshot-overlap",
+    "entriesBefore": 4,
+    "skippedEntries": 2,
+    "skippedNonemptyWalks": 0
+  },
+  {
+    "case": "signed-constant-boundaries",
+    "entriesBefore": 7,
+    "skippedEntries": 3,
+    "skippedNonemptyWalks": 2
+  },
+  {
+    "case": "declaration-in-default",
+    "entriesBefore": 6,
+    "skippedEntries": 2,
+    "skippedNonemptyWalks": 1
+  },
+  {
+    "case": "declaration-kinds",
+    "entriesBefore": 12,
+    "skippedEntries": 1,
+    "skippedNonemptyWalks": 1
+  }
+]
