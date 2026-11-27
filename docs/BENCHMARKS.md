@@ -14,8 +14,8 @@
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 1.10825–1.11422 ms | 3.09238–3.14538 ms | 0.352–0.360× | Local WSL diagnostic. [B1881]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
-| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Diagnostic. [B1860]. |
-| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27088–3.30482 ms | 1.58144–1.58565 ms | 2.063–2.090× | Diagnostic. [B1860]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.37484–2.38422 ms | 0.90704–0.92178 ms | 2.576–2.629× | Local WSL diagnostic. [B1885]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.77914–2.79027 ms | 1.42270–1.46284 ms | 1.900–1.961× | Local WSL diagnostic. [B1885]. |
 | CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Historical. Inconclusive around parity. [B1844]. |
 | File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
@@ -36,9 +36,9 @@ B1860 measures `7305efabf` with the same comparison host on November 27,
 2026 UTC. Both log scripts use the optional signed PythonRe 0.5.0 adapter,
 search each line and consume a capture. Their timings include the host file
 path, matching and result processing. B1858 measures the earlier
-`c665a179e` image and supplies the log compile-to-result comparison. The
-first B1860 run failed the post-run quietness gate. The table uses a
-same-image repeat with both checks passing. [B1860] · [B1858].
+`c665a179e` image, including the compiled-pattern log through result. The
+first B1860 run failed the post-run quietness gate. The historical table
+uses a same-image repeat with both checks passing. [B1860] · [B1858].
 
 Wide async shipment overlaps its earlier range. Nested JSON runs at
 1.148–1.155× CPython, up from 1.094–1.114× in B1844. B1848 compared the
@@ -83,6 +83,13 @@ shipment rotate `Run` and `RunAsync` through shared workers. The iterable
 case shows the larger gap in both elapsed and process CPU. Wide async
 Lython worker spread is 11.12%. [B1881].
 
+B1885 measures `4ab65dcc6` on the same WSL machine and date with the
+verified CPython 3.13.16 runtime and signed PythonRe 0.5.0 adapter.
+The log scripts scan a complete file and consume the selected capture.
+The module script also has separate compilation and compile-to-result
+lanes below. Use the matched B1884 comparison for changes within Lython.
+[B1885].
+
 The first-line search gap is about 15–16 µs in B1834. A separate B1815
 diagnostic measured about 23 µs with verification and 29–30 µs before it.
 The earlier interval still includes mediated I/O, output capture and
@@ -101,6 +108,8 @@ The paired metadata measurement at fixed runtime is available separately.
 | Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Historical quiet diagnostic. [B1865]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Historical quiet diagnostic. [B1865]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Historical diagnostic. [B1849]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Historical quiet diagnostic. [B1860]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27088–3.30482 ms | 1.58144–1.58565 ms | 2.063–2.090× | Historical quiet diagnostic. [B1860]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Historical diagnostic. [B1858]. |
 | Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Historical diagnostic. [B1858]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22055–2.25324 ms | 1.82279–1.83105 ms | 1.213–1.236× | Diagnostic. [B1844]. |
@@ -182,7 +191,9 @@ use `8aef89b09`.
 | Generated comprehension report, 96 rules / 20,988 B source | Compile-to-result | 2.37403–2.38947 ms | 2.85875–2.89189 ms | 0.821–0.836× | Diagnostic. [B1858]. |
 | CSV shipment re-export, 360 B of source | Compilation only | 0.01653–0.01674 ms | 0.03124–0.03132 ms | 0.528–0.536× | Diagnostic. [B1869]. |
 | CSV shipment re-export, 2,048 records | Compile-to-result | 1.84274–1.87090 ms | 2.81251–2.86722 ms | 0.643–0.665× | Diagnostic. [B1869]. |
-| Compiled-pattern log search, PythonRe 0.5.0 | Compile-to-result | 3.47070–3.54680 ms | 1.01756–1.06519 ms | 3.258–3.486× | Diagnostic. [B1858]. |
+| Module-level log search, 318 B of source | Compilation only | 0.12383–0.12813 ms | 0.02724–0.02748 ms | 4.507–4.704× | Local WSL diagnostic. [B1885]. |
+| Module-level log search, PythonRe 0.5.0 | Compile-to-result | 3.13204–3.15143 ms | 1.55325–1.55635 ms | 2.012–2.029× | Local WSL diagnostic. [B1885]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | Compile-to-result | 3.47070–3.54680 ms | 1.01756–1.06519 ms | 3.258–3.486× | Historical quiet diagnostic. [B1858]. |
 | Generated guarded report, 96 rules / 24,587 B source | Compilation only | 1.07349–1.09714 ms | 1.86806–1.88237 ms | 0.570–0.587× | Historical diagnostic. [B1844]. |
 | Generated guarded report, 96 rules / 24,587 B source | Compile-to-result | 1.12661–1.13546 ms | 1.92108–1.92126 ms | 0.586–0.591× | Historical diagnostic. [B1844]. |
 | Five-item `starmap` shipment report | Compile-to-result | 2.39930–2.44152 ms | 2.14403–2.14737 ms | 1.117–1.139× | Historical diagnostic. [B1823]. |
@@ -385,6 +396,7 @@ document reproduction.
 [B1869]: ../benchmarks/results/2026-11-27-csv-dictwriter-cpython/README.md
 [B1880]: ../benchmarks/results/2026-11-27-wsl-current-cpython/README.md
 [B1881]: ../benchmarks/results/2026-11-27-wsl-shipment-cpython/README.md
+[B1885]: ../benchmarks/results/2026-11-27-wsl-log-cpython/README.md
 [B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md

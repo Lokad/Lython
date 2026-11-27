@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1885 compare current log searches with CPython](results/2026-11-27-wsl-log-cpython/README.md)
+measures warm compiled search at 2.576–2.629× CPython elapsed and warm
+module search at 1.900–1.961×. Module compile-to-result takes
+2.012–2.029×. Compilation only takes 0.124–0.128 ms on Lython.
+Both goldens and 112 timed batches verify on pinned WSL.
+
 [B1884 give one-shot matching its working reservation directly](results/2026-11-27-direct-regex-allowance/README.md)
 removes a per-call child scope in the signed 0.5.0 adapter. Both log
 scans allocate 11.0–12.2% less at matching admitted peaks. CPU spans zero
