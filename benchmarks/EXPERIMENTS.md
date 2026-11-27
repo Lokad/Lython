@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1857 prove callback operand storage during emission](results/2026-11-27-iteration-operand-footprint/README.md)
+removes the iterator construction scan in the prototype. The first run
+uses 2.13–5.23% less CPU for repeated construction. The same-image repeat
+reaches parity, and the unchanged JSON control takes 0.84–2.77% more
+elapsed. Keep the current scan and preserve the timing and source.
+
 [B1858 compare the shipped adapter and compiler with CPython](results/2026-11-27-compiler-regex-cpython/README.md)
 measures the `c665a179e` image with PythonRe 0.5.0. Warm compiled and
 module log searches take 3.286–3.458× and 2.345–2.416× CPython elapsed.

@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.repeated-iterator-construction",
+    "mode": "sync",
+    "clr": [
+      1438256,
+      1438256
+    ],
+    "peak": [
+      1445342,
+      1445342
+    ],
+    "compiled": [
+      64192,
+      64192
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.generated-comprehension-report",
+    "mode": "sync",
+    "clr": [
+      330384,
+      330384
+    ],
+    "peak": [
+      353981,
+      353981
+    ],
+    "compiled": [
+      2057056,
+      2057056
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "sync",
+    "clr": [
+      1127526,
+      1127582
+    ],
+    "peak": [
+      2855754,
+      2855754
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "diagnostic.repeated-iterator-construction",
+    "mode": "async",
+    "clr": [
+      1438472,
+      1438472
+    ],
+    "peak": [
+      1445342,
+      1445342
+    ],
+    "compiled": [
+      64192,
+      64192
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.generated-comprehension-report",
+    "mode": "async",
+    "clr": [
+      330632,
+      330632
+    ],
+    "peak": [
+      353981,
+      353981
+    ],
+    "compiled": [
+      2057056,
+      2057056
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "async",
+    "clr": [
+      1127568,
+      1127742
+    ],
+    "peak": [
+      2855754,
+      2855754
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  }
+]
