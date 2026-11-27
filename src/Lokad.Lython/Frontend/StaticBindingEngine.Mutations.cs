@@ -54,7 +54,7 @@ internal static partial class StaticBindingEngine
             return null;
         if (receiver.Name == "operator" && member == "setitem" &&
             StaticCallArguments.TryGetConcreteArguments(call, bindings, out var operatorArguments) &&
-            operatorArguments.Positional.Count > 0 && operatorArguments.Positional[0] is IdentifierExpressionSyntax itemReceiver)
+            operatorArguments.PositionalCount > 0 && operatorArguments.GetPositional(0) is IdentifierExpressionSyntax itemReceiver)
         {
             return itemReceiver.Name;
         }

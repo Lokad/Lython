@@ -67,14 +67,14 @@ internal static class StaticArgparseContractFamily
 
     private static void AnalyzeArgparseAddArgumentCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.Positional.Count == 0)
+        if (arguments.PositionalCount == 0)
         {
             return;
         }
 
-        for (var i = 0; i < arguments.Positional.Count; i++)
+        for (var i = 0; i < arguments.PositionalCount; i++)
         {
-            var optionName = arguments.Positional[i];
+            var optionName = arguments.GetPositional(i);
             if (!StaticAbstractValueResolver.TryResolveKnownString(optionName, bindings, out var optionText))
             {
                 if (StaticAbstractFacts.IsDefinitelyKnownLiteral(optionName, bindings))

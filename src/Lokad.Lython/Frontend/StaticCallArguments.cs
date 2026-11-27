@@ -2,32 +2,45 @@ using System.Collections.Frozen;
 
 namespace Lokad.Lython.Frontend;
 
-internal readonly record struct ConcreteCallArguments(
-    IReadOnlyList<ExpressionSyntax> Positional,
-    IReadOnlyDictionary<string, ExpressionSyntax> Keywords,
-    IReadOnlyList<AbstractValue?>? PositionalValues,
-    IReadOnlyDictionary<string, AbstractValue>? KeywordValues)
+internal readonly struct ConcreteCallArguments
 {
-    public ConcreteCallArguments(
-        IReadOnlyList<ExpressionSyntax> Positional,
-        IReadOnlyDictionary<string, ExpressionSyntax> Keywords)
-        : this(Positional, Keywords, null, null)
+    private readonly IReadOnlyList<CallArgumentSyntax>? _source;
+    private readonly List<ExpressionSyntax>? _expanded;
+    private readonly List<AbstractValue?>? _positionalValues;
+    private readonly Dictionary<string, AbstractValue>? _keywordValues;
+
+    internal ConcreteCallArguments(IReadOnlyList<CallArgumentSyntax> source, int positionalCount,
+        IReadOnlyDictionary<string, ExpressionSyntax> keywords)
     {
+        _source = source;
+        PositionalCount = positionalCount;
+        Keywords = keywords;
     }
 
-    public ConcreteCallArguments(
-        IReadOnlyList<ExpressionSyntax> Positional,
-        IReadOnlyDictionary<string, ExpressionSyntax> Keywords,
-        IReadOnlyList<AbstractValue?>? PositionalValues)
-        : this(Positional, Keywords, PositionalValues, null)
+    internal ConcreteCallArguments(List<ExpressionSyntax> positional, Dictionary<string, ExpressionSyntax> keywords,
+        List<AbstractValue?> positionalValues, Dictionary<string, AbstractValue> keywordValues)
     {
+        _expanded = positional;
+        _positionalValues = positionalValues;
+        _keywordValues = keywordValues;
+        PositionalCount = positional.Count;
+        Keywords = keywords;
+    }
+
+    public int PositionalCount { get; }
+    public IReadOnlyDictionary<string, ExpressionSyntax> Keywords { get; }
+
+    public ExpressionSyntax GetPositional(int position)
+    {
+        System.Diagnostics.Debug.Assert((uint)position < (uint)PositionalCount);
+        return _source is not null ? _source[position].Expression : _expanded![position];
     }
 
     public bool TryGetValue(int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax expression)
     {
-        if (position < Positional.Count)
+        if (position < PositionalCount)
         {
-            expression = Positional[position];
+            expression = GetPositional(position);
             return true;
         }
 
@@ -36,20 +49,18 @@ internal readonly record struct ConcreteCallArguments(
 
     public AbstractValue ResolvePositionalValue(int position, AbstractState bindings)
     {
-        if (PositionalValues is not null &&
-            position < PositionalValues.Count &&
-            PositionalValues[position].HasValue)
+        if (_positionalValues is not null && _positionalValues[position] is { } value)
         {
-            return PositionalValues[position].RequireNotNull();
+            return value;
         }
 
-        return StaticAbstractValueResolver.ResolveOrUnknown(Positional[position], bindings);
+        return StaticAbstractValueResolver.ResolveOrUnknown(GetPositional(position), bindings);
     }
 
     public AbstractValue ResolveKeywordValue(string keyword, AbstractState bindings)
     {
-        if (KeywordValues is not null &&
-            KeywordValues.TryGetValue(keyword, out var value))
+        if (_keywordValues is not null &&
+            _keywordValues.TryGetValue(keyword, out var value))
         {
             return value;
         }
@@ -59,7 +70,7 @@ internal readonly record struct ConcreteCallArguments(
 
     public bool TryResolveValue(int position, string keyword, AbstractState bindings, out AbstractValue value)
     {
-        if (position < Positional.Count)
+        if (position < PositionalCount)
         {
             value = ResolvePositionalValue(position, bindings);
             return true;
@@ -78,44 +89,17 @@ internal readonly record struct ConcreteCallArguments(
 
 internal static class StaticCallArguments
 {
-    public static bool TryGetConcreteArguments(CallExpressionSyntax call, out ConcreteCallArguments arguments)
-        => call.TryGetConcreteArguments(out arguments);
-
-    internal static bool TryPartitionArguments(IReadOnlyList<CallArgumentSyntax> source, out ConcreteCallArguments arguments)
+    internal static IReadOnlyDictionary<string, ExpressionSyntax> ReadKeywords(
+        IReadOnlyList<CallArgumentSyntax> source, int positionalCount)
     {
-        var positionalCount = 0;
-        for (var i = 0; i < source.Count; i++)
+        if (positionalCount == source.Count) return FrozenDictionary<string, ExpressionSyntax>.Empty;
+        var keywords = new Dictionary<string, ExpressionSyntax>(source.Count - positionalCount, StringComparer.Ordinal);
+        for (var i = positionalCount; i < source.Count; i++)
         {
             var argument = source[i];
-            if (argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
-            {
-                arguments = default;
-                return false;
-            }
-            if (argument.Kind == CallArgumentKind.Positional) positionalCount++;
+            keywords[argument.KeywordName] = argument.Expression;
         }
-
-        var positional = positionalCount == 0 ? Array.Empty<ExpressionSyntax>() : new ExpressionSyntax[positionalCount];
-        Dictionary<string, ExpressionSyntax>? keywords = null;
-        var position = 0;
-        for (var i = 0; i < source.Count; i++)
-        {
-            var argument = source[i];
-
-            if (argument.Kind == CallArgumentKind.Keyword)
-            {
-                keywords ??= new(source.Count - positionalCount, StringComparer.Ordinal);
-                keywords[argument.KeywordName] = argument.Expression;
-            }
-            else
-            {
-                positional[position++] = argument.Expression;
-            }
-        }
-
-        arguments = new ConcreteCallArguments(positional,
-            keywords ?? (IReadOnlyDictionary<string, ExpressionSyntax>)FrozenDictionary<string, ExpressionSyntax>.Empty);
-        return true;
+        return keywords;
     }
 
     public static bool TryGetConcreteArguments(CallExpressionSyntax call, AbstractState bindings, out ConcreteCallArguments arguments)

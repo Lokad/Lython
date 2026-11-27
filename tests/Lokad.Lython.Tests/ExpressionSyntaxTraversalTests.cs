@@ -37,7 +37,7 @@ public sealed class ExpressionSyntaxTraversalTests
         AssertChildren(new ParenthesizedExpressionSyntax(first, Span), first);
         AssertChildren(new MemberExpressionSyntax(first, "value", Span), first);
         AssertChildren(
-            new CallExpressionSyntax(first, [new CallArgumentSyntax(CallArgumentForm.Positional, second)], Span),
+            new CallExpressionSyntax(first, [new CallArgumentSyntax(CallArgumentForm.Positional, second)], 1, Span),
             first,
             second);
         AssertChildren(new SubscriptExpressionSyntax(first, second, Span), first, second);

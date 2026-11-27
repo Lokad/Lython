@@ -108,19 +108,19 @@ internal static class StaticTextIoContractFamily
 
     private static void AnalyzeOpenCallShape(LythonSourceSpan callSpan, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics)
     {
-        if (arguments.Positional.Count > 8)
+        if (arguments.PositionalCount > 8)
         {
-            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} received too many positional arguments.", arguments.Positional[8].Span);
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} received too many positional arguments.", arguments.GetPositional(8).Span);
         }
 
         var hasFileKeyword = arguments.Keywords.ContainsKey("file");
         var hasPathKeyword = arguments.Keywords.ContainsKey("path");
-        if (arguments.Positional.Count == 0 && !hasFileKeyword && !hasPathKeyword)
+        if (arguments.PositionalCount == 0 && !hasFileKeyword && !hasPathKeyword)
         {
             AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} expects a file/path argument.", callSpan);
         }
 
-        if ((arguments.Positional.Count > 0 && (hasFileKeyword || hasPathKeyword)) ||
+        if ((arguments.PositionalCount > 0 && (hasFileKeyword || hasPathKeyword)) ||
             (hasFileKeyword && hasPathKeyword))
         {
             AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} got multiple values for argument 'file/path'.", callSpan);
@@ -147,7 +147,7 @@ internal static class StaticTextIoContractFamily
 
     private static void AnalyzeOpenDuplicate(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics)
     {
-        if (arguments.Positional.Count > position && arguments.Keywords.ContainsKey(keyword))
+        if (arguments.PositionalCount > position && arguments.Keywords.ContainsKey(keyword))
         {
             AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} got multiple values for argument '{keyword}'.", arguments.Keywords[keyword].Span);
         }
@@ -289,7 +289,7 @@ internal static class StaticTextIoContractFamily
         List<LythonDiagnostic> diagnostics,
         LythonSourceSpan span)
     {
-        if (arguments.Positional.Count + arguments.Keywords.Count > 1)
+        if (arguments.PositionalCount + arguments.Keywords.Count > 1)
         {
             AddDiagnostic(diagnostics, "LA3108", $"file.{memberName}([size]) expects zero or one integer argument.", span);
             return;
@@ -344,7 +344,7 @@ internal static class StaticTextIoContractFamily
             return;
         }
 
-        if (arguments.Positional.Count + arguments.Keywords.Count != 1)
+        if (arguments.PositionalCount + arguments.Keywords.Count != 1)
         {
             AddDiagnostic(diagnostics, "LA3111", "file.write(text) expects one string argument.", span);
             return;
@@ -370,7 +370,7 @@ internal static class StaticTextIoContractFamily
             return;
         }
 
-        if (arguments.Positional.Count + arguments.Keywords.Count != 1)
+        if (arguments.PositionalCount + arguments.Keywords.Count != 1)
         {
             AddDiagnostic(diagnostics, "LA3112", "file.writelines(lines) expects one iterable of strings argument.", span);
             return;

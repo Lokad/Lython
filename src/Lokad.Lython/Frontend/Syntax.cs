@@ -682,23 +682,27 @@ internal sealed record MemberExpressionSyntax(
 internal sealed record CallExpressionSyntax(
     ExpressionSyntax Target,
     IReadOnlyList<CallArgumentSyntax> Arguments,
+    int OrdinaryPositionalCount,
     LythonSourceSpan Span) : ExpressionSyntax(Span)
 {
     // Prepared once before the frontend publishes the syntax graph. Copies
     // made for class-name mangling retain this static lexical decision.
     internal bool PreloadImplicitSuperArguments { get; set; }
 
-    // Argument expressions are finalized before analysis. Share their syntax
-    // partition, never inferred values: those belong to each current binding
-    // state. Expanded calls must still resolve their input in that state.
-    private bool? _concreteArgumentsAvailable;
-    private ConcreteCallArguments _concreteArguments;
+    // Ordinary positionals are already the prefix of Arguments. Share only
+    // the keyword lookup. A negative count marks calls needing expansion in
+    // the current binding state.
+    private IReadOnlyDictionary<string, ExpressionSyntax>? _concreteKeywords;
     internal bool TryGetConcreteArguments(out ConcreteCallArguments arguments)
     {
-        if (_concreteArgumentsAvailable is null)
-            _concreteArgumentsAvailable = StaticCallArguments.TryPartitionArguments(Arguments, out _concreteArguments);
-        arguments = _concreteArguments;
-        return _concreteArgumentsAvailable.Value;
+        if (OrdinaryPositionalCount < 0)
+        {
+            arguments = default;
+            return false;
+        }
+        _concreteKeywords ??= StaticCallArguments.ReadKeywords(Arguments, OrdinaryPositionalCount);
+        arguments = new ConcreteCallArguments(Arguments, OrdinaryPositionalCount, _concreteKeywords);
+        return true;
     }
 }
 

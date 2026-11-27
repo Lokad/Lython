@@ -77,7 +77,7 @@ internal static partial class StaticDataModuleContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (arguments.Positional.Count == 0)
+        if (arguments.PositionalCount == 0)
         {
             return false;
         }

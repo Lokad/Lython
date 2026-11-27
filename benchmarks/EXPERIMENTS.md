@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1877 reuse parsed positionals during static analysis](results/2026-11-27-ordinary-static-call-prefix/README.md)
+removes the extra scan and expression array for ordinary calls. The generated
+definition scripts each allocate 9,224 B less. Ordinary compile CPU falls
+1.41–1.75% locally. Keyword elapsed rises 0.13–2.21% while CPU falls, and the
+warm nested read spans zero. Keep the simplification and the mixed timing.
+
 [B1876 resolve identifiers directly from abstract flow bindings](results/2026-11-27-abstract-binding-identifier-cache/README.md)
 removes duplicate per-expression cache entries and unifies uncached resolver
 dispatch. The definition scripts allocate 33,208 B less per compile. The

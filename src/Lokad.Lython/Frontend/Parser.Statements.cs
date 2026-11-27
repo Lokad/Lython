@@ -362,7 +362,7 @@ internal sealed partial class Parser
             IReadOnlyList<CallArgumentSyntax> headerArguments = [];
             if (CurrentToken == Token.OpenParen)
             {
-                if (ParseCallArguments(out _) is not { } arguments) return null;
+                if (ParseCallArguments(out _, out _) is not { } arguments) return null;
                 headerArguments = arguments;
             }
             if (!TryRead(Token.Colon, out _))

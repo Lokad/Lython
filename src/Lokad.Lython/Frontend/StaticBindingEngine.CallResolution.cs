@@ -36,7 +36,7 @@ internal static partial class StaticBindingEngine
 
         var initFields = summary.InitFields;
         var positionalFields = summary.PositionalInitFields;
-        if (arguments.Positional.Count > positionalFields.Length)
+        if (arguments.PositionalCount > positionalFields.Length)
         {
             value = default;
             return false;
@@ -46,7 +46,7 @@ internal static partial class StaticBindingEngine
         var consumedFields = new HashSet<string>(StringComparer.Ordinal);
         for (var i = 0; i < positionalFields.Length; i++)
         {
-            if (i < arguments.Positional.Count)
+            if (i < arguments.PositionalCount)
             {
                 var field = positionalFields[i];
                 if (field.StoreOnInstance)
@@ -178,7 +178,7 @@ internal static partial class StaticBindingEngine
 
         var initFields = summary.InitFields;
         var positionalFields = summary.PositionalInitFields;
-        if (arguments.Positional.Count > positionalFields.Length)
+        if (arguments.PositionalCount > positionalFields.Length)
         {
             reason = "too many positional arguments";
             offendingExpression = null;
@@ -186,7 +186,7 @@ internal static partial class StaticBindingEngine
         }
 
         var assigned = new HashSet<string>(StringComparer.Ordinal);
-        for (var i = 0; i < arguments.Positional.Count; i++)
+        for (var i = 0; i < arguments.PositionalCount; i++)
         {
             assigned.Add(positionalFields[i].Name);
         }

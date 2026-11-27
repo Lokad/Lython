@@ -57,7 +57,7 @@ internal static class StaticCollectionContractFamily
 
     private static void AnalyzeLiteralIterableBuiltinCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.Positional.Count + arguments.Keywords.Count != 1)
+        if (arguments.PositionalCount + arguments.Keywords.Count != 1)
         {
             return;
         }
@@ -97,7 +97,7 @@ internal static class StaticCollectionContractFamily
 
     private static void AnalyzeLenCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.Positional.Count + arguments.Keywords.Count != 1)
+        if (arguments.PositionalCount + arguments.Keywords.Count != 1)
         {
             return;
         }
@@ -119,7 +119,7 @@ internal static class StaticCollectionContractFamily
 
     private static void AnalyzeDictCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.Positional.Count + arguments.Keywords.Count != 1)
+        if (arguments.PositionalCount + arguments.Keywords.Count != 1)
         {
             return;
         }
@@ -215,9 +215,9 @@ internal static class StaticCollectionContractFamily
 
     private static void AnalyzeListSortCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.Positional.Count > 0)
+        if (arguments.PositionalCount > 0)
         {
-            AddDiagnostic(diagnostics, "LA3123", "list.sort(*, key=None, reverse=False) expects keyword-only arguments.", arguments.Positional[0].Span);
+            AddDiagnostic(diagnostics, "LA3123", "list.sort(*, key=None, reverse=False) expects keyword-only arguments.", arguments.GetPositional(0).Span);
         }
 
         // R13: no static key-callable check here; an invalid key only fails when

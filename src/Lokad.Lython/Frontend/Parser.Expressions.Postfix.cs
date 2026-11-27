@@ -53,16 +53,17 @@ internal sealed partial class Parser
 
     private CallExpressionSyntax? ParseCallPostfix(ExpressionSyntax target)
     {
-        var arguments = ParseCallArguments(out var closeParenToken);
+        var arguments = ParseCallArguments(out var closeParenToken, out var ordinaryPositionalCount);
         return arguments is null
             ? null
-            : new CallExpressionSyntax(target, arguments, Merge(target.Span, closeParenToken));
+            : new CallExpressionSyntax(target, arguments, ordinaryPositionalCount, Merge(target.Span, closeParenToken));
     }
 
-    private IReadOnlyList<CallArgumentSyntax>? ParseCallArguments(out int closeParenToken)
+    private IReadOnlyList<CallArgumentSyntax>? ParseCallArguments(out int closeParenToken, out int ordinaryPositionalCount)
     {
         var openParenToken = ReadToken();
         closeParenToken = -1;
+        ordinaryPositionalCount = 0;
         List<CallArgumentSyntax>? parsedArguments = null;
         var positionalCount = 0;
         var needsReordering = false;
@@ -80,6 +81,7 @@ internal sealed partial class Parser
                 {
                     ReadToken();
                     form = CallArgumentForm.StarredDictionary;
+                    ordinaryPositionalCount = -1;
                     sawKeywordArgument = true;
                     sawDictionaryUnpacking = true;
                 }
@@ -93,6 +95,7 @@ internal sealed partial class Parser
 
                     ReadToken();
                     form = CallArgumentForm.StarredList;
+                    ordinaryPositionalCount = -1;
                 }
                 else if (IsNameToken(CurrentToken) && PeekToken(1) == Token.Assign)
                 {
@@ -156,6 +159,7 @@ internal sealed partial class Parser
             return null;
         }
 
+        if (ordinaryPositionalCount >= 0) ordinaryPositionalCount = positionalCount;
         if (parsedArguments is null) return [];
         // Python evaluates a star expression before preceding keywords.
         // Already ordered forms can transfer their completed argument list.

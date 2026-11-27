@@ -138,7 +138,7 @@ internal static class StaticMathContractFamily
             ? $"{targetName}(*integers) expects integer arguments."
             : $"{targetName}(*coordinates) expects real-number arguments.";
 
-        for (var i = 0; i < arguments.Positional.Count; i++)
+        for (var i = 0; i < arguments.PositionalCount; i++)
         {
             emitted |= AnalyzeArgument(
                 arguments,

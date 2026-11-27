@@ -115,14 +115,14 @@ internal static partial class StaticBindingEngine
             ? stackalloc bool[effectiveParameterCount]
             : new bool[effectiveParameterCount];
         var positionalParameterCount = Math.Max(0, layout.PositionalCount - firstParameterIndex);
-        if (arguments.Positional.Count > positionalParameterCount)
+        if (arguments.PositionalCount > positionalParameterCount)
         {
             reason = "too many positional arguments";
             offendingExpression = null;
             return true;
         }
 
-        assigned[..arguments.Positional.Count].Fill(true);
+        assigned[..arguments.PositionalCount].Fill(true);
         foreach (var (keyword, expression) in arguments.Keywords)
         {
             if (!layout.LayoutParameterIndex.TryGetValue(keyword, out var parameterIndex) ||
@@ -232,7 +232,7 @@ internal static partial class StaticBindingEngine
                 return false;
             }
 
-            if (positionalIndex < arguments.Positional.Count)
+            if (positionalIndex < arguments.PositionalCount)
             {
                 if (parameter.Kind != FunctionParameterKind.PositionalOnly && arguments.Keywords.ContainsKey(parameter.Name))
                 {
@@ -257,7 +257,7 @@ internal static partial class StaticBindingEngine
             }
         }
 
-        return positionalIndex == arguments.Positional.Count && consumedKeywordCount == arguments.Keywords.Count;
+        return positionalIndex == arguments.PositionalCount && consumedKeywordCount == arguments.Keywords.Count;
     }
 
     private static AbstractValue ResolveArgumentValue(ExpressionSyntax expression, AbstractState bindings)

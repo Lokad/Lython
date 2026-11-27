@@ -218,9 +218,9 @@ internal static class StaticRegexArgumentContracts
     {
         var summary = receiver.RequireRegexMatchSummary();
         var emitted = false;
-        for (var i = 0; i < arguments.Positional.Count; i++)
+        for (var i = 0; i < arguments.PositionalCount; i++)
         {
-            var expression = arguments.Positional[i];
+            var expression = arguments.GetPositional(i);
             var value = arguments.ResolvePositionalValue(i, bindings);
             if (IsUnknown(value) || value.Kind == AbstractValueKind.UserInstance)
             {
@@ -278,9 +278,9 @@ internal static class StaticRegexArgumentContracts
     {
         ExpressionSyntax expression;
         AbstractValue value;
-        if (arguments.Positional.Count > 0)
+        if (arguments.PositionalCount > 0)
         {
-            expression = arguments.Positional[0];
+            expression = arguments.GetPositional(0);
             value = arguments.ResolvePositionalValue(0, bindings);
         }
         else if (arguments.Keywords.TryGetValue("group", out var keywordExpression))

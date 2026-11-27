@@ -93,7 +93,7 @@ internal static class StaticRegexReturnResolver
 
         value = memberName switch
         {
-            "group" when arguments.Positional.Count == 0 && arguments.Keywords.Count == 0 => AbstractValue.StringType(call.Span),
+            "group" when arguments.PositionalCount == 0 && arguments.Keywords.Count == 0 => AbstractValue.StringType(call.Span),
             "group" => AbstractValue.Unknown(call.Span),
             "__getitem__" => AbstractValue.Unknown(call.Span),
             // Group arity is pattern-dependent: an empty-tuple shape wrongly rejects

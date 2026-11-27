@@ -17,7 +17,7 @@ internal static class StaticFilesystemContractFamily
         }
 
         var emitted = false;
-        for (var i = 0; i < arguments.Positional.Count; i++)
+        for (var i = 0; i < arguments.PositionalCount; i++)
         {
             emitted |= AnalyzePathLikeArgument(arguments, i, string.Empty, $"{targetName}([path][, ...]) expects string or Path path segments.", diagnostics, bindings);
         }
@@ -70,7 +70,7 @@ internal static class StaticFilesystemContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.Os.PathJoin.Name, StringComparison.Ordinal))
         {
-            for (var i = 0; i < arguments.Positional.Count; i++)
+            for (var i = 0; i < arguments.PositionalCount; i++)
             {
                 emitted |= AnalyzePathLikeArgument(arguments, i, string.Empty, "os.path.join(path, *paths) expects path-like arguments.", diagnostics, bindings);
             }

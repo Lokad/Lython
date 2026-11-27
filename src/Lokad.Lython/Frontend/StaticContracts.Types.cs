@@ -150,7 +150,7 @@ internal readonly record struct StaticCallShapeContract(CallableParameterLayout 
         out string reason,
         out ExpressionSyntax? offendingExpression)
     {
-        var count = arguments.Positional.Count + arguments.Keywords.Count;
+        var count = arguments.PositionalCount + arguments.Keywords.Count;
         if (!AcceptsArgumentCount(count))
         {
             reason = "callable arity contract rejected the argument count";
@@ -173,7 +173,7 @@ internal readonly record struct StaticCallShapeContract(CallableParameterLayout 
         }
 
         var named = (NamedCallableParameterLayout)Parameters;
-        if (!named.MaximumPositionalArgumentCount.Accepts(arguments.Positional.Count))
+        if (!named.MaximumPositionalArgumentCount.Accepts(arguments.PositionalCount))
         {
             reason = "callable argument contract rejected too many positional arguments";
             offendingExpression = null;
@@ -197,7 +197,7 @@ internal readonly record struct StaticCallShapeContract(CallableParameterLayout 
                 return true;
             }
 
-            if (index < arguments.Positional.Count)
+            if (index < arguments.PositionalCount)
             {
                 reason = $"callable argument contract rejected duplicate binding for '{parameterName}'";
                 offendingExpression = keywordExpression;
@@ -220,7 +220,7 @@ internal readonly record struct StaticCallShapeContract(CallableParameterLayout 
             }
         }
 
-        for (var index = arguments.Positional.Count; index < named.RequiredCount; index++)
+        for (var index = arguments.PositionalCount; index < named.RequiredCount; index++)
         {
             if (arguments.Keywords.ContainsKey(named.ParameterNames[index]))
             {

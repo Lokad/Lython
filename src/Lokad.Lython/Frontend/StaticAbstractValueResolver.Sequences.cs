@@ -16,7 +16,7 @@ internal static partial class StaticAbstractValueResolver
             return false;
         }
 
-        if (arguments.Positional.Count == 0 && arguments.Keywords.Count == 0)
+        if (arguments.PositionalCount == 0 && arguments.Keywords.Count == 0)
         {
             value = constructorName == "list"
                 ? AbstractValue.List([], call.Span)
@@ -24,7 +24,7 @@ internal static partial class StaticAbstractValueResolver
             return true;
         }
 
-        if (arguments.Positional.Count + arguments.Keywords.Count != 1 ||
+        if (arguments.PositionalCount + arguments.Keywords.Count != 1 ||
             !arguments.TryGetValue(0, "iterable", out var iterableExpression))
         {
             value = default;
@@ -54,7 +54,7 @@ internal static partial class StaticAbstractValueResolver
     private static bool TryResolveLenAbstractValue(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
     {
         if (!StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) ||
-            arguments.Positional.Count + arguments.Keywords.Count != 1 ||
+            arguments.PositionalCount + arguments.Keywords.Count != 1 ||
             !arguments.TryGetValue(0, "value", out var valueExpression) ||
             !TryResolve(valueExpression, bindings, out var target) ||
             !StaticAbstractFacts.IsDefinitelySized(target))
