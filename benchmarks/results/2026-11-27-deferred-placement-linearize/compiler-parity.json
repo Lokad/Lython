@@ -1,0 +1,23 @@
+{
+  "fixtures": 15,
+  "budgetLevels": 113,
+  "factsSHA256": "15d91509c0a65f61ee4b3b8232c231e38fd40e6517ba560233c3ff4f1c91ca2a",
+  "cancellationSHA256": "d1e7e18623ba6bd5fb1dd9c70f309c6f74bddc582d7a1d4ab6aca04a0b6f6645",
+  "sources": [
+    "diagnostic.generated-ordinary-definitions",
+    "scripts.rule-default-closures",
+    "scripts.csv-invoice.large",
+    "scripts.file-search.large",
+    "capture-after-literal",
+    "capture-snapshot-overlap",
+    "signed-constant-boundaries",
+    "declaration-in-default",
+    "declaration-kinds",
+    "deferral-through-layout",
+    "return-forwarded-local",
+    "rebound-definition",
+    "explicit-read-before-forwarding",
+    "scope-not-eligible",
+    "deferred-before-returned-pair"
+  ]
+}

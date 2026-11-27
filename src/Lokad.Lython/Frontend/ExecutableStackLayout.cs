@@ -123,10 +123,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     }
 
     internal int[]? Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableCallSite[] sites, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token)
+        ExecutableCallSite[] sites, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token,
+        out int valueStorageCapacity)
     {
         var positions = Blocks;
         var instructions = code.Instructions;
+        valueStorageCapacity = code.ValueStorageCapacity;
         List<int>? deferredSites = null;
         for (var i = 0; i < blocks.Count; i++)
         {
@@ -161,7 +163,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     deferredCandidates is not null && j + 1 < source.Count &&
                     source[j + 1] is { OpCode: ExecutableOpCode.StoreLocal } store &&
                     deferredCandidates[store.LocalSlot] == instruction.ConstantIndex + 1)
+                {
+                    var definition = (ExecutableCreateFunction)code.Constants[instruction.ConstantIndex]!;
+                    // A compiled positional tuple leaves the binding slot free for the keyword default.
+                    var keywordSlot = definition.LiteralPositionalDefaults is null
+                        ? checked(valueStorageCapacity++) : store.LocalSlot;
+                    instruction = instruction.WithDeferredDefinition(keywordSlot);
                     (deferredSites ??= []).Add(position.Offset + j);
+                }
                 instructions[position.Offset + j] = instruction.OpCode switch
                 {
                     // Leave call-plus-update publication to its existing path.

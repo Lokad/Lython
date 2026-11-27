@@ -655,7 +655,8 @@ internal sealed partial class ExecutableCodeObject
                     SuiteEndIndex = suiteEnd
                 };
             }).ToArray();
-        var deferredSites = operandLayout.Linearize(this, blocks, callSites, regionsByEntry.Length == 0, deferredCandidates, cancellationToken);
+        var deferredSites = operandLayout.Linearize(this, blocks, callSites, regionsByEntry.Length == 0,
+            deferredCandidates, cancellationToken, out var valueStorageCapacity);
         // Native work can precede cleanup without owning its routing state.
         // A physical instruction frontier also covers normal fallthrough and
         // jumps: transfer once before entering any finally suite.
@@ -674,7 +675,7 @@ internal sealed partial class ExecutableCodeObject
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out _definitionPairFirstCreation);
             DirectCasedReturnIndex = PrepareDirectCasedReturn(cancellationToken);
             DeferredDefinitionSites = deferredSites;
-            ValueStorageCapacity = PlaceDeferredDefinitions(deferredSites, cancellationToken);
+            ValueStorageCapacity = valueStorageCapacity;
         }
         else System.Diagnostics.Debug.Assert(deferredSites is null);
 

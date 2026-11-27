@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1835 place deferred definition storage during emission](results/2026-11-27-deferred-placement-linearize/README.md)
+removes a separate compiler pass over 93 sites in the ordinary factory.
+Fifteen exact snapshots and 113 budget levels match. Local compile-to-result
+elapsed falls 4.78–11.32% with mixed CPU. Compile-only CPU remains inconclusive.
+
 [B1834 refresh representative CPython comparisons](results/2026-11-27-current-cpython/README.md)
 uses the delivered list-growth core and updated comparison host. First-line
 search takes 1.294–1.304× CPython elapsed, wide async shipment 1.334–1.409×

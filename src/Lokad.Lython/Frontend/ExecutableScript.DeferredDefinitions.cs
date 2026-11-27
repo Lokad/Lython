@@ -33,21 +33,4 @@ internal sealed partial class ExecutableCodeObject
         }
     }
 
-    private int PlaceDeferredDefinitions(int[]? sites, CancellationToken token)
-    {
-        var valueCapacity = ValueStorageCapacity;
-        if (sites is null) return valueCapacity;
-        for (var i = 0; i < sites.Length; i++)
-        {
-            PythonTokenization.CheckCancellation(token, i);
-            var index = sites[i];
-            ref var create = ref Instructions[index];
-            var definition = (ExecutableCreateFunction)Constants[create.ConstantIndex]!;
-            // A compiled positional tuple leaves the local free for the prepaid keyword default.
-            var keywordSlot = definition.LiteralPositionalDefaults is null
-                ? checked(valueCapacity++) : Instructions[index + 1].LocalSlot;
-            create = create.WithDeferredDefinition(keywordSlot);
-        }
-        return valueCapacity;
-    }
 }
