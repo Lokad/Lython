@@ -12,7 +12,10 @@
 | Default JSON Lines export | 768 records / 47,361 B input | 1.19990–1.30230 ms | 1.47476–1.54651 ms | 0.776–0.883× | Local WSL diagnostic. [B1880]. |
 | Default JSON Lines export, Lython `RunAsync` | 768 records / 47,361 B input | 1.25198–1.32638 ms | 1.49664–1.55189 ms | 0.807–0.886× | Local WSL diagnostic. [B1880]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 1.10825–1.11422 ms | 3.09238–3.14538 ms | 0.352–0.360× | Local WSL diagnostic. [B1881]. |
-| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 1.01837–1.11356 ms | 0.76955–0.79924 ms | 1.274–1.447× | Local WSL confirmation. Initial timing varies. [B1888]. |
+| Nested-object JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 1.03631–1.11165 ms | 0.79008–0.79924 ms | 1.297–1.407× | Local WSL confirmation. Initial timing varies. [B1888]. |
+| Nested JSON Lines summary and export | 4,096 records / 159,744 B input | 3.55033–3.67051 ms | 4.66297–4.69670 ms | 0.756–0.787× | Local WSL diagnostic. [B1888]. |
+| Nested JSON Lines summary and export, Lython `RunAsync` | 4,096 records / 159,744 B input | 3.67599–3.70718 ms | 4.65803–4.73711 ms | 0.776–0.796× | Local WSL diagnostic. [B1888]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.37484–2.38422 ms | 0.90704–0.92178 ms | 2.576–2.629× | Local WSL diagnostic. [B1885]. |
 | Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.77914–2.79027 ms | 1.42270–1.46284 ms | 1.900–1.961× | Local WSL diagnostic. [B1885]. |
@@ -90,6 +93,12 @@ The module script also has separate compilation and compile-to-result
 lanes below. Use the matched B1884 comparison for changes within Lython.
 [B1885].
 
+B1888 measures `126d551c2` on the same WSL machine against CPython 3.13.16.
+The initial nested document varies by 59–66% between identical Lython
+workers. The table uses the same-image confirmation in reverse worker
+order. Both runs remain available. The Lines report also writes its
+aggregated output. [B1888].
+
 The first-line search gap is about 15–16 µs in B1834. A separate B1815
 diagnostic measured about 23 µs with verification and 29–30 µs before it.
 The earlier interval still includes mediated I/O, output capture and
@@ -108,6 +117,7 @@ The paired metadata measurement at fixed runtime is available separately.
 | Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Historical quiet diagnostic. [B1865]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Historical quiet diagnostic. [B1865]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Historical diagnostic. [B1849]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Historical quiet diagnostic. [B1849]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Historical quiet diagnostic. [B1860]. |
 | Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27088–3.30482 ms | 1.58144–1.58565 ms | 2.063–2.090× | Historical quiet diagnostic. [B1860]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Historical diagnostic. [B1858]. |
@@ -398,6 +408,7 @@ document reproduction.
 [B1880]: ../benchmarks/results/2026-11-27-wsl-current-cpython/README.md
 [B1881]: ../benchmarks/results/2026-11-27-wsl-shipment-cpython/README.md
 [B1885]: ../benchmarks/results/2026-11-27-wsl-log-cpython/README.md
+[B1888]: ../benchmarks/results/2026-11-27-wsl-nested-json-cpython/README.md
 [B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md

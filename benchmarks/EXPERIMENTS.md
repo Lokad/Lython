@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1888 compare nested JSON with CPython](results/2026-11-27-wsl-nested-json-cpython/README.md)
+finds nested Lines at 0.756–0.796× CPython elapsed across both APIs.
+The initial nested-document comparison varies. Its same-image reverse
+repeat records 1.274–1.447× elapsed and 1.154–1.257× CPU. All 196 batches
+and three independent goldens verify. Keep the earlier quiet result.
+
 [B1887 bind module regex arguments in fixed slots](results/2026-11-27-borrow-regex-arguments/README.md)
 removes one funded binding array per ordinary call. The module log saves
 196,608 CLR bytes at equal peak admission in both APIs. Local process CPU
