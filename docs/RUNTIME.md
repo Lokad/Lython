@@ -476,6 +476,9 @@ Eligible single-target list comprehensions feed the yielded value directly into
 the expression. Their scope keeps the current binding for `locals()` snapshots,
 including during a custom iterator pull or suspended item operation. Capturing
 and nested bodies use their existing namespace scope.
+Once their operands are ready, ordinary collection inserts run inline in both
+execution modes. Starred iterable and mapping expansion can suspend and use
+the same mutation and admission checks when inserting each value.
 An eligible native call can return a bound operand, finish exact integer
 arithmetic, evaluate a literal affix on an exact string or return a closed
 lexical definition before preparing callee workspace or a tuple-unpack

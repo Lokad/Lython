@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1847 insert ready collection values inline](results/2026-11-27-direct-prepared-inserts/README.md)
+removes the expansion activation for ordinary inserts in both APIs. Quiet
+wide sync shipment uses 1.89–4.98% less CPU and the dictionary/set index
+0.63–5.85% less. Wide async timing is inconclusive and bound async CPU rises
+0.40–1.22%. Peak admission matches, 288 focused checks pass per target and
+all four complete scripts match independent CPython goldens.
+
 [B1846 complete ready parser dictionaries directly](results/2026-11-27-ready-dictreader-row/README.md)
 skips the general row activation on ready dictionaries and exhaustion. On
 the quiet VM file-fed map uses 4.01–10.52% less process CPU and the list

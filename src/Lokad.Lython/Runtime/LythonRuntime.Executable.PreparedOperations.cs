@@ -137,6 +137,20 @@ internal sealed partial class LythonRuntime
                     try { execution.Stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, context, execution.Stack[targetSlot], deferSingleStar: call.DeferSingleStar); }
                     catch { execution.Stack.RetireTo(targetSlot); throw; }
                     break;
+                case ExecutableAppendDisplay { Unpacking: false } when invocation is not null:
+                {
+                    var element = execution.Stack.TakeValue(instruction.ResultSlot, instruction.LiveExtent);
+                    invocation.AppendPreparedDisplayValue(execution.Stack[instruction.InputStart], element, span);
+                    break;
+                }
+                case ExecutableStoreDictionaryItem { Unpacking: false } when invocation is not null:
+                {
+                    var valueSlot = instruction.ResultSlot + 1;
+                    var itemValue = execution.Stack.TakeValue(valueSlot, valueSlot);
+                    var key = execution.Stack.TakeValue(instruction.ResultSlot, instruction.LiveExtent);
+                    invocation.StorePreparedDictionaryItem(instruction.InputStart, key, itemValue, span);
+                    break;
+                }
                 // Display and call operations with a suspension path.
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
                     or ExecutableFinishCall or ExecutableCallWithKeywordMapping
@@ -173,43 +187,49 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        private void AppendPreparedDisplayValue(object destination, object value, LythonSourceSpan span)
+        {
+            CheckExecution(span);
+            if (destination is PyList list) AddListDisplayValue(list, value, span, this);
+            else if (destination is PySet set)
+            {
+                using var ambient = PyStructuralGuard.PushAmbient(this, span);
+                set.Add(ValidateSetItem(value, span));
+                CheckExecution(span);
+            }
+        }
+
+        private void StorePreparedDictionaryItem(int destination, object key, object value, LythonSourceSpan span)
+        {
+            CheckExecution(span);
+            using var ambient = PyStructuralGuard.PushAmbient(this, span);
+            var dictionary = (PyDict)_execution.Stack[destination];
+            dictionary.SetItem(ValidateDictionaryKey(key, span), value);
+            CheckExecution(span);
+        }
+
         private async ValueTask ExecutePreparedSuspendingOperationAsync(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
         {
             var span = instruction.Span;
             switch (operation)
             {
-                case ExecutableAppendDisplay append:
+                case ExecutableAppendDisplay { Unpacking: true }:
+                {
                     var value = _execution.Stack.TakeValue(instruction.ResultSlot, instruction.LiveExtent);
                     var destination = _execution.Stack[instruction.InputStart];
-                    if (!append.Unpacking) Add(value);
-                    else if (asynchronous)
+                    if (asynchronous)
                     {
                         await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, this).ConfigureAwait(false))
-                            Add(item);
+                            AppendPreparedDisplayValue(destination, item, span);
                     }
                     else foreach (var item in PyIteration.Cursor.Create(value, span, this))
-                             Add(item);
+                             AppendPreparedDisplayValue(destination, item, span);
                     break;
-
-                    void Add(object item)
-                    {
-                        CheckExecution(span);
-                        if (destination is PyList list) AddListDisplayValue(list, item, span, this);
-                        else if (destination is PySet set)
-                        {
-                            using var ambient = PyStructuralGuard.PushAmbient(this, span);
-                            set.Add(ValidateSetItem(item, span));
-                            CheckExecution(span);
-                        }
-                    }
-                case ExecutableStoreDictionaryItem item:
-                    var itemValue = _execution.Stack.TakeValue(instruction.ResultSlot + (item.Unpacking ? 0 : 1), instruction.ResultSlot + (item.Unpacking ? 0 : 1));
-                    if (!item.Unpacking)
-                    {
-                        var key = _execution.Stack.TakeValue(instruction.ResultSlot, instruction.LiveExtent);
-                        Put(key, itemValue);
-                    }
-                    else if (itemValue is PyInstance mapping)
+                }
+                case ExecutableStoreDictionaryItem { Unpacking: true }:
+                {
+                    var itemValue = _execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
+                    if (itemValue is PyInstance mapping)
                     {
                         var keysMember = asynchronous
                             ? await TryResolveRuntimeMemberAsync(mapping, "keys", this, span).ConfigureAwait(false)
@@ -228,20 +248,16 @@ internal sealed partial class LythonRuntime
                         else foreach (var key in PyIteration.Cursor.Create(keys, span, this))
                                  AddListDisplayValue(snapshot, key, span, this);
                         foreach (var key in snapshot)
-                            Put(key, asynchronous ? await GetUserItemAsync(mapping, key, this, span).ConfigureAwait(false)
-                                : GetUserItem(mapping, key, this, span));
+                        {
+                            var value = asynchronous ? await GetUserItemAsync(mapping, key, this, span).ConfigureAwait(false)
+                                : GetUserItem(mapping, key, this, span);
+                            StorePreparedDictionaryItem(instruction.InputStart, key, value, span);
+                        }
                     }
-                    else foreach (var pair in EnumerateMappingItems(itemValue, this, span)) Put(pair.Key, pair.Value);
+                    else foreach (var pair in EnumerateMappingItems(itemValue, this, span))
+                             StorePreparedDictionaryItem(instruction.InputStart, pair.Key, pair.Value, span);
                     break;
-
-                    void Put(object key, object itemValue)
-                    {
-                        CheckExecution(span);
-                        using var ambient = PyStructuralGuard.PushAmbient(this, span);
-                        var dictionary = (PyDict)_execution.Stack[instruction.InputStart];
-                        dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
-                        CheckExecution(span);
-                    }
+                }
                 case ExecutableAppendCall argument:
                     var argumentSlot = instruction.ResultSlot;
                     try { await ((CallExpansion.CallArgumentAccumulator)_execution.Stack[instruction.InputStart]).AppendAsync(argument.Form, _execution.Stack[argumentSlot], span, asynchronous).ConfigureAwait(false); }
