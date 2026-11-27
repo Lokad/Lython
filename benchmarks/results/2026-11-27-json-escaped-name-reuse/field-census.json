@@ -1,0 +1,18 @@
+[
+  {
+    "case": "diagnostic.json-service-escaped-fields",
+    "fields": {
+      "café": 2048,
+      "株数": 2048
+    },
+    "inputBytes": 91043
+  },
+  {
+    "case": "diagnostic.json-lines-escaped-fields",
+    "fields": {
+      "café": 4096,
+      "株数": 4096
+    },
+    "inputBytes": 155648
+  }
+]

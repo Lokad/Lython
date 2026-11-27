@@ -2164,6 +2164,9 @@ funded through pending hooks. Input, keys and containers retain their execution
 ownership throughout.
 Final containers retain their ordinary storage and admission; callbacks use the
 same awaited path, including reentrant parsing and preserved property-name snapshots.
+Short escaped property names use bounded stack scratch for lookup in the
+current record layout. A hit reuses the admitted key. A miss admits a new
+UTF-8 value before allocation.
 Default objects admit their shell and first native table together when the initial
 property token is a quote, starting one four-entry block for the unknown width.
 Empty objects and invalid initial property tokens use

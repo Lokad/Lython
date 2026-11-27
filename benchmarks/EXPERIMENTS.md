@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1824 reuse short escaped JSON names](results/2026-11-27-json-escaped-name-reuse/README.md)
+uses stack scratch to look up the admitted key before creating a string.
+Localized document and Lines allocation fall about 31% and 34% at matching
+peaks. The escaped document uses 11.00–17.91% less warm sync CPU locally.
+Pinned Lines elapsed falls 7.08–9.91%, with a moving plain CPU control.
+Keep the change and both comparisons.
+
 [B1823 shipment handoff against CPython](results/2026-11-27-starmap-slot-cpython/README.md)
 qualifies the external comparison of `489fde50e` on the quiet VM. Five-field
 shipment is 1.176–1.214× CPython warm sync, 1.360–1.367× warm async and

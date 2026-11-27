@@ -231,13 +231,44 @@ internal sealed partial class LythonRuntime
                 return (plain, end);
             }
 
+            if (expectedPropertyNames is not null && length <= PyString.InlineUtf8Capacity)
+                return (ReadShortEscapedJsonName(input, position, end, length, expectedPropertyNames,
+                    expectedPosition, context, span), end);
+
             // Validate/measure before admitting the exact final string. No
             // rewritten token, backend parser or temporary unescaped copy.
             var bytes = PyString.EstimateApproximateBytes(length);
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
             context.CheckExecution(span);
             var value = PyString.CreateReservedUtf8(length, context.MemoryGovernor);
-            var output = value.UnpublishedUtf8;
+            var written = WriteEscapedJsonString(input, position, end, value.UnpublishedUtf8, context, span);
+            value.CompleteUnpublishedUtf8(written);
+            context.CheckExecution(span);
+            var shared = expectedPropertyNames?.FindName(value.Utf8Span, expectedPosition, context, span);
+            context.CheckExecution(span);
+            if (shared is not null) return (shared, end);
+            storage.Commit(bytes);
+            return (value, end);
+        }
+
+        private static PyString ReadShortEscapedJsonName(PyString input, int position,
+            int end, int length, PyDict.RecordKeys expected, int expectedPosition, ExecutionContext context, LythonSourceSpan span)
+        {
+            // A layout hit needs only its already-owned canonical name. Use
+            // bounded scratch for the lookup, and admit a guest string on a miss.
+            Span<byte> decoded = stackalloc byte[PyString.InlineUtf8Capacity];
+            var written = WriteEscapedJsonString(input, position, end, decoded[..length], context, span);
+            decoded = decoded[..written];
+            context.CheckExecution(span);
+            var shared = expected.FindName(decoded, expectedPosition, context, span);
+            context.CheckExecution(span);
+            return shared ?? PyString.CopyFromUtf8(decoded, context.MemoryGovernor, span, context);
+        }
+
+        private static int WriteEscapedJsonString(PyString input, int position, int end,
+            Span<byte> output, ExecutionContext context, LythonSourceSpan span)
+        {
+            var original = input.Utf8Span;
             var read = position + 1;
             var written = 0;
             while (read < end - 1)
@@ -256,13 +287,7 @@ internal sealed partial class LythonRuntime
                     written += new Rune(scalar).EncodeToUtf8(output[written..]);
                 }
             }
-            value.CompleteUnpublishedUtf8(written);
-            context.CheckExecution(span);
-            var shared = expectedPropertyNames?.FindName(value.Utf8Span, expectedPosition, context, span);
-            context.CheckExecution(span);
-            if (shared is not null) return (shared, end);
-            storage.Commit(bytes);
-            return (value, end);
+            return written;
         }
 
         // The slash has been consumed. A lone surrogate is reported only after
