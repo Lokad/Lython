@@ -6,12 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1850 isolate ready insert timing](results/2026-11-27-ready-inserts-control/README.md)
+reuses the exact B1847 images. Nested JSON takes 0.88–1.75% less elapsed
+with CPU reaching zero, and bound async CPU reverses its earlier increase.
+The text control varies. Both quiet gates, three goldens and all 84 batches
+pass. A new Python regression preserves the visibility and ownership of
+deferred definitions when `next` invokes `locals` through an iterator.
+
 [B1849 refresh CPython comparisons after ready inserts](results/2026-11-27-post-ready-insertion-cpython/README.md)
 uses `9cee6f423` for six scripts and eight lanes. Wide shipment takes
 1.031–1.081× CPython sync and 1.204–1.241× async. File-fed map takes
 0.300–0.308×. Nested JSON rises to 1.148–1.155×, with cause open.
-The compiler snapshot proves the 93 deferred defaults do not determine
-the ordinary factory's physical operand capacity.
+The compiler snapshot finds the same operand peak outside the 93 deferred
+default intervals.
 
 [B1848 repeat the earlier JSON control](results/2026-11-27-dictreader-json-control/README.md)
 reuses both B1846 images and measures nested JSON first and last with

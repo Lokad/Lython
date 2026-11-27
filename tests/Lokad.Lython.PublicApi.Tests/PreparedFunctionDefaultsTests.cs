@@ -95,6 +95,42 @@ public sealed class PreparedFunctionDefaultsTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IteratorProtocolCanObserveAnEarlierDefinitionThroughNext(bool asynchronous)
+    {
+        const string source = """
+            class Observe:
+                def __iter__(self): return self
+                __next__ = staticmethod(locals)
+
+            def step(value): return value + 1
+
+            def factory(seed, observer):
+                def saved(value=step(seed), *, factor=step(seed + 1)):
+                    return value, factor
+                a = 0; b = 0; c = 0; d = 0; e = 0; f = 0; g = 0; h = 0
+                i = 0; j = 0; k = 0; l = 0; m = 0; n = 0; o = 0; p = 0
+                return next(observer)
+
+            snapshot = factory(10, Observe())
+            saved = snapshot['saved']
+            print(saved(), saved.__defaults__, saved.__kwdefaults__['factor'])
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("(11, 12) (11,) 12\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, 10)]
     [InlineData(true, 10)]
     [InlineData(false, 0)]

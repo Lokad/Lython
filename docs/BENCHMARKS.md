@@ -19,9 +19,12 @@ rows retain their original revisions and dates. [B1849] · [B1844].
 
 Wide async shipment overlaps its earlier range. Nested JSON runs at
 1.148–1.155× CPython, up from 1.094–1.114× in B1844. B1848 compared the
-earlier CSV-only change directly, and its repeat spans zero. The two
-CPython checkpoints bracket several runtime changes. [B1849] · [B1844] ·
-[B1848](../benchmarks/results/2026-11-27-dictreader-json-control/README.md).
+earlier CSV-only change directly, and its repeat spans zero. B1850 compares
+the subsequent insertion change directly and finds lower elapsed with CPU
+reaching zero. The higher cross-checkpoint result remains unexplained.
+[B1849] · [B1844] ·
+[B1848](../benchmarks/results/2026-11-27-dictreader-json-control/README.md) ·
+[B1850](../benchmarks/results/2026-11-27-ready-inserts-control/README.md).
 
 B1834 measures `4a6000316` with the comparison host from `05c1059de`.
 B1823 measures `489fde50e` and B1815 measures `c10f06884`. Those
@@ -205,7 +208,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
-| Insert ready collection values inline | Quiet CPU falls 1.9–5.0% for wide sync shipment and 0.6–5.8% for the dictionary/set index against `4919f6748`. Peak admission matches. | Wide async timing spans zero and bound async CPU rises 0.4–1.2%. The unchanged file-fed control varies. [B1847](../benchmarks/results/2026-11-27-direct-prepared-inserts/README.md). |
+| Insert ready collection values inline | Quiet CPU falls 1.9–5.0% for wide sync shipment and 0.6–5.8% for the dictionary/set index against `4919f6748`. Peak admission matches. | Wide async timing spans zero. Bound async CPU initially rises 0.4–1.2%, then reverses in a same-image repeat. The unchanged file-fed and text controls vary. [B1847](../benchmarks/results/2026-11-27-direct-prepared-inserts/README.md) · [B1850](../benchmarks/results/2026-11-27-ready-inserts-control/README.md). |
 | Return ready CSV dictionaries directly | Quiet process CPU falls 4.0–10.5% for file-fed map and 2.3–4.3% for the list-backed summary between `a1b3a3325` and `4919f6748`. Peak admission matches. | The unchanged nested JSON control initially uses 2.5–3.7% more CPU. A quiet repeat at two positions spans zero. Local wide shipment and quoted invoice timing remain inconclusive. [B1846](../benchmarks/results/2026-11-27-ready-dictreader-row/README.md) · [B1848](../benchmarks/results/2026-11-27-dictreader-json-control/README.md). |
 | Reuse nested JSON record keys by depth | The nested document and Lines allocate 43–45% less with 33–34% less peak admission. The local nested document uses 26–35% less CPU. | JSON Lines elapsed remains inconclusive. [B1840](../benchmarks/results/2026-11-27-nested-json-layouts/README.md). |
 | Publish iterable CSV dictionaries in the parser | Local list-backed CPU falls 6.6–9.5% and generator-backed CPU falls 5.6–6.1%. Peak admission matches. | Buffered elapsed rises with mixed CPU. The quoted control varies. [B1842](../benchmarks/results/2026-11-27-iterable-csv-records/README.md). |
