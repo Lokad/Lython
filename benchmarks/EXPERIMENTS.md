@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1873 admit one plain JSON token before the scalar escape loop](results/2026-11-27-json-plain-quoted-token/README.md)
+keeps the plain root storage savings. The default export spans zero in both
+APIs. Escaped elapsed rises 3.84–17.97% alongside an adverse nested read
+control, and escaped CPU spans zero. Withdraw the refinement.
+
+[B1872 scan JSON runs and coalesce plain tokens](results/2026-11-27-json-quoted-token-windows/README.md)
+lowers local default-export sync CPU 1.79–7.48%, with async inconclusive.
+Escaped export CPU rises 1.61–4.68%. A plain root string saves 256 managed
+bytes and 96 B of peak admission, while whole exports have matching peaks.
+Keep the initial variant out of delivery and refine the escaped path.
+
 [B1871 profile nested JSON reads and file export](results/2026-11-27-current-json-read-export-profile/README.md)
 uses the B1869 image for two verified scripts. It locates string emission and
 builder growth in the export. Nested read samples also cover final record and

@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "sync",
+    "clr": [
+      1127352,
+      1127352
+    ],
+    "peak": [
+      2855754,
+      2855754
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-shipment.default-export-768",
+    "mode": "sync",
+    "clr": [
+      1313344,
+      1313344
+    ],
+    "peak": [
+      1590285,
+      1590285
+    ],
+    "compiled": [
+      75216,
+      75216
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-shipment.escaped-export-768",
+    "mode": "sync",
+    "clr": [
+      1898608,
+      1898720
+    ],
+    "peak": [
+      1931516,
+      1931516
+    ],
+    "compiled": [
+      83632,
+      83632
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "async",
+    "clr": [
+      1127568,
+      1127568
+    ],
+    "peak": [
+      2855754,
+      2855754
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-shipment.default-export-768",
+    "mode": "async",
+    "clr": [
+      1313672,
+      1313566
+    ],
+    "peak": [
+      1590285,
+      1590285
+    ],
+    "compiled": [
+      75216,
+      75216
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-shipment.escaped-export-768",
+    "mode": "async",
+    "clr": [
+      1898936,
+      1898942
+    ],
+    "peak": [
+      1931516,
+      1931516
+    ],
+    "compiled": [
+      83632,
+      83632
+    ]
+  }
+]
