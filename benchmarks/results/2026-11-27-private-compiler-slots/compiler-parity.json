@@ -1,0 +1,201 @@
+{
+  "cases": [
+    {
+      "id": "diagnostic.generated-guarded-report",
+      "scopes": 97,
+      "removedPrivateBindings": 192,
+      "additionalSharedMaps": 96,
+      "budgetLevels": 9,
+      "compileClr": [
+        2288000,
+        2243456
+      ],
+      "compiledPeak": 2410080
+    },
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "scopes": 99,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 10,
+      "compileClr": [
+        1443248,
+        1443248
+      ],
+      "compiledPeak": 889975
+    },
+    {
+      "id": "scripts.file-search.large",
+      "scopes": 2,
+      "removedPrivateBindings": 4,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 3,
+      "compileClr": [
+        47448,
+        46920
+      ],
+      "compiledPeak": 63536
+    },
+    {
+      "id": "capture-after-literal",
+      "scopes": 3,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 7,
+      "compileClr": [
+        28544,
+        28544
+      ],
+      "compiledPeak": 46304
+    },
+    {
+      "id": "capture-snapshot-overlap",
+      "scopes": 3,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 7,
+      "compileClr": [
+        26752,
+        26752
+      ],
+      "compiledPeak": 44844
+    },
+    {
+      "id": "signed-constant-boundaries",
+      "scopes": 3,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 4,
+      "compileClr": [
+        33424,
+        33424
+      ],
+      "compiledPeak": 54336
+    },
+    {
+      "id": "declaration-in-default",
+      "scopes": 4,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 9,
+      "compileClr": [
+        33488,
+        33488
+      ],
+      "compiledPeak": 47976
+    },
+    {
+      "id": "declaration-kinds",
+      "scopes": 6,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 9,
+      "compileClr": [
+        54288,
+        54288
+      ],
+      "compiledPeak": 58646
+    },
+    {
+      "id": "deferral-through-layout",
+      "scopes": 5,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 8,
+      "compileClr": [
+        83144,
+        83144
+      ],
+      "compiledPeak": 88410
+    },
+    {
+      "id": "return-forwarded-local",
+      "scopes": 6,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 9,
+      "compileClr": [
+        90808,
+        90808
+      ],
+      "compiledPeak": 93333
+    },
+    {
+      "id": "rebound-definition",
+      "scopes": 5,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 8,
+      "compileClr": [
+        83160,
+        83160
+      ],
+      "compiledPeak": 89466
+    },
+    {
+      "id": "explicit-read-before-forwarding",
+      "scopes": 5,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 8,
+      "compileClr": [
+        83936,
+        83936
+      ],
+      "compiledPeak": 90234
+    },
+    {
+      "id": "scope-not-eligible",
+      "scopes": 5,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 8,
+      "compileClr": [
+        82392,
+        82392
+      ],
+      "compiledPeak": 88794
+    },
+    {
+      "id": "deferred-before-returned-pair",
+      "scopes": 5,
+      "removedPrivateBindings": 0,
+      "additionalSharedMaps": 0,
+      "budgetLevels": 9,
+      "compileClr": [
+        73752,
+        73752
+      ],
+      "compiledPeak": 89308
+    },
+    {
+      "id": "namespace-protected-temporaries",
+      "scopes": 6,
+      "removedPrivateBindings": 3,
+      "additionalSharedMaps": 1,
+      "budgetLevels": 9,
+      "compileClr": [
+        52664,
+        51808
+      ],
+      "compiledPeak": 62570
+    },
+    {
+      "id": "nested-protected-match-and-comprehension",
+      "scopes": 2,
+      "removedPrivateBindings": 2,
+      "additionalSharedMaps": 1,
+      "budgetLevels": 4,
+      "compileClr": [
+        33960,
+        33496
+      ],
+      "compiledPeak": 49648
+    }
+  ],
+  "cancellation": {
+    "granted": 33680,
+    "afterCancellation": 33632,
+    "afterDispose": 0
+  }
+}

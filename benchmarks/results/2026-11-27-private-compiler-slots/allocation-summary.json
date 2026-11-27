@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.generated-guarded-report",
+    "mode": "sync",
+    "clr": [
+      98256,
+      98256
+    ],
+    "peak": [
+      86022,
+      86022
+    ],
+    "compiled": [
+      2410080,
+      2410080
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "sync",
+    "clr": [
+      22792,
+      22792
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "mode": "sync",
+    "clr": [
+      56592,
+      56592
+    ],
+    "peak": [
+      36512,
+      36512
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "diagnostic.generated-guarded-report",
+    "mode": "async",
+    "clr": [
+      98504,
+      98504
+    ],
+    "peak": [
+      86022,
+      86022
+    ],
+    "compiled": [
+      2410080,
+      2410080
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "async",
+    "clr": [
+      23040,
+      23040
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "mode": "async",
+    "clr": [
+      56840,
+      56840
+    ],
+    "peak": [
+      36512,
+      36512
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  }
+]

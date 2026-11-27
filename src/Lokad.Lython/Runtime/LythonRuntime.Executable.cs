@@ -244,7 +244,6 @@ internal sealed partial class LythonRuntime
         {
             foreach (var pair in _execution.Code.LocalNameToSlot)
             {
-                if (pair.Key.StartsWith('<')) continue;
                 var value = ReadLocalValue(_execution.Locals, pair.Value);
                 if (value is not null)
                 {

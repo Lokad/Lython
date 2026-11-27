@@ -492,14 +492,14 @@ internal sealed partial class ExecutableScript
 
         private int CompileWithStatement(WithStatementSyntax statement, int currentBlock)
         {
-            var managerSlot = InternSyntheticLocal("with_manager");
+            var managerSlot = AddSyntheticLocal("with_manager");
 
             currentBlock = CompileExpression(statement.ContextExpression, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.ResolveContextManager(statement.ContextExpression.Span));
             AddInstruction(currentBlock, ExecutableInstruction.Dup(statement.Span));
             AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(managerSlot, statement.Span));
             AddInstruction(currentBlock, ExecutableInstruction.EnterContextManager(statement.ContextExpression.Span));
-            var enteredSlot = statement.Target is null ? -1 : InternSyntheticLocal("with_value");
+            var enteredSlot = statement.Target is null ? -1 : AddSyntheticLocal("with_value");
             AddInstruction(currentBlock, enteredSlot < 0
                 ? ExecutableInstruction.PopTop(statement.Span)
                 : ExecutableInstruction.StoreLocal(enteredSlot, statement.Span));
@@ -548,7 +548,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileMatchStatement(MatchStatementSyntax statement, int currentBlock)
         {
-            var subjectSlot = InternSyntheticLocal("match_subject");
+            var subjectSlot = AddSyntheticLocal("match_subject");
             currentBlock = CompileExpression(statement.Subject, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(subjectSlot, statement.Subject.Span));
 

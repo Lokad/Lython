@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1843 keep compiler temporaries out of the binding map](results/2026-11-27-private-compiler-slots/README.md)
+reuses 96 prepared maps and removes 192 private entries in a generated
+guard report. Compilation allocates 44,544 B less. Instruction snapshots,
+source bindings and admission match. The same-image confirmation leaves
+compile and through-result timing inconclusive.
+
 [B1842 publish iterable CSV dictionaries in the parser](results/2026-11-27-iterable-csv-records/README.md)
 removes the raw row handoff and second admission for matching inferred
 headers. Local list-backed CPU falls 6.58–9.49% and generator-backed CPU

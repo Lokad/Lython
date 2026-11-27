@@ -49,9 +49,15 @@ internal sealed partial class ExecutableScript
 
             if (ReferenceEquals(_localIndexes, _scopeFacts.PreparedLocalSlots))
                 _localIndexes = new(_localIndexes, StringComparer.Ordinal);
-            index = checked(_declaredLocalNames.Length + _buffers.Locals.Count);
-            _buffers.Locals.Add(name);
+            index = AppendLocal(name);
             _localIndexes.Add(name, index);
+            return index;
+        }
+
+        private int AppendLocal(string name)
+        {
+            var index = checked(_declaredLocalNames.Length + _buffers.Locals.Count);
+            _buffers.Locals.Add(name);
             return index;
         }
 
@@ -126,7 +132,9 @@ internal sealed partial class ExecutableScript
                 : ExecutableInstruction.StoreLocal(InternLocal(name), span));
         }
 
-        private int InternSyntheticLocal(string prefix) => InternLocal($"<{prefix}:{_syntheticLocalCounter++}>");
+        // Instructions address these slots directly. Keep their names for tape
+        // diagnostics without interning them as lexical or namespace bindings.
+        private int AddSyntheticLocal(string prefix) => AppendLocal($"<{prefix}:{_syntheticLocalCounter++}>");
 
         private int InternClosure(string name)
         {

@@ -388,7 +388,9 @@ their own lexical scope. Match validation records each case's capture slots once
 Scope and flow analysis use the same names as lowering, ordered by the first
 OR-pattern alternative. Source spellings distinguish slots even when they mangle
 to the same store destination. Analysis, lowering and class creation reuse the
-function/class/lambda facts as part of the compiled program. A function
+function/class/lambda facts as part of the compiled program. Hidden slots for
+chained comparisons, `with` and `match` keep their physical frame positions
+and stay outside the source-name binding map. A function
 declaration also owns one flat parameter name/slot table, role counts and
 generator classification, shared by analysis, lowering and its created
 functions. Executable `def` and `lambda` sites emit defaults from syntax in

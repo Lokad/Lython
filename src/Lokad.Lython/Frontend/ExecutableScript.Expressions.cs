@@ -297,7 +297,7 @@ internal sealed partial class ExecutableScript
         // Retain the middle operand once for the next comparison.
         private int CompileChainedComparisonExpression(ChainedComparisonExpressionSyntax chained, int currentBlock)
         {
-            var slot = InternSyntheticLocal("chain_left");
+            var slot = AddSyntheticLocal("chain_left");
 
             currentBlock = CompileExpression(chained.Operands[0], currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(slot, chained.Operands[0].Span));
