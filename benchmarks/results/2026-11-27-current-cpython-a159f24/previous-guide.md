@@ -1,0 +1,436 @@
+# Performance guide before B1906
+
+This archived guide describes earlier measurement revisions. See the
+[current benchmark guide](../../../docs/BENCHMARKS.md).
+
+| Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.63059–2.67883 ms | 1.95137–2.00121 ms | 1.315–1.373× | Quiet VM diagnostic. [B1896]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.74922–0.76740 ms | 0.67741–0.68762 ms | 1.090–1.133× | Quiet VM diagnostic. [B1896]. |
+| File-fed CSV quantity map | 2,048 records / 27,350 B | 0.39860–0.40201 ms | 1.36269–1.36308 ms | 0.292–0.295× | Quiet VM diagnostic. [B1896]. |
+| Configuration edit | 181 B input | 0.06942–0.06975 ms | 0.06181–0.06207 ms | 1.118–1.129× | Quiet VM diagnostic. [B1896]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 6.59418–7.32776 ms | 5.96587–6.06126 ms | 1.088–1.228× | Local WSL diagnostic. [B1881]. |
+| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 7.04538–7.47891 ms | 5.97461–6.17809 ms | 1.140–1.252× | Local WSL diagnostic. [B1881]. |
+| Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.72813–1.81626 ms | 1.66921–1.66997 ms | 1.035–1.088× | Diagnostic. [B1849]. |
+| Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 3.42958–3.66051 ms | 2.25860–2.34191 ms | 1.464–1.621× | Local WSL diagnostic. [B1881]. |
+| CSV shipment re-export with `DictWriter` | 2,048 records / 27,350 B | 1.74944–1.76297 ms | 2.74569–2.75434 ms | 0.635–0.642× | Diagnostic. [B1869]. |
+| CSV shipment re-export with `DictWriter`, Lython `RunAsync` | 2,048 records / 27,350 B | 2.12564–2.14952 ms | 2.73113–2.75321 ms | 0.772–0.787× | Diagnostic. [B1869]. |
+| Default JSON Lines export | 768 records / 47,361 B input | 1.19990–1.30230 ms | 1.47476–1.54651 ms | 0.776–0.883× | Local WSL diagnostic. [B1880]. |
+| Default JSON Lines export, Lython `RunAsync` | 768 records / 47,361 B input | 1.25198–1.32638 ms | 1.49664–1.55189 ms | 0.807–0.886× | Local WSL diagnostic. [B1880]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 1.10825–1.11422 ms | 3.09238–3.14538 ms | 0.352–0.360× | Local WSL diagnostic. [B1881]. |
+| Nested-object JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 1.03631–1.11165 ms | 0.79008–0.79924 ms | 1.297–1.407× | Local WSL confirmation. Initial timing varies. [B1888]. |
+| Nested JSON Lines summary and export | 4,096 records / 159,744 B input | 3.55033–3.67051 ms | 4.66297–4.69670 ms | 0.756–0.787× | Local WSL diagnostic. [B1888]. |
+| Nested JSON Lines summary and export, Lython `RunAsync` | 4,096 records / 159,744 B input | 3.67599–3.70718 ms | 4.65803–4.73711 ms | 0.776–0.796× | Local WSL diagnostic. [B1888]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.37484–2.38422 ms | 0.90704–0.92178 ms | 2.576–2.629× | Local WSL diagnostic. [B1885]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.77914–2.79027 ms | 1.42270–1.46284 ms | 1.900–1.961× | Local WSL diagnostic. [B1885]. |
+| CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Historical. Inconclusive around parity. [B1844]. |
+| File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
+| File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
+
+B1896 measures `36ed51e1b` against CPython 3.13.16 on the quiet Azure
+F4as_v7 on November 27, 2026 UTC. The configuration edit reads and
+rewrites JSON. Its warm elapsed is higher and its wider process CPU is
+0.932–0.945× CPython. Its compile-only and compile-to-result measurements
+are below. The remaining rows preserve their individual measurement
+revisions. [B1896].
+
+The bound shipment and Unicode rows use `9cee6f423` with comparison host
+`05c1059de` on November 27, 2026 UTC. The CSV line-generator summary uses
+`a1b3a3325` with the same host and date. The earlier iterable shipment
+and file-fed map checkpoint on `aae8992e0` remains available for comparison.
+[B1849] · [B1844] · [B1865].
+
+B1869 measures `6e59cd41e` on the same machine and date. The shipment
+re-export reads and writes 27,350 bytes. Its file-fed map control takes
+0.294–0.329× CPython with 11.81% Lython worker spread, leaving its change
+from B1865 inconclusive. [B1869].
+
+B1860 measures `7305efabf` with the same comparison host on November 27,
+2026 UTC. Both log scripts use the optional signed PythonRe 0.5.0 adapter,
+search each line and consume a capture. Their timings include the host file
+path, matching and result processing. B1858 measures the earlier
+`c665a179e` image, including the compiled-pattern log through result. The
+first B1860 run failed the post-run quietness gate. The historical table
+uses a same-image repeat with both checks passing. [B1860] · [B1858].
+
+Wide async shipment overlaps its earlier range. Nested JSON runs at
+1.148–1.155× CPython, up from 1.094–1.114× in B1844. B1848 compared the
+earlier CSV-only change directly, and its repeat spans zero. B1850 compares
+the subsequent insertion change directly and finds lower elapsed with CPU
+reaching zero. The higher cross-checkpoint result remains unexplained.
+[B1849] · [B1844] ·
+[B1848](../2026-11-27-dictreader-json-control/README.md) ·
+[B1850](../2026-11-27-ready-inserts-control/README.md).
+
+B1834 measures `4a6000316` with the comparison host from `05c1059de`.
+B1823 measures `489fde50e` and B1815 measures `c10f06884`. Those
+checkpoints ran on November 27, 2026 UTC. B1805 measures `cb258fe7f`
+on November 26, 2026 UTC. All use stock CPython 3.13.16.
+Ratios divide Lython elapsed by CPython elapsed. Above 1× means Lython
+takes longer. Ranges span all pairings of medians from two workers per
+engine. [B1834] · [B1823] · [B1815] · [B1805].
+
+The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
+with .NET 11 RC3. Warm execution uses a compiled script in a running process.
+Timings include applicable RAM-backed reads and writes, verification of output and files,
+and disposal of the previous result. Marked async rows use Lython's
+`RunAsync` and the same synchronous guest script and file APIs on CPython.
+Lython uses a mediated host with
+efficient ranged reads and appends and a shared allowance with accounting
+active. CPython uses its native file APIs. Fixture reset and request
+framing sit outside the elapsed execution clock. The raw process CPU
+measurements cover the wider request.
+
+A short Windows check of `18c82c45f` with CPython 3.13.2 had substantial
+timing spread. Its results and the exact-image WSL follow-up are available
+separately. [B1878](../2026-11-27-windows-current-cpython/README.md).
+
+B1880 measures `ab883268b` on November 27, 2026 UTC using Ubuntu WSL on
+an Intel i7-14700KF and the verified CPython 3.13.16 runtime. The JSON rows
+come from the paired run with shared workers and interleaved hosting modes.
+The same checkpoint measures the CSV re-export at 0.441–0.499× CPython
+and the Unicode report at 0.789–0.853×. These are local diagnostics. [B1880].
+
+B1881 uses the same WSL image and CPython baseline. Wide and iterable
+shipment rotate `Run` and `RunAsync` through shared workers. The iterable
+case shows the larger gap in both elapsed and process CPU. Wide async
+Lython worker spread is 11.12%. [B1881].
+
+B1885 measures `4ab65dcc6` on the same WSL machine and date with the
+verified CPython 3.13.16 runtime and signed PythonRe 0.5.0 adapter.
+The log scripts scan a complete file and consume the selected capture.
+The module script also has separate compilation and compile-to-result
+lanes below. Use the matched B1884 comparison for changes within Lython.
+[B1885].
+
+B1888 measures `126d551c2` on the same WSL machine against CPython 3.13.16.
+The initial nested document varies by 59–66% between identical Lython
+workers. The reported WSL timings use the same-image confirmation in
+reverse worker order. Both runs remain available. The Lines report also
+writes its aggregated output. [B1888].
+
+The first-line search gap is about 15–16 µs in B1834. A separate B1815
+diagnostic measured about 23 µs with verification and 29–30 µs before it.
+The earlier interval still includes mediated I/O, output capture and
+cleanup. The runtime and comparison host both changed between checkpoints.
+The paired metadata measurement at fixed runtime is available separately.
+[B1834] · [B1827] · [B1828].
+
+<details>
+<summary>Earlier warm measurements and revisions</summary>
+
+| Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 4.14039–4.19706 ms | 2.23555–2.25895 ms | 1.833–1.877× | Historical WSL diagnostic. [B1881]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 1.01837–1.11356 ms | 0.76955–0.79924 ms | 1.274–1.447× | Historical WSL confirmation. Initial timing varies. [B1888]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.21170–2.25079 ms | 1.81365–1.83653 ms | 1.204–1.241× | Historical quiet diagnostic. [B1849]. |
+| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 1.88707–1.97045 ms | 1.82219–1.83011 ms | 1.031–1.081× | Historical quiet diagnostic. [B1849]. |
+| Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 2.60896–2.67250 ms | 1.97476–1.98458 ms | 1.315–1.353× | Historical quiet diagnostic. [B1865]. |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Historical quiet diagnostic. [B1865]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Historical quiet diagnostic. [B1865]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Historical diagnostic. [B1849]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Historical quiet diagnostic. [B1849]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Historical quiet diagnostic. [B1860]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27088–3.30482 ms | 1.58144–1.58565 ms | 2.063–2.090× | Historical quiet diagnostic. [B1860]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Historical diagnostic. [B1858]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Historical diagnostic. [B1858]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22055–2.25324 ms | 1.82279–1.83105 ms | 1.213–1.236× | Diagnostic. [B1844]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.73690–0.74752 ms | 0.67124–0.67384 ms | 1.094–1.114× | Diagnostic. [B1844]. |
+| CSV summary after reading and splitting lines | 4,096 records / 57,361 B | 2.24651–2.30881 ms | 3.15392–3.21418 ms | 0.699–0.732× | Diagnostic. [B1844]. |
+| Nested-object JSON Lines summary, Lython `RunAsync` | 4,096 records / 159,744 B | 3.60192–3.64138 ms | 4.44444–4.46048 ms | 0.808–0.819× | Diagnostic. [B1844]. |
+| Configuration edit | 181 B input | 0.06925–0.06940 ms | 0.06144–0.06186 ms | 1.120–1.130× | Historical diagnostic. [B1834]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.85825–0.92594 ms | 0.94030–0.94431 ms | 0.909–0.985× | Historical diagnostic. Lython worker spread is 7.89%. [B1815]. |
+| JSON Lines summary with record helper | 5,120 lines / 110,592 B | 3.12574–3.13816 ms | 4.15785–4.16446 ms | 0.751–0.755× | Diagnostic. [B1805]. |
+| JSON Lines summary with record helper, Lython `RunAsync` | 4,096 records / 110,592 B | 3.24048–3.32348 ms | 4.15220–4.16260 ms | 0.778–0.800× | Diagnostic. [B1834]. |
+| Nested-array JSON Lines summary, Lython `RunAsync` | 4,096 records / 131,826 B | 4.04103–4.12341 ms | 4.54020–4.60559 ms | 0.877–0.908× | Diagnostic. [B1834]. |
+| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 2.16876–2.22905 ms | 1.83627–1.84352 ms | 1.176–1.214× | Diagnostic. [B1823]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.41579–2.53935 ms | 1.80178–1.81128 ms | 1.334–1.409× | Diagnostic. Lython worker spread is 5.11%. [B1834]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.44933–0.45386 ms | 1.36115–1.36441 ms | 0.329–0.333× | Diagnostic. [B1823]. |
+| JSON Lines summary with record helper, Lython `RunAsync` | 5,120 lines / 110,592 B | 3.21453–3.23051 ms | 4.13075–4.14701 ms | 0.775–0.782× | Diagnostic. [B1805]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.46637–2.46954 ms | 1.80589–1.81313 ms | 1.360–1.367× | Diagnostic. [B1823]. |
+| File search, match at line 1,025 | 42,010 B file | 0.08292–0.08345 ms | 0.13705–0.13762 ms | 0.603–0.609× | Diagnostic. [B1815]. |
+| File search, match at line 1,025, Lython `RunAsync` | 42,010 B file | 0.08385–0.08518 ms | 0.13787–0.13931 ms | 0.602–0.618× | Diagnostic. [B1815]. |
+| File search, match at line 1 | 42,010 B file | 0.07438–0.07471 ms | 0.05127–0.05131 ms | 1.450–1.457× | Diagnostic. [B1815]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.60249–2.80150 ms | 1.81483–1.84158 ms | 1.413–1.544× | Diagnostic. Lython worker spread is 7.65%. [B1805]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.83407–0.84667 ms | 0.94136–0.96632 ms | 0.863–0.899× | Diagnostic. [B1805]. |
+| Shipment callback report | 2,048 records / 27,350 B | 1.77070–1.78975 ms | 1.62509–1.64124 ms | 1.079–1.101× | Diagnostic. [B1791]. |
+| Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.83667–1.97645 ms | 1.63960–1.65973 ms | 1.107–1.205× | Diagnostic. Lython worker spread is 7.61%. [B1791]. |
+| Generated ordinary definitions | 96 definitions, built 16 times | 0.18913–0.19417 ms | 0.14880–0.15121 ms | 1.251–1.305× | Diagnostic. [B1791]. |
+| Generated ordinary definitions, Lython `RunAsync` | 96 definitions, built 16 times | 0.19222–0.19304 ms | 0.14657–0.14744 ms | 1.304–1.317× | Diagnostic. [B1791]. |
+| Generated rules with defaults | 2,048 rule groups | 0.83941–0.86929 ms | 0.68434–0.68462 ms | 1.226–1.270× | Diagnostic. [B1791]. |
+| Generated rules with defaults, Lython `RunAsync` | 2,048 rule groups | 0.85033–0.89071 ms | 0.68212–0.69080 ms | 1.231–1.306× | Diagnostic. [B1791]. |
+| JSON service quantity totals | 2,048 records / 78,755 B | 0.63272–0.64399 ms | 0.48671–0.51045 ms | 1.240–1.323× | Diagnostic. [B1791]. |
+| JSON service quantity totals, Lython `RunAsync` | 2,048 records / 78,755 B | 0.63484–0.64640 ms | 0.48294–0.49659 ms | 1.278–1.338× | Diagnostic. [B1791]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.86052–0.86730 ms | 0.93399–0.94550 ms | 0.910–0.929× | Diagnostic. [B1791]. |
+| Configuration manifest | Two input files / 833 B | 0.18510–0.18554 ms | 0.15478–0.15563 ms | 1.189–1.199× | Diagnostic. [B1669]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.45152–0.48065 ms | 1.36416–1.36826 ms | 0.330–0.352× | Diagnostic. Lython worker spread is 6.45%. [B1760]. |
+| CSV meter with a float field helper | 4,096 records / 139,299 B | 4.25497–4.31230 ms | 5.27953–5.28402 ms | 0.805–0.817× | Diagnostic. [B1760]. |
+| File search with early exit | 1,025 lines read / 42,010 B file | 0.18709–0.18918 ms | 0.13516–0.13913 ms | 1.345–1.400× | Diagnostic. [B1750]. |
+| Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.52384–2.56812 ms | 1.66237–1.71676 ms | 1.470–1.545× | Diagnostic. [B1750]. |
+| Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
+| CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.19443–6.33377 ms | 6.30969–6.36204 ms | 0.974–1.004× | Inconclusive around parity. [B1720]. |
+| Eager annotated rules | 2,048 rule groups | 0.43268–0.43905 ms | 0.40411–0.41482 ms | 1.043–1.086× | Diagnostic. [B1685]. |
+| Postponed nested annotated rules | 2,048 rule groups | 0.61825–0.66753 ms | 0.53118–0.53396 ms | 1.158–1.257× | Diagnostic. Worker spread up to 7.97%. [B1685]. |
+| Generated rules with captured locals | 2,048 rule groups | 0.89205–0.89483 ms | 0.76652–0.77553 ms | 1.150–1.167× | Diagnostic. [B1633]. |
+| Formatted JSON report | 1,024 records / 189,441 B | 2.66299–2.77436 ms | 2.58657–2.58703 ms | 1.029–1.073× | Diagnostic. Worker spread up to 4.18%. [B1727]. |
+| JSON Lines export with default options | 3,072 records / 189,441 B | 4.27718–4.35394 ms | 5.06345–5.15320 ms | 0.830–0.860× | Diagnostic. [B1720]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.1299–5.2194 ms | 6.5146–6.7011 ms | 0.766–0.801× | Diagnostic. [B1587]. |
+
+B1791 measures `d370fef84` on November 26, 2026 UTC. [B1791].
+B1784 measures `0172ed7cf` on November 26, 2026 UTC.
+B1774c measures `088cf9d37` on November 26, 2026 UTC.
+B1764 measures `7f7c4ed59`. B1760 measures
+`bc93d4d74`, B1750 measures `0a0e32c16` and B1744 measures `a490e9d5f`.
+Those comparisons ran on November 26, 2026 UTC. [B1784] · [B1774c] · [B1764] · [B1760] · [B1750] · [B1744].
+B1736 measures `7f0c5b996` and B1727 measures
+`857cc8001` on November 25, 2026 UTC. Earlier B1731 measures `a420c3e05`.
+B1720 measures `7120ee55e` on November 25, 2026 UTC.
+B1713 and B1705 measure earlier revisions `75af75769` and `96d54066a` the same
+day. B1694 measures warm defaulted rules, the
+bound shipment report and the manifest through result at `f6cf9796c`.
+B1685 measures eager and postponed annotated warm execution at `c1984f96b`.
+Other rows retain their original revisions. B1669 measures the
+manifest at `a45b6da7f`. B1656 measures the short report and classifier
+at `6b41db7b3`. Comprehension compilation uses `b9b20aa98`. Earlier
+standalone eager and captured rule phases use `d6a168491`. The earlier
+short report and invoice compile-only and invoice time-to-result phases
+use `6466fbb52`. The earlier manifest compile-only and sparse validator
+use `0bf516c79`. Postponed compilation and time to result use `5313f9e71`.
+The expanded-options JSON export uses `2cf721f73`, and the CSV meters
+use `8aef89b09`.
+[B1736] · [B1731] · [B1727] · [B1720] · [B1713] · [B1705] · [B1694] · [B1685] · [B1677] · [B1669] · [B1656] · [B1643] · [B1633] · [B1625] · [B1614] · [B1593] · [B1587] · [B1568].
+
+</details>
+
+## Compilation and compile-to-result
+
+| Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Configuration edit, 357 B source | Compilation only | 0.01654–0.01668 ms | 0.03377–0.03403 ms | 0.486–0.494× | Quiet VM diagnostic. [B1896]. |
+| Configuration edit, 181 B input | Compile-to-result | 0.09592–0.09717 ms | 0.12491–0.12615 ms | 0.760–0.778× | Quiet VM diagnostic. [B1896]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.63372–0.69575 ms | 1.04639–1.13268 ms | 0.559–0.665× | Local WSL diagnostic. [B1880]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.82209–0.84757 ms | 1.14554–1.22822 ms | 0.669–0.740× | Local WSL diagnostic. [B1880]. |
+| Generated comprehension report, 96 rules / 20,988 B source | Compilation only | 1.92082–1.94344 ms | 2.74657–2.75148 ms | 0.698–0.708× | Diagnostic. [B1858]. |
+| Generated comprehension report, 96 rules / 20,988 B source | Compile-to-result | 2.37403–2.38947 ms | 2.85875–2.89189 ms | 0.821–0.836× | Diagnostic. [B1858]. |
+| CSV shipment re-export, 360 B of source | Compilation only | 0.01653–0.01674 ms | 0.03124–0.03132 ms | 0.528–0.536× | Diagnostic. [B1869]. |
+| CSV shipment re-export, 2,048 records | Compile-to-result | 1.84274–1.87090 ms | 2.81251–2.86722 ms | 0.643–0.665× | Diagnostic. [B1869]. |
+| Module-level log search, 318 B of source | Compilation only | 0.12383–0.12813 ms | 0.02724–0.02748 ms | 4.507–4.704× | Local WSL diagnostic. [B1885]. |
+| Module-level log search, PythonRe 0.5.0 | Compile-to-result | 3.13204–3.15143 ms | 1.55325–1.55635 ms | 2.012–2.029× | Local WSL diagnostic. [B1885]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | Compile-to-result | 3.47070–3.54680 ms | 1.01756–1.06519 ms | 3.258–3.486× | Historical quiet diagnostic. [B1858]. |
+| Generated guarded report, 96 rules / 24,587 B source | Compilation only | 1.07349–1.09714 ms | 1.86806–1.88237 ms | 0.570–0.587× | Historical diagnostic. [B1844]. |
+| Generated guarded report, 96 rules / 24,587 B source | Compile-to-result | 1.12661–1.13546 ms | 1.92108–1.92126 ms | 0.586–0.591× | Historical diagnostic. [B1844]. |
+| Five-item `starmap` shipment report | Compile-to-result | 2.39930–2.44152 ms | 2.14403–2.14737 ms | 1.117–1.139× | Historical diagnostic. [B1823]. |
+| File search, match at line 1,025, 319 B of source | Compilation only | 0.01677–0.01698 ms | 0.03059–0.03078 ms | 0.545–0.555× | Historical diagnostic. [B1815]. |
+| File search, match at line 1,025 | Compile-to-result | 0.11875–0.12018 ms | 0.20888–0.21198 ms | 0.560–0.575× | Historical diagnostic. [B1815]. |
+
+<details>
+<summary>Earlier compilation and compile-to-result measurements</summary>
+
+| Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.56833–0.56893 ms | 0.95428–0.95543 ms | 0.595–0.596× | Historical diagnostic. [B1849]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.76639–0.76762 ms | 1.12265–1.13974 ms | 0.672–0.684× | Historical diagnostic. [B1849]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.57069–0.57212 ms | 0.94880–0.95184 ms | 0.600–0.603× | Diagnostic. [B1844]. |
+| Generated ordinary definitions | Compile-to-result | 0.75919–0.76152 ms | 1.12423–1.13454 ms | 0.669–0.677× | Diagnostic. [B1834]. |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56532–0.57200 ms | 0.93722–0.93900 ms | 0.602–0.610× | Diagnostic. [B1834]. |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56925–0.57157 ms | 1.10194–1.10238 ms | 0.516–0.519× | Diagnostic. [B1805]. |
+| Generated ordinary definitions | Compile-to-result | 0.75729–0.76925 ms | 1.11806–1.12177 ms | 0.675–0.688× | Diagnostic. [B1805]. |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56433–0.56881 ms | 1.08677–1.09431 ms | 0.516–0.523× | Diagnostic. [B1791]. |
+| Shipment callback report | Compile-to-result | 1.86382–1.88807 ms | 1.89602–1.90010 ms | 0.981–0.996× | Diagnostic. [B1791]. |
+| Generated ordinary definitions | Compile-to-result | 0.77094–0.77810 ms | 1.12002–1.12085 ms | 0.688–0.695× | Diagnostic. [B1791]. |
+| Configuration manifest, 1,877 B of source | Compilation only | 0.09717–0.09837 ms | 0.15754–0.16056 ms | 0.605–0.624× | Diagnostic. [B1744]. |
+| Configuration manifest | Compile-to-result | 0.37382–0.37779 ms | 0.47152–0.47225 ms | 0.792–0.801× | Diagnostic. [B1744]. |
+| File search with early exit, 319 B of source | Compile-to-result | 0.22328–0.22538 ms | 0.21057–0.21383 ms | 1.044–1.070× | Diagnostic. [B1750]. |
+| Generated regex selectors, 48 calls / 197,820 B of source | Compilation only | 0.79275–0.80053 ms | 0.56563–0.56772 ms | 1.396–1.415× | Diagnostic. Lython includes constant-match analysis. [B1750]. |
+| Generated regex selectors, 48 calls | Compile-to-result | 1.06505–1.07562 ms | 1.27062–1.27378 ms | 0.836–0.847× | Diagnostic. Both engines execute the regex calls. [B1750]. |
+| Shipment callback report, 1,376 B of source | Compilation only | 0.06341–0.06400 ms | 0.11365–0.11404 ms | 0.556–0.563× | Diagnostic. [B1764]. |
+| Generated classifier, 6,991 B of source | Compilation only | 0.32944–0.33057 ms | 0.81943–0.82016 ms | 0.402–0.403× | Diagnostic. [B1656]. |
+| Generated comprehension rules, 17,995 B of source | Compilation only | 1.09478–1.10758 ms | 2.86768–2.89394 ms | 0.378–0.386× | Diagnostic. [B1643]. |
+| Sparse generated validator, 23,555 B of source | Compilation only | 1.27724–1.28559 ms | 1.81308–1.82159 ms | 0.701–0.709× | Diagnostic compiler workload. [B1614]. |
+| Sparse generated validator, 96 guards / 1,714 B input | Compile-to-result | 1.50615–1.52170 ms | 1.99316–2.00943 ms | 0.750–0.763× | Diagnostic compiler workload. [B1614]. |
+| Typed Unicode CSV meter | Compile-to-result | 3.151–3.295 ms | 3.480–3.556 ms | 0.886–0.947× | Diagnostic. [B1568]. |
+| Short Unicode word-count report with a nonlocal helper | Compile-to-result | 0.97879–0.98058 ms | 1.07920–1.08718 ms | 0.900–0.909× | Diagnostic. [B1656]. |
+| Short Unicode word-count report with a nonlocal helper, 615 B | Compilation only | 0.02850–0.02854 ms | 0.05601–0.05602 ms | 0.509–0.510× | Diagnostic. [B1625]. |
+| Eager annotated rules, 319 B | Compilation only | 0.01629–0.01641 ms | 0.03060–0.03076 ms | 0.530–0.536× | Diagnostic. [B1633]. |
+| Eager annotated rules | Compile-to-result | 0.48583–0.48941 ms | 0.43524–0.43622 ms | 1.114–1.124× | Diagnostic. [B1633]. |
+| Postponed nested annotated rules, 465 B | Compilation only | 0.02137–0.02188 ms | 0.03949–0.03962 ms | 0.539–0.554× | Diagnostic. [B1593]. |
+| Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
+| Formatted JSON report, 454 B of source | Compilation only | 0.02121–0.02138 ms | 0.03710–0.03734 ms | 0.568–0.576× | Diagnostic. [B1727]. |
+| Formatted JSON report, 16 records / 2,961 B | Compile-to-result | 0.15713–0.15865 ms | 0.16563–0.17055 ms | 0.921–0.958× | Diagnostic. [B1727]. |
+| Generated rules with defaults, 427 B | Compilation only | 0.02210–0.02213 ms | 0.04138–0.04167 ms | 0.530–0.535× | Diagnostic. [B1705]. |
+| Generated rules with defaults | Compile-to-result | 0.91836–0.95004 ms | 0.73616–0.75183 ms | 1.221–1.291× | Diagnostic. Worker spread up to 3.45%. [B1720]. |
+| Generated rules with captured locals, 446 B | Compilation only | 0.02626–0.02666 ms | 0.04672–0.04684 ms | 0.561–0.571× | Diagnostic. [B1633]. |
+| Generated rules with captured locals | Compile-to-result | 0.96229–0.97110 ms | 0.87069–0.87170 ms | 1.104–1.115× | Diagnostic. [B1633]. |
+| Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.06070–0.06112 ms | 0.10070–0.10165 ms | 0.597–0.607× | Diagnostic. [B1625]. |
+| Quote-heavy CSV policy invoice | Compile-to-result | 6.44385–6.48525 ms | 6.51016–6.53856 ms | 0.986–0.996× | Diagnostic. [B1625]. |
+| Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
+| JSON Lines export with expanded options | Compile-to-result | 5.2734–5.3220 ms | 6.6247–6.7093 ms | 0.786–0.803× | Diagnostic. [B1587]. |
+
+</details>
+
+Compilation includes disposal of compiled code owners. Time to result
+combines compilation, one execution and cleanup in an already-running
+host. Workers measure the phases independently. These clocks end before
+final process teardown. The small configuration edit uses `2b501135a` from
+November 23, 2026 UTC. [B1491].
+
+## Fresh process
+
+| Workload | Input | Lython median | CPython median | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Empty script | `pass` | 122.1 ms | 29.6 ms | 4.12× | Diagnostic control. [B1451]. |
+| Tiny arithmetic | One calculation | 150.7 ms | 29.9 ms | 5.03× | Diagnostic control. [B1451]. |
+| Configuration edit | One JSON file / 181 B | 278.0 ms | 32.2 ms | 8.62× | Diagnostic. [B1451]. |
+
+At the earlier `dfabddb88` checkpoint on November 23, 2026 UTC, seven fresh
+processes per row and engine measure launch through exit and pipe drain.
+The clock includes runtime and worker initialization,
+compilation, one run, applicable RAM-backed I/O and in-worker cleanup.
+OS caches stay warm. Case order rotates. The smoke starts Lython first
+within each pair. Ratios use observed medians. This describes the
+comparison worker launch path. It is a separate measurement from using
+Lython inside an already-running application. [B1451].
+
+## Improvements within Lython
+
+| Change | Measured effect | Limits |
+| --- | --- | --- |
+| Reuse lexical slots in local-name diagnostics | Ordinary and escaping definitions allocate 29,584 B less per compile. Quiet ordinary compile CPU falls 2.82–4.14%. | Guarded compile-to-result elapsed falls 1.06–2.98% with CPU spanning zero. The warm JSON control spans zero. [B1900](../2026-11-27-local-assignment-slots/README.md). |
+| Share the lookup table across generator function calls | The iterable shipment allocates 9.28–9.29% less at matching peak admission. Quiet process CPU falls 6.28–10.99% sync and 5.32–7.96% async. | Bound async CPU rises 2.15–3.92% in the first quiet run and spans zero with reversed worker placement. The file-fed control spans zero. [B1897](../2026-11-27-generator-definition-cache/README.md) · [B1898](../2026-11-27-bound-cache-owner-repeat/README.md). |
+| Use the outer iterator directly in generator expressions | The 2,048-row CSV reduction allocates 13.09% less at the same admitted peak. Quiet process CPU falls 6.27–6.79% sync and 1.61–4.71% async. | The quiet run reverses the original WSL sync increase. Both file-fed controls span zero. The comparison covers `63ae080ac` and `af9558316`. [B1893](../2026-11-27-direct-generator-outer/README.md) · [B1895](../2026-11-27-generator-outer-quiet/README.md). |
+| Reuse shared JSON layouts across missing trailing fields | A nested Lines report with alternating optional fields allocates 41.5% less and lowers peak shared admission by 31.4%. Local process CPU falls 13.57–17.32% sync and 17.82–19.36% async. | Dense document and file-fed CSV CPU span zero. The unchanged CSV elapsed moves favorably. [B1889](../2026-11-27-json-shared-prefix/README.md). |
+| Bind module regex arguments in fixed slots | The module log allocates 10.98% less at identical peak admission. WSL elapsed falls 2.17–11.03% sync and 1.55–6.22% async with lower process CPU. | The compiled-pattern control spans zero and the unchanged CSV control uses 0.34–1.27% more CPU. [B1887](../2026-11-27-borrow-regex-arguments/README.md). |
+| Own the working reservation directly in one-shot regex calls | Both 3,072-line logs allocate 11.0–12.2% less at identical peak admission on the signed 0.5.0 adapter. | Local CPU spans zero in both affected lanes. The unchanged CSV control varies. [B1884](../2026-11-27-direct-regex-allowance/README.md). |
+| Buffer positional generator arguments from the first pull | Relative to `ab883268b`, the iterable shipment report allocates 6.38% less in both APIs at matching peak admission. | WSL elapsed falls 3.44–9.09% sync and 2.12–4.86% async. The wide and file-fed controls also move. [B1883](../2026-11-27-first-buffered-positional-pull/README.md). |
+| Validate eligible `DictWriter` rows in native slots | Relative to `fd3e24896`, the complete report allocates 56.50–56.99% less and needs 65.82% less peak admission. Local CPU falls 52.82–55.11% sync and 47.93–52.86% async. | The unchanged plain writer takes 0.67–2.73% longer locally. File-fed map timing spans zero. [B1868](../2026-11-27-csv-dictwriter-native-validation/README.md). |
+| Share the iterable reader across starred calls and `starmap` | Starred generator rows use 3.55–5.38% less sync CPU and 9.29–10.22% less async CPU in the quiet repeat, at matching allocations and admission. | Local async elapsed initially rises. The quiet `starmap` control takes 0.46–1.13% longer with CPU reaching parity. [B1866](../2026-11-27-shared-iterable-call-arguments/README.md). |
+| Collect iterable `starmap` rows into one call buffer | Allocation falls 4.96% in both APIs. Quiet CPU falls 4.27–8.66% sync and 2.73–6.25% async for the generated-row shipment report. | Peak shared admission rises 224 B. The initial adverse local sync result reverses on the quiet VM. Both quiet CPU controls span zero. [B1864](../2026-11-27-iterable-starmap-arguments/README.md). |
+| Call compiled patterns directly for one-shot regex matching | Both log scans allocate about 221 KB less per run (9.90–10.86%) at matching peak admission. Warm CPU falls 0.29–3.67% across the two scripts. | Cursor control CPU rises 0.17–3.82%. CSV and compile-only timing span zero. [B1862](../2026-11-27-pattern-one-shot/README.md). |
+| Insert ready collection values inline | Quiet CPU falls 1.9–5.0% for wide sync shipment and 0.6–5.8% for the dictionary/set index against `4919f6748`. Peak admission matches. | Wide async timing spans zero. Bound async CPU initially rises 0.4–1.2%, then reverses in a same-image repeat. The unchanged file-fed and text controls vary. [B1847](../2026-11-27-direct-prepared-inserts/README.md) · [B1850](../2026-11-27-ready-inserts-control/README.md). |
+| Return ready CSV dictionaries directly | Quiet process CPU falls 4.0–10.5% for file-fed map and 2.3–4.3% for the list-backed summary between `a1b3a3325` and `4919f6748`. Peak admission matches. | The unchanged nested JSON control initially uses 2.5–3.7% more CPU. A quiet repeat at two positions spans zero. Local wide shipment and quoted invoice timing remain inconclusive. [B1846](../2026-11-27-ready-dictreader-row/README.md) · [B1848](../2026-11-27-dictreader-json-control/README.md). |
+| Reuse nested JSON record keys by depth | The nested document and Lines allocate 43–45% less with 33–34% less peak admission. The local nested document uses 26–35% less CPU. | JSON Lines elapsed remains inconclusive. [B1840](../2026-11-27-nested-json-layouts/README.md). |
+| Publish iterable CSV dictionaries in the parser | Local list-backed CPU falls 6.6–9.5% and generator-backed CPU falls 5.6–6.1%. Peak admission matches. | Buffered elapsed rises with mixed CPU. The quoted control varies. [B1842](../2026-11-27-iterable-csv-records/README.md). |
+| Group rejected lines in buffered file search | At a match on line 1,025, CLR allocation falls about 50% and admitted peak falls 78.15%. Local warm `RunAsync` elapsed falls 52.82–54.29% on the corrected source. | The first-line match takes 0.52–5.91% longer locally, with mixed CPU. [B1814 corrected comparison](../2026-11-26-compiled-prefix-search/correction/README.md). |
+| Reuse existing one-byte JSON characters | Service totals allocate 5.22% less and use 5.42% less admitted peak memory. Warm elapsed falls 0.99–4.77% sync and 1.23–3.58% async in the completed block. | Process CPU spans zero. Both control worker spreads exceed 11% on reference CPU. [B1790](../2026-11-26-json-ascii-character/README.md). |
+| Initialize literal keyword defaults in admitted backing | Escaping rules use 4.63–9.09% less warm async CPU in the first block and 1.22–10.87% less in the repeat. | Execution allocation and peak admission match. Ordinary definitions use 0.26–1.61% more compile-only CPU with mixed elapsed. [B1788](../2026-11-26-literal-keyword-defaults/confirmation/README.md). |
+| Bind completed fixed rows directly to private locals | Sync shipment takes 0.49–4.25% less warm elapsed initially and 0.56–6.97% less in confirmation. Confirmed CSV meter CPU falls 1.94–4.43% and async shipment CPU falls 0.43–2.97%. | Matching peak admission. Initial CSV CPU rises 1.32–2.27% and async shipment spans zero. [B1783](../2026-11-26-fixed-row-local-bindings/confirmation/README.md). |
+| Borrow existing iterator values in executable loops | Reordered sync shipment takes 5.08–7.82% less warm elapsed and uses 4.71–6.53% less CPU versus `ca0fd89f4`. | Peak admission matches. Async shipment uses 1.36–3.19% more CPU and the unused file-fed map uses 2.38–5.69% more CPU in confirmation. The initial shipment ranges cross zero. [B1782](../2026-11-26-borrowed-loop-iterators/confirmation/README.md). |
+| Borrow exact text files in executable loops | Warm async JSON Lines takes 1.77–4.30% less elapsed and 1.57–4.69% less process CPU against the B1776 runtime. | Peak admission matches. Sync results span zero, async search takes up to 1.44% longer and the unused CSV control also uses less CPU. [B1781](../2026-11-26-direct-text-file-loop/README.md). |
+| Append ready JSON scalars through the current construction frame | The document totals use 2.04–3.17% less warm sync elapsed in the initial block and 1.38–2.12% less in confirmation. | Peak admission matches. Async timing spans zero in confirmation and the unchanged text control varies by placement. [B1776](../2026-11-26-json-ready-construction/confirmation/README.md). |
+| Pass computed integers directly into the closed return | The ordinary factory uses 4.09–5.30% less warm sync CPU. The defaults-only case uses 4.73–8.09% less. | The async reference CPU spread is 11.41%. Both zero-use controls move favorably and target allocation and peak admission match. [B1775](../2026-11-26-direct-signed-argument/confirmation/README.md). |
+| Read literal defaults directly from the compiled declaration | The ordinary factory uses 30 fewer workspace slots and peaks 720 B lower. Quiet warm sync CPU falls 1.66–1.98%. | Warm async CPU rises 2.09–2.61% with elapsed spanning zero. Escaping-rule and compile-to-result timing span zero. [B1773](../2026-11-26-compiled-default-operands/confirmation/README.md). |
+| Prepare signed compiler constants before execution | Warm CPU falls 7.53–11.83% on ordinary definitions and 3.13–7.78% on Unicode text. Factory compile-to-result elapsed falls 2.17–5.19% for ordinary definitions and 2.24–4.53% for escaping rules. | Ordinary definitions retain 3,776 B more compiler admission. Execution peaks match. Escaping-rule warm CPU spans zero. [B1770](../2026-11-26-prepared-machine-constants/confirmation/README.md). |
+| Use the existing integer path for exact boolean increments | Warm async shipment CPU falls 3.91–11.33% initially and 5.75–8.05% in the repeat. | Peak admission matches. Sync elapsed falls in both blocks and repeat sync CPU spans zero. The unchanged text control reverses direction. [B1766](../2026-11-26-post-update-shipment-profile/boolean-increments/confirmation/README.md). |
+| Complete exact dictionary updates with integer field conversions | Warm CPU falls 6.98–15.28% on synchronous shipment, 2.06–12.98% on async shipment and 21.10–28.33% on JSON totals. The targets allocate 65,140–65,382 B less per run. | Peak admission matches. Both control CPU ranges span zero. The async shipment candidate workers differ by 10.18%. [B1763](../2026-11-26-converted-dictionary-update/README.md). |
+| Complete eligible record-field conversions from supplied operands | Warm CPU falls 9.06–12.36% on file-fed map and 2.60–9.01% on the float-helper meter. | Allocation and peak admission match. Shipment control CPU rises 0.13–1.96% with zero uses of the changed path. [B1759](../2026-11-26-direct-record-field-returns/README.md). |
+| Parse wide JSON integers without a CLR token string | The .NET 11 reports allocate 14.21% less for 40-digit values and 32.74% less for 4,096-digit values. The 40-digit report uses 1.19–3.53% less warm async CPU. | Peak admission matches. Timing for 4,096-digit values and the ordinary JSON control spans zero. Long inputs keep the CLR-string path on .NET 10. [B1751](../2026-11-26-wide-json-integer-parsing/README.md). |
+| Return exact string affixes without a callee workspace | Protected file search uses 19.12–25.06% less process CPU and 23.17–29.17% less elapsed through result in confirmation. | Memory matches. The file-fed control reverses between blocks. Unicode text uses 2.74–4.57% more CPU in confirmation. [B1746/B1747](../2026-11-26-direct-affix-return/README.md). |
+| Reuse compiled regex subjects | Both long literal cases allocate 16,496 B less during compilation. Two analysis preparations and one execution preparation share one 8,202 B backing. | Allocation diagnostic. Retained admission and three non-regex controls match. [B1740](../2026-11-25-compiled-regex-subject/README.md). |
+| Admit buffered CSV fields and dictionary together | In the reordered block, file-fed map uses 10.00–13.40% less warm async CPU and shipment uses 4.00–7.43% less. | Quoted invoice and plain reader timing span zero. The text control also moves, and peak admission matches. [B1738c](../2026-11-25-combined-csv-admission/confirmation/README.md). |
+| Forward comprehension bindings directly | The shipment callback report allocates 19,712 B less. Warm CPU falls 0.49–3.38% sync and 4.02–5.15% async. | Time through result falls 1.58–4.45%, with CPU spanning zero. File-fed map async CPU rises 1.20–4.39%. [B1737i](../2026-11-25-forwarded-comprehension-binding/isolation/README.md). |
+| Defer unpublished lexical function construction | Generated ordinary definitions allocate 88.41% less and peak admission falls 90.45%. Warm CPU falls 14.80–18.19% sync and 14.08–15.55% async. | Time through result falls 5.03–7.75%. Compilation allocates 2,792 B more. The scope observer peaks 48 B higher and shipment timing spans zero. [B1735c](../2026-11-25-deferred-callable-locals/confirmation/README.md). |
+| Share compiled regex text and narrow comprehension metadata | The 4,096-scalar regex literal uses one 8,192 B UTF-8 backing. Compilation allocates 8,280 B less on that case and 456–9,640 B less across three non-regex controls. | Local allocation diagnostics with matching retained admission. [B1734](../2026-11-25-shared-regex-literals/README.md). |
+| Carry computed scalar arguments directly to eligible returns | Generated ordinary definitions use 11.33–16.83% less warm sync CPU and 14.86–17.75% less warm async CPU in confirmation. Elapsed through result falls 4.68–6.62%. | CLR allocation and admitted peaks match. Compile-only elapsed rises 0.20–0.78%. The escaping-rule control is inconclusive. [B1730c](../2026-11-25-arithmetic-call-operands/confirmation/README.md). |
+| Share f-string field scanning | Report compilation allocates 680 B less after removing a second delimiter walk and the ordinary debug builder. Both comparisons use less CPU through result on the 16-record report. | Warm timing remains uncertain. [B1726](../2026-11-25-single-formatted-field-scan/confirmation/README.md). |
+| Combine fixed admission for private function definitions | Generated ordinary definitions make 1,536 fewer allowance growth requests, and defaulted factories make 4,096 fewer. Both scripts show lower warm elapsed in two blocks. | CLR allocations and admitted peaks match. Movement in the unchanged controls limits timing attribution. [B1721](../2026-11-25-private-definition-admission/README.md). |
+| Admit completed CSV storage directly | Quoted invoice allocates 262,144 B less and the file-fed map allocates 130,904 B less per run. File-fed map uses 1.70–5.13% less warm async CPU in the first block and 5.30–8.38% less in confirmation. | Peak admission matches. Quoted invoice CPU and the text-control movement remain unresolved. [B1719](../2026-11-25-csv-direct-record-admission/README.md). |
+| Compile executable lambda defaults directly | Generated scripts with 48 defaulted lambdas allocate 28,288 B less per compilation. Live-alias compilation uses 1.48–4.16% less CPU in one block. | Retained compilation and peak execution admission match. Compile-to-result CPU remains inconclusive. [B1716](../2026-11-25-executable-lambda-headers/README.md). |
+| Bind fixed-width math calls into managed stack slots | Tolerance reports allocate 56 B less per call and use 8.52–14.48% less warm CPU against the interim direct binder. | Against the pre-interim runtime, short-call sync timing remains inconclusive and async CPU falls 0.06–2.98%. [B1715](../2026-11-25-borrowed-builtin-bindings/README.md). |
+| Run short callbacks in iterator-owned slots | File-fed map uses 6.26–13.95% less warm sync CPU and removes 2,048 private workspace starts per run in both hosting modes. | Peak admission matches. Sync reference-worker spread is 6.19%. Async magnitude and the controls remain uncertain. [B1708b](../2026-11-25-iteration-native-storage/prepared/README.md). |
+| Finish buffered CSV reads inline | File-fed map uses 1.18–6.46% less warm async CPU in the first block and 1.37–3.29% less in confirmation. | Admitted peaks match. Quote-heavy invoice CPU is inconclusive, and the text control reverses direction between blocks. [B1704](../2026-11-25-csv-completed-read/README.md). |
+| Parse conjunctions and disjunctions in one pass | Sparse guards take 1.00–2.98% less time through result with lower wider CPU. Manifest compilation takes 0.31–1.32% less elapsed. | Executable spans and admitted peaks match. Mixed-guard time through result and warm invoice timing span zero. [B1693](../2026-11-25-boolean-linear/README.md). |
+| Start short async `map` continuations at suspension | Original shipment uses 9.01–11.21% less warm async CPU and the file-fed report uses 1.61–7.50% less. Bound defaulted readings use 17.95–24.60% less. | Admitted peaks match. The sync shipment and defaulted through-result clocks cross zero. The unchanged sync invoice moves favorably. [B1692](../2026-11-25-async-map-prefix/README.md). |
+| Keep the executable directly on the compiled script | Six warm cases allocate 32 B less per invocation. Defaulted rules use 1.90–4.91% less CPU through result in the quiet comparison. | Most elapsed ranges cross zero. Manifest compile-only CPU rises 0.57–3.47%. [B1689](../2026-11-25-compiled-entry/README.md). |
+| Share short `map` and `starmap` callback operands | The bound shipment report allocates 34.13% less and uses 8.06–9.59% less warm CPU and 16.13–17.02% less async CPU. A bound defaulted `map` over 4,096 readings allocates 94.92% less and uses 49.61–51.72% less warm CPU. | The original unbound shipment report uses 0.99–4.04% more async CPU. Defaulted-rule time through result is inconclusive. [B1687](../2026-11-25-closed-iteration-call/README.md). |
+| Keep singleton default ownership in its operand slot | Ordinary and eager definitions allocate 19.69% and 20.16% less against `a39d00228`. Confirmation uses 3.50–7.80% and 3.97–5.87% less warm CPU. | Admitted peaks and default-free allocation match. Defaulted-rule CPU increases in the first run and spans zero in the repeat. [B1682](../2026-11-25-tagged-default-ownership/README.md). |
+| Carry operand slots through short `map` callbacks | A nested scalar report over 4,096 readings allocates 96.66% less and uses 20.76–21.50% less warm CPU. | Admitted peaks match. Shipment and retained zip timing are inconclusive. Native map and invoice warm elapsed rise up to 1.34% and 1.33%. [B1678–B1679](../2026-11-25-shared-map-operands/README.md). |
+| Carry evaluated integers through ordinary definition construction | Against `01f1f6118`, ordinary definitions allocate 11.60% less and use 2.44–4.82% less warm CPU in the confirmation. | Peak admission matches. Shipment timing rose in the first block and was inconclusive in the repeat. Ordinary time-to-result timing is inconclusive. [B1675](../2026-11-25-ordinary-default-operands/README.md). |
+| Keep computed singleton positional integers in the callable slot | Defaulted rules use 7.22–12.73% less warm CPU across two blocks and allocate 8.15% less. The longer block takes 2.82–5.43% less time to result. | At this revision, the ordinary-definition control allocated 9.55% more and used 1.45–4.47% more CPU. Peak admission matches. Eager annotated timing is inconclusive. [B1670](../2026-11-25-default-operand-storage/README.md). |
+| Deliver fixed zip unpacks directly into frame slots | The shipment report takes 8.28–13.84% less warm time across two blocks and 8.95–13.17% less time to result. Allocation falls 12.10% and peak admission 4.38%. | The retained-tuple control varies in the first block and shows a small favorable range in longer batches. [B1665](../2026-11-25-zip-unpack/README.md). |
+| Share function-local binding tables with emitted code | Defaulted rules allocate 1.81% less during compilation and use less CPU through result in two blocks. Manifest compile allocation falls 0.79%. | Tape and retained admission match. Manifest and invoice elapsed cross zero with longer batches. Defaulted-rule reference spread limits the CPU estimate. [B1662](../2026-11-25-shared-function-local-slots/README.md). |
+| Borrow positional arguments for direct callback returns | The batched shipment policy report takes 2.77–4.69% less time to result and 2.56–6.73% less warm async time, with lower CPU in both lanes. | Warm CPU and both controls span zero. Allocation and peak admission match. [B1661](../2026-11-25-direct-callback-return/README.md). |
+| Return existing operands before building a workspace | The shipment report takes 14.17–15.39% less warm time, 11.18–14.15% less time to result and 12.89–13.47% less warm async time. | CPU falls on the report, and peak admission matches. Defaulted-rule CPU through result rises 1.39–1.89% in the longer block. The invoice slowdown does not repeat. [B1659](../2026-11-24-direct-operand-return/README.md). |
+| Materialize evaluated singleton default tuples on inspection | Defaulted and annotated rules and generated definitions allocate 10.30–15.48% less per run. | Peak admission matches. The generated CPU increase does not repeat with longer batches. Postponed-rule worker variation leaves timing inconclusive. [B1655](../2026-11-24-inline-positional-default/README.md). |
+| Share binding spellings and allocate only used pattern syntax | Classifier compilation allocation falls from 954,640 B to 888,504 B, down 6.93%. | Emitted tape and retained admission match. Sparse validator and manifest allocation shifts are under 0.3%. Elapsed and CPU remain unmeasured. [B1654](../2026-11-24-shared-binding-spelling/README.md). |
+| Assign operand slots during forwarding | Compilation elapsed falls 2.04–5.30% across the classifier, sparse validator and manifest. Time to result falls 0.81–1.71% for the manifest and 2.95–3.30% for the validator. | Tape, allocation and peak admission match. Classifier and validator CPU through result cross zero. [B1653](../2026-11-24-terminal-backed-operand-layout/README.md). |
+| Share structural-pattern capture bindings | The 48-case classifier allocates 10.47% less during compilation and reaches its result 8.05–8.84% sooner. Process CPU to result falls 7.54–10.83%. | Warm allocation and peak admission match. Sparse compile timing spans zero. Manifest process CPU rises 0.33–1.00% with inconclusive elapsed. [B1648](../2026-11-24-shared-match-bindings/README.md). |
+| Reuse the proved default-pair boundary | Defaulted rules reach their result in 0.35–4.07% less elapsed time with 2.50–7.22% less wider CPU. | Allocation and admission match. Warm timing is inconclusive, and the earlier eager control slowdown remains open. [B1645–B1646](../2026-11-24-prepared-default-pair-boundaries/README.md). |
+| Share compiler comprehension bindings | Generated rules compile 14.48–15.01% faster and use 11.34% less allocation. Time to result falls 5.97–7.09%, with lower CPU in both phases. | Retained admission matches. The sparse compiler control spans zero. The manifest takes 1.17–1.88% less time to result. [B1642](../2026-11-24-shared-comprehension-facts/README.md). |
+| Carry forwarded integers through the existing native call entry | Against `0c907c166`, defaulted rules take 5.70–13.25% less warm elapsed and captured rules take 2.24–8.18% less, with lower CPU. Both allocate 43,680 fewer bytes per run. | Admitted peaks match. Against `cdaf31164` before both defaults and call changes, defaulted warm elapsed falls 3.85–8.11% and time to result spans zero. [B1631–B1632](../2026-11-24-borrow-forwarded-integers/README.md). |
+| Forward local positional operands through native calls | The short Unicode report takes 10.79–13.48% less warm elapsed and captured rules take 0.54–7.64% less. Defaulted rules reach their result 1.88–4.34% sooner. | Peak admission matches. Eager annotated CPU rises 0.70–5.27%. Defaulted warm and quoted-invoice timings are inconclusive. [B1624](../2026-11-24-forwarded-positional/framed-entry/README.md). |
+| Discard native JSON file write results before boxing | The configuration manifest allocates 3,104 fewer bytes per run, down 3.12%. The file-backed JSON summary saves 128 bytes. | Peak admission matches. Manifest and default JSON Lines timing span zero. [B1619](../2026-11-24-native-json-file-drain/typed-result/README.md). |
+| Reuse compiler collection facts | The sparse validator's invalidation scans visit 14 bindings, down from 1,170. Immutable tuple diagnostics survive unrelated mutations. | Representative allocations match and CPU ranges span zero. [B1613](../2026-11-24-abstract-collection-graphs/README.md). |
+| Share statement parsing and use its existing source spans | The sparse generated validator compiles in 3.10–5.04% less elapsed time and reaches its result 1.69–3.52% sooner, with lower CPU. | Compilation allocation and retained admission match. Manifest time-to-result CPU rises 0.79–2.98% while elapsed spans zero. [B1612](../2026-11-24-shared-parser-statements/README.md). |
+| Complete cased text helpers before workspace setup | The short Unicode report takes 24.78–27.37% less warm elapsed and 19.01–25.68% less time through result with lower CPU. Mixed-width warm elapsed falls 6.62–11.94%. | Target allocations and admission match. Distinct-word CPU and the inlined control are inconclusive. [B1608](../2026-11-24-closed-line-helper/README.md). |
+| Complete captured pairs before the outer activation | Captured rules take 19.60–29.07% less warm elapsed and 27.18–31.68% less time through result, with lower CPU and matching allocation and admission. | Warm worker spread is 5.95–6.99%. Postponed warm elapsed rises 2.58–7.56% with higher CPU. Other control elapsed ranges cross zero. [B1603](../2026-11-24-closed-capture-pair/seeded/README.md). |
+| Complete private closure calls at the definition | Captured rules take 17.56–18.41% less warm elapsed and 13.34–16.51% less time through result, with lower process CPU. CLR allocation falls 208 KiB and peak admission falls 448 KiB per run. | Postponed warm elapsed rises 1.41–5.00% and quoted-invoice elapsed rises 1.97–2.79%. Other warm elapsed ranges cross zero. [B1599](../2026-11-24-private-definition-call/isolation/README.md). |
+| Return pairs from closed factories before workspace setup | Defaulted rules take 27.50–29.70% less warm elapsed and 30.05–32.30% less time through result, with lower process CPU in both phases. | Allocations and admitted peaks match. Captured-rule warm elapsed rises 2.17–3.61% with higher CPU. The other warm control ranges cross zero. [B1596](../2026-11-24-closed-factory-pairs/native-entry/README.md). |
+| Reuse decoded arithmetic arguments during closed definitions | Eager annotated rules take 2.88–4.48% less warm elapsed and 3.01–4.66% less process CPU against the computed-default revision. | Allocation and admission match. The three-image postponed comparison spans zero and the rule and text controls move. [B1591](../2026-11-24-decoded-closed-defaults/README.md). |
+| Evaluate closed defaults before entering a native workspace | Eager annotated rules take 36.64–43.34% less warm elapsed with lower CPU and 13.38% less CLR allocation. | Admitted peaks match. Postponed annotated elapsed rises 0.14–5.85% with mixed CPU. Other rule controls span zero. [B1590](../2026-11-24-closed-default-evaluation/README.md). |
+| Use one eager JSON builder owner | Expanded and default options take 0.65–2.75% less warm elapsed and 0.63–3.09% less wider CPU. | Peak admission matches. Escape-heavy timing is inconclusive, the unchanged CSV control improves slightly and the text control is noisy. [B1588](../2026-11-24-eager-json-owner/README.md). |
+| Drain eager JSON inside the shared traversal | Three JSON Lines variants take 0.50–4.71% less warm elapsed. Default options use 0.68–6.03% less wider process CPU. | Allocation and admitted peaks are effectively flat. Both unchanged controls span zero. [B1586](../2026-11-24-json-traversal/README.md). |
+| Cache regex wrappers before flag normalization | The module log scan takes 2.00–2.54% less warm elapsed and uses 0.71–3.71% less wider process CPU. | Admitted peaks match. Saved-bound and quoted-invoice elapsed span zero. [B1581](../2026-11-24-regex-wrapper-cache/README.md). |
+| Reuse immutable ASCII results in decoded text reads | The short report and mixed-width histogram allocate 57,344 fewer CLR bytes per run, down 15.07% and 12.62%. Admitted peaks fall by 129 KiB each. | All warm elapsed ranges span zero. The nonblank and distinct-word controls retain the same allocation and admission. [B1580](../2026-11-24-decoded-ascii-file-values/README.md). |
+| Return captured and conditional scalars before activation | Captured rules take 12.62–13.88% less warm elapsed and allocate 10.25% less. Defaulted rules reach their result 6.54–10.21% sooner with lower process CPU. | Admitted peaks match. Short-report warm elapsed rises 4.67–5.79% and quoted-invoice warm elapsed rises 0.17–2.05%. Annotated timing is inconclusive. [B1572](../2026-11-24-closed-scalar-branches/README.md). |
+| Convert short Unicode decimals directly | The typed Unicode meter takes 12.09–16.88% less warm elapsed and 12.06–16.17% less process CPU. The site-observing variant also improves. | Allocation and admitted peaks match. Explicit-float warm elapsed rises 0.43–1.78% with mixed CPU. The quoted invoice spans zero on elapsed. [B1560](../2026-11-24-exact-unicode-float/README.md). |
+| Reuse JSON option flags | The expanded JSON Lines export allocates 9.65% less and takes 3.21–3.53% less warm elapsed. | Admitted peaks and default allocation match. The expanded CPU and unchanged positional timing ranges span zero. [B1553](../2026-11-24-json-encoding-flags/README.md). |
+| Native helper returns | Warm allocation falls 19.92% for CSV helpers and 19.31% for JSON helpers. | Release, stress and installed consumers qualified at `8f07764a`. The original elapsed improvements and slower text control remain diagnostic. [Source pair and qualification](../2026-11-02-native-function-returns/README.md). |
+| Direct UTF-8 formatting/storage | Allocation falls 8.67%. The controlled report uses 5–8% less elapsed time and CPU. | The initial adverse elapsed result of 15.125 ms remains unexplained. [Initial result and confirmation](../2026-11-02-formatting-confirmation/README.md). |
+| Construct native CSV records at their final capacity | Across two blocks, CSV CPU falls about 7–11% and allocation falls about 14–15%. | Plain CSV elapsed is flat in the first block. The text control is noisy. The revised constructor shipped in `8f07764a`. [Source pair and qualification](../2026-11-02-native-csv-records/README.md). |
+
+Browse the [previous comparison tables](https://github.com/Lokad/Lython/blob/8db7b955e21b4489512862760d6b9c6b57a654d4/docs/BENCHMARKS.md)
+for earlier workloads, revisions and intervals. The
+[experiment index](../../EXPERIMENTS.md) links to raw observations,
+adverse results and design decisions. The [benchmark tools](../../README.md)
+document reproduction.
+
+[B1491]: ../2026-11-23-forwarded-global-cpython/README.md
+[B1568]: ../2026-11-24-runtime-checkpoint-cpython/README.md
+[B1451]: ../2026-11-23-runtime-cpython-checkpoint/README.md
+[B1587]: ../2026-11-24-shared-traversal-cpython/README.md
+[B1593]: ../2026-11-24-annotated-factories-cpython/README.md
+[B1604]: ../2026-11-24-closed-capture-cpython/README.md
+[B1614]: ../2026-11-24-abstract-compiler-cpython/README.md
+[B1625]: ../2026-11-24-forwarded-positional-cpython/README.md
+[B1633]: ../2026-11-24-forwarded-integers-cpython/README.md
+[B1656]: ../2026-11-24-inline-defaults-cpython/README.md
+[B1663]: ../2026-11-25-shared-locals-cpython/README.md
+[B1643]: ../2026-11-24-frontend-cpython/README.md
+[B1669]: ../2026-11-25-post-zip-cpython/README.md
+[B1677]: ../2026-11-25-ordinary-defaults-cpython/README.md
+[B1685]: ../2026-11-25-retained-defaults-cpython/README.md
+[B1744]: ../2026-11-26-file-processing-cpython/README.md
+[B1750]: ../2026-11-26-short-path-cpython/README.md
+[B1760]: ../2026-11-26-record-field-cpython/README.md
+[B1805]: ../2026-11-26-post-starmap-cpython/README.md
+[B1791]: ../2026-11-26-post-ascii-cpython/README.md
+[B1784]: ../2026-11-26-post-fixed-row-cpython/README.md
+[B1774c]: ../2026-11-26-callable-checkpoint-cpython/README.md
+[B1764]: ../2026-11-26-converted-update-cpython/README.md
+[B1736]: ../2026-11-25-deferred-locals-cpython/README.md
+[B1731]: ../2026-11-25-arithmetic-call-cpython/README.md
+[B1727]: ../2026-11-25-formatted-report-cpython/README.md
+[B1720]: ../2026-11-25-direct-record-cpython/README.md
+[B1713]: ../2026-11-25-retained-workspace-cpython/README.md
+[B1705]: ../2026-11-25-retained-csv-cpython/README.md
+[B1694]: ../2026-11-25-retained-async-cpython/README.md
+
+[B1815]: ../2026-11-27-compiled-prefix-cpython/README.md
+[B1823]: ../2026-11-27-starmap-slot-cpython/README.md
+[B1827]: ../2026-11-27-short-command-boundary/README.md
+[B1828]: ../2026-11-27-file-metadata-observation/README.md
+
+[B1849]: ../2026-11-27-post-ready-insertion-cpython/README.md
+[B1869]: ../2026-11-27-csv-dictwriter-cpython/README.md
+[B1880]: ../2026-11-27-wsl-current-cpython/README.md
+[B1881]: ../2026-11-27-wsl-shipment-cpython/README.md
+[B1885]: ../2026-11-27-wsl-log-cpython/README.md
+[B1888]: ../2026-11-27-wsl-nested-json-cpython/README.md
+[B1896]: ../2026-11-27-current-quiet-cpython/README.md
+[B1865]: ../2026-11-27-iterable-starmap-cpython/README.md
+[B1860]: ../2026-11-27-direct-regex-cpython/README.md
+[B1858]: ../2026-11-27-compiler-regex-cpython/README.md
+[B1844]: ../2026-11-27-post-csv-json-cpython/README.md
+[B1834]: ../2026-11-27-current-cpython/README.md

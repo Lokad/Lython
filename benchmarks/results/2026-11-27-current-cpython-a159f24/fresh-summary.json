@@ -1,0 +1,32 @@
+{
+  "source": "a159f24f2d45cf3c1ba8623b644235b6fe50066f",
+  "case": "scripts.config-edit.small",
+  "launchPairs": 7,
+  "performanceQualified": false,
+  "timingBoundary": "parent before owned launch through complete stdout/stderr drain and root exit; post-drain decoding/validation excluded",
+  "elapsedMilliseconds": {
+    "Lython": [
+      262.365142,
+      255.431445,
+      262.865447,
+      259.027117,
+      252.569905,
+      252.924642,
+      269.596994
+    ],
+    "CPython": [
+      32.301856,
+      31.981772,
+      32.055723,
+      31.941271,
+      32.591374,
+      32.219691,
+      31.990805
+    ]
+  },
+  "mediansMilliseconds": {
+    "Lython": 259.027117,
+    "CPython": 32.055723
+  },
+  "medianRatio": 8.080526432050837
+}

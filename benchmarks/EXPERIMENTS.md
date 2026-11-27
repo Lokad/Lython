@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1906 current scripts against CPython](results/2026-11-27-current-cpython-a159f24/README.md)
+compares production `a159f24f2` against CPython 3.13.16 on the quiet VM.
+Iterable shipment is 1.074–1.097× CPython warm sync and 1.212–1.226×
+warm async. Dense JSON is 1.123–1.156× warm sync. Generated definitions
+take 0.532–0.546× during compilation. Seven fresh configuration pairs
+put process launch-to-drain at 8.08× by median. All 280 warmed batches,
+14 fresh launches and both quiet gates pass.
+
 [B1905 drain generator rows into their callback workspace](results/2026-11-27-generator-row-workspace/README.md)
 removes the separate call packet for exact positional callbacks. The
 refinement saves about 164 KB per iterable shipment and restores the
