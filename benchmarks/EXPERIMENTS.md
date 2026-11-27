@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1823 shipment handoff against CPython](results/2026-11-27-starmap-slot-cpython/README.md)
+qualifies the external comparison of `489fde50e` on the quiet VM. Five-field
+shipment is 1.176–1.214× CPython warm sync, 1.360–1.367× warm async and
+1.117–1.139× through result. File-fed map is 0.329–0.333× warm async.
+Six lanes and both quiet gates pass. These ratios describe the shipped
+revision and selected cases.
+
 [B1822 start at the first emitted declaration](results/2026-11-27-declaration-scan-start/README.md)
 skips 51 of 57 visits in the manifest and keeps the existing compilation
 admission order. Nine cases match the reference tapes, captures and budget
