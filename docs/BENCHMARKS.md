@@ -31,6 +31,12 @@ active. CPython uses its native file APIs. Fixture reset and request
 framing sit outside the elapsed execution clock. The raw process CPU
 measurements cover the wider request.
 
+On the B1815 revision, a separate timing probe measures the first-line
+gap at 29–30 µs before verification. Lython spends about 6 µs less on
+verification, bringing the complete command gap to about 23 µs. The
+earlier interval still includes mediated I/O, output capture and cleanup.
+[B1827].
+
 <details>
 <summary>Earlier warm measurements and revisions</summary>
 
@@ -270,3 +276,4 @@ document reproduction.
 
 [B1815]: ../benchmarks/results/2026-11-27-compiled-prefix-cpython/README.md
 [B1823]: ../benchmarks/results/2026-11-27-starmap-slot-cpython/README.md
+[B1827]: ../benchmarks/results/2026-11-27-short-command-boundary/README.md

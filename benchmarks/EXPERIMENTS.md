@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1827 split short command verification](results/2026-11-27-short-command-boundary/README.md)
+reproduces the B1815 first-line gap on the quiet VM. The gap grows from
+about 23 µs to about 29–30 µs when verification is timed separately.
+The configuration edit shows the same direction. Both original and
+instrumented workers verify three independent goldens and 168 timed batches.
+
 [B1826 collect deferred bindings during operand layout](results/2026-11-27-deferred-proof-layout/README.md)
 removes a separate pass over the original tape. Fourteen fixtures preserve
 their tapes and deferred sites, and 104 budget levels preserve diagnostics and
