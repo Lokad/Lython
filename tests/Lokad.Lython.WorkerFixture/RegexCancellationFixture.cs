@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -24,6 +25,7 @@ internal static class RegexCancellationFixture
         var runningAtCancellation = false;
         var cancelled = false;
         var originalToken = false;
+        var backendInterrupted = false;
         var provider = Utf8RegexProvider.Instance;
         // Warm shared parser/operation metadata before arming the controller.
         using (var warmOwner = budget.CreateScope())
@@ -45,10 +47,15 @@ internal static class RegexCancellationFixture
             }
             else
             {
-                // The development producer resolves the 0.4 nested-repeat
-                // fixture before the controller can cancel. Use a successful
-                // consuming search over repeating distinct alternatives.
-                pattern = provider.Compile("(?P<value>(?:ab|ac)+)"u8.ToArray(), new(32, false), owner, default);
+                // Search for a consuming match over distinct alternatives.
+                // The group count selects the adapter's one-shot route.
+                var source = stage switch
+                {
+                    "value-match" => "(?:ab|ac)+",
+                    "grouped-match" => "((ab|ac)+)",
+                    _ => "(?P<value>(?:ab|ac)+)",
+                };
+                pattern = provider.Compile(Encoding.UTF8.GetBytes(source), new(32, false), owner, default);
                 var input = new byte[1024 * 1024];
                 for (var offset = 0; offset < input.Length; offset += 4)
                     "abac"u8.CopyTo(input.AsSpan(offset));
@@ -57,7 +64,8 @@ internal static class RegexCancellationFixture
                 var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
                 operation = stage switch
                 {
-                    "match" => () => subject.TryMatch(LythonRegexMatchMode.Search, captures, out _, cancellation.Token),
+                    "match" or "value-match" or "grouped-match" =>
+                        () => subject.TryMatch(LythonRegexMatchMode.Search, captures, out _, cancellation.Token),
                     "cursor" => () => cursor!.TryNext(captures, out _, cancellation.Token),
                     _ => throw new ArgumentException("Unknown cancellation stage.", nameof(stage)),
                 };
@@ -79,6 +87,12 @@ internal static class RegexCancellationFixture
             {
                 cancelled = true;
                 originalToken = error.CancellationToken == cancellation.Token;
+                backendInterrupted = new StackTrace(error).GetFrames().Any(frame =>
+                {
+                    var assembly = frame.GetMethod()?.DeclaringType?.Assembly;
+                    return assembly == typeof(Lokad.Utf8Regex.Utf8Regex).Assembly ||
+                        assembly == typeof(Lokad.Utf8Regex.PythonRe.Utf8PythonRegex).Assembly;
+                });
             }
             finally
             {
@@ -89,7 +103,8 @@ internal static class RegexCancellationFixture
         }
         if (!runningAtCancellation || !cancelled || !originalToken || budget.ReservedBytes != 0)
             throw new InvalidOperationException($"{stage}: running={runningAtCancellation}, cancelled={cancelled}, originalToken={originalToken}, balance={budget.ReservedBytes}");
-        Console.Write(JsonSerializer.Serialize(new { stage, runningAtCancellation, cancelled, originalToken, balance = budget.ReservedBytes, libraries }));
+        Console.Write(JsonSerializer.Serialize(new { stage, runningAtCancellation, cancelled, originalToken, backendInterrupted,
+            balance = budget.ReservedBytes, libraries }));
         return 0;
     }
 }

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1859 use direct one-shot ranges on signed PythonRe 0.5.0](results/2026-11-27-signed-regex-small-match/README.md)
+removes cursor construction for zero- and one-group matches. Allocation
+falls 39.76–49.78% at matching peaks. Compiled one-group CPU falls
+8.71–11.49% and no-group CPU 14.11–15.77%. Both targets pass on Windows
+and Ubuntu WSL with actual backend interruption checks.
+
 [B1857 prove callback operand storage during emission](results/2026-11-27-iteration-operand-footprint/README.md)
 removes the iterator construction scan in the prototype. The first run
 uses 2.13–5.23% less CPU for repeated construction. The same-image repeat

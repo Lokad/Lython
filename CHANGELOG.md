@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use direct one-shot UTF-8 range matching in the optional adapter for
+  patterns with zero or one group. Preserve byte windows, last capture,
+  cancellation and shared admission.
 - Update the optional repository adapter to PythonRe 0.5.0. Fund program and
   match storage through the producer allowance, use range-only captures and
   forward the active token directly to each cursor advance.

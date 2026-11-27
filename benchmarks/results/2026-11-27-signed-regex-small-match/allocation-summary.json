@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "sync",
+    "clr": [
+      3511782,
+      2037222
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled.two-groups",
+    "mode": "sync",
+    "clr": [
+      4003302,
+      4003302
+    ],
+    "peak": [
+      1243981,
+      1243981
+    ],
+    "compiled": [
+      117208,
+      117208
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled.whole-match",
+    "mode": "sync",
+    "clr": [
+      3126702,
+      1570104
+    ],
+    "peak": [
+      1035794,
+      1035794
+    ],
+    "compiled": [
+      113208,
+      113208
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "sync",
+    "clr": [
+      3708318,
+      2233758
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "sync",
+    "clr": [
+      3019152,
+      3019262
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ],
+    "compiled": [
+      157658,
+      157658
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "async",
+    "clr": [
+      3511942,
+      2037438
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled.two-groups",
+    "mode": "async",
+    "clr": [
+      4003518,
+      4003518
+    ],
+    "peak": [
+      1243981,
+      1243981
+    ],
+    "compiled": [
+      117208,
+      117208
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled.whole-match",
+    "mode": "async",
+    "clr": [
+      3126918,
+      1570264
+    ],
+    "peak": [
+      1035794,
+      1035794
+    ],
+    "compiled": [
+      113208,
+      113208
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "async",
+    "clr": [
+      3708534,
+      2233974
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "async",
+    "clr": [
+      3019542,
+      3019542
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ],
+    "compiled": [
+      157658,
+      157658
+    ]
+  }
+]

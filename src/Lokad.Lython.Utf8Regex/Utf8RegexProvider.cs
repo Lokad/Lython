@@ -326,6 +326,33 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             };
             using var owner = _budget.CreateScope();
             var allowance = new RegexAllowance(owner);
+            if (captures.Length <= 2)
+            {
+                // With one subgroup, participation determines lastindex.
+                // The backend writes into slots scoped to this call.
+                var bounds = Backend((Regex: regex, Input: _input, Window: _window, Mode: backendMode,
+                    Allowance: allowance, HasGroup: captures.Length == 2),
+                    static (state, token) =>
+                    {
+                        Span<Utf8PythonCaptureRange> ranges = stackalloc Utf8PythonCaptureRange[2];
+                        var match = state.Regex.Match(state.Input.Span, state.Window.StartByte,
+                            state.HasGroup ? ranges : default,
+                            cancellationToken: token, workingMemoryAllowance: state.Allowance, mode: state.Mode,
+                            endOffsetInBytes: state.Window.EndByte);
+                        return (match.Success, match.StartOffsetInBytes, match.EndOffsetInBytes,
+                            Group: match.Success && state.HasGroup ? ranges[1] : default);
+                    }, cancellationToken, patternSource: regex);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!bounds.Success) return false;
+                captures[0] = new(bounds.StartOffsetInBytes, bounds.EndOffsetInBytes);
+                if (captures.Length == 2)
+                {
+                    captures[1] = bounds.Group.Success
+                        ? new(bounds.Group.StartOffsetInBytes, bounds.Group.EndOffsetInBytes) : null;
+                    if (bounds.Group.Success) lastIndex = 1;
+                }
+                return true;
+            }
             // The one-shot range writer lacks last-close metadata. Borrow the
             // producer's funded range result only while copying it.
             using var cursor = Backend((Regex: regex, Input: _input, Window: _window, Mode: backendMode, Allowance: allowance),

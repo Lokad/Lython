@@ -8,6 +8,31 @@ public sealed class RegexAdapterSemanticsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task OneGroupMatchKeepsLastCaptureAndOriginalSubjectWindow(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            text = 'é😀aa尾'
+            p = re.compile('(?P<one>a)*')
+            for m in (p.match(text, 2, 4), p.fullmatch(text, 1, 1),
+                      re.compile('(?<=(?P<behind>é))😀').search(text, 1, 2)):
+                print(m.span(), m.span(1), m.lastindex, m.lastgroup, m.string is text)
+            """, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("(2, 4) (3, 4) 1 one True\n(1, 1) (-1, -1) None None True\n(1, 2) (0, 1) 1 behind True\n",
+                result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task FindIteratorSharesTheCallableIteratorType(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
