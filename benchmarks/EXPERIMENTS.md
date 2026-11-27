@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1898 repeat the bound-cache comparison with reversed worker placement](results/2026-11-27-bound-cache-owner-repeat/README.md)
+uses the exact B1897 images. Bound async CPU spans −1.08% to +3.63%, and
+the wide control spans zero. Keep the original adverse result. All 56
+timed batches and both quiet gates pass. A separate local stack capture
+verifies 88 batches and leaves the cause of the difference unresolved.
+
 [B1897 share lookup storage across generator calls](results/2026-11-27-generator-definition-cache/README.md)
 shares one definition-owned table across instances. Iterable shipment
 allocates 9.28–9.29% less at matching admission. Quiet CPU falls 6.28–10.99%
