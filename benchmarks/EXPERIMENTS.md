@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1876 resolve identifiers directly from abstract flow bindings](results/2026-11-27-abstract-binding-identifier-cache/README.md)
+removes duplicate per-expression cache entries and unifies uncached resolver
+dispatch. The definition scripts allocate 33,208 B less per compile. The
+guarded report allocates 78,336 B less at matched admission and tape layout.
+Keep the simplification. Local timing varies by workload and control.
+
 [B1875 attribute generated Python compilation](results/2026-11-27-current-frontend-profile/README.md)
 finds the largest resolved compiler shares in abstract analysis and
 executable emission on Windows. The quiet launch ran out of space before

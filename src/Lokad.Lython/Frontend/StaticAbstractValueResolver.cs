@@ -4,13 +4,22 @@ internal static partial class StaticAbstractValueResolver
 {
     public static bool TryResolve(ExpressionSyntax expression, AbstractState bindings, out AbstractValue value)
     {
+        var operand = expression;
+        while (operand is ParenthesizedExpressionSyntax parenthesized)
+            operand = parenthesized.Inner;
+
+        // Flow bindings already own identifier facts, including shadowed
+        // builtins. Keep per-expression storage for constructed values and
+        // the result captured before an effectful call invalidates facts.
+        if (operand is IdentifierExpressionSyntax identifier)
+            return bindings.TryGet(identifier.Name, out value);
+
         if (bindings.TryGetCachedAbstractValue(expression, out var cachedResolution))
         {
             return cachedResolution.TryGetValue(out value);
         }
 
-        var success = TryResolveDirect(expression, bindings, out value) ||
-            TryResolveComputed(expression, bindings, out value);
+        var success = TryResolveUncached(operand, bindings, out value);
         bindings.SetCachedAbstractValue(
             expression,
             success ? AbstractValueResolution.Resolved(value) : AbstractValueResolution.Unresolved);
@@ -107,13 +116,8 @@ internal static partial class StaticAbstractValueResolver
         => TryResolveKnownValue(expression, bindings, out var value) &&
            value.Kind is AbstractValueKind.Integer or AbstractValueKind.Float or AbstractValueKind.Boolean or AbstractValueKind.None;
 
-    private static bool TryResolveDirect(ExpressionSyntax expression, AbstractState bindings, out AbstractValue value)
+    private static bool TryResolveUncached(ExpressionSyntax expression, AbstractState bindings, out AbstractValue value)
     {
-        while (expression is ParenthesizedExpressionSyntax parenthesized)
-        {
-            expression = parenthesized.Inner;
-        }
-
         switch (expression)
         {
             case StringLiteralExpressionSyntax text:
@@ -137,8 +141,6 @@ internal static partial class StaticAbstractValueResolver
             case EllipsisLiteralExpressionSyntax ellipsis:
                 value = AbstractValue.Ellipsis(ellipsis.Span);
                 return true;
-            case IdentifierExpressionSyntax identifier when bindings.TryGet(identifier.Name, out value):
-                return true;
             case ListLiteralExpressionSyntax list:
                 value = ResolveAbstractValueList(list.Items, list.Span, AbstractValueKind.List, bindings);
                 return true;
@@ -151,23 +153,6 @@ internal static partial class StaticAbstractValueResolver
             case DictLiteralExpressionSyntax dict:
                 value = ResolveAbstractDictValue(dict, bindings);
                 return true;
-            default:
-                value = default;
-                return false;
-        }
-
-
-    }
-
-    private static bool TryResolveComputed(ExpressionSyntax expression, AbstractState bindings, out AbstractValue value)
-    {
-        while (expression is ParenthesizedExpressionSyntax parenthesized)
-        {
-            expression = parenthesized.Inner;
-        }
-
-        switch (expression)
-        {
             case ListComprehensionExpressionSyntax listComprehension:
                 value = ResolveListComprehensionValue(listComprehension, bindings);
                 return true;

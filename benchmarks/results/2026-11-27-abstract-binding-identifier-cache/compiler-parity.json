@@ -1,0 +1,179 @@
+{
+  "cases": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "scopes": 99,
+      "budgetLevels": 10,
+      "compileClr": [
+        1443248,
+        1410040
+      ],
+      "compiledPeak": 889975
+    },
+    {
+      "id": "diagnostic.generated-escaping-definitions",
+      "scopes": 99,
+      "budgetLevels": 10,
+      "compileClr": [
+        1477752,
+        1444544
+      ],
+      "compiledPeak": 973783
+    },
+    {
+      "id": "diagnostic.generated-guarded-report",
+      "scopes": 97,
+      "budgetLevels": 9,
+      "compileClr": [
+        2243456,
+        2165120
+      ],
+      "compiledPeak": 2410080
+    },
+    {
+      "id": "diagnostic.nested-json-document",
+      "scopes": 2,
+      "budgetLevels": 3,
+      "compileClr": [
+        51296,
+        49112
+      ],
+      "compiledPeak": 69840
+    },
+    {
+      "id": "capture-after-literal",
+      "scopes": 3,
+      "budgetLevels": 7,
+      "compileClr": [
+        28544,
+        27448
+      ],
+      "compiledPeak": 46304
+    },
+    {
+      "id": "capture-snapshot-overlap",
+      "scopes": 3,
+      "budgetLevels": 7,
+      "compileClr": [
+        26752,
+        25968
+      ],
+      "compiledPeak": 44844
+    },
+    {
+      "id": "signed-constant-boundaries",
+      "scopes": 3,
+      "budgetLevels": 4,
+      "compileClr": [
+        33424,
+        31304
+      ],
+      "compiledPeak": 54336
+    },
+    {
+      "id": "declaration-in-default",
+      "scopes": 4,
+      "budgetLevels": 9,
+      "compileClr": [
+        33488,
+        32368
+      ],
+      "compiledPeak": 47976
+    },
+    {
+      "id": "declaration-kinds",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "compileClr": [
+        53744,
+        53584
+      ],
+      "compiledPeak": 58646
+    },
+    {
+      "id": "deferral-through-layout",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        83144,
+        80768
+      ],
+      "compiledPeak": 88410
+    },
+    {
+      "id": "return-forwarded-local",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "compileClr": [
+        90808,
+        88480
+      ],
+      "compiledPeak": 93333
+    },
+    {
+      "id": "rebound-definition",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        83160,
+        80784
+      ],
+      "compiledPeak": 89466
+    },
+    {
+      "id": "explicit-read-before-forwarding",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        83936,
+        81560
+      ],
+      "compiledPeak": 90234
+    },
+    {
+      "id": "scope-not-eligible",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        82392,
+        80016
+      ],
+      "compiledPeak": 88794
+    },
+    {
+      "id": "deferred-before-returned-pair",
+      "scopes": 5,
+      "budgetLevels": 9,
+      "compileClr": [
+        73752,
+        72568
+      ],
+      "compiledPeak": 89308
+    },
+    {
+      "id": "namespace-protected-temporaries",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "compileClr": [
+        51808,
+        49976
+      ],
+      "compiledPeak": 62570
+    },
+    {
+      "id": "nested-protected-match-and-comprehension",
+      "scopes": 2,
+      "budgetLevels": 4,
+      "compileClr": [
+        33496,
+        32920
+      ],
+      "compiledPeak": 49648
+    }
+  ],
+  "cancellation": {
+    "granted": 33680,
+    "afterCancellation": 33632,
+    "afterDispose": 0
+  }
+}
