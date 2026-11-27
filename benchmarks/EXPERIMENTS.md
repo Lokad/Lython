@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1866 share the iterable argument reader](results/2026-11-27-shared-iterable-call-arguments/README.md)
+eliminates duplicate starred drains and uses admitted generator batching.
+Quiet starred-row CPU falls 3.55–5.38% sync and 9.29–10.22% async at
+matching allocations and peaks. The adverse local async interval reverses.
+The quiet iterable-row `starmap` control takes 0.46–1.13% longer.
+
 [B1865 compare iterable-row shipment with CPython](results/2026-11-27-iterable-starmap-cpython/README.md)
 measures `aae8992e0` against stock CPython 3.13.16. Warm shipment takes
 1.315–1.353× sync and 1.515–1.573× async. The file-fed anchor overlaps

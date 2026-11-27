@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-starred-generated-rows",
+    "mode": "sync",
+    "clr": [
+      2889694,
+      2889694
+    ],
+    "peak": [
+      4302207,
+      4302207
+    ],
+    "compiled": [
+      79904,
+      79904
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      2825934,
+      2825990
+    ],
+    "peak": [
+      4304400,
+      4304400
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starred-generated-rows",
+    "mode": "async",
+    "clr": [
+      2889892,
+      2889892
+    ],
+    "peak": [
+      4302207,
+      4302207
+    ],
+    "compiled": [
+      79904,
+      79904
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      2826174,
+      2826174
+    ],
+    "peak": [
+      4304400,
+      4304400
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "before": 8228864,
+  "requiredBeforeStage": 12683360,
+  "replicas": [
+    "/home/lokad/lython-bench-checks/ready-generator-advance-b1853-20261127/candidate/Lokad.Lython.dll"
+  ],
+  "backedUpCore": "dcac1f024ca40802c70e269ac722ad2b7433aff2d00b64743ac3dd390c424299",
+  "after": 14069760
+}

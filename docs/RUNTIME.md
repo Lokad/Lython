@@ -906,8 +906,9 @@ transfers its live slots into the existing admitted continuation. Other
 exact rows use an admitted argument packet. For arbitrary iterable rows,
 `starmap` fills an admitted call accumulator directly and binds ordinary
 callbacks from its live prefix. Generators can fill already funded
-capacity in batches. A callable that requires an owned array receives it
-before invocation. Async `starmap` returns a ready row directly
+capacity in batches. Starred calls share this reader and preserve their
+own expansion order and diagnostics. A callable that requires an owned
+array receives it before invocation. Async `starmap` returns a ready row directly
 when its source and callback complete immediately. If a source suspends,
 the continuation can also finish the callback or drain an arbitrary row,
 keeping its working storage charged through the call.

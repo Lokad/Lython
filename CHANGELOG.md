@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Share the admitted iterable reader between starred calls and `starmap`.
+  Preserve expansion order and aliases through suspended generator pulls.
 - Collect arbitrary `starmap` rows into one admitted argument buffer.
   Ordinary callbacks bind from the filled prefix, including after suspended
   pulls, and generators can fill funded capacity in batches.

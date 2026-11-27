@@ -296,62 +296,6 @@ internal static class CallExpansion
             : name + " argument after ** must be a mapping, not " + RuntimeErrors.OperandTypeName(value), span);
     }
 
-    private static CallArgumentAccumulator AppendStarredValues(
-        object value,
-        LythonSourceSpan span,
-        CallArgumentAccumulator expanded,
-        object target,
-        LythonRuntime.ExecutionContext context)
-    {
-        try
-        {
-            foreach (var item in PyIteration.Cursor.Create(value, span, context))
-            {
-                expanded.Add(CallArgumentValue.Positional(item), span);
-            }
-        }
-        catch (PyNotIterableException)
-        {
-            var calleeName = CallsiteCallableName(target, context);
-            if (calleeName is null)
-            {
-                throw;
-            }
-
-            throw new LythonRuntimeException("TypeError", calleeName + " argument after * must be an iterable, not " + RuntimeErrors.OperandTypeName(value), span);
-        }
-
-        return expanded;
-    }
-
-    private static async ValueTask<CallArgumentAccumulator> AppendStarredValuesAsync(
-        object value,
-        LythonSourceSpan span,
-        CallArgumentAccumulator expanded,
-        object target,
-        LythonRuntime.ExecutionContext context)
-    {
-        try
-        {
-            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
-            {
-                expanded.Add(CallArgumentValue.Positional(item), span);
-            }
-        }
-        catch (PyNotIterableException)
-        {
-            var calleeName = CallsiteCallableName(target, context);
-            if (calleeName is null)
-            {
-                throw;
-            }
-
-            throw new LythonRuntimeException("TypeError", calleeName + " argument after * must be an iterable, not " + RuntimeErrors.OperandTypeName(value), span);
-        }
-
-        return expanded;
-    }
-
     // Call-site splat failures name the callee like CPython: module-qualified
     // Python functions, bare C names, and the repr for values without a qualname.
     // The name resolves lazily so success paths never render.
@@ -531,7 +475,24 @@ internal static class CallExpansion
 
         internal ReadOnlySpan<CallArgumentValue> Arguments => _values.AsSpan(0, _count);
 
-        internal int BufferedCapacity => _count < _values.Length ? _values.Length : 0;
+        internal async ValueTask AppendPositionalIterableAsync(object source, LythonSourceSpan span, bool asynchronous)
+        {
+            var context = Context;
+            using var cursor = asynchronous
+                ? await PyIteration.Cursor.CreateAsync(source, span, context).ConfigureAwait(false)
+                : PyIteration.Cursor.Create(source, span, context);
+            var generator = cursor.GetBulkGenerator(context);
+            var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
+            while (next.HasValue)
+            {
+                Add(CallArgumentValue.Positional(next.Value), span);
+                if (generator is not null && _count < _values.Length)
+                    next = asynchronous
+                        ? await generator.AdvanceBufferedAsync(this, _values.Length).ConfigureAwait(false)
+                        : generator.AdvanceBuffered(this, _values.Length);
+                else next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
+            }
+        }
 
         internal bool TryAppendBufferedPositional(LythonRuntime.ExecutableSlot value, int limit)
         {
@@ -540,6 +501,17 @@ internal static class CallExpansion
             if (_count >= limit - 1) return false;
             _values[_count++] = CallArgumentValue.Positional(value.Object.RequireNotNull());
             return true;
+        }
+
+        private async ValueTask AppendStarredValuesAsync(object value, LythonSourceSpan span, bool asynchronous)
+        {
+            try { await AppendPositionalIterableAsync(value, span, asynchronous).ConfigureAwait(false); }
+            catch (PyNotIterableException)
+            {
+                var calleeName = CallsiteCallableName(_target!, Context);
+                if (calleeName is null) throw;
+                throw new LythonRuntimeException("TypeError", calleeName + " argument after * must be an iterable, not " + RuntimeErrors.OperandTypeName(value), span);
+            }
         }
 
         public CallArgumentValue[] ToArray()
@@ -569,8 +541,7 @@ internal static class CallExpansion
                         _deferredSpan = span;
                         break;
                     }
-                    if (asynchronous) await AppendStarredValuesAsync(value, span, this, _target!, Context).ConfigureAwait(false);
-                    else AppendStarredValues(value, span, this, _target!, Context);
+                    await AppendStarredValuesAsync(value, span, asynchronous).ConfigureAwait(false);
                     break;
                 case CallArgumentKind.StarredDictionary:
                     if (asynchronous) await AppendStarredDictionaryAsync(value, span, this, _target!, Context).ConfigureAwait(false);
@@ -584,8 +555,7 @@ internal static class CallExpansion
             if (_deferredStar is not { } source) return;
             try
             {
-                if (asynchronous) await AppendStarredValuesAsync(source, _deferredSpan!, this, _target!, Context).ConfigureAwait(false);
-                else AppendStarredValues(source, _deferredSpan!, this, _target!, Context);
+                await AppendStarredValuesAsync(source, _deferredSpan!, asynchronous).ConfigureAwait(false);
             }
             finally { _deferredStar = null; _deferredSpan = null; }
         }

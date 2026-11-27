@@ -52,6 +52,59 @@ public sealed class ExpandedCallExecutionTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StarredGeneratorKeepsPreviousOperandsThroughPendingRead(bool cancel)
+    {
+        const string source = """
+            events = []
+            marker = []
+            def flag():
+                events.append('keyword')
+                return 7
+            def operands():
+                events.append('first')
+                yield marker
+                yield marker
+                with open('input.txt') as stream:
+                    yield stream.read()
+                events.append('done')
+            def callback(first, second, text, *, flag):
+                print(first is second, first is marker, text, flag, events)
+            callback(*operands(), flag=flag())
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/input.txt", "data");
+        using var cancellation = new CancellationTokenSource();
+        var started = cancel ? host.PauseReadUntilCancellation("/input.txt") : null;
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }, cancellation.Token);
+        try
+        {
+            if (started is not null)
+            {
+                await started.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > 0);
+                cancellation.Cancel();
+            }
+            using var result = await pending;
+            Assert.Equal(!cancel, result.Success);
+            Assert.Equal(cancel ? "" : "True True data 7 ['keyword', 'first', 'done']\n", result.StandardOutput);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending;
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("/iterate.txt")]
     [InlineData("/keys.txt")]

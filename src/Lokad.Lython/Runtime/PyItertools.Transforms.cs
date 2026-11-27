@@ -493,23 +493,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         // Consume one owned argument buffer directly. Suspend with it funded
         // through the source pull, binding and any callback cleanup.
         using var arguments = new CallExpansion.CallArgumentAccumulator(0, _context, _function, span: _span);
-        using (var cursor = asynchronous
-            ? await PyIteration.Cursor.CreateAsync(iterable, _span, _context).ConfigureAwait(false)
-            : PyIteration.Cursor.Create(iterable, _span, _context))
-        {
-            var generator = cursor.GetBulkGenerator(_context);
-            var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
-            while (next.HasValue)
-            {
-                arguments.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(next.Value)), _span);
-                var limit = arguments.BufferedCapacity;
-                if (generator is not null && limit != 0)
-                    next = asynchronous
-                        ? await generator.AdvanceBufferedAsync(arguments, limit).ConfigureAwait(false)
-                        : generator.AdvanceBuffered(arguments, limit);
-                else next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
-            }
-        }
+        await arguments.AppendPositionalIterableAsync(iterable, _span, asynchronous).ConfigureAwait(false);
 
         var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
         object value;
