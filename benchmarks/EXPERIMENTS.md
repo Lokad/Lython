@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1890 attribute current nested JSON processing](results/2026-11-27-nested-json-profile/README.md)
+finds 38–45% of sampled document stacks in JSON construction.
+Record and UTF-8 allocations account for most reservation samples.
+Converted aggregation and file-builder growth remain visible.
+All 112 profiled batches verify on the B1889 image.
+
 [B1889 retain shared layouts across omitted trailing fields](results/2026-11-27-json-shared-prefix/README.md)
 removes key copying and rebuilding for alternating optional fields in
 nested Lines. Allocation falls 41.5% and peak admission 31.4%. Local
