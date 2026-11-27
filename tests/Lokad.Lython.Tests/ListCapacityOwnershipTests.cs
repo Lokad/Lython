@@ -64,6 +64,40 @@ public sealed class ListCapacityOwnershipTests
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
+    [Fact]
+    public void ReplacementRefundCanGrowTheFullyFundedListAgain()
+    {
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var governor = new MemoryGovernor(hook);
+        var list = new PyList(1, governor, null);
+        var value = new object();
+        list.Add(value);
+        var afterFirstGrowth = PyList.EstimateCapacityBytes(2);
+        var afterNestedGrowth = PyList.EstimateCapacityBytes(5);
+        hook.AfterShrink = refunded =>
+        {
+            hook.AfterShrink = null;
+            Assert.Equal(PyList.EstimateCapacityBytes(1), refunded);
+            Assert.Equal(afterFirstGrowth, list.CommittedStorageBytes);
+            Assert.Equal(afterFirstGrowth, governor.CurrentCommittedBytes);
+            list.EnsureCapacity(5);
+        };
+
+        list.Add(value);
+
+        Assert.Equal(5, list.Capacity);
+        Assert.Equal(2, list.Count);
+        Assert.All(list, actual => Assert.Same(value, actual));
+        Assert.Equal(afterNestedGrowth, list.CommittedStorageBytes);
+        Assert.Equal(afterNestedGrowth, budget.ReservedBytes);
+        Assert.Equal(afterFirstGrowth + afterNestedGrowth, governor.PeakAccountedBytes);
+        list.DiscardUnpublishedStorage();
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(2)]
     [InlineData(12)]

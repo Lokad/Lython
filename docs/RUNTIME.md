@@ -1979,6 +1979,9 @@ Temporary owners publish reduced balances before refund callbacks. Reentrant
 cleanup cannot return another owner's funding. If admission ends a temporary
 owner, the pending operation stops and returns its unused growth before allocating;
 any first memory refusal remains the command's failure.
+Lists reserve their initial capacity before allocating backing storage. On growth,
+the replacement and its charge are published together before refunding the old
+backing, so a host callback sees the current owner and estimate.
 
 Integer subtraction, multiplication, floor division and remainder admit major
 magnitudes and conservative working overlap before arithmetic. `math.prod`,

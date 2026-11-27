@@ -486,8 +486,10 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         if (backing is not null)
         {
             backing.Commit(bytes);
-            _memoryGovernor!.Release(_committedBytes);
+            var previousBytes = _committedBytes;
+            // A refund can reenter and replace this backing again.
             _committedBytes = bytes;
+            _memoryGovernor!.Release(previousBytes);
         }
     }
 
