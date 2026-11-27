@@ -5,6 +5,62 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ConvertedDictionaryUpdateTests
 {
     [Fact]
+    public async Task DynamicReceiverAndEvaluatedDefaultKeepTheirOriginalCalls()
+    {
+        const string source = """
+            convert = int
+            def update(totals, name, row):
+                totals[name] = totals.get(name, 0) + convert(row['quantity'])
+
+            class Totals:
+                def get(self, key, default):
+                    global convert
+                    with open('/prior.txt') as source:
+                        prior = int(source.read())
+                    convert = len
+                    print(key, default)
+                    return prior
+                def __setitem__(self, key, value):
+                    print(key, value)
+
+            update(Totals(), 'service', {'quantity': '25'})
+
+            def fallback(totals, name):
+                totals[name] = 120
+                print('default')
+                return 0
+            def with_default(totals, name, row):
+                totals[name] = totals.get(name, fallback(totals, name)) + int(row['quantity'])
+            totals = {'service': 65}
+            with_default(totals, 'service', {'quantity': '8'})
+            print(totals['service'])
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var synchronous = new MockLythonHost();
+        synchronous.SeedFile("/prior.txt", "1000");
+        using (var result = script.Run(synchronous)) Check(result);
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        var delayed = new DelayedLythonHost();
+        delayed.SeedFile("/prior.txt", "1000");
+        using (var result = await script.RunAsync(delayed)) Check(result);
+        Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(1, delayed.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+
+        static void Check(LythonExecutionResult result)
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("service 0\nservice 1002\ndefault\n128\n", result.StandardOutput);
+        }
+    }
+
+    [Fact]
     public async Task PreservesGetValueAndCapturedConverterAcrossDynamicFieldRead()
     {
         const string source = """

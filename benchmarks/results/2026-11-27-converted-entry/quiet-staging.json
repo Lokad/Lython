@@ -1,0 +1,10 @@
+{
+  "vmFreeBytes": 12328960,
+  "newCoreBytes": 11664384,
+  "failure": "Canonical-path assertion failed before any upload or mutation.",
+  "candidatePathsResolvedToSameArchiveFile": true,
+  "physicallyDistinctMatchesWithCompletedArchiveReceipt": 0,
+  "newRemoteRunDirectoryExists": false,
+  "timingsCollected": false,
+  "localConfirmationArchiveSHA256": "8bea10d7e43ec03256c2f2b46d8851b7872f75f8551c1fc2b63cd5967f9c7e65"
+}

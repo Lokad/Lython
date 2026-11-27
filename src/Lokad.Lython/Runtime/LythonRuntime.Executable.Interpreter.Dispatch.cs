@@ -204,6 +204,9 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.LoadCasedSplit:
                             if (TryExecuteCasedSplitMember(ref execution, scope, invocation, instruction)) break;
                             goto case ExecutableOpCode.LoadCallMember;
+                        case ExecutableOpCode.LoadConvertedDictionaryGet:
+                            if (TryExecuteConvertedDictionaryOperands(ref execution, invocation ?? scope, instruction)) break;
+                            goto case ExecutableOpCode.LoadCallMember;
                         case ExecutableOpCode.LoadMember:
                         case ExecutableOpCode.LoadCallMember:
                             if (TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction)) break;

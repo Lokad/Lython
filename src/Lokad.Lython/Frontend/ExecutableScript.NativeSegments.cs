@@ -455,7 +455,9 @@ internal sealed partial class ExecutableCodeObject
                 Instructions[getIndex + 1].OpCode == ExecutableOpCode.LoadGlobal &&
                 CanPrepareConvertedDictionaryUpdate(getIndex, get))
             {
-                sites[get.CallSiteIndex] = sites[get.CallSiteIndex] with { AccumulatesDictionary = true };
+                if (CanReadConvertedDictionaryOperands(getIndex, get, store))
+                    Instructions[getIndex - 3] = Instructions[getIndex - 3].WithConvertedDictionaryGet();
+                else sites[get.CallSiteIndex] = sites[get.CallSiteIndex] with { AccumulatesDictionary = true };
                 return;
             }
         }
@@ -529,6 +531,26 @@ internal sealed partial class ExecutableCodeObject
 
     private bool IsUncapturedLocal(int slot)
         => (uint)slot < (uint)FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
+
+    private bool CanReadConvertedDictionaryOperands(int index, in ExecutableInstruction get, in ExecutableInstruction store)
+    {
+        // Other captured locals or nested callables do not affect these two
+        // uncaptured operands. A frame with mirrored bindings uses the call.
+        if (index < 3 || !IsFunctionScope || RequiresLocalVariableMirroring) return false;
+        ref readonly var member = ref Instructions[index - 3];
+        ref readonly var key = ref Instructions[index - 2];
+        ref readonly var fallback = ref Instructions[index - 1];
+        var firstArgument = get.ResultSlot + CallSites[get.CallSiteIndex].ArgumentOffset;
+        return member is { OpCode: ExecutableOpCode.LoadCallMember, HasResultConsumer: false } &&
+            Names[member.NameIndex] == "get" && member.InputStart == store.SecondInput &&
+            member.ResultSlot == get.ResultSlot && member.LiveExtent == firstArgument &&
+            key is { OpCode: ExecutableOpCode.LoadLocal, HasResultConsumer: false } && key.LocalSlot == store.ThirdInput &&
+            key.ResultSlot == firstArgument && key.LiveExtent == firstArgument + 1 &&
+            fallback is { OpCode: ExecutableOpCode.LoadConst, HasResultConsumer: false } &&
+            Constants[fallback.ConstantIndex] is BigInteger value && value.GetByteCount() < 8 &&
+            fallback.ResultSlot == firstArgument + 1 && fallback.LiveExtent == firstArgument + 2 &&
+            !CrossesExceptionBoundary(index - 3, index);
+    }
 
     private bool CanPrepareConvertedDictionaryUpdate(int index, in ExecutableInstruction get)
     {

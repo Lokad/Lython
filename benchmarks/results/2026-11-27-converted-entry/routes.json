@@ -1,0 +1,86 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.shipment-starmap-wide-lists",
+      "asynchronous": false,
+      "routes": {
+        "DirectConvertedUpdates": 2046,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2845833,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": false,
+      "routes": {
+        "DirectConvertedUpdates": 2046,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2822785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": false,
+      "routes": {
+        "DirectConvertedUpdates": 0,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": false,
+      "routes": {
+        "DirectConvertedUpdates": 2046,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 1806411,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-starmap-wide-lists",
+      "asynchronous": true,
+      "routes": {
+        "DirectConvertedUpdates": 2046,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2845833,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-bound-starmap",
+      "asynchronous": true,
+      "routes": {
+        "DirectConvertedUpdates": 2046,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2822785,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.shipment-file-fed-map",
+      "asynchronous": true,
+      "routes": {
+        "DirectConvertedUpdates": 0,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 2270071,
+      "allowanceReturned": true
+    },
+    {
+      "id": "diagnostic.json-service-quantity-totals",
+      "asynchronous": true,
+      "routes": {
+        "DirectConvertedUpdates": 2046,
+        "CallConvertedUpdates": 0
+      },
+      "peakExecutionMemoryBytes": 1806411,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

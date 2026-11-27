@@ -924,7 +924,10 @@ An exact string-keyed dictionary update can share one table probe for
 `get` and assignment when its right operand is a short decimal conversion
 of a native record field. The segment reads the prior integer before
 resolving the live converter. It borrows established lookup storage and
-publishes the new integer after conversion. Cases that need admission,
+publishes the new integer after conversion. When the receiver and key are the
+same private bindings as the assignment target and the default is a small
+integer literal, the segment can enter directly from those operands. Computed
+arguments keep their ordinary evaluation. Cases that need admission,
 promotion or a user protocol continue through the ordinary instructions
 with their existing evaluation order.
 

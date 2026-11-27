@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1839 enter converted dictionary updates directly](results/2026-11-27-converted-entry/README.md)
+removes `dict.get` call operand staging on 2,046 rows per affected script.
+JSON totals use 6.77–11.43% less process CPU in the local confirmation.
+Wide shipment remains inconclusive. File-fed map uses 2.19–2.94% more CPU
+in the repeat and remains a control for the next quiet comparison.
+
 [B1838 forward unpacked operands into generator lists](results/2026-11-27-forward-unpacked-generator/README.md)
 removes four instructions and two frame slots from each shipment generator.
 Wide async elapsed reverses on a repeat, and CPU remains inconclusive.

@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "sync",
+    "clr": [
+      1104632,
+      1104632
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "sync",
+    "clr": [
+      1091192,
+      1091192
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808776,
+      808720
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "mode": "sync",
+    "clr": [
+      815424,
+      815430
+    ],
+    "peak": [
+      1806411,
+      1806411
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "async",
+    "clr": [
+      1104816,
+      1104816
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "async",
+    "clr": [
+      1091376,
+      1091376
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808936,
+      808936
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.json-service-quantity-totals",
+    "mode": "async",
+    "clr": [
+      815646,
+      815876
+    ],
+    "peak": [
+      1806411,
+      1806411
+    ]
+  }
+]

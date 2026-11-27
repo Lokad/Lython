@@ -1,0 +1,82 @@
+{
+  "marked": {
+    "diagnostic.shipment-starmap-wide-lists": [
+      {
+        "code": "tally",
+        "index": 64,
+        "steps": [
+          "LoadConvertedDictionaryGet",
+          "LoadLocal",
+          "LoadConst",
+          "Call",
+          "LoadGlobal",
+          "Subscript",
+          "Call",
+          "Binary",
+          "StoreSubscript"
+        ]
+      }
+    ],
+    "diagnostic.shipment-bound-starmap": [
+      {
+        "code": "tally",
+        "index": 62,
+        "steps": [
+          "LoadConvertedDictionaryGet",
+          "LoadLocal",
+          "LoadConst",
+          "Call",
+          "LoadGlobal",
+          "Subscript",
+          "Call",
+          "Binary",
+          "StoreSubscript"
+        ]
+      }
+    ],
+    "diagnostic.json-service-quantity-totals": [
+      {
+        "code": "tally",
+        "index": 11,
+        "steps": [
+          "LoadConvertedDictionaryGet",
+          "LoadLocal",
+          "LoadConst",
+          "Call",
+          "LoadGlobal",
+          "Subscript",
+          "Call",
+          "Binary",
+          "StoreSubscript"
+        ]
+      }
+    ],
+    "shape-simple": [
+      {
+        "code": "update",
+        "index": 0,
+        "steps": [
+          "LoadConvertedDictionaryGet",
+          "LoadLocal",
+          "LoadConst",
+          "Call",
+          "LoadGlobal",
+          "Subscript",
+          "Call",
+          "Binary",
+          "StoreSubscript"
+        ]
+      }
+    ]
+  },
+  "unchanged": [
+    "diagnostic.shipment-file-fed-map",
+    "dynamic-default",
+    "dynamic-key",
+    "different-receiver",
+    "ordinary-accumulation",
+    "ordinary-call"
+  ],
+  "referenceTapeSHA256": "9e867de918b0fccaf3d41d2a6888697134f860e74a058cdc9c544e1f63683912",
+  "candidateTapeSHA256": "93ab5f5421442d26ee71cf9080204cc600e2df12b31bd04408fdbfc6ad65b004"
+}

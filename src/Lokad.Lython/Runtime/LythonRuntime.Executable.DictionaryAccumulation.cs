@@ -219,11 +219,19 @@ internal sealed partial class LythonRuntime
         private static bool TryExecuteDictionaryAccumulation(ref ExecutableWorkState execution, ExecutionContext context,
             ExecutableCallSite call, int start, PyDict dictionary, PyString key)
         {
-            ref readonly var add = ref execution.Code.Instructions[execution.InstructionIndex + 1];
+            var index = execution.InstructionIndex;
+            var instructions = execution.Code.Instructions;
+            ref readonly var add = ref instructions[index + 1];
             if (add.OpCode == ExecutableOpCode.LoadGlobal)
-                return TryExecuteConvertedDictionaryUpdate(ref execution, context, call, start, dictionary, key);
+            {
+                ref readonly var convertedStore = ref instructions[index + 5];
+                if (!ReferenceEquals(execution.Locals[convertedStore.SecondInput].Reference, dictionary) ||
+                    !ReferenceEquals(execution.Locals[convertedStore.ThirdInput].Reference, key)) return false;
+                return TryExecuteConvertedDictionaryUpdate(ref execution, context, index, dictionary, key,
+                    execution.Stack[start + call.ArgumentOffset + 1]);
+            }
 
-            ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 2];
+            ref readonly var store = ref instructions[index + 2];
             // Future inputs are pure locals/constants. A missing or different
             // value leaves the original instructions to preserve read errors,
             // source spans and all dynamic evaluation/assignment behavior.
@@ -248,20 +256,39 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        private static bool TryExecuteConvertedDictionaryOperands(ref ExecutableWorkState execution, ExecutionContext context,
+            in ExecutableInstruction member)
+        {
+            var index = execution.InstructionIndex;
+            var code = execution.Code;
+            ref readonly var keyLoad = ref code.Instructions[index + 1];
+            if (execution.Stack.LiveExtent != member.ResultSlot ||
+                execution.Locals[member.InputStart].Reference is not PyDict dictionary ||
+                execution.Locals[keyLoad.LocalSlot].Reference is not PyString key) return false;
+
+            // The exact dictionary's get cannot run a descriptor. The
+            // compiler proved these same locals are the destination, and the
+            // default is an already compiled integer. Leave the full tape
+            // available for unbound, dynamic or unfunded work.
+            ref readonly var fallback = ref code.Instructions[index + 2];
+            context.CheckExecution(keyLoad.Span);
+            context.CheckExecution(fallback.Span);
+            return TryExecuteConvertedDictionaryUpdate(ref execution, context, index + 3, dictionary, key,
+                code.Constants[fallback.ConstantIndex]!);
+        }
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private static bool TryExecuteConvertedDictionaryUpdate(ref ExecutableWorkState execution, ExecutionContext context,
-            ExecutableCallSite get, int start, PyDict dictionary, PyString key)
+            int index, PyDict dictionary, PyString key, object fallback)
         {
             var code = execution.Code;
-            var index = execution.InstructionIndex;
+            ref readonly var call = ref code.Instructions[index];
+            var get = code.CallSites[call.CallSiteIndex];
             ref readonly var store = ref code.Instructions[index + 5];
-            if (!ReferenceEquals(execution.Locals[store.SecondInput].Reference, dictionary) ||
-                !ReferenceEquals(execution.Locals[store.ThirdInput].Reference, key)) return false;
 
             // Read the original left operand before resolving the converter.
             // The probe and small-decimal conversion cannot admit or call
             // Python. Any other work resumes the unchanged instruction tape.
-            var fallback = execution.Stack[start + get.ArgumentOffset + 1];
             (int Index, uint Hash, long Prior) update;
             context.EnterInterpreterFrame(get.CallSpan);
             try

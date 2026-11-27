@@ -159,6 +159,7 @@ internal sealed partial class LythonRuntime
                         if (TryExecuteCasedSplitMember(instruction)) break;
                         goto case ExecutableOpCode.LoadCallMember;
                     case ExecutableOpCode.LoadCallMember:
+                    case ExecutableOpCode.LoadConvertedDictionaryGet:
                     {
                         var receiver = Read(instruction.InputStart, 0);
                         var name = Code.Names[instruction.NameIndex];
