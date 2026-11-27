@@ -66,6 +66,10 @@ active. CPython uses its native file APIs. Fixture reset and request
 framing sit outside the elapsed execution clock. The raw process CPU
 measurements cover the wider request.
 
+A short Windows check of `18c82c45f` with CPython 3.13.2 had substantial
+timing spread. Its results and the exact-image WSL follow-up are available
+separately. [B1878](../benchmarks/results/2026-11-27-windows-current-cpython/README.md).
+
 The first-line search gap is about 15–16 µs in B1834. A separate B1815
 diagnostic measured about 23 µs with verification and 29–30 µs before it.
 The earlier interval still includes mediated I/O, output capture and

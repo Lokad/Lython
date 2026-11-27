@@ -1,0 +1,133 @@
+{
+  "timedBatches": 112,
+  "rows": [
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "compile-run",
+      "intervals": {
+        "elapsed": [
+          -10.753482658209778,
+          -6.0516958748924266
+        ],
+        "cpu": [
+          -6.09537846089061,
+          -3.15570672713531
+        ]
+      },
+      "engineMedianUs": {
+        "candidate": [
+          957.0077239709443,
+          968.5230024213075
+        ],
+        "reference": [
+          1018.6535381165919,
+          1031.3901345291479
+        ],
+        "candidate-control": [
+          937.500380952381,
+          992.063492063492
+        ],
+        "reference-control": [
+          1050.4615853658536,
+          1024.3902439024391
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "lane": "warm",
+      "intervals": {
+        "elapsed": [
+          -9.312182610389897,
+          8.380516863229426
+        ],
+        "cpu": [
+          -8.909254807692301,
+          5.945336714567495
+        ]
+      },
+      "engineMedianUs": {
+        "reference-control": [
+          875.7693936170214,
+          921.9858156028369
+        ],
+        "candidate-control": [
+          886.4435542406311,
+          927.0216962524655
+        ],
+        "reference": [
+          817.8993604166667,
+          875.0
+        ],
+        "candidate": [
+          794.2161484375,
+          839.84375
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "compile",
+      "intervals": {
+        "elapsed": [
+          -4.164450711874846,
+          -2.294544004436627
+        ],
+        "cpu": [
+          -5.241099594411902,
+          -3.286313381624084
+        ]
+      },
+      "engineMedianUs": {
+        "candidate": [
+          672.9489163934426,
+          688.5245901639345
+        ],
+        "reference": [
+          693.6156032719837,
+          715.7464212678937
+        ],
+        "candidate-control": [
+          664.7303233438486,
+          678.2334384858044
+        ],
+        "reference-control": [
+          688.7526490066225,
+          711.9205298013245
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "warm",
+      "intervals": {
+        "elapsed": [
+          -5.494272644952202,
+          2.7816466668141526
+        ],
+        "cpu": [
+          -3.4551678191550472,
+          3.069227691076426
+        ]
+      },
+      "engineMedianUs": {
+        "reference-control": [
+          170.14257136894827,
+          175.29215358931552
+        ],
+        "candidate-control": [
+          171.1132962184874,
+          180.67226890756302
+        ],
+        "reference": [
+          181.0612975609756,
+          185.3658536585366
+        ],
+        "candidate": [
+          174.8753365342645,
+          178.9611523352248
+        ]
+      }
+    }
+  ]
+}

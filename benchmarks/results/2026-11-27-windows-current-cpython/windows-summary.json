@@ -1,0 +1,131 @@
+{
+  "timedBatches": 126,
+  "rows": [
+    {
+      "case": "diagnostic.shipment-dictwriter-report",
+      "lane": "warm",
+      "engines": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 31321.300000000003,
+          "iqrFraction": 1.097411346272345
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 20633,
+          "iqrFraction": 0.09625115106867632
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 21546.800000000003,
+          "iqrFraction": 0.1373359385152319
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.json-lines-shipment.default-export-768",
+      "lane": "warm-async",
+      "engines": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 33770.7,
+          "iqrFraction": 0.2804309653042429
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 22004.699999999997,
+          "iqrFraction": 0.8177184874140526
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 16997.933333333334,
+          "iqrFraction": 0.08925496825104219
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "compile",
+      "engines": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1562.9666666666667,
+          "iqrFraction": 0.42181890564240376
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1499.1,
+          "iqrFraction": 0.34589503702221325
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 2503.145454545455,
+          "iqrFraction": 0.06363266580956331
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "lane": "warm",
+      "engines": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 10460.933333333334,
+          "iqrFraction": 0.9040859961507577
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 14904.8,
+          "iqrFraction": 0.5240090440663412
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 8958.820000000002,
+          "iqrFraction": 0.02756836279777926
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.json-lines-shipment.default-export-768",
+      "lane": "warm",
+      "engines": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 27465.8,
+          "iqrFraction": 0.46184345622556056
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 18783.3,
+          "iqrFraction": 0.37119941650295735
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 15391.166666666666,
+          "iqrFraction": 0.10859692247717852
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "compile-run",
+      "engines": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 4857.48,
+          "iqrFraction": 0.35432364106491443
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 10494.5,
+          "iqrFraction": 0.14680666063175962
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 2475.8090909090906,
+          "iqrFraction": 0.22953194364376733
+        }
+      ]
+    }
+  ]
+}

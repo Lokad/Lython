@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1878 check the current checkpoint against CPython](results/2026-11-27-windows-current-cpython/README.md)
+records six short Windows comparisons against CPython 3.13.2. Timing spread
+leaves the comparison inconclusive. The exact-image WSL follow-up finds
+3.16–6.10% lower CPU through result and 3.29–5.24% lower compile CPU for
+ordinary definitions. Both warm lanes span zero.
+
 [B1877 reuse parsed positionals during static analysis](results/2026-11-27-ordinary-static-call-prefix/README.md)
 removes the extra scan and expression array for ordinary calls. The generated
 definition scripts each allocate 9,224 B less. Ordinary compile CPU falls
