@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1863 repeat the async frame-driver pair](results/2026-11-27-async-frame-driver-repeat/README.md)
+uses the same B1854 images in reverse lane order. File-fed async again
+uses less CPU. Wide sync and async span zero, and bound async uses
+2.82–6.48% more CPU. Keep the prototype out of delivery with both runs
+available. Both quiet gates and all 112 batches pass.
+
 [B1862 match once on the compiled pattern](results/2026-11-27-pattern-one-shot/README.md)
 removes the prepared subject from runtime and frontend one-shot matching.
 Both log scripts allocate about 221 KB less per run at matching peaks.
