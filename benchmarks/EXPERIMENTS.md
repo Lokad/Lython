@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1882 attribute the iterable shipment report](results/2026-11-27-iterable-shipment-profile/README.md)
+locates 37–38% of sampled active managed stack time in argument expansion
+in both APIs, including generator execution. The named argument-buffer
+allocation occupies 1–2%. The five-item list control bypasses that path.
+All 68 profiled batches verify. Test a direct first buffered pull.
+
 [B1881 compare the current shipment scripts with CPython](results/2026-11-27-wsl-shipment-cpython/README.md)
 finds the larger current gap in iterable rows. Local async process CPU is
 1.837–1.901× CPython, versus 1.061–1.243× for the wide report. The file-fed
