@@ -2753,13 +2753,14 @@ can also supply the bytes for its executable or lowered literal once the
 provider disposes its subject handle. Subsequent analysis reuses that backing.
 
 Lython counts UTF-8 scalars from nearby known endpoints or the iteration
-checkpoint, checking cancellation during long scans. It copies retained
-values from the original subject before a cursor can advance. Provider
-working/result borrows remain alive
-through that copy and actual cleanup. Native providers need no dense coordinate
-map or UTF-16 capture snapshot; the optional adapter may use such bridges while
-its backend evolves. Contract/semantic validation is separate from backend
-performance and released-adapter qualification.
+checkpoint, checking cancellation during long scans. Each match retains its
+projected byte and scalar ranges and the original subject. A pattern without
+capture groups stores its whole-match range directly in the match object.
+Accessing a group materializes its string from the original subject. Provider
+working and result borrows stay funded through projection and cleanup. Native
+providers need no dense coordinate map or UTF-16 capture snapshot. The optional
+adapter may use those bridges while its backend evolves. Contract and semantic
+validation are separate from backend performance and released-adapter qualification.
 
 Supply a borrowed [`ILythonRegexProvider`](../src/Lokad.Lython/Host/ILythonRegexProvider.cs)
 to `LythonEngine`. One provider handles frontend validation/capture analysis,

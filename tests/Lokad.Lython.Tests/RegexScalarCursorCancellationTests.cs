@@ -13,7 +13,7 @@ public sealed class RegexScalarCursorCancellationTests
 {
     private static readonly LythonSourceSpan Span = new(13, 4, 2, 6);
     private delegate void Project(PyString original, LythonRegexWindow window, ReadOnlySpan<LythonRegexCapture?> slots,
-        Capture[] captures, ref Position previous, Span<long> coordinates, Context context, LythonSourceSpan span,
+        Span<Capture> captures, ref Position previous, Span<long> coordinates, Context context, LythonSourceSpan span,
         Comparison<long>? coordinateComparison);
     private static readonly Project ProjectCaptures = typeof(LythonRuntime)
         .GetNestedType("RegexMatcher", BindingFlags.NonPublic)!

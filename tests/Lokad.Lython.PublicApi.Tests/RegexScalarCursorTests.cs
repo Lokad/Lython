@@ -7,6 +7,23 @@ public sealed class RegexScalarCursorTests
     // Independently compared with isolated CPython 3.13.2.
     public static TheoryData<string, string> Cases => new()
     {
+        { """
+            import re
+            text = 'aé😀aé😀'
+            pattern = re.compile(r'(?=é)|é')
+            matches = pattern.finditer(text, 1, 5)
+            first = next(matches)
+            registers = first.regs
+            kept = [first, *matches]
+            re.purge()
+            print([(m.span(), m.regs, m[0], m.lastindex, m.lastgroup) for m in kept])
+            print(first.regs is registers, all(m.string is text for m in kept))
+            single = pattern.search(text, 2, 5)
+            print(single.span(), single.group(), single.groups(), single.groupdict(), single.pos, single.endpos)
+            """,
+            "[((1, 1), ((1, 1),), '', None, None), ((1, 2), ((1, 2),), 'é', None, None), " +
+            "((4, 4), ((4, 4),), '', None, None), ((4, 5), ((4, 5),), 'é', None, None)]\n" +
+            "True True\n(4, 4)  () {} 2 5\n" },
         { "import re\ntext='αβγδεζηθ'\nfor match in re.finditer(r'(?<=(..))(?P<value>.)',text):\n print(match.span(),match.span(1),match.group(1),match.group('value'))", "(2, 3) (0, 2) αβ γ\n(3, 4) (1, 3) βγ δ\n(4, 5) (2, 4) γδ ε\n(5, 6) (3, 5) δε ζ\n(6, 7) (4, 6) εζ η\n(7, 8) (5, 7) ζη θ\n" },
         { "import re\ntext='aé😀bç🦊d'\np=re.compile(r'(?<=(..))(?=(..))')\nfor match in p.finditer(text):print(match.regs,match.groups())", "((2, 2), (0, 2), (2, 4)) ('aé', '😀b')\n((3, 3), (1, 3), (3, 5)) ('é😀', 'bç')\n((4, 4), (2, 4), (4, 6)) ('😀b', 'ç🦊')\n((5, 5), (3, 5), (5, 7)) ('bç', '🦊d')\n" },
         { "import re\ntext='αβγδεζηθ'\np=re.compile(r'(?<=(..))(.)')\nprint(p.sub(lambda m:repr((m.span(),m.span(1),m.groups())),text))", "αβ((2, 3), (0, 2), ('αβ', 'γ'))((3, 4), (1, 3), ('βγ', 'δ'))((4, 5), (2, 4), ('γδ', 'ε'))((5, 6), (3, 5), ('δε', 'ζ'))((6, 7), (4, 6), ('εζ', 'η'))((7, 8), (5, 7), ('ζη', 'θ'))\n" },

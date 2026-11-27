@@ -209,7 +209,7 @@ public sealed class RegexExpansionOwnershipTests
         Assert.True(pattern.TryGetMember("match", context, Span, out var callable));
         text ??= new string('x', 4096);
         var subject = commandOwnedSubject ? PyString.FromString(text, context.MemoryGovernor, Span) : PyString.FromString(text);
-        return Assert.IsType<LythonRuntime.ReMatchObject>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(callable).Invoke(
+        return Assert.IsAssignableFrom<LythonRuntime.ReMatchObject>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(callable).Invoke(
             [CallArgumentValue.Positional(subject)], Span, context));
     }
 

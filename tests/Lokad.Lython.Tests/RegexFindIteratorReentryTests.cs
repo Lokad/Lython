@@ -48,7 +48,7 @@ public sealed class RegexFindIteratorReentryTests
 
                 void AssertMatch(int startByte, int endByte, int start, int lastIndex)
                 {
-                    var match = Assert.IsType<LythonRuntime.ReMatchObject>(iterator.TryMoveNext().Value);
+                    var match = Assert.IsAssignableFrom<LythonRuntime.ReMatchObject>(iterator.TryMoveNext().Value);
                     Assert.Same(subject, match.String);
                     Assert.Equal(new LythonRuntime.ReCaptureRange(startByte, endByte, start, start + 1), match.Captures[0]);
                     Assert.Equal(lastIndex, match.LastCapturedIndex);

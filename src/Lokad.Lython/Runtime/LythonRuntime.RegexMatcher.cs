@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
             internal ReMatchObject CreateMatch()
                 => CreateMatchObject(_pattern, Original, _window, _captures, _lastIndex, _context, _span, this);
 
-            internal void ProjectUnicode(ReCaptureRange[] captures)
+            internal void ProjectUnicode(Span<ReCaptureRange> captures)
             {
                 ObjectDisposedException.ThrowIf(_subject is null, this);
                 if (_coordinates is null)
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static void ProjectScalarBounds(PyString original, LythonRegexWindow window,
-            ReadOnlySpan<LythonRegexCapture?> slots, ReCaptureRange[] captures,
+            ReadOnlySpan<LythonRegexCapture?> slots, Span<ReCaptureRange> captures,
             ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span,
             Comparison<long>? coordinateComparison)
         {
@@ -293,10 +293,11 @@ internal sealed partial class LythonRuntime
             PreparedCursor? match = null)
         {
             context.CheckExecution(span);
-            var bytes = checked(128L + 32L * slots.Length);
+            var bytes = checked(128L + (slots.Length == 1 ? 0 : 32L * slots.Length));
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
             context.CheckExecution(span);
-            var captures = new ReCaptureRange[slots.Length];
+            var result = ReMatchObject.CreateAdmitted(pattern, original, window, lastIndex, context.MemoryGovernor);
+            var captures = result.UnpublishedCaptures;
             if (original.Length == original.ByteLength)
             {
                 for (var i = 0; i < captures.Length; i++)
@@ -308,14 +309,12 @@ internal sealed partial class LythonRuntime
             }
             else if (match is not null) match.ProjectUnicode(captures);
             else ProjectSingleMatch(original, window, slots, captures, context, span);
-            var result = new ReMatchObject(pattern, original, window.Pos, window.EndPos,
-                captures, lastIndex, context.MemoryGovernor);
             storage.Commit(bytes);
             return result;
         }
 
         private static void ProjectSingleMatch(PyString original, LythonRegexWindow window,
-            ReadOnlySpan<LythonRegexCapture?> slots, ReCaptureRange[] captures, ExecutionContext context, LythonSourceSpan span)
+            ReadOnlySpan<LythonRegexCapture?> slots, Span<ReCaptureRange> captures, ExecutionContext context, LythonSourceSpan span)
         {
             var position = new RegexScalarPosition(window.StartByte, window.Pos);
             var count = checked(captures.Length * 2);

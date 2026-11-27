@@ -28,17 +28,38 @@ internal sealed partial class LythonRuntime
 
     // Retained matches own immutable ranges over their already-funded subject.
     // Current group access owns any new string, independently of cursor scratch.
-    internal sealed class ReMatchObject(RePatternObject pattern, PyString input, int pos, int endPos,
-        ReCaptureRange[] captures, int? lastIndex, MemoryGovernor owner) : IPyContextualDynamicAttributes, IPyHashableValue
+    internal abstract class ReMatchObject(RePatternObject pattern, PyString input, LythonRegexWindow window,
+        int? lastIndex, MemoryGovernor owner) : IPyContextualDynamicAttributes, IPyHashableValue
     {
         private PyTuple? _registers;
 
+        private sealed class MatchWithoutGroups(RePatternObject pattern, PyString input, LythonRegexWindow window, MemoryGovernor owner)
+            : ReMatchObject(pattern, input, window, null, owner)
+        {
+            private ReCaptureRange _capture;
+            internal override Span<ReCaptureRange> UnpublishedCaptures => new(ref _capture);
+        }
+
+        private sealed class MatchWithGroups(RePatternObject pattern, PyString input, LythonRegexWindow window,
+            int? lastIndex, MemoryGovernor owner) : ReMatchObject(pattern, input, window, lastIndex, owner)
+        {
+            private readonly ReCaptureRange[] _captures = new ReCaptureRange[pattern.CaptureSlotCount];
+            internal override Span<ReCaptureRange> UnpublishedCaptures => _captures;
+        }
+
+        internal static ReMatchObject CreateAdmitted(RePatternObject pattern, PyString input, LythonRegexWindow window,
+            int? lastIndex, MemoryGovernor owner) => pattern.CaptureSlotCount == 1
+            ? new MatchWithoutGroups(pattern, input, window, owner)
+            : new MatchWithGroups(pattern, input, window, lastIndex, owner);
+
         public RePatternObject Pattern { get; } = pattern;
         public PyString String { get; } = input;
-        public int Pos { get; } = pos;
-        public int EndPos { get; } = endPos;
-        public ReCaptureRange[] Captures { get; } = captures;
-        public int CaptureSlotCount => Captures.Length;
+        public int Pos { get; } = window.Pos;
+        public int EndPos { get; } = window.EndPos;
+        // The builder writes directly to the final storage before publication.
+        internal abstract Span<ReCaptureRange> UnpublishedCaptures { get; }
+        public ReadOnlySpan<ReCaptureRange> Captures => UnpublishedCaptures;
+        public int CaptureSlotCount => Pattern.CaptureSlotCount;
         public PyDict NamedGroups => Pattern.NamedGroups;
         public int? LastCapturedIndex { get; } = lastIndex;
         public int Start => Captures[0].Start;
@@ -54,8 +75,9 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             if (_registers is { } cached) return cached;
             var governor = context.MemoryGovernor;
-            var outerBytes = PyTuple.EstimateApproximateBytes(Captures.Length);
-            var bytes = checked(outerBytes + RegexBoundsStorageBytes * Captures.Length);
+            var captures = Captures;
+            var outerBytes = PyTuple.EstimateApproximateBytes(captures.Length);
+            var bytes = checked(outerBytes + RegexBoundsStorageBytes * captures.Length);
             governor.Reserve(bytes, span);
             var committed = false;
             try
@@ -64,11 +86,11 @@ internal sealed partial class LythonRuntime
                 // Admission can reenter and publish the cache. Only the
                 // projection actually retained by the match is committed.
                 if (_registers is { } established) return established;
-                var pairs = new object[Captures.Length];
+                var pairs = new object[captures.Length];
                 for (var i = 0; i < pairs.Length; i++)
                 {
                     if (i != 0 && (i & 1023) == 0) context.CheckExecution(span);
-                    var capture = Captures[i];
+                    var capture = captures[i];
                     pairs[i] = CreateAdmittedRegexBounds(capture.Start, capture.End, governor, span);
                 }
                 // All pairs are private until the cache has complete funding.

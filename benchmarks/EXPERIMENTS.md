@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1841 store the sole regex range in the match](results/2026-11-27-inline-whole-regex-match/README.md)
+removes one heap array per match without capture groups. Both APIs save 32 CLR
+and peak shared bytes per match on the extraction script. The refined layout
+keeps grouped allocation unchanged. Whole-match CPU spans zero and local async
+elapsed rises 1.89–3.44% alongside movement on the file-fed control.
+
 [B1840 reuse nested JSON record layouts by depth](results/2026-11-27-nested-json-layouts/README.md)
 avoids repeated private key-table construction when parent and child names
 differ. The two nested scripts use 42–45% less CLR allocation and 32–34%

@@ -1,0 +1,74 @@
+[
+  {
+    "case": "diagnostic.regex-extract-whole",
+    "mode": "sync",
+    "clr": [
+      397104,
+      375280
+    ],
+    "peak": [
+      145518,
+      123694
+    ]
+  },
+  {
+    "case": "diagnostic.regex-extract-captured",
+    "mode": "sync",
+    "clr": [
+      480904,
+      480904
+    ],
+    "peak": [
+      168179,
+      168179
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.regex-extract-whole",
+    "mode": "async",
+    "clr": [
+      397320,
+      375496
+    ],
+    "peak": [
+      145518,
+      123694
+    ]
+  },
+  {
+    "case": "diagnostic.regex-extract-captured",
+    "mode": "async",
+    "clr": [
+      481120,
+      481120
+    ],
+    "peak": [
+      168179,
+      168179
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  }
+]
