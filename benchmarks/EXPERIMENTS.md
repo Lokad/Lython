@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1851 compare active CPU in the two shipment APIs](results/2026-11-27-paired-shipment-api-cpu/README.md)
+uses the exact B1849 core, source and fixture. Both captures verify 3,072
+invocations. Fixed-unpack entry and completion account for 50 nearest
+samples in sync and 98 in async. The source shows two ready-result
+handoffs still present. Both quiet checks and independent goldens pass.
+
 [B1850 isolate ready insert timing](results/2026-11-27-ready-inserts-control/README.md)
 reuses the exact B1847 images. Nested JSON takes 0.88–1.75% less elapsed
 with CPU reaching zero, and bound async CPU reverses its earlier increase.
