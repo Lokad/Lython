@@ -1982,6 +1982,10 @@ any first memory refusal remains the command's failure.
 Lists reserve their initial capacity before allocating backing storage. On growth,
 the replacement and its charge are published together before refunding the old
 backing, so a host callback sees the current owner and estimate.
+Growth and snapshot copies validate the list's length after admission. Growth
+also checks length and capacity after refund callbacks. A conflicting change
+raises `RuntimeError` before the pending mutation or copy. Changes already made
+by the callback retain their funding, and an admission refusal remains terminal.
 
 Integer subtraction, multiplication, floor division and remainder admit major
 magnitudes and conservative working overlap before arithmetic. `math.prod`,

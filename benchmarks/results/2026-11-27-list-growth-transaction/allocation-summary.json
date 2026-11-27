@@ -1,0 +1,50 @@
+[
+  {
+    "case": "diagnostic.json-lines-nested-arrays",
+    "mode": "sync",
+    "clr": [
+      2387862,
+      2256616
+    ],
+    "peak": [
+      6214167,
+      6214167
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "mode": "sync",
+    "clr": [
+      1371256,
+      1371312
+    ],
+    "peak": [
+      3297534,
+      3297534
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-nested-arrays",
+    "mode": "async",
+    "clr": [
+      2388078,
+      2257062
+    ],
+    "peak": [
+      6214167,
+      6214167
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "mode": "async",
+    "clr": [
+      1371478,
+      1371472
+    ],
+    "peak": [
+      3297534,
+      3297534
+    ]
+  }
+]

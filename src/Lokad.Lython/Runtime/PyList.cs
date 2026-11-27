@@ -443,12 +443,24 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public object[] ToArray()
     {
-        var bytes = EstimateArrayBytes(Count);
-        using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
-        var result = new object[_count];
-        Array.Copy(_items, result, _count);
-        storage?.Commit(bytes);
-        return result;
+        var count = _count;
+        var bytes = EstimateArrayBytes(count);
+        var governor = _memoryGovernor;
+        governor?.Reserve(bytes, _allocationSpan);
+        try
+        {
+            CheckStorageAdmission(count);
+            var result = new object[count];
+            Array.Copy(_items, result, count);
+            governor?.Commit(bytes);
+            return result;
+        }
+        catch
+        {
+            governor?.ReleaseReserved(bytes);
+            governor?.ThrowIfAdmissionFailed();
+            throw;
+        }
     }
 
     public bool IsTruthy() => Count != 0;
@@ -476,21 +488,49 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     internal void EnsureCapacity(int targetCount)
     {
         if (targetCount <= _items.Length) return;
+        var count = _count;
         var capacity = Math.Max(targetCount, (int)Math.Min(
             _items.Length == 0 ? InitialCapacity : (long)_items.Length * 2, Array.MaxLength));
         var bytes = EstimateCapacityBytes(capacity);
-        using var backing = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
-        var replacement = new object[capacity];
-        Array.Copy(_items, replacement, _count);
-        _items = replacement;
-        if (backing is not null)
+        var governor = _memoryGovernor;
+        governor?.Reserve(bytes, _allocationSpan);
+        object[]? replacement = null;
+        try
         {
-            backing.Commit(bytes);
-            var previousBytes = _committedBytes;
-            // A refund can reenter and replace this backing again.
-            _committedBytes = bytes;
-            _memoryGovernor!.Release(previousBytes);
+            CheckStorageAdmission(count);
+            // The host may already have supplied sufficient capacity.
+            if (targetCount > _items.Length)
+            {
+                replacement = new object[capacity];
+                Array.Copy(_items, replacement, count);
+            }
         }
+        catch
+        {
+            governor?.ReleaseReserved(bytes);
+            governor?.ThrowIfAdmissionFailed();
+            throw;
+        }
+
+        if (replacement is null) governor?.ReleaseReserved(bytes);
+        else
+        {
+            var previousBytes = _committedBytes;
+            governor?.Commit(bytes);
+            _items = replacement;
+            // Publish both before the refund can reenter a second time.
+            _committedBytes = governor is null ? 0 : bytes;
+            governor?.Release(previousBytes);
+        }
+        CheckStorageAdmission(count, targetCount);
+    }
+
+    private void CheckStorageAdmission(int count, int minimumCapacity = 0)
+    {
+        _memoryGovernor?.ThrowIfAdmissionFailed();
+        PyStructuralGuard.AmbientContext?.CheckExecution(_allocationSpan);
+        if (_count != count || _items.Length < minimumCapacity)
+            throw RuntimeErrors.Runtime("list changed during memory admission.", _allocationSpan);
     }
 
     private static long EstimateArrayBytes(int count) => 32L + (16L * count);

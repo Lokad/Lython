@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1833 validate list growth and snapshot admission](results/2026-11-27-list-growth-transaction/README.md)
+preserves reentrant list changes and terminal refund-callback refusal. Direct
+reservations remove the per-copy lease. Nested-array Lines allocates another
+5.49–5.50% less than B1832 at unchanged peak admission. Timing spans zero.
+
 [B1831 admit initial list backing directly](results/2026-11-27-fixed-initial-list/README.md)
 removes a temporary lease from ordinary list construction. Nested-array JSON
 Lines allocates about 128 KiB less per script in both APIs at matching peaks.

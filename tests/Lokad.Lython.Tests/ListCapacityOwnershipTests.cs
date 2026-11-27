@@ -99,6 +99,96 @@ public sealed class ListCapacityOwnershipTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ChangedLengthDuringAdmissionPreservesOnlyCallbackEffects(bool snapshot)
+    {
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var governor = new MemoryGovernor(hook);
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var list = new PyList(1, governor, span);
+        var original = new object();
+        var added = new object();
+        list.Add(original);
+        hook.AfterGrowth = _ =>
+        {
+            hook.AfterGrowth = null;
+            list.EnsureCapacity(5);
+            list.Add(added);
+            list.Add(added);
+        };
+
+        var failure = Assert.Throws<LythonRuntimeException>(() =>
+        {
+            if (snapshot) _ = list.ToArray();
+            else list.Add(new object());
+        });
+
+        Assert.Equal("RuntimeError", failure.ExceptionType);
+        Assert.Equal(span, failure.Span);
+        Assert.Null(governor.AdmissionFailure);
+        Assert.Collection(list, item => Assert.Same(original, item),
+            item => Assert.Same(added, item), item => Assert.Same(added, item));
+        Assert.Equal(PyList.EstimateCapacityBytes(5), budget.ReservedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        list.DiscardUnpublishedStorage();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void GrowthAdmissionReusesCapacitySuppliedByTheCallback()
+    {
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var governor = new MemoryGovernor(hook);
+        var list = new PyList(1, governor, null);
+        var value = new object();
+        list.Add(value);
+        hook.AfterGrowth = _ =>
+        {
+            hook.AfterGrowth = null;
+            list.EnsureCapacity(5);
+        };
+
+        list.Add(value);
+
+        Assert.Equal(5, list.Capacity);
+        Assert.Equal(2, list.Count);
+        Assert.All(list, item => Assert.Same(value, item));
+        Assert.Equal(PyList.EstimateCapacityBytes(5), budget.ReservedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void RefusalSuppressedByTheRefundCallbackStopsTheOuterAppend()
+    {
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var governor = new MemoryGovernor(hook);
+        var list = new PyList(1, governor, null);
+        var value = new object();
+        list.Add(value);
+        hook.AfterShrink = _ =>
+        {
+            hook.AfterShrink = null;
+            hook.RefuseGrowth = _ => true;
+            Assert.Throws<LythonRuntimeException>(() => list.EnsureCapacity(5));
+        };
+
+        var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(new object()));
+
+        Assert.Same(governor.AdmissionFailure, failure);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+        Assert.Same(value, Assert.Single(list));
+        Assert.Equal(list.CommittedStorageBytes, budget.ReservedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Theory]
     [InlineData(2)]
     [InlineData(12)]
     public void AttachmentFundsExistingBackingAndPreservesFirstOwner(int count)
