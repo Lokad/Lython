@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1901 calculate return-summary eligibility during lexical preparation](results/2026-11-27-lexical-return-summaries/README.md)
+removes an independent function-body walk. Exact diagnostics, code,
+admission and 224 timed batches verify. Quiet function-free compilation
+uses 0.67–3.12% more CPU. Guarded compile-to-result elapsed falls with
+CPU spanning zero. The WSL nested JSON timing control moves adversely.
+Withdraw this version and retain both measurements.
+
 [B1900 reuse lexical slots in local-name diagnostics](results/2026-11-27-local-assignment-slots/README.md)
 removes the second assignment-name table and journals slots. Ordinary
 and escaping definition compilation allocates 29,584 B less. Quiet

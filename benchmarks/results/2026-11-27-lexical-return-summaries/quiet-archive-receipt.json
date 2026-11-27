@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "warmJobs": 3,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "3add3dafa7554f3ff45cfc01672e77e0d92456470b74777779a92087ffd2ed17"
+}
