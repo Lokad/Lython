@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1837 return ready async starmap rows directly](results/2026-11-27-ready-starmap-async/README.md)
+removes the unconditional per-row async state machine. Four scripts match
+independent output and file goldens, with the same peaks in both APIs.
+The local wide async elapsed improvement overlaps movement in unchanged
+controls, and process CPU spans zero.
+
 [B1836 attribute active CPU in wide shipment](results/2026-11-27-current-shipment-cpu/README.md)
 uses the delivered core and a file-fed map control. Starmap's async entry
 and state machine account for 72 nearest resolved methods in 1,284 wide

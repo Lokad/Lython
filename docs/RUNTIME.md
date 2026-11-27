@@ -895,7 +895,10 @@ tuple with a complete positional supply, `starmap` can fill the callback's
 native frame slots directly, including the receiver. A pending callback
 transfers its live slots into the existing admitted continuation. Other
 exact rows use an admitted argument packet, and arbitrary iterables use
-the general argument drain.
+the general argument drain. Async `starmap` returns a ready row directly
+when its source and callback complete immediately. If a source suspends,
+the continuation can also finish the callback or drain an arbitrary row,
+keeping its working storage charged through the call.
 
 For a compatible executable callback, `starmap` can take the operands of an
 exact list display yielded by a generator in the same command. The generator

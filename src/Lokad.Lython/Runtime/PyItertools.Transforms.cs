@@ -469,28 +469,55 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         return PyIterationResult.Yield(LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(args, _span, _context)));
     }
 
-    public async ValueTask<PyIterationResult> TryMoveNextAsync()
+    public ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
         if (_source.ShortZipForPull() is { } zip)
-            return await StartZipRowAsync(zip).ConfigureAwait(false);
+            return StartZipRowAsync(zip);
         var generator = ListYieldSource(out var function, out var receiver, out var arity);
-        var next = await (generator is null ? _source.TryMoveNextAsync() : generator.AdvanceListYieldAsync(arity))
-            .ConfigureAwait(false);
+        var next = generator is null ? _source.TryMoveNextAsync() : generator.AdvanceListYieldAsync(arity);
+        if (!next.IsCompleted) return FinishPullAsync(next, generator, function, receiver);
+
+        if (TryStartPulledCallback(next.GetAwaiter().GetResult(), generator, function, receiver,
+            out var iterable, out var result, out var pending))
+            return result.HasValue ? new(result) : CompleteCallbackAsync(pending);
+        return iterable is null ? new(PyIterationResult.End) : FinishPullAsync(default, null, null, null, iterable);
+    }
+
+    private bool TryStartPulledCallback(PyIterationResult row, LythonRuntime.PyGenerator? generator,
+        PyExecutableFunction? function, object? receiver, out object? iterable,
+        out PyIterationResult result, out ValueTask<object> pending)
+    {
+        iterable = null;
         if (generator?.HasStagedListYield == true)
         {
-            var staged = LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context, asynchronous: true, out var stagedPending);
-            return staged.HasValue ? staged : PyIterationResult.Yield(await stagedPending.ConfigureAwait(false));
+            result = LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context,
+                asynchronous: true, out pending);
+            return true;
         }
-        if (!next.HasValue) return PyIterationResult.End;
-        var current = next.Value;
+        if (row.HasValue)
+        {
+            iterable = row.Value;
+            return TryStartSequenceCallback(iterable, asynchronous: true, out result, out pending);
+        }
 
-        if (TryStartSequenceCallback(current, asynchronous: true, out var rowResult, out var pending))
-            return rowResult.HasValue ? rowResult : PyIterationResult.Yield(await pending.ConfigureAwait(false));
+        result = default;
+        pending = default;
+        return false;
+    }
 
-        // N09: leased drain keeps the element list charged beside the argument array
-        // and callback (reservation ends after the call, not before).
-        using var lease = await PyIteration.MaterializeLeasedAsync(current, _span, _context).ConfigureAwait(false);
+    private async ValueTask<PyIterationResult> FinishPullAsync(ValueTask<PyIterationResult> source,
+        LythonRuntime.PyGenerator? generator, PyExecutableFunction? function, object? receiver, object? iterable = null)
+    {
+        if (iterable is null)
+        {
+            var row = await source.ConfigureAwait(false);
+            if (TryStartPulledCallback(row, generator, function, receiver, out iterable, out var result, out var pending))
+                return result.HasValue ? result : PyIterationResult.Yield(await pending.ConfigureAwait(false));
+            if (iterable is null) return PyIterationResult.End;
+        }
+
+        using var lease = await PyIteration.MaterializeLeasedAsync(iterable, _span, _context).ConfigureAwait(false);
         var values = lease.Items;
         // The drained list stays leased beside this exact-size copy, released
         // after the call completes.
