@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1836 attribute active CPU in wide shipment](results/2026-11-27-current-shipment-cpu/README.md)
+uses the delivered core and a file-fed map control. Starmap's async entry
+and state machine account for 72 nearest resolved methods in 1,284 wide
+shipment samples. Both workloads verify and both quiet checks pass.
+
 [B1835 place deferred definition storage during emission](results/2026-11-27-deferred-placement-linearize/README.md)
 removes a separate compiler pass over 93 sites in the ordinary factory.
 Fifteen exact snapshots and 113 budget levels match. Local compile-to-result
