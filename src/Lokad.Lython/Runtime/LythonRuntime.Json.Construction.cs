@@ -147,8 +147,12 @@ internal sealed partial class LythonRuntime
                         ref var layout = ref context.State.JsonRecordLayoutAtDepth(state.Depth - 1);
                         if (frame.Result is not PyDict dictionary)
                             layout = frame.Expected;
-                        else if (dictionary.ShareRecordKeys(context, span) is { } keys)
-                            layout = (keys, frame.PlainNames);
+                        else if ((dictionary.SharedRecordKeys ?? dictionary.ShareRecordKeys(context, span)) is { } keys)
+                        {
+                            // Unseen tail keys keep their previous syntax proof.
+                            // Their empty value slots remain absent in this row.
+                            layout = (keys, frame.PlainNames && (keys.Count == dictionary.Count || frame.Expected.PlainNames));
+                        }
                     }
                     var value = frame.Result;
                     var end = position + 1;

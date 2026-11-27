@@ -281,6 +281,8 @@ internal sealed partial class PyDict
         _nativeValues = capacity == 0 ? [] : new object?[capacity];
     }
 
+    internal RecordKeys? SharedRecordKeys => _recordKeys;
+
     internal RecordKeys? ShareRecordKeys(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         context.CheckExecution(span);

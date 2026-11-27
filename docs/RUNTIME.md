@@ -2672,8 +2672,10 @@ raised during a refund also stops the write and preserves its original attributi
 JSON and CSV records can share immutable keys through their existing batch/cache
 owner. JSON keeps separate hints for the first three container depths and shares
 one hint at deeper levels. Parent and child records with different keys can then
-reuse their own layouts across repeated records and JSON Lines decodes. After a
-strict JSON decode of unescaped keys, a bounded UTF-8 comparison
+reuse their own layouts across repeated records and JSON Lines decodes. A
+record can omit trailing fields and keep the shared layout. Empty value
+slots represent absent fields. After a strict JSON decode of unescaped
+keys, a bounded UTF-8 comparison
 can consume an exact expected key directly from the next object. Other keys use
 the ordinary string decoder. Value capacity grows from actual fields,
 independently of a previous wide layout. Value updates, deletions and clear need

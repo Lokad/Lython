@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1889 retain shared layouts across omitted trailing fields](results/2026-11-27-json-shared-prefix/README.md)
+removes key copying and rebuilding for alternating optional fields in
+nested Lines. Allocation falls 41.5% and peak admission 31.4%. Local
+process CPU falls 13.57–19.36% across both APIs. Dense document and CSV
+CPU span zero. Four independent goldens and 140 batches verify.
+
 [B1888 compare nested JSON with CPython](results/2026-11-27-wsl-nested-json-cpython/README.md)
 finds nested Lines at 0.756–0.796× CPython elapsed across both APIs.
 The initial nested-document comparison varies. Its same-image reverse
