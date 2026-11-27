@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1874 give the eager JSON call its own traversal](results/2026-11-27-json-eager-traversal/README.md)
+removes the private iterator per eager result while sharing the renderer with
+chunked encoding. The default and escaped exports allocate about 123 KB less
+per command. Local export CPU falls while the unchanged nested read uses
+more. The file-dump timing spans zero. Keep the simplification and preserve
+the control drift for the next quiet checkpoint.
+
 [B1873 admit one plain JSON token before the scalar escape loop](results/2026-11-27-json-plain-quoted-token/README.md)
 keeps the plain root storage savings. The default export spans zero in both
 APIs. Escaped elapsed rises 3.84–17.97% alongside an adverse nested read

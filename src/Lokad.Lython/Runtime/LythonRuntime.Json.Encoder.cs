@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -230,18 +231,14 @@ internal sealed partial class LythonRuntime
         private readonly JsonDumpOptions _options;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private EmitFrame _outerFrame;
-        private EmitFrame[] _nestedFrames = [];
-        private int _frameCount;
-        private HashSet<object>? _nestedMarkers;
-        private object? _pendingValue;
+        private EmitTraversal _traversal;
         private bool _finished;
         private GovernedByteBuilder? _builder;
         private int _advancing;
 
         private JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            _pendingValue = value;
+            _traversal = new EmitTraversal(value);
             _options = options;
             _context = context;
             _span = span;
@@ -301,7 +298,7 @@ internal sealed partial class LythonRuntime
                         if (_finished) return PyIterationResult.End;
                         var builder = _builder ??= new GovernedByteBuilder(_context.MemoryGovernor, _span);
                         builder.Clear();
-                        if (!await EmitAsync(asynchronous, stopAtChunk: true).ConfigureAwait(false))
+                        if (!await EmitAsync(this, null, builder, _options, _context, _span, asynchronous).ConfigureAwait(false))
                         {
                             Finish();
                             return PyIterationResult.End;
@@ -334,25 +331,10 @@ internal sealed partial class LythonRuntime
             try
             {
                 context.CheckExecution(span);
-                var governor = context.MemoryGovernor;
-                var builder = new GovernedByteBuilder(governor, span);
+                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
                 try
                 {
-                    governor.Reserve(StorageBytes, span);
-                    try
-                    {
-                        context.CheckExecution(span);
-                        var traversal = new JsonEncodeIterator(value, options, context, span) { _builder = builder };
-                        try { await traversal.EmitAsync(asynchronous, stopAtChunk: false).ConfigureAwait(false); }
-                        finally
-                        {
-                            // Retire traversal scratch before admitting the result's metadata.
-                            // The eager caller still owns the builder and its admitted bytes.
-                            traversal._builder = null;
-                            traversal.Finish();
-                        }
-                    }
-                    finally { governor.ReleaseReserved(StorageBytes); }
+                    await EmitAsync(null, value, builder, options, context, span, asynchronous).ConfigureAwait(false);
                     return builder.ToPyStringAndRelease();
                 }
                 finally { builder.Release(); }
@@ -363,64 +345,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private ref EmitFrame FrameAt(int index)
-            => ref (index == 0 ? ref _outerFrame : ref _nestedFrames[index - 1]);
-
-        private void PushFrame(EmitFrame frame)
-        {
-            FrameAt(_frameCount) = frame;
-            _frameCount++;
-        }
-
-        private static long EstimateFrameStorage(int capacity) => capacity == 0 ? 0 : 96L + 128L * capacity;
-
-        private void EnsureFrameSlot()
-        {
-            if (_frameCount <= _nestedFrames.Length) return;
-            var capacity = _nestedFrames.Length == 0 ? 4 : checked(_nestedFrames.Length * 2);
-            // Admit the replacement array and its cycle markers while the current
-            // backing is live. At most one marker is retained for each frame.
-            var bytes = EstimateFrameStorage(capacity);
-            var governor = _context.MemoryGovernor;
-            governor.Reserve(bytes, _span);
-            EmitFrame[] expanded;
-            try
-            {
-                _context.CheckExecution(_span);
-                expanded = new EmitFrame[capacity];
-                for (var offset = 0; offset < _nestedFrames.Length; offset += 256)
-                {
-                    _context.CheckExecution(_span);
-                    Array.Copy(_nestedFrames, offset, expanded, offset, Math.Min(256, _nestedFrames.Length - offset));
-                }
-                if (_options.CheckCircular)
-                {
-                    _nestedMarkers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-                    _nestedMarkers.EnsureCapacity(capacity);
-                }
-            }
-            catch
-            {
-                governor.ReleaseReserved(bytes);
-                throw;
-            }
-            var priorBytes = EstimateFrameStorage(_nestedFrames.Length);
-            governor.Commit(bytes);
-            _nestedFrames = expanded;
-            governor.Release(priorBytes);
-        }
-
         private void Finish()
         {
             _finished = true;
-            _pendingValue = null;
             _builder?.Release();
             _builder = null;
-            while (_frameCount != 0) CloseFrame();
-            var bytes = EstimateFrameStorage(_nestedFrames.Length);
-            _nestedFrames = [];
-            _nestedMarkers = null;
-            _context.MemoryGovernor.Release(bytes);
+            _traversal.Release(_context);
         }
 
         internal void FinishPrivate()
@@ -429,292 +359,336 @@ internal sealed partial class LythonRuntime
             finally { _context.MemoryGovernor.Release(StorageBytes); }
         }
 
-        // Produce the next public chunk or drain the same traversal into the
-        // eager builder. Frame pushes and completed tokens stay in this loop.
-        private async ValueTask<bool> EmitAsync(bool asynchronous, bool stopAtChunk)
+        private static ref EmitTraversal GetTraversal(JsonEncodeIterator? iterator, ref EmitTraversal eager)
+            => ref (iterator is null ? ref eager : ref iterator._traversal);
+
+        // A pending render owns its inline frame and callback state until
+        // the last await and cleanup complete. Boolean options and the
+        // builtin error-only default do not require this temporary storage.
+        private static void AdmitContinuation(ref long reserved, ExecutionContext context, LythonSourceSpan span)
         {
-            var builder = _builder!;
-            while (true)
+            if (reserved != 0) return;
+            const long ContinuationBytes = 512;
+            context.MemoryGovernor.Reserve(ContinuationBytes, span);
+            reserved = ContinuationBytes;
+        }
+
+        private static async ValueTask<bool> EmitAsync(JsonEncodeIterator? iterator, object? eagerValue,
+            GovernedByteBuilder builder, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span,
+            bool asynchronous)
+        {
+            var eager = new EmitTraversal(eagerValue);
+            var stopAtChunk = iterator is not null;
+            var builtinDefault = ReferenceEquals(options, JsonDumpOptions.Default);
+            long reserved = 0;
+            try
             {
-                _context.CheckExecution(_span);
-                var chunkReady = true;
-                if (_pendingValue is { } pending)
+                while (true)
                 {
-                    _pendingValue = null;
-                    var depth = _frameCount == 0 ? 0 : FrameAt(_frameCount - 1).Depth + 1;
-                    chunkReady = await AdvanceValueAsync(pending, depth, asynchronous).ConfigureAwait(false);
-                }
-                else
-                {
-                    if (_frameCount == 0) return false;
-                    var frameIndex = _frameCount - 1;
-                    ref var frame = ref FrameAt(frameIndex);
-                    if (frame.IsDefault) { CloseFrame(); continue; }
-                    if (!frame.Opened)
+                    context.CheckExecution(span);
+                    ref var traversal = ref GetTraversal(iterator, ref eager);
+                    var value = traversal.PendingValue;
+                    traversal.PendingValue = null;
+                    var frameIndex = traversal.FrameCount - 1;
+                    var depth = frameIndex < 0 ? 0 : traversal.FrameAt(frameIndex).Depth + 1;
+                    if (value is null)
                     {
-                        OpenFrame(ref frame, frameIndex);
-                        builder.Append(frame.Sequence is not null ? (byte)'[' : (byte)'{');
-                    }
-                    else if (frame.Sequence is { } sequence)
-                    {
-                        var depth = frame.Depth;
-                        var index = frame.Index;
-                        if (index >= sequence.Count)
+                        if (frameIndex < 0) return false;
+                        ref var frame = ref traversal.FrameAt(frameIndex);
+                        if (frame.IsDefault)
                         {
-                            CloseFrame();
-                            if (index > 0)
-                                JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth, _context, _span);
-                            builder.Append((byte)']');
+                            traversal.CloseFrame(context);
+                            continue;
+                        }
+                        if (!frame.Opened)
+                        {
+                            traversal.OpenFrame(frameIndex, span);
+                            builder.Append(frame.Sequence is not null ? (byte)'[' : (byte)'{');
+                        }
+                        else if (frame.Sequence is { } sequence)
+                        {
+                            var index = frame.Index;
+                            if (index >= sequence.Count)
+                            {
+                                traversal.CloseFrame(context);
+                                if (index > 0)
+                                    JsonModule.AppendJsonIndent(builder, options.IndentUnit, depth - 1, context, span);
+                                builder.Append((byte)']');
+                            }
+                            else
+                            {
+                                value = sequence[index];
+                                if (index > 0) JsonModule.AppendSeparator(builder, options.ItemSeparator, context, span);
+                                JsonModule.AppendJsonIndent(builder, options.IndentUnit, depth, context, span);
+                                frame.Index++;
+                            }
                         }
                         else
                         {
-                            var element = sequence[index];
-                            if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-                            JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
-                            frame.Index++;
-                            chunkReady = await AdvanceValueAsync(element, depth + 1, asynchronous,
-                                yieldBeforeDefault: stopAtChunk).ConfigureAwait(false);
+                            (object Key, object Value) pair;
+                            bool found;
+                            while (true)
+                            {
+                                context.CheckExecution(span);
+                                found = GetTraversal(iterator, ref eager).TryTakePair(frameIndex, context, span, out pair);
+                                if (!found || JsonModule.IsSupportedJsonObjectKey(pair.Key)) break;
+                                if (asynchronous && options.SkipKeys is not bool)
+                                    AdmitContinuation(ref reserved, context, span);
+                                if (!await JsonOptionTruthAsync(options.SkipKeys, context, span, asynchronous).ConfigureAwait(false))
+                                    throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                            }
+                            var index = GetTraversal(iterator, ref eager).FrameAt(frameIndex).Index;
+                            if (!found)
+                            {
+                                GetTraversal(iterator, ref eager).CloseFrame(context);
+                                if (index > 0)
+                                    JsonModule.AppendJsonIndent(builder, options.IndentUnit, depth - 1, context, span);
+                                builder.Append((byte)'}');
+                            }
+                            else
+                            {
+                                if (index > 0) JsonModule.AppendSeparator(builder, options.ItemSeparator, context, span);
+                                JsonModule.AppendJsonIndent(builder, options.IndentUnit, depth, context, span);
+                                if (asynchronous && options.AllowNan is not bool && pair.Key is double key && !double.IsFinite(key))
+                                    AdmitContinuation(ref reserved, context, span);
+                                await JsonModule.AppendJsonObjectKeyAsync(builder, pair.Key, options, context, span, asynchronous).ConfigureAwait(false);
+                                JsonModule.AppendSeparator(builder, options.KeySeparator, context, span);
+                                GetTraversal(iterator, ref eager).FrameAt(frameIndex).Index++;
+                                value = pair.Value;
+                            }
                         }
                     }
-                    else
+
+                    var chunkReady = true;
+                    for (var defaultDepth = 0; value is not null; defaultDepth++)
                     {
-                        var pair = await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
-                        chunkReady = await AdvancePairAsync(frameIndex, pair, asynchronous, stopAtChunk).ConfigureAwait(false);
+                        context.CheckExecution(span);
+                        if (depth >= ExecutionState.MaxInterpreterDepth || defaultDepth >= ExecutionState.MaxInterpreterDepth)
+                            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded while encoding a JSON object",
+                                span, LythonFailureReason.InterpreterStackLimit, ExecutionState.MaxInterpreterDepth,
+                                Math.Max(depth, defaultDepth));
+
+                        switch (value)
+                        {
+                            case PyNone:
+                                builder.Append("null"u8);
+                                break;
+                            case PyString text:
+                                JsonModule.AppendJsonString(builder, text, options.EnsureAscii, context, span);
+                                break;
+                            case bool boolean:
+                                builder.Append(boolean ? "true"u8 : "false"u8);
+                                break;
+                            case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
+                                context.CheckExecution(span);
+                                JsonModule.AppendJsonInteger(builder, integer, context, span);
+                                break;
+                            case double floating:
+                                if (asynchronous && options.AllowNan is not bool && !double.IsFinite(floating))
+                                    AdmitContinuation(ref reserved, context, span);
+                                await JsonModule.AppendJsonDoubleAsync(builder, floating, options, context, span, asynchronous).ConfigureAwait(false);
+                                break;
+                            case PyList list:
+                                GetTraversal(iterator, ref eager).EnsureFrameSlot(options, context, span);
+                                GetTraversal(iterator, ref eager).PushFrame(new EmitFrame(list, depth) { Sequence = list });
+                                chunkReady = false;
+                                break;
+                            case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
+                                GetTraversal(iterator, ref eager).EnsureFrameSlot(options, context, span);
+                                GetTraversal(iterator, ref eager).PushFrame(new EmitFrame(tupleLike, depth) { Sequence = tuple });
+                                chunkReady = false;
+                                break;
+                            case PyDict or PyCounter or PyDefaultDict:
+                                var dict = value switch
+                                {
+                                    PyCounter counter => counter.InnerDict,
+                                    PyDefaultDict defaultDict => defaultDict.InnerDict,
+                                    _ => (PyDict)value
+                                };
+                                var sorted = false;
+                                if (dict.Count != 0)
+                                {
+                                    if (asynchronous && options.SortKeys is not bool)
+                                        AdmitContinuation(ref reserved, context, span);
+                                    sorted = await JsonOptionTruthAsync(options.SortKeys, context, span, asynchronous).ConfigureAwait(false);
+                                }
+                                GetTraversal(iterator, ref eager).PrepareDictFrame(dict, depth, sorted, options, context, span);
+                                chunkReady = false;
+                                break;
+                            default:
+                                if (stopAtChunk && builder.Length != 0)
+                                {
+                                    // Retain the selected value across a published prefix even
+                                    // if the consumer changes the source container.
+                                    GetTraversal(iterator, ref eager).PendingValue = value;
+                                    break;
+                                }
+                                if (options.DefaultCallable is null)
+                                    throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
+                                if (options.CheckCircular)
+                                {
+                                    ref var current = ref GetTraversal(iterator, ref eager);
+                                    current.EnsureFrameSlot(options, context, span);
+                                    var markerIndex = current.FrameCount;
+                                    current.PushFrame(new EmitFrame(value, depth) { IsDefault = true });
+                                    current.OpenFrame(markerIndex, span);
+                                }
+                                if (asynchronous && !builtinDefault) AdmitContinuation(ref reserved, context, span);
+                                value = await JsonModule.InvokeJsonCallbackCoreAsync(options.DefaultCallable, value,
+                                    context, span, asynchronous && !builtinDefault).ConfigureAwait(false);
+                                continue;
+                        }
+                        break;
+                    }
+                    if (stopAtChunk && chunkReady && builder.Length != 0) return true;
+                }
+            }
+            finally
+            {
+                try { if (iterator is null) eager.Release(context); }
+                finally { if (reserved != 0) context.MemoryGovernor.ReleaseReserved(reserved); }
+            }
+        }
+
+        // Iterator frames survive across chunks. Eager frames have the same
+        // lifetime rules, but are owned by the invocation of EmitAsync.
+        private struct EmitTraversal(object? value)
+        {
+            private EmitFrame _outerFrame;
+            private EmitFrame[] _nestedFrames = [];
+            private HashSet<object>? _nestedMarkers;
+            internal object? PendingValue = value;
+            internal int FrameCount;
+
+            [UnscopedRef]
+            internal ref EmitFrame FrameAt(int index)
+                => ref (index == 0 ? ref _outerFrame : ref _nestedFrames[index - 1]);
+
+            internal void PushFrame(EmitFrame frame)
+            {
+                FrameAt(FrameCount) = frame;
+                FrameCount++;
+            }
+
+            private static long EstimateFrameStorage(int capacity) => capacity == 0 ? 0 : 96L + 128L * capacity;
+
+            internal void EnsureFrameSlot(JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
+            {
+                if (FrameCount <= _nestedFrames.Length) return;
+                var capacity = _nestedFrames.Length == 0 ? 4 : checked(_nestedFrames.Length * 2);
+                // Admit the replacement array and its cycle markers while the current
+                // backing is live. At most one marker is retained for each frame.
+                var bytes = EstimateFrameStorage(capacity);
+                var governor = context.MemoryGovernor;
+                governor.Reserve(bytes, span);
+                EmitFrame[] expanded;
+                try
+                {
+                    context.CheckExecution(span);
+                    expanded = new EmitFrame[capacity];
+                    for (var offset = 0; offset < _nestedFrames.Length; offset += 256)
+                    {
+                        context.CheckExecution(span);
+                        Array.Copy(_nestedFrames, offset, expanded, offset, Math.Min(256, _nestedFrames.Length - offset));
+                    }
+                    if (options.CheckCircular)
+                    {
+                        _nestedMarkers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
+                        _nestedMarkers.EnsureCapacity(capacity);
                     }
                 }
-                if (stopAtChunk && chunkReady && builder.Length != 0) return true;
-            }
-        }
-
-        private ValueTask<bool> AdvancePairAsync(int frameIndex,
-            (bool Found, object Key, object Value) pair, bool asynchronous, bool yieldBeforeDefault)
-        {
-            var builder = _builder!;
-            ref var frame = ref FrameAt(frameIndex);
-            var depth = frame.Depth;
-            var index = frame.Index;
-            if (!pair.Found)
-            {
-                CloseFrame();
-                if (index > 0)
-                    JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth, _context, _span);
-                builder.Append((byte)'}');
-                return new(true);
-            }
-
-            if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-            JsonModule.AppendJsonIndent(builder, _options.IndentUnit, depth + 1, _context, _span);
-            var pending = JsonModule.AppendJsonObjectKeyAsync(builder, pair.Key, _options, _context, _span, asynchronous);
-            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frameIndex, pair.Value, asynchronous, yieldBeforeDefault);
-            pending.GetAwaiter().GetResult();
-            return AdvancePairValueAsync(frameIndex, pair.Value, asynchronous, yieldBeforeDefault);
-        }
-
-        private ValueTask<bool> AdvancePairValueAsync(int frameIndex,
-            object value, bool asynchronous, bool yieldBeforeDefault)
-        {
-            JsonModule.AppendSeparator(_builder!, _options.KeySeparator, _context, _span);
-            ref var frame = ref FrameAt(frameIndex);
-            frame.Index++;
-            return AdvanceValueAsync(value, frame.Depth + 1, asynchronous, yieldBeforeDefault: yieldBeforeDefault);
-        }
-
-        private async ValueTask<bool> CompleteKeyAsync(ValueTask pending,
-            int frameIndex, object value, bool asynchronous, bool yieldBeforeDefault)
-        {
-            await pending.ConfigureAwait(false);
-            return await AdvancePairValueAsync(frameIndex, value, asynchronous, yieldBeforeDefault).ConfigureAwait(false);
-        }
-
-        private ValueTask<bool> AdvanceValueAsync(object value, int depth,
-            bool asynchronous, int defaultDepth = 0, bool yieldBeforeDefault = false)
-        {
-            var builder = _builder!;
-            // Completed default replacements stay in the existing traversal.
-            // Only a genuinely pending callback retains continuation state.
-            while (true)
-            {
-                _context.CheckExecution(_span);
-                if (depth >= ExecutionState.MaxInterpreterDepth || defaultDepth >= ExecutionState.MaxInterpreterDepth)
-                    throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded while encoding a JSON object",
-                        _span, LythonFailureReason.InterpreterStackLimit, ExecutionState.MaxInterpreterDepth,
-                        Math.Max(depth, defaultDepth));
-
-                switch (value)
+                catch
                 {
-                    case PyNone:
-                        builder.Append("null"u8);
-                        return new(true);
-                    case PyString text:
-                        JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, _context, _span);
-                        return new(true);
-                    case bool boolean:
-                        builder.Append(boolean ? "true"u8 : "false"u8);
-                        return new(true);
-                    case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
-                        _context.CheckExecution(_span);
-                        JsonModule.AppendJsonInteger(builder, integer, _context, _span);
-                        return new(true);
-                    case double floating:
-                        return CompleteValue(JsonModule.AppendJsonDoubleAsync(builder, floating, _options,
-                            _context, _span, asynchronous), chunkReady: true);
-                    case PyList list:
-                        EnsureFrameSlot();
-                        PushFrame(new EmitFrame(list, depth) { Sequence = list });
-                        return new(false);
-                    case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
-                        EnsureFrameSlot();
-                        PushFrame(new EmitFrame(tupleLike, depth) { Sequence = tuple });
-                        return new(false);
-                    case PyDict dict:
-                        return CompleteValue(PushDictFrameAsync(dict, depth, asynchronous), chunkReady: false);
-                    case PyCounter counter:
-                        return CompleteValue(PushDictFrameAsync(counter.InnerDict, depth, asynchronous), chunkReady: false);
-                    case PyDefaultDict defaultDict:
-                        return CompleteValue(PushDictFrameAsync(defaultDict.InnerDict, depth, asynchronous), chunkReady: false);
-                    default:
-                        if (yieldBeforeDefault && builder.Length != 0)
-                        {
-                            // The consumer sees the item's prefix before invoking default.
-                            // Keep the selected value even if the writer changes the container.
-                            _pendingValue = value;
-                            return new(true);
-                        }
-                        if (_options.DefaultCallable is null)
-                            throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
-                        if (_options.CheckCircular)
-                        {
-                            EnsureFrameSlot();
-                            var frameIndex = _frameCount;
-                            PushFrame(new EmitFrame(value, depth) { IsDefault = true });
-                            OpenFrame(ref FrameAt(frameIndex), frameIndex);
-                        }
-                        var replacement = JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value,
-                            _context, _span, asynchronous);
-                        if (!replacement.IsCompleted)
-                            return CompleteDefaultAsync(replacement, depth, asynchronous, defaultDepth + 1);
-                        value = replacement.GetAwaiter().GetResult();
-                        defaultDepth++;
-                        break;
+                    governor.ReleaseReserved(bytes);
+                    throw;
                 }
+                var priorBytes = EstimateFrameStorage(_nestedFrames.Length);
+                governor.Commit(bytes);
+                _nestedFrames = expanded;
+                governor.Release(priorBytes);
             }
-        }
 
-        private static ValueTask<bool> CompleteValue(ValueTask pending, bool chunkReady)
-        {
-            if (!pending.IsCompleted) return AwaitValueAsync(pending, chunkReady);
-            pending.GetAwaiter().GetResult();
-            return new(chunkReady);
-        }
-
-        private static async ValueTask<bool> AwaitValueAsync(ValueTask pending, bool chunkReady)
-        {
-            await pending.ConfigureAwait(false);
-            return chunkReady;
-        }
-
-        private async ValueTask<bool> CompleteDefaultAsync(ValueTask<object> pending,
-            int depth, bool asynchronous, int defaultDepth)
-            => await AdvanceValueAsync(await pending.ConfigureAwait(false), depth, asynchronous, defaultDepth).ConfigureAwait(false);
-
-        private ValueTask PushDictFrameAsync(PyDict dict, int depth, bool asynchronous)
-        {
-            if (dict.Count == 0)
+            internal void PrepareDictFrame(PyDict dict, int depth, bool sorted,
+                JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
             {
-                PrepareDictFrame(dict, depth, sorted: false);
-                return ValueTask.CompletedTask;
-            }
-            var pending = JsonOptionTruthAsync(_options.SortKeys, _context, _span, asynchronous);
-            if (!pending.IsCompleted) return CompleteDictFrameAsync(pending, dict, depth);
-            PrepareDictFrame(dict, depth, pending.GetAwaiter().GetResult());
-            return ValueTask.CompletedTask;
-        }
+                // Reserve the frame slot before retaining an item cursor or sorted pairs.
+                EnsureFrameSlot(options, context, span);
+                var frame = new EmitFrame(dict, depth);
+                if (!sorted)
+                {
+                    frame.DictPairs = new PyDict.ItemCursor(dict);
+                    PushFrame(frame);
+                    return;
+                }
 
-        private void PrepareDictFrame(PyDict dict, int depth, bool sorted)
-        {
-            // Reserve the frame slot before retaining an item cursor or sorted pairs.
-            EnsureFrameSlot();
-            var frame = new EmitFrame(dict, depth);
-            if (!sorted)
-            {
-                frame.DictPairs = new PyDict.ItemCursor(dict);
+                var bytes = checked(32L * dict.Count);
+                var governor = context.MemoryGovernor;
+                governor.Reserve(bytes, span);
+                try
+                {
+                    frame.SortedEntries = JsonModule.CollectSortedJsonEntries(dict, context, span);
+                }
+                catch
+                {
+                    governor.ReleaseReserved(bytes);
+                    throw;
+                }
+                governor.Commit(bytes);
+                frame.ScratchBytes = bytes;
                 PushFrame(frame);
-                return;
             }
 
-            var bytes = checked(32L * dict.Count);
-            var governor = _context.MemoryGovernor;
-            governor.Reserve(bytes, _span);
-            try
+            internal void OpenFrame(int frameIndex, LythonSourceSpan span)
             {
-                frame.SortedEntries = JsonModule.CollectSortedJsonEntries(dict, _context, _span);
+                ref var frame = ref FrameAt(frameIndex);
+                // The outer frame is already its own marker. Nested frames
+                // keep the existing constant-time membership test.
+                if (frameIndex != 0 && _nestedMarkers is not null
+                    && (ReferenceEquals(_outerFrame.Container, frame.Container) || !_nestedMarkers.Add(frame.Container)))
+                    throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
+                frame.Opened = true;
             }
-            catch
+
+            internal void CloseFrame(ExecutionContext context)
             {
-                governor.ReleaseReserved(bytes);
-                throw;
+                var frameIndex = --FrameCount;
+                ref var frame = ref FrameAt(frameIndex);
+                var bytes = frame.ScratchBytes;
+                var pairs = frame.DictPairs;
+                if (frameIndex != 0 && frame.Opened) _nestedMarkers?.Remove(frame.Container);
+                frame = default;
+                pairs.Dispose();
+                context.MemoryGovernor.Release(bytes);
             }
-            governor.Commit(bytes);
-            frame.ScratchBytes = bytes;
-            PushFrame(frame);
-        }
 
-        private async ValueTask CompleteDictFrameAsync(ValueTask<bool> pending, PyDict dict, int depth)
-            => PrepareDictFrame(dict, depth, await pending.ConfigureAwait(false));
-
-        private ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(int frameIndex, bool asynchronous)
-        {
-            ref var frame = ref FrameAt(frameIndex);
-            while (true)
+            internal void Release(ExecutionContext context)
             {
-                _context.CheckExecution(_span);
-                object key, value;
-                if (frame.SortedEntries is not null)
+                PendingValue = null;
+                while (FrameCount != 0) CloseFrame(context);
+                var bytes = EstimateFrameStorage(_nestedFrames.Length);
+                _nestedFrames = [];
+                _nestedMarkers = null;
+                context.MemoryGovernor.Release(bytes);
+            }
+
+            internal bool TryTakePair(int frameIndex, ExecutionContext context, LythonSourceSpan span,
+                out (object Key, object Value) pair)
+            {
+                ref var frame = ref FrameAt(frameIndex);
+                if (frame.SortedEntries is null)
                 {
-                    if (frame.SortedIndex >= frame.SortedEntries.Count) return new((false, PyNone.Instance, PyNone.Instance));
-                    (key, value) = frame.SortedEntries[frame.SortedIndex++];
+                    var found = frame.DictPairs.MoveNext(out var item, context, span);
+                    pair = (item.Key, item.Value);
+                    return found;
                 }
-                else
+                if (frame.SortedIndex < frame.SortedEntries.Count)
                 {
-                    if (!frame.DictPairs.MoveNext(out var pair, _context, _span)) return new((false, PyNone.Instance, PyNone.Instance));
-                    key = pair.Key; value = pair.Value;
+                    pair = frame.SortedEntries[frame.SortedIndex++];
+                    return true;
                 }
-                if (JsonModule.IsSupportedJsonObjectKey(key)) return new((true, key, value));
-                var pending = JsonOptionTruthAsync(_options.SkipKeys, _context, _span, asynchronous);
-                if (!pending.IsCompleted) return CompleteSkippedPairAsync(pending, frameIndex, asynchronous);
-                if (!pending.GetAwaiter().GetResult())
-                    throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                pair = default;
+                return false;
             }
-        }
-
-        private async ValueTask<(bool Found, object Key, object Value)> CompleteSkippedPairAsync(
-            ValueTask<bool> pending, int frameIndex, bool asynchronous)
-        {
-            if (!await pending.ConfigureAwait(false))
-                throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-            return await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
-        }
-
-        private void OpenFrame(ref EmitFrame frame, int frameIndex)
-        {
-            // The outer frame is already its own marker. Nested frames
-            // keep the existing constant-time membership test.
-            if (frameIndex != 0 && _nestedMarkers is not null
-                && (ReferenceEquals(_outerFrame.Container, frame.Container) || !_nestedMarkers.Add(frame.Container)))
-                throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
-            frame.Opened = true;
-        }
-
-        private void CloseFrame()
-        {
-            var frameIndex = --_frameCount;
-            ref var frame = ref FrameAt(frameIndex);
-            var bytes = frame.ScratchBytes;
-            var pairs = frame.DictPairs;
-            if (frameIndex != 0 && frame.Opened) _nestedMarkers?.Remove(frame.Container);
-            frame = default;
-            pairs.Dispose();
-            _context.MemoryGovernor.Release(bytes);
         }
     }
 }
