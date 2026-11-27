@@ -6,6 +6,20 @@ public sealed class CsvSuspendedProtocolTests
 {
     public static IEnumerable<object[]> Callbacks()
     {
+        yield return ["private-record-after-a-blank-and-suspension", """
+            def rows():
+                yield 'a'
+                yield 'first'
+                yield 'ready'
+                yield ''
+                yield read()
+                yield ''
+            reader = csv.DictReader(rows())
+            kept = next(reader)
+            print(next(reader), reader.line_num)
+            print(next(reader), reader.line_num)
+            print(next(reader, 'end'), reader.line_num, kept)
+            """, "{'a': 'ready'} 3\nread\n{'a': 'a'} 5\nend 6 {'a': 'first'}\n"];
         yield return ["header-replaced-during-a-suspending-row", """
             def rows():
                 yield 'first'

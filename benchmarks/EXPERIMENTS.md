@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1846 complete ready parser dictionaries directly](results/2026-11-27-ready-dictreader-row/README.md)
+skips the general row activation on ready dictionaries and exhaustion. On
+the quiet VM file-fed map uses 4.01–10.52% less process CPU and the list
+summary 2.27–4.26% less, both with unchanged peak admission. The unchanged
+JSON control uses 2.46–3.68% more CPU. Local wide shipment and quoted invoice
+timings span zero. Five complete CPython goldens and both local targets pass.
+
 [B1845 attribute active CPU after the shipment checkpoint](results/2026-11-27-post-cpython-shipment-cpu/README.md)
 uses the unchanged B1844 image on two scripts. Wide shipment has 241
 nearest instruction-prefix samples and 100 for fixed unpacking. File-fed

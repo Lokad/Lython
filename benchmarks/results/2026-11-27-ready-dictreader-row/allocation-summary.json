@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.csv-summary-list-input",
+    "mode": "sync",
+    "clr": [
+      1907374,
+      1907144
+    ],
+    "peak": [
+      4811051,
+      4811051
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "sync",
+    "clr": [
+      3019270,
+      3019326
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "sync",
+    "clr": [
+      1104680,
+      1104910
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.csv-summary-list-input",
+    "mode": "async",
+    "clr": [
+      1907360,
+      1907366
+    ],
+    "peak": [
+      4811051,
+      4811051
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "async",
+    "clr": [
+      3019486,
+      3019542
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-wide-lists",
+    "mode": "async",
+    "clr": [
+      1104864,
+      1104864
+    ],
+    "peak": [
+      2845833,
+      2845833
+    ]
+  }
+]

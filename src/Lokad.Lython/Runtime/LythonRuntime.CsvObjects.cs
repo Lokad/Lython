@@ -127,20 +127,21 @@ internal sealed partial class LythonRuntime
             _lineNumber.SetInteger(Rows.PhysicalLineCount);
             return _fieldNames;
         }
-        public PyIterationResult TryMoveNext()
-        {
-            return NextAsync(false).GetAwaiter().GetResult();
-        }
-        public ValueTask<PyIterationResult> TryMoveNextAsync() => NextAsync(true);
-        private async ValueTask<PyIterationResult> NextAsync(bool asynchronous)
+        public PyIterationResult TryMoveNext() => Next(false).GetAwaiter().GetResult();
+        public ValueTask<PyIterationResult> TryMoveNextAsync() => Next(true);
+
+        private ValueTask<PyIterationResult> Next(bool asynchronous)
         {
             _context.CheckExecution(_span);
-            bool needsHeader;
-            if (_lineNumber.TryGetInteger(out var count))
-            {
-                needsHeader = count == 0;
-            }
-            else
+            var hasInteger = _lineNumber.TryGetInteger(out var count);
+            return hasInteger && count != 0 ? ReadFirstRow(asynchronous)
+                : ReadWithHeaderAsync(hasInteger, asynchronous);
+        }
+
+        private async ValueTask<PyIterationResult> ReadWithHeaderAsync(bool nativeZero, bool asynchronous)
+        {
+            var needsHeader = nativeZero;
+            if (!nativeZero)
             {
                 // DictReader allows guest-assigned values and honors their protocols.
                 var lineNumber = _lineNumber.Object.RequireNotNull();
@@ -152,28 +153,48 @@ internal sealed partial class LythonRuntime
             }
             if (needsHeader)
                 _ = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
-            object[]? row = null;
+            return await ReadFirstRow(asynchronous).ConfigureAwait(false);
+        }
+
+        private ValueTask<object?> ReadRow(bool asynchronous)
+            => asynchronous ? Rows.TryMoveNextAsync(this) : new(Rows.ReadNext(this));
+
+        private ValueTask<PyIterationResult> ReadFirstRow(bool asynchronous)
+        {
+            var next = ReadRow(asynchronous);
+            if (!next.IsCompleted) return CompleteRowsAsync(next, asynchronous);
+            var row = next.GetAwaiter().GetResult();
+            if (row is null) return new(PyIterationResult.End);
+            return row is PyDict completed ? new(PublishParserRecord(completed))
+                : CompleteRowsAsync(new(row), asynchronous);
+        }
+
+        private PyIterationResult PublishParserRecord(PyDict record)
+        {
+            _lineNumber.SetInteger(Rows.PhysicalLineCount);
+            return PyIterationResult.Yield(record);
+        }
+
+        private async ValueTask<PyIterationResult> CompleteRowsAsync(ValueTask<object?> first, bool asynchronous)
+        {
+            var firstRow = await first.ConfigureAwait(false);
+            if (firstRow is null) return PyIterationResult.End;
+            if (firstRow is PyDict published) return PublishParserRecord(published);
+            _lineNumber.SetInteger(Rows.PhysicalLineCount);
+            object[]? row = (object[])firstRow;
             try
             {
-                var first = true;
-                while (true)
+                // A skipped blank updates line_num only if it was the first
+                // pull. Publication of a finished dictionary updates it again.
+                while (row.Length == 0)
                 {
-                    var complete = asynchronous ? await Rows.TryMoveNextAsync(this).ConfigureAwait(false) : Rows.ReadNext(this);
-                    if (complete is null) return PyIterationResult.End;
-                    if (complete is PyDict completed)
-                    {
-                        _lineNumber.SetInteger(Rows.PhysicalLineCount);
-                        return PyIterationResult.Yield(completed);
-                    }
-                    row = (object[])complete;
-                    if (first)
-                    {
-                        _lineNumber.SetInteger(Rows.PhysicalLineCount);
-                        first = false;
-                    }
-                    if (row.Length != 0) break;
+                    var blank = row;
                     row = null;
-                    Rows.ReleaseRecord((object[])complete);
+                    Rows.ReleaseRecord(blank);
+                    var next = await ReadRow(asynchronous).ConfigureAwait(false);
+                    if (next is null) return PyIterationResult.End;
+                    if (next is PyDict completed) return PublishParserRecord(completed);
+                    row = (object[])next;
                 }
                 var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
                 var recordKeys = _recordKeys;
