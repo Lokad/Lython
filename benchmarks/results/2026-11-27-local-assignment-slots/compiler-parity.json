@@ -1,0 +1,316 @@
+{
+  "cases": [
+    {
+      "id": "diagnostic.generated-ordinary-definitions",
+      "scopes": 99,
+      "budgetLevels": 10,
+      "compileClr": [
+        1381208,
+        1351624
+      ],
+      "compiledPeak": 889975
+    },
+    {
+      "id": "diagnostic.generated-escaping-definitions",
+      "scopes": 99,
+      "budgetLevels": 10,
+      "compileClr": [
+        1415712,
+        1386128
+      ],
+      "compiledPeak": 973783
+    },
+    {
+      "id": "diagnostic.generated-guarded-report",
+      "scopes": 97,
+      "budgetLevels": 9,
+      "compileClr": [
+        2147472,
+        2119056
+      ],
+      "compiledPeak": 2410080
+    },
+    {
+      "id": "diagnostic.nested-json-document",
+      "scopes": 2,
+      "budgetLevels": 3,
+      "compileClr": [
+        47952,
+        47416
+      ],
+      "compiledPeak": 69840
+    },
+    {
+      "id": "capture-after-literal",
+      "scopes": 3,
+      "budgetLevels": 7,
+      "compileClr": [
+        27048,
+        26496
+      ],
+      "compiledPeak": 46304
+    },
+    {
+      "id": "capture-snapshot-overlap",
+      "scopes": 3,
+      "budgetLevels": 7,
+      "compileClr": [
+        25744,
+        25152
+      ],
+      "compiledPeak": 44844
+    },
+    {
+      "id": "signed-constant-boundaries",
+      "scopes": 3,
+      "budgetLevels": 4,
+      "compileClr": [
+        30552,
+        29960
+      ],
+      "compiledPeak": 54336
+    },
+    {
+      "id": "declaration-in-default",
+      "scopes": 4,
+      "budgetLevels": 9,
+      "compileClr": [
+        31968,
+        31256
+      ],
+      "compiledPeak": 47976
+    },
+    {
+      "id": "declaration-kinds",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "compileClr": [
+        52944,
+        51880
+      ],
+      "compiledPeak": 58646
+    },
+    {
+      "id": "deferral-through-layout",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        80016,
+        77608
+      ],
+      "compiledPeak": 88410
+    },
+    {
+      "id": "return-forwarded-local",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "compileClr": [
+        87424,
+        84856
+      ],
+      "compiledPeak": 93333
+    },
+    {
+      "id": "rebound-definition",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        80056,
+        77648
+      ],
+      "compiledPeak": 89466
+    },
+    {
+      "id": "explicit-read-before-forwarding",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        80808,
+        78400
+      ],
+      "compiledPeak": 90234
+    },
+    {
+      "id": "scope-not-eligible",
+      "scopes": 5,
+      "budgetLevels": 8,
+      "compileClr": [
+        79288,
+        76880
+      ],
+      "compiledPeak": 88794
+    },
+    {
+      "id": "deferred-before-returned-pair",
+      "scopes": 5,
+      "budgetLevels": 9,
+      "compileClr": [
+        72568,
+        70024
+      ],
+      "compiledPeak": 89308
+    },
+    {
+      "id": "namespace-protected-temporaries",
+      "scopes": 6,
+      "budgetLevels": 9,
+      "compileClr": [
+        49528,
+        48192
+      ],
+      "compiledPeak": 62570
+    },
+    {
+      "id": "nested-protected-match-and-comprehension",
+      "scopes": 2,
+      "budgetLevels": 4,
+      "compileClr": [
+        32392,
+        32048
+      ],
+      "compiledPeak": 49648
+    }
+  ],
+  "cancellation": {
+    "granted": 33680,
+    "afterCancellation": 33632,
+    "afterDispose": 0
+  },
+  "diagnostics": [
+    {
+      "id": "branch-order",
+      "IsValid": false,
+      "Peak": 39776,
+      "Refused": null,
+      "diagnostics": [
+        {
+          "Code": "LA3146",
+          "Span": {
+            "Start": 53,
+            "Length": 5,
+            "Line": 5,
+            "Column": 10
+          },
+          "Message": "Local variable 'value' is read before it is assigned.",
+          "Severity": 2
+        }
+      ]
+    },
+    {
+      "id": "deleted-binding",
+      "IsValid": false,
+      "Peak": 36896,
+      "Refused": null,
+      "diagnostics": [
+        {
+          "Code": "LA3146",
+          "Span": {
+            "Start": 37,
+            "Length": 5,
+            "Line": 3,
+            "Column": 9
+          },
+          "Message": "Local variable 'value' is read before it is assigned.",
+          "Severity": 2
+        }
+      ]
+    },
+    {
+      "id": "handler-exit",
+      "IsValid": false,
+      "Peak": 42176,
+      "Refused": null,
+      "diagnostics": [
+        {
+          "Code": "LA3146",
+          "Span": {
+            "Start": 91,
+            "Length": 6,
+            "Line": 6,
+            "Column": 9
+          },
+          "Message": "Local variable 'caught' is read before it is assigned.",
+          "Severity": 2
+        }
+      ]
+    },
+    {
+      "id": "lambda-nested-default",
+      "IsValid": false,
+      "Peak": 40611,
+      "Refused": null,
+      "diagnostics": [
+        {
+          "Code": "LA3146",
+          "Span": {
+            "Start": 36,
+            "Length": 6,
+            "Line": 2,
+            "Column": 24
+          },
+          "Message": "Local variable 'before' is read before it is assigned.",
+          "Severity": 2
+        }
+      ]
+    },
+    {
+      "id": "postponed-annotation",
+      "IsValid": true,
+      "Peak": 41626,
+      "Refused": null,
+      "diagnostics": []
+    },
+    {
+      "id": "comprehension-exit",
+      "IsValid": false,
+      "Peak": 40256,
+      "Refused": null,
+      "diagnostics": [
+        {
+          "Code": "LA3146",
+          "Span": {
+            "Start": 63,
+            "Length": 4,
+            "Line": 3,
+            "Column": 9
+          },
+          "Message": "Local variable 'late' is read before it is assigned.",
+          "Severity": 2
+        }
+      ]
+    },
+    {
+      "id": "nested-nonlocal",
+      "IsValid": true,
+      "Peak": 41809,
+      "Refused": null,
+      "diagnostics": []
+    },
+    {
+      "id": "class-nonlocal",
+      "IsValid": true,
+      "Peak": 40246,
+      "Refused": null,
+      "diagnostics": []
+    },
+    {
+      "id": "large-scope",
+      "IsValid": false,
+      "Peak": 250976,
+      "Refused": null,
+      "diagnostics": [
+        {
+          "Code": "LA3146",
+          "Span": {
+            "Start": 2263,
+            "Length": 9,
+            "Line": 147,
+            "Column": 9
+          },
+          "Message": "Local variable 'local_140' is read before it is assigned.",
+          "Severity": 2
+        }
+      ]
+    }
+  ]
+}

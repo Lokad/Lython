@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1900 reuse lexical slots in local-name diagnostics](results/2026-11-27-local-assignment-slots/README.md)
+removes the second assignment-name table and journals slots. Ordinary
+and escaping definition compilation allocates 29,584 B less. Quiet
+ordinary compilation CPU falls 2.82–4.14%. Guarded elapsed through result
+falls with CPU spanning zero. The warm JSON control spans zero. All 224
+batches verify, with matching tapes, refusal and diagnostic order.
+
 [B1899 borrow the established lookup array](results/2026-11-27-frame-cache-borrow/README.md)
 removes the function lookup after a frame borrows the array. Peak
 admission matches and allocation is effectively flat. All CPU ranges

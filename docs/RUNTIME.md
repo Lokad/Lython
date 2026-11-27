@@ -362,8 +362,9 @@ require lookup without a possible shadow before applying builtin facts.
 That state summarizes known collection facts, so invalidation and deferred
 scope setup can skip irrelevant scans. Widening retains immutable tuple
 branches and still clears facts affected by mutable aliases.
-Name-binding diagnostics use the prepared local-name sets and check each
-nested function header in its defining scope before checking the body.
+Name-binding diagnostics reuse the prepared local-slot map. They track
+possible assignments and branch changes by slot and check each nested
+function header in its defining scope before checking the body.
 Numeric syntax carries the parsed value for analysis, annotations and execution.
 Inferred numbers stay typed. The analyzer retains literal spelling where branch
 joins or diagnostics distinguish it.
