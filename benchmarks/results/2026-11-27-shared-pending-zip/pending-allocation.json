@@ -1,0 +1,30 @@
+{
+  "reference": {
+    "rows": 20000,
+    "fixedUnpack": [
+      8800128,
+      8800000,
+      8800000
+    ],
+    "inlineOperands": [
+      8480000,
+      8480000,
+      8480000
+    ],
+    "baseline": 0
+  },
+  "candidate": {
+    "rows": 20000,
+    "fixedUnpack": [
+      6080128,
+      6080000,
+      6080000
+    ],
+    "inlineOperands": [
+      8480000,
+      8480000,
+      8480000
+    ],
+    "baseline": 0
+  }
+}

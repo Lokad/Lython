@@ -363,9 +363,10 @@ public sealed class StarmapMaterializationParityTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ZipOperandsSurviveReentrantPullsAndRetainedSource(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ZipOperandsSurviveReentrantPullsAndRetainedSource(bool asynchronous, bool delay)
     {
         const string source = """
             from itertools import starmap
@@ -379,6 +380,9 @@ public sealed class StarmapMaterializationParityTests
                 def __next__(self):
                     self.step += 1
                     if self.step == 1:
+                        if pause:
+                            with open('/pause') as source:
+                                source.read()
                         item, text = next(stars)
                         events.append((item is first[1], text))
                         return 'outer'
@@ -394,14 +398,40 @@ public sealed class StarmapMaterializationParityTests
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
         var budget = new LythonMemoryBudget(1024 * 1024);
-        var options = new LythonRunOptions { MemoryBudget = budget };
-        using (var result = asynchronous
-            ? await script.RunAsync(new MockLythonHost(), options)
-            : script.Run(new MockLythonHost(), options))
+        var options = new LythonRunOptions
         {
+            MemoryBudget = budget,
+            Globals = new Dictionary<string, object?> { ["pause"] = delay },
+        };
+        var closing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        ILythonHost host = new MockLythonHost();
+        if (delay)
+        {
+            var delayed = new DelayedLythonHost();
+            delayed.SeedFile("/pause", "ready");
+            delayed.BeforeFileClose = () => { closing.TrySetResult(); return new ValueTask(release.Task); };
+            host = delayed;
+        }
+        var run = asynchronous ? script.RunAsync(host, options) : Task.FromResult(script.Run(host, options));
+        try
+        {
+            if (delay)
+            {
+                await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(run.IsCompleted);
+                release.TrySetResult();
+            }
+            using var result = await run;
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal("True outer [(True, 'inner')] True tail []\n", result.StandardOutput);
         }
+        finally
+        {
+            release.TrySetResult();
+            using var drained = await run;
+        }
+        if (host is DelayedLythonHost closed) Assert.Equal(1, closed.ClosedFileCount);
         Assert.Equal(0, budget.ReservedBytes);
     }
 

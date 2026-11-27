@@ -885,8 +885,11 @@ entry. `starmap` reads up to three elements directly from an exact tuple,
 preserving identities owned by the tuple. A short native `zip` can write
 the row into those operands directly. Zip uses the same ordered pulls and
 strict-length checks for tuple consumers, fixed unpacking and direct callbacks.
-A suspended or reentrant pull keeps its own partial row. Bound guest methods
-pass their receiver alongside those operands. For a wider exact list or
+A suspended or reentrant pull keeps its own partial row. Fixed unpacking and
+short callbacks share the resume loop. Fixed unpacking keeps the admitted
+frame slots and receives the row count. Short callbacks keep their inline
+operands in the continuation. Bound guest methods pass their receiver
+alongside those operands. For a wider exact list or
 tuple with a complete positional supply, `starmap` can fill the callback's
 native frame slots directly, including the receiver. A pending callback
 transfers its live slots into the existing admitted continuation. Other

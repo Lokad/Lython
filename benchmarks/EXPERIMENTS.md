@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1830 share the suspended zip pull](results/2026-11-27-shared-pending-zip/README.md)
+removes the fixed-unpack async wrapper. A gated pull allocates 136 fewer CLR
+bytes per fixed-unpack row. Inline storage and complete-script allocation and
+admission match. Wide async uses less CPU locally, with enough control
+movement and elapsed spread to keep whole-script timing diagnostic.
+
 [B1829 read existing staged row operands](results/2026-11-27-borrowed-list-return/README.md)
 removes callback workspace initialization and the row copy on eligible closed
 returns. Three-field async elapsed falls 3.33–5.17% locally, with CPU spanning

@@ -420,7 +420,7 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
         try
         {
             var items = new object[Arity];
-            return await PullAsync(items, default).ConfigureAwait(false)
+            return await PullBufferedAsync(items, default).ConfigureAwait(false) >= 0
                 ? PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _governor, _span)) : PyIterationResult.End;
         }
         finally { _governor.ReleaseReserved(funding); }
@@ -433,8 +433,8 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
     internal int UnpackNext(Memory<LythonRuntime.ExecutableSlot> destination)
         => CanPull && Pull(new(null, destination.Span, reverse: true)) ? Arity : -1;
 
-    internal async ValueTask<int> UnpackNextAsync(Memory<LythonRuntime.ExecutableSlot> destination)
-        => CanPull && await PullAsync(null, destination).ConfigureAwait(false) ? Arity : -1;
+    internal ValueTask<int> UnpackNextAsync(Memory<LythonRuntime.ExecutableSlot> destination)
+        => CanPull ? PullBufferedAsync(null, destination) : new(-1);
 
     internal bool TryPullOperands(ref LythonRuntime.IterationOperands operands, bool asynchronous,
         out bool hasRow, out ValueTask<(bool HasRow, LythonRuntime.IterationOperands Operands)> pending)
@@ -447,7 +447,7 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
             return true;
         // A suspended pull owns the prefix from this particular advance. A
         // reentrant next() starts with its own storage and the live cursors.
-        pending = ResumeOperandPullAsync(operands, position, next);
+        pending = ResumePullAsync<InlineRow, (bool, LythonRuntime.IterationOperands)>(new(operands), position, next);
         return false;
     }
 
@@ -470,6 +470,34 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
         internal bool CheckingTail;
     }
 
+    // Keep the existing storage in the suspended operation. A row view exists
+    // only between awaits and never retains the caller's stack span.
+    private interface IPendingRow<TStorage, TResult> where TStorage : struct, IPendingRow<TStorage, TResult>
+    {
+        static abstract Row Open(ref TStorage storage);
+        TResult Complete(int count);
+    }
+
+    private readonly struct BufferedRow(object[]? items, Memory<LythonRuntime.ExecutableSlot> destination)
+        : IPendingRow<BufferedRow, int>
+    {
+        private readonly object[]? _items = items;
+        private readonly Memory<LythonRuntime.ExecutableSlot> _destination = destination;
+
+        public static Row Open(ref BufferedRow storage) => new(storage._items, storage._destination.Span, reverse: true);
+        public int Complete(int count) => count;
+    }
+
+    private struct InlineRow(LythonRuntime.IterationOperands operands)
+        : IPendingRow<InlineRow, (bool, LythonRuntime.IterationOperands)>
+    {
+        private LythonRuntime.IterationOperands _operands = operands;
+
+        public static Row Open(ref InlineRow storage) => new(null, storage._operands, reverse: false);
+        public readonly (bool, LythonRuntime.IterationOperands) Complete(int count)
+            => count < 0 ? default : (true, _operands);
+    }
+
     private bool Pull(Row row)
     {
         PullPosition position = default;
@@ -477,11 +505,11 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
         return hasRow;
     }
 
-    private ValueTask<bool> PullAsync(object[]? items, Memory<LythonRuntime.ExecutableSlot> destination)
+    private ValueTask<int> PullBufferedAsync(object[]? items, Memory<LythonRuntime.ExecutableSlot> destination)
     {
         PullPosition position = default;
         return TryCompletePull(new(items, destination.Span, reverse: true), true, ref position, out var hasRow, out var next)
-            ? new(hasRow) : ResumePullAsync(items, destination, position, next);
+            ? new(hasRow ? Arity : -1) : ResumePullAsync<BufferedRow, int>(new(items, destination), position, next);
     }
 
     private bool TryCompletePull(Row row, bool asynchronous, ref PullPosition position, out bool hasRow,
@@ -522,28 +550,17 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyAsyncIteratorValue
         return true;
     }
 
-    private async ValueTask<bool> ResumePullAsync(object[]? items, Memory<LythonRuntime.ExecutableSlot> destination,
+    private async ValueTask<TResult> ResumePullAsync<TStorage, TResult>(TStorage storage,
         PullPosition position, ValueTask<PyIterationResult> pending)
+        where TStorage : struct, IPendingRow<TStorage, TResult>
     {
         while (true)
         {
             var item = await pending.ConfigureAwait(false);
-            var row = new Row(items, destination.Span, reverse: true);
-            if (!AcceptPull(row, ref position, item)) return false;
-            if (TryCompletePull(row, true, ref position, out var hasRow, out pending)) return hasRow;
-        }
-    }
-
-    private async ValueTask<(bool, LythonRuntime.IterationOperands)> ResumeOperandPullAsync(LythonRuntime.IterationOperands operands,
-        PullPosition position, ValueTask<PyIterationResult> pending)
-    {
-        while (true)
-        {
-            var item = await pending.ConfigureAwait(false);
-            var row = new Row(null, operands, reverse: false);
-            if (!AcceptPull(row, ref position, item)) return default;
+            var row = TStorage.Open(ref storage);
+            if (!AcceptPull(row, ref position, item)) return storage.Complete(-1);
             if (TryCompletePull(row, true, ref position, out var hasRow, out pending))
-                return hasRow ? (true, operands) : default;
+                return storage.Complete(hasRow ? Arity : -1);
         }
     }
 
