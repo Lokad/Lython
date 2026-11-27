@@ -8,6 +8,38 @@ namespace Lokad.Lython.Tests;
 
 public sealed class GeneratorExpressionAdmissionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnpackedGeneratorDisplayDenialUnwindsFrameBeforeReturning(bool asynchronous)
+    {
+        const long capacity = 1024 * 1024;
+        var budget = new LythonMemoryBudget(capacity);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var syntax = LythonFrontend.Compile("rows = ([left, 7, right] for left, right in source)").Script!;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
+        var create = Assert.Single(code.Constants.OfType<ExecutableCreateGeneratorExpression>());
+        var row = new PyList([PyNone.Instance, PyNone.Instance]);
+        var outer = new PyList([row]);
+        var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(create.CodeObject, context, outer,
+            create.OuterSpan, create.OuterSpan, asynchronous);
+        Assert.True(budget.TryReserve(capacity - budget.ReservedBytes, out var blocker));
+        using (blocker)
+        {
+            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                _ = asynchronous ? await generator.TryMoveNextAsync() : generator.TryMoveNext());
+            Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+            Assert.Equal(PyList.EstimateCapacityBytes(3), failure.Attribution?.Requested);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task DeniedScopeAdmissionDiscardsUnpublishedGenerator()
     {

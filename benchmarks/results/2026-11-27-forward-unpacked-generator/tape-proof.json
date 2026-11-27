@@ -1,0 +1,235 @@
+{
+  "changed": {
+    "diagnostic.shipment-starmap-short-lists": [
+      {
+        "locals": [
+          "flag",
+          "selected",
+          ".0"
+        ],
+        "capacity": 7,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "StoreLocal",
+          "StoreLocal",
+          "LoadLocal",
+          "LoadClosure",
+          "LoadLocal",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 2147483647
+      },
+      {
+        "locals": [
+          ".0"
+        ],
+        "capacity": 5,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "LoadClosure",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 153
+      }
+    ],
+    "diagnostic.shipment-starmap-wide-lists": [
+      {
+        "locals": [
+          "flag",
+          "selected",
+          ".0"
+        ],
+        "capacity": 9,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "StoreLocal",
+          "StoreLocal",
+          "LoadLocal",
+          "LoadClosure",
+          "LoadLocal",
+          "LoadConst",
+          "LoadConst",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 2147483647
+      },
+      {
+        "locals": [
+          ".0"
+        ],
+        "capacity": 7,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "LoadClosure",
+          "LoadConst",
+          "LoadConst",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 153
+      }
+    ],
+    "same-order": [
+      {
+        "locals": [
+          "a",
+          "b",
+          ".0"
+        ],
+        "capacity": 7,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "StoreLocal",
+          "StoreLocal",
+          "LoadLocal",
+          "LoadLocal",
+          "LoadConst",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 2147483647
+      },
+      {
+        "locals": [
+          ".0"
+        ],
+        "capacity": 5,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "LoadConst",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 9
+      }
+    ],
+    "distinct-order": [
+      {
+        "locals": [
+          "a",
+          "b",
+          ".0"
+        ],
+        "capacity": 7,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "StoreLocal",
+          "StoreLocal",
+          "LoadLocal",
+          "LoadLocal",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 2147483647
+      },
+      {
+        "locals": [
+          ".0"
+        ],
+        "capacity": 5,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 0
+      }
+    ],
+    "source-callback": [
+      {
+        "locals": [
+          "a",
+          "b",
+          ".0"
+        ],
+        "capacity": 7,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "StoreLocal",
+          "StoreLocal",
+          "LoadLocal",
+          "LoadLocal",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 2147483647
+      },
+      {
+        "locals": [
+          ".0"
+        ],
+        "capacity": 5,
+        "operations": [
+          "Jump",
+          "ForNextUnpack",
+          "UnpackValues",
+          "MakeList",
+          "Yield",
+          "PopTop",
+          "Jump",
+          "ReturnNone"
+        ],
+        "permutation": 9
+      }
+    ]
+  },
+  "unchanged": [
+    "diagnostic.shipment-bound-starmap",
+    "diagnostic.shipment-file-fed-map",
+    "direct-tuple",
+    "duplicates",
+    "observable-scope",
+    "starred-target",
+    "filtered"
+  ],
+  "referenceTapeSHA256": "ad2b813e2ead77f9d6fda4b06ce37af02dfd7d2701334454f10e0c0cc7c468ea",
+  "candidateTapeSHA256": "c6732a1fab668dd42db59cd1a15322a4a533587e4cf10d271fc5801cb5eb7ba6"
+}

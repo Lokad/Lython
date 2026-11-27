@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1838 forward unpacked operands into generator lists](results/2026-11-27-forward-unpacked-generator/README.md)
+removes four instructions and two frame slots from each shipment generator.
+Wide async elapsed reverses on a repeat, and CPU remains inconclusive.
+The runtime trial is withdrawn. The ordering, alias, cancellation and
+admission regressions remain.
+
 [B1837 return ready async starmap rows directly](results/2026-11-27-ready-starmap-async/README.md)
 removes the unconditional per-row async state machine. Four scripts match
 independent output and file goldens, with the same peaks in both APIs.

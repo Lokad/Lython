@@ -262,6 +262,90 @@ public sealed class StarmapMaterializationParityTests
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task UnpackedGeneratorDisplayPreservesOrderAndAliasesAcrossBothConsumers(bool asynchronous, bool cancel)
+    {
+        const string source = """
+            from itertools import starmap
+            a, middle, b = [], [], []
+            def display(pairs, between):
+                return ([left, between, right, None, 7] for left, right in pairs)
+            def source():
+                with open('/ready') as stream:
+                    stream.read()
+                yield b
+                yield a
+            direct = next(display([[a, b]], middle))
+            print(direct[0] is a, direct[1] is middle, direct[2] is b, direct[3:])
+            rows = display(zip([a, b], source(), strict=True), middle)
+            def consume(first, between, last, empty, number):
+                resumed = next(rows)
+                return (first is a, between is middle, last is b, empty is None, number,
+                        resumed[0] is b, resumed[1] is middle, resumed[2] is a)
+            print(list(starmap(consume, rows)))
+            try:
+                next(display([[a]], middle))
+            except ValueError:
+                print('wrong arity')
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost();
+        host.SeedFile("/ready", "row");
+        var delayed = new DelayedLythonHost();
+        delayed.SeedFile("/ready", "row");
+        using var cancellation = new CancellationTokenSource();
+        var entered = cancel ? delayed.PauseReadUntilCancellation("/ready") : null;
+        if (asynchronous)
+        {
+            var pending = script.RunAsync(delayed, cancellationToken: cancellation.Token);
+            try
+            {
+                if (entered is not null)
+                {
+                    Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10)));
+                    Assert.True(budget.ReservedBytes > baseline);
+                    cancellation.Cancel();
+                }
+                using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+                Check(result);
+            }
+            finally
+            {
+                cancellation.Cancel();
+                using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(1, delayed.ClosedFileCount);
+        }
+        else
+        {
+            using var result = script.Run(host);
+            Check(result);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+
+        void Check(LythonExecutionResult result)
+        {
+            if (cancel)
+            {
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.Equal("True True True [None, 7]\n", result.StandardOutput);
+                return;
+            }
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True True [None, 7]\n[(True, True, True, True, 7, True, True, True)]\nwrong arity\n",
+                result.StandardOutput);
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task StagedSelectorKeepsAliasAndRetiresRowBeforeTruthProtocol(bool asynchronous)
