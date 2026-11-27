@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1820 direct default slots](results/2026-11-27-final-default-slots/README.md)
+removes the native placement copy for 93 declarations in the ordinary
+factory. The normal handoff still needs the admitted staging window.
+Allocation and admitted peaks match. Warm sync CPU rises 2.58–11.71% locally
+with variable controls, and async and compile CPU remain inconclusive.
+Keep the current runtime and the scope and suspension regressions.
+
 [B1819 generator list-yield handoff](results/2026-11-27-starmap-slot-handoff/README.md)
 transfers the existing generator operands into the callback's actual slots.
 Shipment allocation falls 16–18% and peak admission falls 18–25% in both

@@ -5,6 +5,96 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class PreparedFunctionDefaultsTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DefinitionDefaultsSurviveTransferDuringKeywordEvaluation(bool asynchronous)
+    {
+        const string source = """
+            inspect_scope = locals
+            def step(value):
+                return value + 1
+            def read(value):
+                with open('/pause') as stream:
+                    stream.read()
+                return value
+            def factory(seed):
+                def prior(value=step(seed + 1), *, named=5):
+                    return value, named
+                def pending(value=seed + 3, *, named=read(seed)):
+                    return value, named
+                a = 0; b = 0; c = 0; d = 0; e = 0; f = 0; g = 0; h = 0
+                i = 0; j = 0; k = 0; l = 0; m = 0; n = 0; o = 0; p = 0
+                return inspect_scope()
+            saved = factory(10)
+            print(saved['prior'](), saved['pending']())
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        if (asynchronous)
+        {
+            var paused = new DelayedLythonHost();
+            paused.SeedFile("/pause", "content");
+            var started = paused.PauseReadUntilCancellation("/pause");
+            using var cancellation = new CancellationTokenSource();
+            var pending = script.RunAsync(paused, new LythonRunOptions
+            {
+                MemoryBudget = budget, CancellationToken = cancellation.Token
+            });
+            try
+            {
+                await started.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > 0);
+            }
+            finally
+            {
+                cancellation.Cancel();
+                using var interrupted = await pending;
+                Assert.Equal(LythonFailureReason.Cancelled, interrupted.FailureAttribution?.Reason);
+                Assert.Empty(interrupted.StandardOutput);
+            }
+            Assert.Equal(1, paused.ClosedFileCount);
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+
+        var host = new MockLythonHost();
+        host.SeedFile("/pause", "content");
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("(12, 5) (13, 10)\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DefaultCanObserveTheParameterThatItsDefinitionReplaces(bool asynchronous)
+    {
+        const string source = """
+            inspect_scope = locals
+            def factory(target):
+                def target(value=inspect_scope(), *, named=5):
+                    return value, named
+                a = 0; b = 0; c = 0; d = 0; e = 0; f = 0; g = 0; h = 0
+                i = 0; j = 0; k = 0; l = 0; m = 0; n = 0; o = 0; p = 0
+                return inspect_scope()
+            saved = factory('old')
+            before, named = saved['target']()
+            print(before['target'], named)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("old 5\n", result.StandardOutput);
+    }
+
+    [Theory]
     [InlineData(false, 10)]
     [InlineData(true, 10)]
     [InlineData(false, 0)]
