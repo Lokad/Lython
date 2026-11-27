@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1871 profile nested JSON reads and file export](results/2026-11-27-current-json-read-export-profile/README.md)
+uses the B1869 image for two verified scripts. It locates string emission and
+builder growth in the export. Nested read samples also cover final record and
+string admission. Test bounded bulk scanning and complete plain-token writes.
+
 [B1870 read eligible dictionary CSV fields directly](results/2026-11-27-csv-dictwriter-direct-fields/README.md)
 removes bound `dict.get` argument transport per field. The report allocates
 54.47–54.48% less at matching admitted peaks. Local sync uses 33.31–37.82%
