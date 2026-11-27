@@ -236,6 +236,7 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private bool _completed;
+        private bool _parsingRecord;
 
         // Source/parser objects, builders, list shells and the dialect's
         // fixed-size search sets. Backing and emitted values are charged separately.
@@ -294,7 +295,7 @@ internal sealed partial class LythonRuntime
 
         internal int UnpackNext(Memory<ExecutableSlot> destination)
         {
-            _nativeFile?.CheckCsvReadReentry();
+            CheckReadReentry();
             while (_nativeFile is { } file)
             {
                 int count;
@@ -308,7 +309,7 @@ internal sealed partial class LythonRuntime
 
         internal async ValueTask<int> UnpackNextAsync(Memory<ExecutableSlot> destination)
         {
-            _nativeFile?.CheckCsvReadReentry();
+            CheckReadReentry();
             while (_nativeFile is { } file)
             {
                 int count;
@@ -328,18 +329,24 @@ internal sealed partial class LythonRuntime
 
         internal object? ReadNext(CsvDictReaderObject? dictionary)
         {
-            _nativeFile?.CheckCsvReadReentry();
+            CheckReadReentry();
             TryReadRecord(dictionary, asynchronous: false, out var row, out _, out _);
             return row;
         }
 
         internal ValueTask<object?> TryMoveNextAsync(CsvDictReaderObject? dictionary = null)
         {
-            // A budget hook can try to read the same source. Reject that pull
-            // before its error path can reset the active parser's descriptors.
-            _nativeFile?.CheckCsvReadReentry();
+            CheckReadReentry();
             return TryReadRecord(dictionary, asynchronous: true, out var row, out var line, out var item)
                 ? new(row) : ResumeReadRecord(dictionary, line, item);
+        }
+
+        private void CheckReadReentry()
+        {
+            // A budget hook can try to read the same source. Reject that pull
+            // before its error path can reset the active parser's descriptors.
+            if (_parsingRecord) throw RuntimeErrors.Runtime("reentrant CSV read", _span);
+            _nativeFile?.CheckCsvReadReentry();
         }
 
         // A row transfers out of the parser before any further source pull.
@@ -366,7 +373,7 @@ internal sealed partial class LythonRuntime
                         count = line.GetAwaiter().GetResult();
                     }
                     catch { _parser.ResetRecord(); throw; }
-                    if (count == EndOfNativeInput) FinishExhausted();
+                    if (count == EndOfNativeInput) FinishExhausted(dictionary);
                 }
                 else if (_indexed is { } indexed)
                 {
@@ -376,9 +383,9 @@ internal sealed partial class LythonRuntime
                     {
                         var current = indexed[_position];
                         _position++;
-                        FeedPulledLine(current);
+                        FeedPulledLine(current, dictionary);
                     }
-                    else FinishExhausted();
+                    else FinishExhausted(dictionary);
                 }
                 else
                 {
@@ -399,7 +406,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (InvalidOperationException) { throw CursorMutation(); }
                     catch { _parser.ResetRecord(); throw; }
-                    AcceptCursorItem(next);
+                    AcceptCursorItem(next, dictionary);
                 }
             }
             return true;
@@ -416,7 +423,7 @@ internal sealed partial class LythonRuntime
                     int count;
                     try { count = await line.ConfigureAwait(false); }
                     catch { _parser.ResetRecord(); throw; }
-                    if (count == EndOfNativeInput) FinishExhausted();
+                    if (count == EndOfNativeInput) FinishExhausted(dictionary);
                 }
                 else
                 {
@@ -424,7 +431,7 @@ internal sealed partial class LythonRuntime
                     try { next = await pendingItem.ConfigureAwait(false); }
                     catch (InvalidOperationException) { throw CursorMutation(); }
                     catch { _parser.ResetRecord(); throw; }
-                    AcceptCursorItem(next);
+                    AcceptCursorItem(next, dictionary);
                 }
             } while (!TryReadRecord(dictionary, asynchronous: true, out row, out pendingLine, out pendingItem));
             return row;
@@ -438,10 +445,10 @@ internal sealed partial class LythonRuntime
             return new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
         }
 
-        private void AcceptCursorItem(PyIterationResult next)
+        private void AcceptCursorItem(PyIterationResult next, CsvDictReaderObject? dictionary)
         {
-            if (next.HasValue) FeedPulledLine(next.Value);
-            else FinishExhausted();
+            if (next.HasValue) FeedPulledLine(next.Value, dictionary);
+            else FinishExhausted(dictionary);
         }
 
         internal const int EndOfNativeInput = -2;
@@ -463,7 +470,7 @@ internal sealed partial class LythonRuntime
             return _parser.ConsumeBorrowedLine(line, destination, dictionary);
         }
 
-        private void FeedPulledLine(object current)
+        private void FeedPulledLine(object current, CsvDictReaderObject? dictionary)
         {
             _context.CheckExecution(_span);
             if (!PyStringOps.TryAsString(current, out var line))
@@ -473,9 +480,10 @@ internal sealed partial class LythonRuntime
             }
 
             PhysicalLineCount++;
+            _parsingRecord = true;
             try
             {
-                _parser.Feed(line);
+                _parser.Feed(line, dictionary);
             }
             catch
             {
@@ -486,15 +494,16 @@ internal sealed partial class LythonRuntime
                 _parser.ResetRecord();
                 throw;
             }
-
+            finally { _parsingRecord = false; }
         }
 
-        private void FinishExhausted()
+        private void FinishExhausted(CsvDictReaderObject? dictionary)
         {
             _completed = true;
+            _parsingRecord = true;
             try
             {
-                _parser.Finish();
+                _parser.Finish(dictionary);
             }
             catch
             {
@@ -503,7 +512,8 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                ReleaseExhaustedInput();
+                try { ReleaseExhaustedInput(); }
+                finally { _parsingRecord = false; }
             }
         }
 
@@ -546,8 +556,8 @@ internal sealed partial class LythonRuntime
         private int _fieldStart;
         private long _stringBytes;
         private int _payloadBytes;
-        // A buffered file can complete an inferred-header dictionary directly.
-        // Otherwise the same slot publishes the private array for the caller.
+        // A private inferred header allows direct dictionary publication.
+        // Otherwise this slot hands the funded array to the consumer.
         private object? _readyRecord;
         private const int ReusableFieldCapacity = 1024;
         private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote, AfterEscapedNewline }
@@ -734,15 +744,15 @@ internal sealed partial class LythonRuntime
             return row is not null;
         }
 
-        public void Feed(ReadOnlySpan<byte> text)
+        public void Feed(ReadOnlySpan<byte> text, CsvDictReaderObject? dictionary = null)
         {
-            if (DescribeLine(text)) EmitRecord(_record.WrittenSpan);
+            if (DescribeLine(text)) EmitRecord(_record.WrittenSpan, dictionary);
         }
 
-        internal void Feed(PyString text)
+        internal void Feed(PyString text, CsvDictReaderObject? dictionary)
         {
-            if (CanDescribeLiteralRecord) _ = ConsumeBorrowedLine(text.Utf8Span, null);
-            else Feed(text.Utf8Span);
+            if (CanDescribeLiteralRecord) _ = ConsumeBorrowedLine(text.Utf8Span, null, dictionary);
+            else Feed(text.Utf8Span, dictionary);
         }
 
         internal int ConsumeBorrowedLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination,
@@ -872,9 +882,9 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        public void Finish()
+        public void Finish(CsvDictReaderObject? dictionary = null)
         {
-            if (DescribeEndOfInput()) EmitRecord(_record.WrittenSpan);
+            if (DescribeEndOfInput()) EmitRecord(_record.WrittenSpan, dictionary);
         }
 
         internal int FinishUnpacked(Span<ExecutableSlot> destination)

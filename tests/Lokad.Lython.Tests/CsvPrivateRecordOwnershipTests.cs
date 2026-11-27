@@ -96,6 +96,105 @@ public sealed class CsvPrivateRecordOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IterableRecordAdmissionProtectsTheRowAndRevalidatesTheHeader(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+        var lines = new PyList([PyString.FromString("a,b"), PyString.FromString("10,20"),
+            PyString.FromString("30,40"), PyString.FromString("50,60")]);
+        var source = new LythonRuntime.CsvRecordSource(lines, Options(), Span, context);
+        var reader = new LythonRuntime.CsvDictReaderObject(source, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
+        var raw = new LythonRuntime.CsvReaderObject(source);
+        var replacement = new PyList([PyString.FromString("x"), PyString.FromString("y")], context.MemoryGovernor, Span);
+
+        async ValueTask<PyDict> Next()
+            => Assert.IsType<PyDict>((asynchronous ? await reader.TryMoveNextAsync() : reader.TryMoveNext()).Value);
+        static string Read(PyDict row, string key) => Assert.IsType<PyString>(row.GetItem(PyString.FromString(key))).AsString();
+
+        try
+        {
+            var first = await Next();
+            Exception? nestedFailure = null;
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                nestedFailure = Record.Exception(() => { raw.TryMoveNext(); });
+            };
+            var second = await Next();
+            var error = Assert.IsType<LythonRuntimeException>(nestedFailure);
+            Assert.Equal("RuntimeError", error.ExceptionType);
+            Assert.Equal("30", Read(second, "a"));
+            Assert.Equal(3, raw.LineNum);
+
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                reader.TrySetMember("fieldnames", replacement);
+            };
+            var third = await Next();
+            Assert.Equal("50", Read(third, "x"));
+            Assert.Equal("60", Read(third, "y"));
+            Assert.False(third.TryGetValue(PyString.FromString("a"), out _));
+            Assert.Equal("10", Read(first, "a"));
+            Assert.Equal("30", Read(second, "a"));
+            Assert.Equal(4, raw.LineNum);
+            Assert.False((asynchronous ? await reader.TryMoveNextAsync() : reader.TryMoveNext()).HasValue);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        finally
+        {
+            hook.AfterGrowth = null;
+            context.State.CloseResources();
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task InferredHeaderSurvivesPendingMultilineIteratorInput()
+    {
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+        var lines = new DeferredRecordLines("name,value\n", "first,10\n");
+        var source = new LythonRuntime.CsvRecordSource(lines, Options(), Span, context);
+        var reader = new LythonRuntime.CsvDictReaderObject(source, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
+        var first = Assert.IsType<PyDict>((await reader.TryMoveNextAsync()).Value);
+        var pending = reader.TryMoveNextAsync().AsTask();
+
+        try
+        {
+            Assert.False(pending.IsCompleted);
+            lines.First.SetResult(PyIterationResult.Yield(PyString.FromString("\"next\n")));
+            await lines.SecondEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.Equal(3, source.PhysicalLineCount);
+            lines.Second.SetResult(PyIterationResult.Yield(PyString.FromString("row\",20\n")));
+
+            var second = Assert.IsType<PyDict>((await pending.WaitAsync(TimeSpan.FromSeconds(10))).Value);
+            var key = first.Keys.First();
+            Assert.Same(key, second.Keys.First());
+            Assert.Equal("first", Assert.IsType<PyString>(first.GetItem(key)).AsString());
+            Assert.Equal("next\nrow", Assert.IsType<PyString>(second.GetItem(key)).AsString());
+            Assert.Equal(4, source.PhysicalLineCount);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        finally
+        {
+            lines.First.TrySetResult(PyIterationResult.End);
+            lines.Second.TrySetResult(PyIterationResult.End);
+            try { await pending; }
+            finally { context.State.CloseResources(); }
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void PublicRowAdoptsItsFundedArrayWithoutCopyOrNewAdmission()
     {
@@ -211,7 +310,7 @@ public sealed class CsvPrivateRecordOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class DeferredRecordLines : IPyAsyncIteratorValue
+    private sealed class DeferredRecordLines(params string[] initial) : IPyAsyncIteratorValue
     {
         private int _position;
         internal TaskCompletionSource<PyIterationResult> First { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -222,7 +321,10 @@ public sealed class CsvPrivateRecordOwnershipTests
         public PyIterationResult TryMoveNext() => throw new InvalidOperationException("Expected an asynchronous pull.");
         public ValueTask<PyIterationResult> TryMoveNextAsync()
         {
-            switch (_position++)
+            var position = _position++;
+            if (position < initial.Length)
+                return new(PyIterationResult.Yield(PyString.FromString(initial[position])));
+            switch (position - initial.Length)
             {
                 case 0: return new(First.Task);
                 case 1:

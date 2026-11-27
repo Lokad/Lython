@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.csv-summary-list-input",
+    "mode": "sync",
+    "clr": [
+      1907144,
+      1907318
+    ],
+    "peak": [
+      4811051,
+      4811051
+    ]
+  },
+  {
+    "case": "diagnostic.csv-summary-iterator-input",
+    "mode": "sync",
+    "clr": [
+      1817824,
+      1817824
+    ],
+    "peak": [
+      4402371,
+      4402371
+    ]
+  },
+  {
+    "case": "scripts.csv-summary-functions.large",
+    "mode": "sync",
+    "clr": [
+      1464064,
+      1464064
+    ],
+    "peak": [
+      3671803,
+      3671803
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "sync",
+    "clr": [
+      3019270,
+      3019270
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "diagnostic.csv-summary-list-input",
+    "mode": "async",
+    "clr": [
+      1907416,
+      1907360
+    ],
+    "peak": [
+      4811051,
+      4811051
+    ]
+  },
+  {
+    "case": "diagnostic.csv-summary-iterator-input",
+    "mode": "async",
+    "clr": [
+      1818096,
+      1818214
+    ],
+    "peak": [
+      4402371,
+      4402371
+    ]
+  },
+  {
+    "case": "scripts.csv-summary-functions.large",
+    "mode": "async",
+    "clr": [
+      1464280,
+      1464280
+    ],
+    "peak": [
+      3671803,
+      3671803
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "async",
+    "clr": [
+      3019486,
+      3019542
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ]
+  }
+]

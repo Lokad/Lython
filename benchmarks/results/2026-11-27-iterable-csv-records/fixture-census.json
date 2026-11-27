@@ -1,0 +1,11 @@
+{
+  "records": 4096,
+  "bytes": 57361,
+  "header": [
+    "kind",
+    "amount",
+    "note"
+  ],
+  "quotedRecords": 4096,
+  "quotedInputBytes": 174147
+}

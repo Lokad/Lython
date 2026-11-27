@@ -1617,16 +1617,16 @@ Final row admission covers all field storage before construction. Long fields
 have separate Python string identities over one exact immutable payload; short
 fields retain inline storage. That payload stays funded by the execution/result
 owner, including after unpublished sibling storage is relinquished. It never
-borrows the mutable parser buffer. Ordinary `csv.reader` and exposed
-fieldnames adopt the funded array without copying. `DictReader` transfers
-it to matching native-key records or relinquishes the array capacity after
+borrows the mutable parser buffer. Ordinary `csv.reader` adopts the funded
+array without copying. `DictReader` transfers it to matching native-key
+records or relinquishes the array capacity after
 header and key protocols and awaited cleanup. Escaping dictionaries and
-rest lists retain their storage funding. A complete buffered row with a
-verified private inferred header reserves its fields and dictionary shell
-together. Exposing or replacing the header during admission returns the shell
-reservation and passes the funded row to the live-header path. Reads through
-an exposed raw CSV reader reject nested access before touching the active
-parser's record.
+rest lists retain their storage funding. A completed file, list or iterator
+row with a verified private inferred header reserves its fields and dictionary
+shell together. Exposing or replacing the header during admission returns the
+shell reservation and passes the funded row to the live-header path. Reads through
+an exposed raw CSV reader reject nested access while the shared parser is
+constructing a record or finishing its input.
 When a fixed loop target immediately unpacks a file-backed `csv.reader` row,
 the parser checks arity, admits the fields and writes them directly into
 existing executable operands. Short text fields in nonnumeric readers can

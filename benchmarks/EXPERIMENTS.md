@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1842 publish iterable CSV dictionaries in the parser](results/2026-11-27-iterable-csv-records/README.md)
+removes the raw row handoff and second admission for matching inferred
+headers. Local list-backed CPU falls 6.58–9.49% and generator-backed CPU
+falls 5.56–6.13% with unchanged admitted peaks. The new regression catches
+reentry that loses the active row on the baseline. File-backed control
+timing remains mixed.
+
 [B1841 store the sole regex range in the match](results/2026-11-27-inline-whole-regex-match/README.md)
 removes one heap array per match without capture groups. Both APIs save 32 CLR
 and peak shared bytes per match on the extraction script. The refined layout
