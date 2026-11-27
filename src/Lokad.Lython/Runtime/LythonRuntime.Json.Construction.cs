@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                 if (old is not null) state.Working!.Shrink(checked(32L + 48L * old.Length));
             }
 
-            var expected = isObject ? context.State.JsonRecordLayout : default;
+            var expected = isObject ? context.State.JsonRecordLayoutAtDepth(state.Depth) : default;
             var bytesView = state.Input.Utf8Span;
             var position = SkipJsonWhitespace(bytesView, opening + 1, context, state.Span);
             var capacity = position < bytesView.Length && bytesView[position] == (byte)'"' ? 4 : 0;
@@ -144,10 +144,11 @@ internal sealed partial class LythonRuntime
                 {
                     if (frame.IsObject)
                     {
+                        ref var layout = ref context.State.JsonRecordLayoutAtDepth(state.Depth - 1);
                         if (frame.Result is not PyDict dictionary)
-                            context.State.JsonRecordLayout = frame.Expected;
+                            layout = frame.Expected;
                         else if (dictionary.ShareRecordKeys(context, span) is { } keys)
-                            context.State.JsonRecordLayout = (keys, frame.PlainNames);
+                            layout = (keys, frame.PlainNames);
                     }
                     var value = frame.Result;
                     var end = position + 1;

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1840 reuse nested JSON record layouts by depth](results/2026-11-27-nested-json-layouts/README.md)
+avoids repeated private key-table construction when parent and child names
+differ. The two nested scripts use 42–45% less CLR allocation and 32–34%
+less peak admission. Nested document CPU falls 25.64–34.82% locally.
+Nested Lines elapsed stays inconclusive and its reference workers vary.
+
 [B1839 enter converted dictionary updates directly](results/2026-11-27-converted-entry/README.md)
 removes `dict.get` call operand staging on 2,046 rows per affected script.
 JSON totals use 6.77–11.43% less process CPU in the local confirmation.

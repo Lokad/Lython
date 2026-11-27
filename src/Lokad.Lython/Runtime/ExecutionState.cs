@@ -184,9 +184,18 @@ internal sealed partial class ExecutionState
     private PyDict? _importedModules;
     public PyDict ImportedModules => _importedModules ??= new PyDict(MemoryGovernor);
 
-    // Keys and their lexical proof stay paired through nested or suspended
-    // decoders. The existing execution owner funds the immutable layout.
-    internal (PyDict.RecordKeys? Keys, bool PlainNames) JsonRecordLayout { get; set; }
+    private const int JsonLayoutSlots = 4;
+
+    [InlineArray(JsonLayoutSlots)]
+    private struct JsonLayoutHints { private (PyDict.RecordKeys? Keys, bool PlainNames) _first; }
+
+    private JsonLayoutHints _jsonLayouts;
+
+    // A child with different keys should not replace its parent's hint.
+    // Deeper containers share the last slot. The existing execution owner
+    // already funds the immutable key layouts and their retained bytes.
+    internal ref (PyDict.RecordKeys? Keys, bool PlainNames) JsonRecordLayoutAtDepth(int depth)
+        => ref _jsonLayouts[Math.Min(depth, JsonLayoutSlots - 1)];
 
     public Dictionary<string, object> BuiltinVariables { get; }
 

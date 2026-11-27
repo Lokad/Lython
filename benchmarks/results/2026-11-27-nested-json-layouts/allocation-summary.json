@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "sync",
+    "clr": [
+      1962480,
+      1127352
+    ],
+    "peak": [
+      4247714,
+      2855754
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-lines",
+    "mode": "sync",
+    "clr": [
+      3715192,
+      2044424
+    ],
+    "peak": [
+      8221333,
+      5444923
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "mode": "sync",
+    "clr": [
+      1370808,
+      1370856
+    ],
+    "peak": [
+      3297534,
+      3297534
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808608,
+      808600
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "async",
+    "clr": [
+      1962696,
+      1127440
+    ],
+    "peak": [
+      4247714,
+      2855754
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-lines",
+    "mode": "async",
+    "clr": [
+      3715582,
+      2044870
+    ],
+    "peak": [
+      8221333,
+      5444923
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "mode": "async",
+    "clr": [
+      1371472,
+      1371528
+    ],
+    "peak": [
+      3297534,
+      3297534
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808886,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  }
+]

@@ -73,7 +73,7 @@ public sealed class RecordKeyOwnershipTests
                 MemoryBudget = hooked, CancellationToken = cancellation.Token,
             });
             var (first, _, a, b) = Records(context);
-            var layout = context.State.JsonRecordLayout.Keys!;
+            var layout = context.State.JsonRecordLayoutAtDepth(0).Keys!;
             LythonRuntime.ExecutableSlot[] inputs =
             [
                 LythonRuntime.ExecutableSlot.FromObject(a), LythonRuntime.ExecutableSlot.FromInteger(7),
@@ -226,7 +226,7 @@ public sealed class RecordKeyOwnershipTests
             Assert.Equal([new BigInteger(3), new BigInteger(4)], second.Values.Cast<BigInteger>());
             second.DiscardUnpublishedStorage();
             Assert.True(root.ReservedBytes > baseline);
-            var next = context.State.JsonRecordLayout.Keys!.CreateRecord(context, Span, 2);
+            var next = context.State.JsonRecordLayoutAtDepth(0).Keys!.CreateRecord(context, Span, 2);
             Assert.Empty(next.Items);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
@@ -306,7 +306,7 @@ public sealed class RecordKeyOwnershipTests
         first.SetItem(a, BigInteger.One);
         first.SetItem(b, new BigInteger(2));
         var keys = first.ShareRecordKeys(context, Span)!;
-        context.State.JsonRecordLayout = (keys, false);
+        context.State.JsonRecordLayoutAtDepth(0) = (keys, false);
         var second = keys.CreateRecord(context, Span, 2);
         second.SetRecordItem(a, new BigInteger(3), context, Span);
         second.SetRecordItem(b, new BigInteger(4), context, Span);

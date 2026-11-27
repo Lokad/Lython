@@ -25,9 +25,9 @@ public sealed class JsonPropertyNameStorageTests
             {
                 var first = new PyDict(context.MemoryGovernor, span);
                 first.SetItem(retained, PyNone.Instance);
-                state.JsonRecordLayout = (first.ShareRecordKeys(context, span), false);
+                state.JsonRecordLayoutAtDepth(0) = (first.ShareRecordKeys(context, span), false);
             }
-            var snapshot = state.JsonRecordLayout;
+            var snapshot = state.JsonRecordLayoutAtDepth(0);
             var replacement = new PyDict(context.MemoryGovernor, span);
             replacement.SetItem(retained, PyNone.Instance);
             replacement.SetItem(PyString.FromString("other-name", context.MemoryGovernor, span), PyNone.Instance);
@@ -36,12 +36,12 @@ public sealed class JsonPropertyNameStorageTests
             using (blocker)
             {
                 var failure = Assert.Throws<LythonRuntimeException>(() =>
-                    state.JsonRecordLayout = (replacement.ShareRecordKeys(context, span), false));
+                    state.JsonRecordLayoutAtDepth(0) = (replacement.ShareRecordKeys(context, span), false));
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(limit, budget.ReservedBytes);
-                Assert.Equal(snapshot, state.JsonRecordLayout);
+                Assert.Equal(snapshot, state.JsonRecordLayoutAtDepth(0));
                 Assert.Equal(2, replacement.Count);
                 Assert.Same(retained, replacement.Keys.First());
                 Assert.Equal("retained-name", retained.AsString());
@@ -89,5 +89,40 @@ public sealed class JsonPropertyNameStorageTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedNestedRecordsReuseFundedKeysWithoutSharingValues(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            const string source = """
+                import json
+                return (json.loads('{"details":{"quantity":1},"label":"first"}'),
+                        json.loads('{"details":{"quantity":2},"label":"second"}'))
+                """;
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
+            var result = Assert.IsType<PyTuple>(asynchronous
+                ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            var first = Assert.IsType<PyDict>(result[0]);
+            var second = Assert.IsType<PyDict>(result[1]);
+            var firstDetails = Assert.IsType<PyDict>(first.Items.First().Value);
+            var secondDetails = Assert.IsType<PyDict>(second.Items.First().Value);
+            Assert.Same(first.Keys.First(), second.Keys.First());
+            Assert.Same(firstDetails.Keys.Single(), secondDetails.Keys.Single());
+
+            var sharedKey = firstDetails.Keys.Single();
+            firstDetails.SetItem(sharedKey, PyNone.Instance);
+            Assert.Equal(new System.Numerics.BigInteger(2), secondDetails.GetItem(sharedKey));
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }
