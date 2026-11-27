@@ -5,12 +5,16 @@
 | JSON Lines summary with record helper | 5,120 lines / 110,592 B | 3.12574–3.13816 ms | 4.15785–4.16446 ms | 0.751–0.755× | Diagnostic. [B1805]. |
 | JSON Lines summary with record helper, Lython `RunAsync` | 5,120 lines / 110,592 B | 3.21453–3.23051 ms | 4.13075–4.14701 ms | 0.775–0.782× | Diagnostic. [B1805]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.60249–2.80150 ms | 1.81483–1.84158 ms | 1.413–1.544× | Diagnostic. Lython worker spread is 7.65%. [B1805]. |
-| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.83407–0.84667 ms | 0.94136–0.96632 ms | 0.863–0.899× | Diagnostic. [B1805]. |
+| File search, match at line 1,025 | 42,010 B file | 0.08292–0.08345 ms | 0.13705–0.13762 ms | 0.603–0.609× | Diagnostic. [B1815]. |
+| File search, match at line 1,025, Lython `RunAsync` | 42,010 B file | 0.08385–0.08518 ms | 0.13787–0.13931 ms | 0.602–0.618× | Diagnostic. [B1815]. |
+| File search, match at line 1 | 42,010 B file | 0.07438–0.07471 ms | 0.05127–0.05131 ms | 1.450–1.457× | Diagnostic. [B1815]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.85825–0.92594 ms | 0.94030–0.94431 ms | 0.909–0.985× | Diagnostic. Lython worker spread is 7.89%. [B1815]. |
 
-B1805 measures `cb258fe7f` on November 26, 2026 UTC against stock
-CPython 3.13.16. Ratios divide Lython elapsed by CPython elapsed. Above
-1× means Lython takes longer. Ranges span all pairings of worker medians
-from two workers per engine. [B1805].
+B1815 measures `c10f06884` on November 27, 2026 UTC. B1805 measures
+`cb258fe7f` on November 26, 2026 UTC. Both use stock CPython 3.13.16.
+Ratios divide Lython elapsed by CPython elapsed. Above 1× means Lython
+takes longer. Ranges span all pairings of medians from two workers per
+engine. [B1815] · [B1805].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. Warm execution uses a compiled script in a running process.
@@ -29,6 +33,7 @@ measurements cover the wider request.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.83407–0.84667 ms | 0.94136–0.96632 ms | 0.863–0.899× | Diagnostic. [B1805]. |
 | Shipment callback report | 2,048 records / 27,350 B | 1.77070–1.78975 ms | 1.62509–1.64124 ms | 1.079–1.101× | Diagnostic. [B1791]. |
 | Shipment callback report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.83667–1.97645 ms | 1.63960–1.65973 ms | 1.107–1.205× | Diagnostic. Lython worker spread is 7.61%. [B1791]. |
 | Generated ordinary definitions | 96 definitions, built 16 times | 0.18913–0.19417 ms | 0.14880–0.15121 ms | 1.251–1.305× | Diagnostic. [B1791]. |
@@ -85,6 +90,8 @@ use `8aef89b09`.
 | --- | --- | ---: | ---: | ---: | --- |
 | Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56925–0.57157 ms | 1.10194–1.10238 ms | 0.516–0.519× | Diagnostic. [B1805]. |
 | Generated ordinary definitions | Compile-to-result | 0.75729–0.76925 ms | 1.11806–1.12177 ms | 0.675–0.688× | Diagnostic. [B1805]. |
+| File search, match at line 1,025, 319 B of source | Compilation only | 0.01677–0.01698 ms | 0.03059–0.03078 ms | 0.545–0.555× | Diagnostic. [B1815]. |
+| File search, match at line 1,025 | Compile-to-result | 0.11875–0.12018 ms | 0.20888–0.21198 ms | 0.560–0.575× | Diagnostic. [B1815]. |
 
 <details>
 <summary>Earlier compilation and compile-to-result measurements</summary>
@@ -151,6 +158,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Group rejected lines in buffered file search | At a match on line 1,025, CLR allocation falls about 50% and admitted peak falls 78.15%. Local warm `RunAsync` elapsed falls 52.82–54.29% on the corrected source. | The first-line match takes 0.52–5.91% longer locally, with mixed CPU. [B1814 corrected comparison](../benchmarks/results/2026-11-26-compiled-prefix-search/correction/README.md). |
 | Reuse existing one-byte JSON characters | Service totals allocate 5.22% less and use 5.42% less admitted peak memory. Warm elapsed falls 0.99–4.77% sync and 1.23–3.58% async in the completed block. | Process CPU spans zero. Both control worker spreads exceed 11% on reference CPU. [B1790](../benchmarks/results/2026-11-26-json-ascii-character/README.md). |
 | Initialize literal keyword defaults in admitted backing | Escaping rules use 4.63–9.09% less warm async CPU in the first block and 1.22–10.87% less in the repeat. | Execution allocation and peak admission match. Ordinary definitions use 0.26–1.61% more compile-only CPU with mixed elapsed. [B1788](../benchmarks/results/2026-11-26-literal-keyword-defaults/confirmation/README.md). |
 | Bind completed fixed rows directly to private locals | Sync shipment takes 0.49–4.25% less warm elapsed initially and 0.56–6.97% less in confirmation. Confirmed CSV meter CPU falls 1.94–4.43% and async shipment CPU falls 0.43–2.97%. | Matching peak admission. Initial CSV CPU rises 1.32–2.27% and async shipment spans zero. [B1783](../benchmarks/results/2026-11-26-fixed-row-local-bindings/confirmation/README.md). |
@@ -254,3 +262,5 @@ document reproduction.
 [B1713]: ../benchmarks/results/2026-11-25-retained-workspace-cpython/README.md
 [B1705]: ../benchmarks/results/2026-11-25-retained-csv-cpython/README.md
 [B1694]: ../benchmarks/results/2026-11-25-retained-async-cpython/README.md
+
+[B1815]: ../benchmarks/results/2026-11-27-compiled-prefix-cpython/README.md

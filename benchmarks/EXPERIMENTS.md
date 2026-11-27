@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1815 protected file search against CPython](results/2026-11-27-compiled-prefix-cpython/README.md)
+measures the delivered B1814 source on the quiet VM. A late match takes
+0.603–0.609× CPython elapsed warm sync and 0.560–0.575× through result.
+A first-line match takes 1.450–1.457× warm sync. The Unicode control has
+7.89% Lython worker spread. All six lanes and independent goldens verify.
+
 [B1814 compiled prefix search](results/2026-11-26-compiled-prefix-search/README.md)
 moves fixed shape checks into emission and retains the late-match savings.
 The initial prototype's warm elapsed falls 49.40–54.41% for the late match
