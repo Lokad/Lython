@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1880 compare current compiler and file workloads with CPython](results/2026-11-27-wsl-current-cpython/README.md)
+uses the checked CPython 3.13.16 runtime on pinned WSL workers. CSV re-export
+takes 0.441–0.499× CPython warm and ordinary definitions 0.669–0.740× through
+result. The paired JSON recheck narrows the initial lane drift. All 224
+timed batches verify. These are diagnostic ranges.
+
 [B1879 omit form arrays for positional executable calls](results/2026-11-27-executable-positional-forms/README.md)
 removes 163 arrays and 19,608 allocated bytes per generated definition
 compile. Named sites keep the original form arrays. Timing spans zero in

@@ -1,0 +1,160 @@
+{
+  "source": "ab883268b10136631ed7734ac08b8719ee422839",
+  "cpythonVersion": "3.13.16",
+  "cpythonExecutableSHA256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+  "elapsedSeconds": 208.20969103300013,
+  "timedBatches": 168,
+  "performanceQualified": false,
+  "rows": [
+    {
+      "case": "diagnostic.shipment-dictwriter-report",
+      "lane": "warm",
+      "lythonMs": [
+        1.2320404285714286,
+        1.3288691987951806
+      ],
+      "cpythonMs": [
+        2.6635800232558138,
+        2.7926310784313726
+      ],
+      "ratio": [
+        0.44117550581133996,
+        0.49890342591278486
+      ],
+      "widerCpuRatio": [
+        0.4708454810495627,
+        0.49554740701938194
+      ],
+      "lythonControlPercent": 7.8592201991315,
+      "cpythonControlPercent": 4.845022640536767,
+      "maxIQRPercent": 8.925822913925584,
+      "sourceUtf8Bytes": 360,
+      "fixtureSha256": "53417e97eb971f0371b757eb7794fa9ecc128ac7f610eef88fe1593d9a878df0"
+    },
+    {
+      "case": "diagnostic.json-lines-shipment.default-export-768",
+      "lane": "warm-async",
+      "lythonMs": [
+        1.1887253456790123,
+        1.1897073738317758
+      ],
+      "cpythonMs": [
+        1.387335183168317,
+        1.4603859795221843
+      ],
+      "ratio": [
+        0.8139802506649269,
+        0.8575486214620391
+      ],
+      "widerCpuRatio": [
+        0.806636238498877,
+        0.8599404001702852
+      ],
+      "lythonControlPercent": 0.08261186289442168,
+      "cpythonControlPercent": 5.265547737860876,
+      "maxIQRPercent": 10.71067799187365,
+      "sourceUtf8Bytes": 440,
+      "fixtureSha256": "8e2031326c4d4beeba172bbd9ecfe2c7170ef9e2192b60477e65d6933d2f9510"
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "compile",
+      "lythonMs": [
+        0.6337154796380091,
+        0.6957488460291734
+      ],
+      "cpythonMs": [
+        1.0463888915662651,
+        1.1326808455696202
+      ],
+      "ratio": [
+        0.5594828252960492,
+        0.6649046560383075
+      ],
+      "widerCpuRatio": [
+        0.5822363910599205,
+        0.6457050243111832
+      ],
+      "lythonControlPercent": 9.788835587004918,
+      "cpythonControlPercent": 8.246642782511838,
+      "maxIQRPercent": 10.812777155809572,
+      "sourceUtf8Bytes": 8641,
+      "fixtureSha256": "e536866e06a8c0d77f8e8f4fae621a3eaa96f7203a24cd0709028a4dba5cd4cb"
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "lane": "warm",
+      "lythonMs": [
+        0.8192807288461539,
+        0.8591635232774674
+      ],
+      "cpythonMs": [
+        1.0072375475113122,
+        1.0388980320197043
+      ],
+      "ratio": [
+        0.7886055258506977,
+        0.8529899678584194
+      ],
+      "widerCpuRatio": [
+        0.7728533002276018,
+        0.8138297872340425
+      ],
+      "lythonControlPercent": 4.868025455387315,
+      "cpythonControlPercent": 3.1432986773198612,
+      "maxIQRPercent": 12.637369378606062,
+      "sourceUtf8Bytes": 615,
+      "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe"
+    },
+    {
+      "case": "diagnostic.json-lines-shipment.default-export-768",
+      "lane": "warm",
+      "lythonMs": [
+        1.2867727045454544,
+        1.4035926818181819
+      ],
+      "cpythonMs": [
+        1.86281734,
+        2.046975896103896
+      ],
+      "ratio": [
+        0.6286213271952192,
+        0.753478428442255
+      ],
+      "widerCpuRatio": [
+        0.6818181818181818,
+        0.7933333333333333
+      ],
+      "lythonControlPercent": 9.078524657856612,
+      "cpythonControlPercent": 9.886023291145452,
+      "maxIQRPercent": 68.14786937277668,
+      "sourceUtf8Bytes": 440,
+      "fixtureSha256": "8e2031326c4d4beeba172bbd9ecfe2c7170ef9e2192b60477e65d6933d2f9510"
+    },
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "lane": "compile-run",
+      "lythonMs": [
+        0.8220945900178254,
+        0.8475741285211268
+      ],
+      "cpythonMs": [
+        1.1455414413265306,
+        1.2282162147435898
+      ],
+      "ratio": [
+        0.6693402840227534,
+        0.7398895386443992
+      ],
+      "widerCpuRatio": [
+        0.68786940613566,
+        0.7195085406053341
+      ],
+      "lythonControlPercent": 3.099343897002038,
+      "cpythonControlPercent": 7.217091449901836,
+      "maxIQRPercent": 7.698389834245073,
+      "sourceUtf8Bytes": 8641,
+      "fixtureSha256": "e536866e06a8c0d77f8e8f4fae621a3eaa96f7203a24cd0709028a4dba5cd4cb"
+    }
+  ]
+}

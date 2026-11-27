@@ -9,6 +9,8 @@
 | Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Diagnostic. [B1865]. |
 | CSV shipment re-export with `DictWriter` | 2,048 records / 27,350 B | 1.74944–1.76297 ms | 2.74569–2.75434 ms | 0.635–0.642× | Diagnostic. [B1869]. |
 | CSV shipment re-export with `DictWriter`, Lython `RunAsync` | 2,048 records / 27,350 B | 2.12564–2.14952 ms | 2.73113–2.75321 ms | 0.772–0.787× | Diagnostic. [B1869]. |
+| Default JSON Lines export | 768 records / 47,361 B input | 1.19990–1.30230 ms | 1.47476–1.54651 ms | 0.776–0.883× | Local WSL diagnostic. [B1880]. |
+| Default JSON Lines export, Lython `RunAsync` | 768 records / 47,361 B input | 1.25198–1.32638 ms | 1.49664–1.55189 ms | 0.807–0.886× | Local WSL diagnostic. [B1880]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Diagnostic. [B1865]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
@@ -69,6 +71,12 @@ measurements cover the wider request.
 A short Windows check of `18c82c45f` with CPython 3.13.2 had substantial
 timing spread. Its results and the exact-image WSL follow-up are available
 separately. [B1878](../benchmarks/results/2026-11-27-windows-current-cpython/README.md).
+
+B1880 measures `ab883268b` on November 27, 2026 UTC using Ubuntu WSL on
+an Intel i7-14700KF and the verified CPython 3.13.16 runtime. The JSON rows
+come from the paired run with shared workers and interleaved hosting modes.
+The same checkpoint measures the CSV re-export at 0.441–0.499× CPython
+and the Unicode report at 0.789–0.853×. These are local diagnostics. [B1880].
 
 The first-line search gap is about 15–16 µs in B1834. A separate B1815
 diagnostic measured about 23 µs with verification and 29–30 µs before it.
@@ -158,8 +166,8 @@ use `8aef89b09`.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.56833–0.56893 ms | 0.95428–0.95543 ms | 0.595–0.596× | Diagnostic. [B1849]. |
-| Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.76639–0.76762 ms | 1.12265–1.13974 ms | 0.672–0.684× | Diagnostic. [B1849]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.63372–0.69575 ms | 1.04639–1.13268 ms | 0.559–0.665× | Local WSL diagnostic. [B1880]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.82209–0.84757 ms | 1.14554–1.22822 ms | 0.669–0.740× | Local WSL diagnostic. [B1880]. |
 | Generated comprehension report, 96 rules / 20,988 B source | Compilation only | 1.92082–1.94344 ms | 2.74657–2.75148 ms | 0.698–0.708× | Diagnostic. [B1858]. |
 | Generated comprehension report, 96 rules / 20,988 B source | Compile-to-result | 2.37403–2.38947 ms | 2.85875–2.89189 ms | 0.821–0.836× | Diagnostic. [B1858]. |
 | CSV shipment re-export, 360 B of source | Compilation only | 0.01653–0.01674 ms | 0.03124–0.03132 ms | 0.528–0.536× | Diagnostic. [B1869]. |
@@ -176,6 +184,8 @@ use `8aef89b09`.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.56833–0.56893 ms | 0.95428–0.95543 ms | 0.595–0.596× | Historical diagnostic. [B1849]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.76639–0.76762 ms | 1.12265–1.13974 ms | 0.672–0.684× | Historical diagnostic. [B1849]. |
 | Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.57069–0.57212 ms | 0.94880–0.95184 ms | 0.600–0.603× | Diagnostic. [B1844]. |
 | Generated ordinary definitions | Compile-to-result | 0.75919–0.76152 ms | 1.12423–1.13454 ms | 0.669–0.677× | Diagnostic. [B1834]. |
 | Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56532–0.57200 ms | 0.93722–0.93900 ms | 0.602–0.610× | Diagnostic. [B1834]. |
@@ -361,6 +371,7 @@ document reproduction.
 
 [B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
 [B1869]: ../benchmarks/results/2026-11-27-csv-dictwriter-cpython/README.md
+[B1880]: ../benchmarks/results/2026-11-27-wsl-current-cpython/README.md
 [B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md
