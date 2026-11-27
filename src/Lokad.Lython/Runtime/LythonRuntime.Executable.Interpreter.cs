@@ -237,9 +237,6 @@ internal sealed partial class LythonRuntime
 
         private bool TryAppendBufferedYield(object destination, ExecutableSlot value)
         {
-            // Keep the final yielded item for the ordinary Advance result.
-            // The private list has admitted capacity; Add invokes no Python or
-            // host callback.
             if (destination is SumState sum)
             {
                 // Native addition invokes no guest code. Leave an unsupported
@@ -249,6 +246,8 @@ internal sealed partial class LythonRuntime
             }
             else if (destination is PyList list)
             {
+                // List batches can stop at their limit without pulling again.
+                // Let the ordinary Advance result carry the final item.
                 if (list.Count >= Math.Min(_yieldLimit, list.Capacity) - 1) return false;
                 list.Add(value.Object.RequireNotNull());
             }
@@ -258,6 +257,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
+                // This consumer also stops after accepting the final item.
                 var items = (List<object>)destination;
                 if (items.Count >= _yieldLimit - 1) return false;
                 items.Add(value.Object.RequireNotNull());

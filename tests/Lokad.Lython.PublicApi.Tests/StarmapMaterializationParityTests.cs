@@ -76,13 +76,16 @@ public sealed class StarmapMaterializationParityTests
             from itertools import starmap
             def arguments():
                 yield marker
+                yield 2
+                yield 3
+                yield 4
                 with open('input.txt') as source:
                     for line in source:
                         yield line.strip()
-            def consume(value, first, second):
+            def consume(value, two, three, four, first, second):
                 with open('pause') as source:
                     source.read()
-                print(value is marker, first, second)
+                print(value is marker, two, three, four, first, second)
             marker = []
             next(starmap(consume, [arguments()]))
             """;
@@ -109,7 +112,7 @@ public sealed class StarmapMaterializationParityTests
             }
             using var result = await pending;
             Assert.Equal(!cancel, result.Success);
-            Assert.Equal(cancel ? "" : "True first second\n", result.StandardOutput);
+            Assert.Equal(cancel ? "" : "True 2 3 4 first second\n", result.StandardOutput);
             if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
         }
         finally

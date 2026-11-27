@@ -513,9 +513,10 @@ internal static class CallExpansion
 
         internal bool TryAppendBufferedPositional(LythonRuntime.ExecutableSlot value, int limit)
         {
-            // Leave the final item for ordinary advancement. Appends here
-            // consume only capacity the caller has already admitted.
-            if (_count >= limit - 1) return false;
+            // This private buffer is drained to exhaustion. Fill the last
+            // admitted slot too. An excess value leaves the generator before
+            // the consumer admits a replacement buffer.
+            if (_count >= limit) return false;
             _values[_count++] = CallArgumentValue.Positional(value.Object.RequireNotNull());
             return true;
         }

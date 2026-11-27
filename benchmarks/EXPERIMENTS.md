@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1892 fill the admitted call buffer](results/2026-11-27-full-positional-buffer/README.md)
+removes one generator frame entry for a four-yield row. Peaks match and
+allocation is effectively flat. Iterable CPU and the adverse file-fed
+control span zero on reverse placement. All 224 batches and four goldens
+verify.
+
 [B1891 reuse function discovery for local-name diagnostics](results/2026-11-27-name-diagnostic-roots/README.md)
 removes the root-discovery walk and adds a temporary declaration list. CPU
 spans zero in all lanes and the unchanged JSON elapsed control varies.
