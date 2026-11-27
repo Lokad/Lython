@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1891 reuse function discovery for local-name diagnostics](results/2026-11-27-name-diagnostic-roots/README.md)
+removes the root-discovery walk and adds a temporary declaration list. CPU
+spans zero in all lanes and the unchanged JSON elapsed control varies.
+The prototype is withdrawn. Four independent goldens and 140 batches verify.
+
 [B1890 attribute current nested JSON processing](results/2026-11-27-nested-json-profile/README.md)
 finds 38–45% of sampled document stacks in JSON construction.
 Record and UTF-8 allocations account for most reservation samples.
