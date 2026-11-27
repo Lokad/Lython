@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1852 try direct ready fixed-unpack outcomes](results/2026-11-27-ready-fixed-unpack/README.md)
+removes the completed count and jump carriers. The quiet wide async lane
+uses 0.29–3.41% more CPU and bound async takes more elapsed time. The
+file-fed control varies. Focused tests, budgets and three CPython goldens
+pass. Withdraw the source trial and retain its measurements.
+
 [B1851 compare active CPU in the two shipment APIs](results/2026-11-27-paired-shipment-api-cpu/README.md)
 uses the exact B1849 core, source and fixture. Both captures verify 3,072
 invocations. Fixed-unpack entry and completion account for 50 nearest
