@@ -478,19 +478,36 @@ internal static class CallExpansion
         internal async ValueTask AppendPositionalIterableAsync(object source, LythonSourceSpan span, bool asynchronous)
         {
             var context = Context;
+            if (source is LythonRuntime.PyGenerator generator && generator.CanBufferFor(context))
+            {
+                // The first pull starts with the consumer's checks, as it would
+                // through a cursor. The generator checks every frame entry and
+                // each buffered yield while borrowing only admitted capacity.
+                context.CheckExecution(span);
+                context.State.CheckInterpreterStack(span);
+                var initialCount = _count;
+                while (true)
+                {
+                    var next = asynchronous
+                        ? await generator.AdvanceBufferedAsync(this, _values.Length).ConfigureAwait(false)
+                        : generator.AdvanceBuffered(this, _values.Length);
+                    if (!next.HasValue)
+                    {
+                        if (_count != initialCount) _span = span;
+                        return;
+                    }
+                    Add(CallArgumentValue.Positional(next.Value), span);
+                }
+            }
+
             using var cursor = asynchronous
                 ? await PyIteration.Cursor.CreateAsync(source, span, context).ConfigureAwait(false)
                 : PyIteration.Cursor.Create(source, span, context);
-            var generator = cursor.GetBulkGenerator(context);
-            var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
-            while (next.HasValue)
+            while (true)
             {
+                var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
+                if (!next.HasValue) return;
                 Add(CallArgumentValue.Positional(next.Value), span);
-                if (generator is not null && _count < _values.Length)
-                    next = asynchronous
-                        ? await generator.AdvanceBufferedAsync(this, _values.Length).ConfigureAwait(false)
-                        : generator.AdvanceBuffered(this, _values.Length);
-                else next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
             }
         }
 

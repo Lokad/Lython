@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1883 buffer the first positional generator pull](results/2026-11-27-first-buffered-positional-pull/README.md)
+removes a private cursor and one generator entry per four-yield row.
+The iterable report allocates 6.38% less at identical admission peaks.
+Both affected lanes take less elapsed locally. The wide control also
+improves and file-fed elapsed rises 1.38–3.63%, so timing remains diagnostic.
+All 112 batches and three independent goldens verify.
+
 [B1882 attribute the iterable shipment report](results/2026-11-27-iterable-shipment-profile/README.md)
 locates 37–38% of sampled active managed stack time in argument expansion
 in both APIs, including generator execution. The named argument-buffer

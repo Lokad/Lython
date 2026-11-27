@@ -905,13 +905,14 @@ native frame slots directly, including the receiver. A pending callback
 transfers its live slots into the existing admitted continuation. Other
 exact rows use an admitted argument packet. For arbitrary iterable rows,
 `starmap` fills an admitted call accumulator directly and binds ordinary
-callbacks from its live prefix. Generators can fill already funded
-capacity in batches. Starred calls share this reader and preserve their
-own expansion order and diagnostics. A callable that requires an owned
-array receives it before invocation. Async `starmap` returns a ready row directly
-when its source and callback complete immediately. If a source suspends,
-the continuation can also finish the callback or drain an arbitrary row,
-keeping its working storage charged through the call.
+callbacks from its live prefix. Same-command generators can fill already
+funded capacity in batches from the first pull. Starred calls share this
+reader and preserve their own expansion order and diagnostics. A callable
+that requires an owned array receives it before invocation. Async `starmap`
+returns a ready row directly when its source and callback complete
+immediately. If a source suspends, the continuation can also finish the
+callback or drain an arbitrary row, keeping its working storage charged
+through the call.
 
 For a compatible executable callback, `starmap` can take the operands of an
 exact list display yielded by a generator in the same command. The generator

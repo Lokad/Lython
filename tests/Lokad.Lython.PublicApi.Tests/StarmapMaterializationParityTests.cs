@@ -67,9 +67,10 @@ public sealed class StarmapMaterializationParityTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task IterableRowSurvivesPendingSourceAndCallback(bool cancel)
+    [InlineData(null)]
+    [InlineData("/input.txt")]
+    [InlineData("/pause")]
+    public async Task IterableRowSurvivesPendingSourceAndCallback(string? cancelAt)
     {
         const string source = """
             from itertools import starmap
@@ -92,7 +93,9 @@ public sealed class StarmapMaterializationParityTests
         host.SeedFile("/input.txt", "first\nsecond\n");
         host.SeedFile("/pause", "data");
         using var cancellation = new CancellationTokenSource();
-        var started = cancel ? host.PauseReadUntilCancellation("/pause") : null;
+        var cancel = cancelAt is not null;
+        var cancelInSource = cancelAt == "/input.txt";
+        var started = cancelAt is null ? null : host.PauseReadUntilCancellation(cancelAt);
         var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }, cancellation.Token);
         try
         {
@@ -100,7 +103,7 @@ public sealed class StarmapMaterializationParityTests
             {
                 await started.WaitAsync(TimeSpan.FromSeconds(10));
                 Assert.False(pending.IsCompleted);
-                Assert.Equal(1, host.ClosedFileCount);
+                Assert.Equal(cancelInSource ? 0 : 1, host.ClosedFileCount);
                 Assert.True(budget.ReservedBytes > 0);
                 cancellation.Cancel();
             }
@@ -114,7 +117,7 @@ public sealed class StarmapMaterializationParityTests
             cancellation.Cancel();
             using var drained = await pending;
         }
-        Assert.Equal(2, host.ClosedFileCount);
+        Assert.Equal(cancelInSource ? 1 : 2, host.ClosedFileCount);
         Assert.Equal(0, budget.ReservedBytes);
     }
 
