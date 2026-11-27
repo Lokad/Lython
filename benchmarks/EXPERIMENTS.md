@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1854 fuse asynchronous executable frame driving](results/2026-11-27-async-frame-driver/README.md)
+removes the per-frame task handoff and one state machine. Both Release
+targets and Python goldens pass. File-fed async uses 0.51–7.02% less CPU,
+both async shipment lanes span zero and the synchronous control is slower.
+Keep the prototype out of delivery and preserve the adverse evidence.
+
 [B1853 share ready generator advancement](results/2026-11-27-ready-generator-advance/README.md)
 starts a generator continuation only when frame execution suspends. Both
 Release targets and the Python goldens pass at matching admission peaks.
