@@ -107,6 +107,55 @@ public sealed class ComparisonFileWorkerTests
         Assert.All(await Run(catalog, "warm"), result => Assert.Equal(catalog.Workload.ExpectedFilesSha256, result.ActualFilesSha256));
     }
 
+    [Fact]
+    public async Task HostChecksEachComponentAndReturnsAcquisitionAllowance()
+    {
+        using var catalog = new Catalog(Job("pass", "", new() { ["dir/item"] = "abc" }, new()));
+        var host = new ComparisonFileHost(catalog.Workload.Files!, catalog.Directory);
+        host.Reset();
+        var budget = new LythonMemoryBudget();
+        foreach (var (path, kind) in new[]
+        {
+            ("dir/item/../item", LythonHostFailureKind.NotDirectory),
+            ("dir/missing/../item", LythonHostFailureKind.NotFound),
+            ("dir/item/", LythonHostFailureKind.NotDirectory),
+        })
+        {
+            var failure = await Assert.ThrowsAsync<LythonHostException>(() =>
+                OpenAndClose(path, new(LythonFileAccess.Read), budget));
+            Assert.Equal(kind, failure.Kind);
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+
+        await host.MkDirAsync(new("new/", "/"), default);
+        Assert.Equal(LythonPathKind.Directory, (await host.StatAsync(new("new/", "/"), default)).Kind);
+        Assert.Equal(LythonPathKind.Missing, (await host.StatAsync(new("dir/missing", "/"), default)).Kind);
+        Assert.False(await host.ExistsAsync(new("dir/item/child", "/"), default));
+        await OpenAndClose("dir/../dir/item", new(LythonFileAccess.Read), budget);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        var tiny = new LythonMemoryBudget(1);
+        var denied = await Assert.ThrowsAsync<LythonHostException>(() =>
+            OpenAndClose("dir/item", new(LythonFileAccess.Write, truncate: true), tiny));
+        Assert.Equal(LythonHostFailureKind.MemoryAdmission, denied.Kind);
+        Assert.Equal(0, tiny.ReservedBytes);
+        Assert.Equal("abc", File.ReadAllText(System.IO.Path.Combine(catalog.Directory, "job", "dir", "item")));
+
+        if (!OperatingSystem.IsWindows())
+        {
+            var link = System.IO.Path.Combine(catalog.Directory, "job", "linked");
+            System.IO.Directory.CreateSymbolicLink(link, "dir");
+            await Assert.ThrowsAsync<LythonHostCapabilityUnavailableException>(() =>
+                OpenAndClose("linked/item", new(LythonFileAccess.Read), budget));
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+
+        async Task OpenAndClose(string path, LythonFileOpenOptions options, LythonMemoryBudget allowance)
+        {
+            await using var file = await host.OpenFileAsync(new(path, "/"), options, allowance, default);
+        }
+    }
+
     [Theory]
     [InlineData("../escape")]
     [InlineData("/absolute")]

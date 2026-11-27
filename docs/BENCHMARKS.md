@@ -37,6 +37,10 @@ verification, bringing the complete command gap to about 23 µs. The
 earlier interval still includes mediated I/O, output capture and cleanup.
 [B1827].
 
+The comparison host now uses one managed metadata read per path component
+on its normal path. The paired host measurement keeps the Lython core fixed.
+The table above retains the original worker images. [B1828].
+
 <details>
 <summary>Earlier warm measurements and revisions</summary>
 
@@ -277,3 +281,4 @@ document reproduction.
 [B1815]: ../benchmarks/results/2026-11-27-compiled-prefix-cpython/README.md
 [B1823]: ../benchmarks/results/2026-11-27-starmap-slot-cpython/README.md
 [B1827]: ../benchmarks/results/2026-11-27-short-command-boundary/README.md
+[B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md

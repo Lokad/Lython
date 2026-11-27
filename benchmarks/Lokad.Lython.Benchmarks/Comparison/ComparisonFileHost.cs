@@ -2,6 +2,7 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 
 internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCapability
 {
+    private const FileAttributes MissingAttributes = (FileAttributes)(-1);
     private readonly string _root;
     public ComparisonFileFixture Fixture { get; }
     public ComparisonFileHost(ComparisonFileFixture fixture, string ownedDirectory)
@@ -53,7 +54,8 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
         return actual;
     }
 
-    private string Resolve(LythonPathRequest request, CancellationToken token, bool creatingDirectory = false)
+    private (FileInfo Entry, FileAttributes Attributes) Resolve(
+        LythonPathRequest request, CancellationToken token, bool creatingDirectory = false)
     {
         if (request.Path.Length == 0) throw new LythonHostException(LythonHostFailureKind.NotFound, "Empty path");
         var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
@@ -63,10 +65,11 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
         foreach (var part in path.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
             token.ThrowIfCancellationRequested();
-            if (!Directory.Exists(current))
-                throw new LythonHostException(File.Exists(current) ? LythonHostFailureKind.NotDirectory : LythonHostFailureKind.NotFound, "Invalid intermediate directory");
-            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
-                throw new LythonHostCapabilityUnavailableException("fixture symlinks");
+            var parent = ReadAttributes(new FileInfo(current));
+            if (parent == MissingAttributes || (parent & FileAttributes.Directory) == 0)
+                throw new LythonHostException(parent == MissingAttributes
+                    ? LythonHostFailureKind.NotFound : LythonHostFailureKind.NotDirectory, "Invalid intermediate directory");
+            RejectReparsePoint(parent);
             if (part == ".") continue;
             if (part == "..") { if (current != _root) current = Path.GetDirectoryName(current)!; }
             else
@@ -75,11 +78,33 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
                 current = Path.Combine(current, part);
             }
         }
-        if (request.Path.EndsWith('/') && !Directory.Exists(current) && (!creatingDirectory || File.Exists(current)))
-            throw new LythonHostException(File.Exists(current) ? LythonHostFailureKind.NotDirectory : LythonHostFailureKind.NotFound, "Not a directory");
-        if ((File.Exists(current) || Directory.Exists(current)) && (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+        var entry = new FileInfo(current);
+        var attributes = ReadAttributes(entry);
+        if (request.Path.EndsWith('/') &&
+            (attributes == MissingAttributes ? !creatingDirectory : (attributes & FileAttributes.Directory) == 0))
+            throw new LythonHostException(attributes == MissingAttributes
+                ? LythonHostFailureKind.NotFound : LythonHostFailureKind.NotDirectory, "Not a directory");
+        RejectReparsePoint(attributes);
+        return (entry, attributes);
+    }
+
+    private static FileAttributes ReadAttributes(FileInfo entry)
+    {
+        try { return entry.Attributes; }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            // Preserve the existence checks' treatment of unavailable metadata
+            // when a path cannot be observed. Native file operations still
+            // report their own failure when attempting to use the final path.
+            if (File.Exists(entry.FullName) || Directory.Exists(entry.FullName)) throw;
+            return MissingAttributes;
+        }
+    }
+
+    private static void RejectReparsePoint(FileAttributes attributes)
+    {
+        if (attributes != MissingAttributes && (attributes & FileAttributes.ReparsePoint) != 0)
             throw new LythonHostCapabilityUnavailableException("fixture symlinks");
-        return current;
     }
 
     private string FixturePath(string path)
@@ -112,7 +137,7 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
             var mode = options.Exclusive ? FileMode.CreateNew
                 : options.Truncate ? (options.Create ? FileMode.Create : FileMode.Truncate)
                 : options.Create ? FileMode.OpenOrCreate : FileMode.Open;
-            stream = new FileStream(Resolve(request, token), mode, access, FileShare.ReadWrite | FileShare.Delete,
+            stream = new FileStream(Resolve(request, token).Entry.FullName, mode, access, FileShare.ReadWrite | FileShare.Delete,
                 bufferSize: 1, FileOptions.SequentialScan);
             if (options.Append) stream.Seek(0, SeekOrigin.End);
             return ValueTask.FromResult<ILythonByteFile>(options.Access == LythonFileAccess.Read
@@ -202,44 +227,58 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
     public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        try { var p = Resolve(path, token); return ValueTask.FromResult(File.Exists(p) || Directory.Exists(p)); }
+        try { return ValueTask.FromResult(Resolve(path, token).Attributes != MissingAttributes); }
         catch (LythonHostException error) when (error.Kind is LythonHostFailureKind.NotFound or LythonHostFailureKind.NotDirectory)
         { return ValueTask.FromResult(false); }
     }
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.FromResult<IReadOnlyList<string>>(Directory.EnumerateFileSystemEntries(Resolve(path, token)).Select(p => Path.GetFileName(p)).ToArray()); }
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.FromResult<IReadOnlyList<string>>(Directory.EnumerateFileSystemEntries(Resolve(path, token).Entry.FullName).Select(p => Path.GetFileName(p)).ToArray()); }
     public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token)
     {
-        token.ThrowIfCancellationRequested(); var resolved = Resolve(path, token, creatingDirectory: true);
-        if (Directory.Exists(resolved) || File.Exists(resolved)) throw new LythonHostException(LythonHostFailureKind.AlreadyExists, "Path already exists");
-        Directory.CreateDirectory(resolved); return ValueTask.CompletedTask;
+        token.ThrowIfCancellationRequested();
+        var (entry, attributes) = Resolve(path, token, creatingDirectory: true);
+        if (attributes != MissingAttributes) throw new LythonHostException(LythonHostFailureKind.AlreadyExists, "Path already exists");
+        Directory.CreateDirectory(entry.FullName); return ValueTask.CompletedTask;
     }
-    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) { token.ThrowIfCancellationRequested(); var p = Resolve(path, token); if (Directory.Exists(p)) Directory.Delete(p); else File.Delete(p); return ValueTask.CompletedTask; }
+    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var (entry, attributes) = Resolve(path, token);
+        if (attributes != MissingAttributes && (attributes & FileAttributes.Directory) != 0)
+            Directory.Delete(entry.FullName);
+        else File.Delete(entry.FullName);
+        return ValueTask.CompletedTask;
+    }
     public ValueTask RemoveFileAsync(LythonPathRequest path, bool missingOk, CancellationToken token)
     {
-        token.ThrowIfCancellationRequested(); var p = Resolve(path, token);
-        if (!missingOk && !File.Exists(p) && !Directory.Exists(p)) throw new FileNotFoundException(p);
-        File.Delete(p); return ValueTask.CompletedTask;
+        token.ThrowIfCancellationRequested();
+        var (entry, attributes) = Resolve(path, token);
+        if (!missingOk && attributes == MissingAttributes) throw new FileNotFoundException(entry.FullName);
+        File.Delete(entry.FullName); return ValueTask.CompletedTask;
     }
     public ValueTask RemoveDirectoryAsync(LythonPathRequest path, CancellationToken token)
     {
-        token.ThrowIfCancellationRequested(); Directory.Delete(Resolve(path, token)); return ValueTask.CompletedTask;
+        token.ThrowIfCancellationRequested(); Directory.Delete(Resolve(path, token).Entry.FullName); return ValueTask.CompletedTask;
     }
     public ValueTask ReplaceAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token)
     {
-        token.ThrowIfCancellationRequested(); var from = Resolve(source, token); var to = Resolve(destination, token);
-        if (from == to && File.Exists(from)) return ValueTask.CompletedTask;
-        File.Move(from, to, true); return ValueTask.CompletedTask;
+        token.ThrowIfCancellationRequested();
+        var (from, attributes) = Resolve(source, token);
+        var to = Resolve(destination, token).Entry.FullName;
+        if (from.FullName == to && attributes != MissingAttributes && (attributes & FileAttributes.Directory) == 0)
+            return ValueTask.CompletedTask;
+        File.Move(from.FullName, to, true); return ValueTask.CompletedTask;
     }
-    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) { token.ThrowIfCancellationRequested(); File.Copy(Resolve(source, token), Resolve(destination, token), overwrite: true); return ValueTask.CompletedTask; }
-    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) { token.ThrowIfCancellationRequested(); File.Move(Resolve(source, token), Resolve(destination, token)); return ValueTask.CompletedTask; }
+    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) { token.ThrowIfCancellationRequested(); File.Copy(Resolve(source, token).Entry.FullName, Resolve(destination, token).Entry.FullName, overwrite: true); return ValueTask.CompletedTask; }
+    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) { token.ThrowIfCancellationRequested(); File.Move(Resolve(source, token).Entry.FullName, Resolve(destination, token).Entry.FullName); return ValueTask.CompletedTask; }
     public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         try
         {
-            var p = Resolve(path, token);
-            return ValueTask.FromResult(File.Exists(p) ? new LythonPathStat(LythonPathKind.File, new FileInfo(p).Length, null)
-                : new LythonPathStat(Directory.Exists(p) ? LythonPathKind.Directory : LythonPathKind.Missing, 0, null));
+            var (entry, attributes) = Resolve(path, token);
+            return ValueTask.FromResult(attributes == MissingAttributes ? new LythonPathStat(LythonPathKind.Missing, 0, null)
+                : (attributes & FileAttributes.Directory) != 0 ? new LythonPathStat(LythonPathKind.Directory, 0, null)
+                : new LythonPathStat(LythonPathKind.File, entry.Length, null));
         }
         catch (LythonHostException error) when (error.Kind == LythonHostFailureKind.NotFound)
         { return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null)); }

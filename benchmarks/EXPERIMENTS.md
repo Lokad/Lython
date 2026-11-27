@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1828 reuse file path metadata](results/2026-11-27-file-metadata-observation/README.md)
+removes repeated existence and attribute queries in the comparison host.
+With an identical Lython core, local configuration-edit elapsed falls
+7.46–7.66% and late-search elapsed falls 4.86–7.63%. First-line CPU spans zero.
+Both local Release targets pass 137 focused checks and the three goldens match.
+
 [B1827 split short command verification](results/2026-11-27-short-command-boundary/README.md)
 reproduces the B1815 first-line gap on the quiet VM. The gap grows from
 about 23 µs to about 29–30 µs when verification is timed separately.
