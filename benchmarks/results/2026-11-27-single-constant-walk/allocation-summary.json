@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "sync",
+    "clr": [
+      22744,
+      22744
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "mode": "sync",
+    "clr": [
+      737944,
+      737944
+    ],
+    "peak": [
+      2786655,
+      2786655
+    ],
+    "compiled": [
+      74495,
+      74495
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "mode": "sync",
+    "clr": [
+      3016758,
+      3016702
+    ],
+    "peak": [
+      9039397,
+      9039397
+    ],
+    "compiled": [
+      150624,
+      150624
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "mode": "sync",
+    "clr": [
+      95824,
+      95824
+    ],
+    "peak": [
+      55858,
+      55858
+    ],
+    "compiled": [
+      213360,
+      213360
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "async",
+    "clr": [
+      22992,
+      22992
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "mode": "async",
+    "clr": [
+      738192,
+      738192
+    ],
+    "peak": [
+      2786655,
+      2786655
+    ],
+    "compiled": [
+      74495,
+      74495
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "mode": "async",
+    "clr": [
+      3016974,
+      3016974
+    ],
+    "peak": [
+      9039397,
+      9039397
+    ],
+    "compiled": [
+      150624,
+      150624
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "mode": "async",
+    "clr": [
+      96040,
+      96040
+    ],
+    "peak": [
+      55858,
+      55858
+    ],
+    "compiled": [
+      213360,
+      213360
+    ]
+  }
+]

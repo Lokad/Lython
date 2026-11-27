@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1821 prepare literals during declaration preparation](results/2026-11-27-single-constant-walk/README.md)
+eliminates a full scan and preserves the instruction metadata and integer
+tables. The five local timing ranges are inconclusive. Earlier table admission
+changes the first refusal in one closure fixture and overlaps 80 B with
+snapshot scratch in another. Keep both passes and the measured pressure cases.
+
 [B1820 direct default slots](results/2026-11-27-final-default-slots/README.md)
 removes the native placement copy for 93 declarations in the ordinary
 factory. The normal handoff still needs the admitted staging window.
