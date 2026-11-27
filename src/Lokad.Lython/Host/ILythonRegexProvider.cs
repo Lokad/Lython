@@ -94,20 +94,33 @@ public interface ILythonRegexPattern : IDisposable
     /// </remarks>
     ReadOnlyMemory<byte>? ProgramEqualityKey => null;
 
-    /// <summary>Prepares an original UTF-8 subject with Python scalar pos/endpos bounds.</summary>
+    /// <summary>Matches once against the original UTF-8 subject and writes caller-owned capture slots.</summary>
     /// <remarks>
-    /// The caller supplies valid UTF-8 and keeps its bytes unchanged and funded
-    /// until the subject and all its cursors are disposed. Lython guarantees this
-    /// for guest strings; direct callers must uphold the same contract. Providers
-    /// must not mutate the input or retain its borrow after subject disposal.
+    /// The caller supplies valid UTF-8 and keeps it unchanged and funded through
+    /// this call. The provider must finish all work and release the input and
+    /// capture buffer borrows before returning or throwing.
     /// Bounds are independently clamped to the subject's scalar length. Preserve
     /// the original prefix for anchors/lookbehind and limit forward work at EndPos.
     /// Pos may exceed EndPos: Python match can still succeed without consuming text.
     /// Byte bounds identify the same scalar boundaries without another conversion.
     /// Captures use absolute original-subject byte coordinates, including lookbehind
     /// captures before Pos. A capture cannot end beyond EndPos, except that a
-    /// reversed anchored match may include an empty capture at Pos. The caller
-    /// funds the subject through disposal.
+    /// reversed anchored match may include an empty capture at Pos.
+    /// The buffer length equals CaptureSlotCount. On success slot zero
+    /// participates, unmatched groups are null and lastIndex identifies the
+    /// last-closed participating positive group, or null if none participated.
+    /// Buffer contents are unspecified on false or failure.
+    /// </remarks>
+    bool TryMatch(ReadOnlyMemory<byte> subject, LythonRegexWindow window, LythonRegexMatchMode mode,
+        Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget memoryOwner,
+        CancellationToken cancellationToken);
+
+    /// <summary>Prepares an original UTF-8 subject for cursor iteration.</summary>
+    /// <remarks>
+    /// The subject and window follow the same rules as <see cref="TryMatch"/>.
+    /// The caller keeps the input valid, unchanged and funded until the subject
+    /// and all its cursors are disposed. The provider releases the borrow at
+    /// subject disposal.
     /// </remarks>
     ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner,
         CancellationToken cancellationToken);
@@ -128,17 +141,6 @@ public readonly record struct LythonRegexWindow(int Pos, int EndPos, int StartBy
 /// </remarks>
 public interface ILythonRegexSubject : IDisposable
 {
-    /// <summary>Matches once and writes all capture slots, including null for unmatched groups.</summary>
-    /// <remarks>
-    /// The buffer length equals the pattern's CaptureSlotCount. On success slot zero
-    /// participates and lastIndex identifies the last-closed participating positive group.
-    /// Use null only when no positive group participated. Buffer contents are unspecified
-    /// on false or failure. Finish all writes before returning so the caller can
-    /// immediately reuse or retain its data.
-    /// </remarks>
-    bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
-        CancellationToken cancellationToken);
-
     /// <summary>Begins Python finditer progression, including adjacent empty/nonempty matches.</summary>
     ILythonRegexCursor Find(CancellationToken cancellationToken);
 }
@@ -148,7 +150,7 @@ public interface ILythonRegexSubject : IDisposable
 public interface ILythonRegexCursor : IDisposable
 {
     /// <summary>Advances under the current token; false means exhaustion.</summary>
-    /// <remarks>Buffer and output rules are the same as ILythonRegexSubject.TryMatch.</remarks>
+    /// <remarks>Buffer and output rules are the same as <see cref="ILythonRegexPattern.TryMatch"/>.</remarks>
     bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken cancellationToken);
 }
 

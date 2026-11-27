@@ -116,7 +116,8 @@ internal sealed partial class LythonRuntime
             { throw ProviderFailure(error, governor, cancellationToken, span, pattern, operationName, materializePatternError); }
         }
 
-        internal static bool TryMatch(ILythonRegexSubject subject, LythonRegexMatchMode mode,
+        internal static bool TryMatch(ILythonRegexPattern program, ReadOnlyMemory<byte> subject,
+            LythonRegexWindow window, LythonRegexMatchMode mode,
             Span<LythonRegexCapture?> captures, out int? lastIndex, MemoryGovernor? governor,
             CancellationToken token, LythonSourceSpan? span, PyString? pattern = null,
             string operationName = "Regex provider")
@@ -125,7 +126,8 @@ internal sealed partial class LythonRuntime
             if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
             try
             {
-                var success = subject.TryMatch(mode, captures, out lastIndex, token);
+                var success = program.TryMatch(subject, window, mode, captures, out lastIndex,
+                    governor?.Budget ?? new LythonMemoryBudget(), token);
                 governor?.ThrowIfAdmissionFailed();
                 if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
                 return success;

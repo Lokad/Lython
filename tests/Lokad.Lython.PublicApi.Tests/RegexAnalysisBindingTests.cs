@@ -184,6 +184,12 @@ public sealed class RegexAnalysisBindingTests
             public int Flags => inner.Flags;
             public int CaptureSlotCount => inner.CaptureSlotCount;
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups => inner.NamedGroups;
+            public bool TryMatch(ReadOnlyMemory<byte> subject, LythonRegexWindow window, LythonRegexMatchMode mode,
+                Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget owner, CancellationToken token)
+            {
+                observer.ObserveExecution(token);
+                return inner.TryMatch(subject, window, mode, captures, out lastIndex, owner, token);
+            }
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window,
                 ILythonMemoryBudget owner, CancellationToken token)
             {

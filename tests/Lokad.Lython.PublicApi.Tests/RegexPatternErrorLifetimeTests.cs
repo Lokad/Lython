@@ -15,7 +15,7 @@ public sealed class RegexPatternErrorLifetimeTests
     {
         var provider = new ErrorProvider(stage) { Position = position };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        var operation = stage is "find" or "next" ? "list(re.finditer(pattern, '😀\\na'))" : "re.match(pattern, '😀\\na')";
+        var operation = stage is "prepare" or "find" or "next" ? "list(re.finditer(pattern, '😀\\na'))" : "re.match(pattern, '😀\\na')";
         var source = "import re\ntry:\n " + operation + "\n" + """
             except re.PatternError as error:
              print(error.pattern is pattern,error.msg,error.pos,error.lineno,error.colno,error.args)
@@ -35,7 +35,7 @@ public sealed class RegexPatternErrorLifetimeTests
                     : "True synthetic failure 3 2 2 ('synthetic failure at position 3 (line 2, column 2)',)\n", result.StandardOutput);
                 Assert.True(budget.ReservedBytes > baseline);
                 Assert.Equal(stage == "compile" ? 0 : 1, provider.PatternsClosed);
-                Assert.Equal(stage is "match" or "find" or "next" ? 1 : 0, provider.SubjectsClosed);
+                Assert.Equal(stage is "find" or "next" ? 1 : 0, provider.SubjectsClosed);
                 Assert.Equal(stage == "next" ? 1 : 0, provider.CursorsClosed);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
@@ -201,6 +201,12 @@ public sealed class RegexPatternErrorLifetimeTests
             public int Flags => inner.Flags;
             public int CaptureSlotCount => inner.CaptureSlotCount;
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups => inner.NamedGroups;
+            public bool TryMatch(ReadOnlyMemory<byte> subject, LythonRegexWindow window, LythonRegexMatchMode mode,
+                Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget owner, CancellationToken token)
+            {
+                if (provider._stage == "match") provider.Fail();
+                return inner.TryMatch(subject, window, mode, captures, out lastIndex, owner, token);
+            }
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
             {
                 if (provider._stage == "prepare") provider.Fail();
@@ -211,11 +217,6 @@ public sealed class RegexPatternErrorLifetimeTests
         private sealed class Subject(ErrorProvider provider, ILythonRegexSubject inner) : ILythonRegexSubject
         {
             private bool _disposed;
-            public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
-            {
-                if (provider._stage == "match") provider.Fail();
-                return inner.TryMatch(mode, captures, out lastIndex, token);
-            }
             public ILythonRegexCursor Find(CancellationToken token)
             {
                 if (provider._stage == "find") provider.Fail();

@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "sync",
+    "clr": [
+      2037204,
+      1816038
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "sync",
+    "clr": [
+      2233702,
+      2012580
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.regex.cursor-records",
+    "mode": "sync",
+    "clr": [
+      429584,
+      429584
+    ],
+    "peak": [
+      523444,
+      523444
+    ],
+    "compiled": [
+      128172,
+      128172
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "sync",
+    "clr": [
+      3019326,
+      3018654
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ],
+    "compiled": [
+      157658,
+      157658
+    ]
+  },
+  {
+    "case": "diagnostic.generated-regex-record-selectors",
+    "mode": "sync",
+    "clr": [
+      28952,
+      25376
+    ],
+    "peak": [
+      9722,
+      9722
+    ],
+    "compiled": [
+      19132972,
+      19132972
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "async",
+    "clr": [
+      2037406,
+      1816254
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "async",
+    "clr": [
+      2233806,
+      2012734
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.regex.cursor-records",
+    "mode": "async",
+    "clr": [
+      429800,
+      429800
+    ],
+    "peak": [
+      523444,
+      523444
+    ],
+    "compiled": [
+      128172,
+      128172
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "async",
+    "clr": [
+      3019510,
+      3019466
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ],
+    "compiled": [
+      157658,
+      157658
+    ]
+  },
+  {
+    "case": "diagnostic.generated-regex-record-selectors",
+    "mode": "async",
+    "clr": [
+      29072,
+      25616
+    ],
+    "peak": [
+      9722,
+      9722
+    ],
+    "compiled": [
+      19132972,
+      19132972
+    ]
+  }
+]

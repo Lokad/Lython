@@ -82,9 +82,9 @@ public sealed class RegexAdapterCapabilityTests
                 new(flags, verbose), owner, default);
             Assert.Equal(expectedFlags, pattern.Flags);
             var input = System.Text.Encoding.UTF8.GetBytes(text);
-            using var subject = pattern.Prepare(input, new(0, text.Length, 0, input.Length), owner, default);
             var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
-            Assert.True(subject.TryMatch(LythonRegexMatchMode.FullMatch, captures, out _, default));
+            Assert.True(pattern.TryMatch(input, new(0, text.Length, 0, input.Length), LythonRegexMatchMode.FullMatch,
+                captures, out _, owner, default));
             Assert.Equal(new LythonRegexCapture(0, input.Length), captures[0]);
         }
         Assert.Equal(0, budget.ReservedBytes);

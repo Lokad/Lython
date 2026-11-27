@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Breaking provider API. Move one-shot matching to `ILythonRegexPattern.TryMatch`.
+  Providers now receive the original subject, window and borrowed budget
+  for each call and finish their borrow before returning. Prepared subjects
+  serve cursor iteration only.
 - Use direct one-shot UTF-8 range matching in the optional adapter for
   patterns with zero or one group. Preserve byte windows, last capture,
   cancellation and shared admission.

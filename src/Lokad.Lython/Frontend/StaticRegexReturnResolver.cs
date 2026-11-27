@@ -330,10 +330,6 @@ internal static class StaticRegexReturnResolver
         var matched = false;
         if (!LythonRuntime.RegexCompiler.IsImpossibleWindow(operation, window.Pos, window.EndPos))
         {
-            using var subject = LythonRuntime.RegexCompiler.ProviderCall((pattern, input, window, analysis, token),
-                static state => state.pattern.Prepare(state.input, state.window,
-                    state.analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), state.token),
-                analysis.MemoryGovernor, token, span, operationName: "Regex constant-subject preparation");
             var useInlineCaptures = captureSlotCount <= LythonRuntime.RegexCompiler.InlineCaptureCapacity;
             using var storage = useInlineCaptures ? null
                 : analysis.MemoryGovernor?.ReserveTemporary(LythonRuntime.RegexCompiler.CaptureBufferBytes(captureSlotCount), span);
@@ -341,7 +337,7 @@ internal static class StaticRegexReturnResolver
             LythonRuntime.RegexCompiler.InlineCaptureBuffer buffer = default;
             Span<LythonRegexCapture?> captures = buffer;
             captures = useInlineCaptures ? captures[..captureSlotCount] : new LythonRegexCapture?[captureSlotCount];
-            matched = LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out var lastIndex,
+            matched = LythonRuntime.RegexCompiler.TryMatch(pattern, input, window, operation, captures, out var lastIndex,
                 analysis.MemoryGovernor, token, span, operationName: "Regex constant matching");
             if (matched && LythonRuntime.RegexCompiler.MatchResultError(input, window, operation, captures, lastIndex,
                 analysis.MemoryGovernor, token, span) is { } error)

@@ -540,6 +540,10 @@ public sealed class RegexStagedProviderTests
             public int CaptureSlotCount => inner.CaptureSlotCount;
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups => inner.NamedGroups;
 
+            public bool TryMatch(ReadOnlyMemory<byte> subject, LythonRegexWindow window, LythonRegexMatchMode mode,
+                Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget owner, CancellationToken token)
+                => inner.TryMatch(subject, window, mode, captures, out lastIndex, owner, token);
+
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window,
                 ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
                 => inner.Prepare(subject, window, memoryOwner, cancellationToken);

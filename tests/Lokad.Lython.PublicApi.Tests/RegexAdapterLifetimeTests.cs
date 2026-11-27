@@ -13,13 +13,16 @@ public sealed class RegexAdapterLifetimeTests
         using var owner = budget.CreateScope();
         Assert.True(owner.TryReserve(123, out var unrelated));
         var pattern = Utf8RegexProvider.Instance.Compile("(?P<value>a)"u8.ToArray(), new(32, false), owner, default);
-        using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
-            Assert.True(subject.TryMatch(LythonRegexMatchMode.Match, new LythonRegexCapture?[pattern.CaptureSlotCount], out _, default));
+        var input = "a"u8.ToArray();
+        var window = new LythonRegexWindow(0, 1, 0, 1);
+        var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
+        Assert.True(pattern.TryMatch(input, window, LythonRegexMatchMode.Match, captures, out _, owner, default));
         Assert.True(budget.ReservedBytes > 123);
         pattern.Dispose();
         pattern.Dispose();
         Assert.Equal(123, budget.ReservedBytes);
-        Assert.Throws<ObjectDisposedException>(() => pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default));
+        Assert.Throws<ObjectDisposedException>(() => pattern.Prepare(input, window, owner, default));
+        Assert.Throws<ObjectDisposedException>(() => pattern.TryMatch(input, window, LythonRegexMatchMode.Match, captures, out _, owner, default));
         Assert.Throws<ObjectDisposedException>(() => pattern.NamedGroups);
         Assert.True(unrelated.TryResize(456));
         unrelated.Dispose();
@@ -43,20 +46,19 @@ public sealed class RegexAdapterLifetimeTests
             input.AsSpan(prefix.Length).Fill((byte)'a');
             using var pattern = Utf8RegexProvider.Instance.Compile("(?<=é)(?P<value>x)"u8.ToArray(), new(32, false), owner, default);
             var baseline = budget.ReservedBytes;
-            using (var subject = pattern.Prepare(input, new(1, 2, 2, 3), owner, default))
+            var window = new LythonRegexWindow(1, 2, 2, 3);
+            Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[2];
+            int? lastIndex;
+            if (iterate)
             {
-                Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[2];
-                int? lastIndex;
-                if (iterate)
-                {
-                    using var cursor = subject.Find(default);
-                    Assert.True(cursor.TryNext(captures, out lastIndex, default));
-                }
-                else Assert.True(subject.TryMatch(LythonRegexMatchMode.Match, captures, out lastIndex, default));
-                Assert.Equal(new LythonRegexCapture(2, 3), captures[0]);
-                Assert.Equal(captures[0], captures[1]);
-                Assert.Equal(1, lastIndex);
+                using var subject = pattern.Prepare(input, window, owner, default);
+                using var cursor = subject.Find(default);
+                Assert.True(cursor.TryNext(captures, out lastIndex, default));
             }
+            else Assert.True(pattern.TryMatch(input, window, LythonRegexMatchMode.Match, captures, out lastIndex, owner, default));
+            Assert.Equal(new LythonRegexCapture(2, 3), captures[0]);
+            Assert.Equal(captures[0], captures[1]);
+            Assert.Equal(1, lastIndex);
             Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -76,9 +78,9 @@ public sealed class RegexAdapterLifetimeTests
             var named = Assert.Single(pattern.NamedGroups);
             Assert.Equal(1, named.Index);
             Assert.Equal(name, System.Text.Encoding.UTF8.GetString(named.Name.Span));
-            using var subject = pattern.Prepare("préab!"u8.ToArray(), new(3, 5, 4, 6), owner, default);
             Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[3];
-            Assert.True(subject.TryMatch(LythonRegexMatchMode.FullMatch, captures, out var lastIndex, default));
+            Assert.True(pattern.TryMatch("préab!"u8.ToArray(), new(3, 5, 4, 6), LythonRegexMatchMode.FullMatch,
+                captures, out var lastIndex, owner, default));
             Assert.Equal(new LythonRegexCapture(4, 6), captures[0]);
             Assert.Equal(new LythonRegexCapture(4, 5), captures[1]);
             Assert.Equal(captures[1], captures[2]);
@@ -189,24 +191,21 @@ public sealed class RegexAdapterLifetimeTests
             var programBytes = retained.ReservedBytes;
             Assert.True(programBytes > 0);
             var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
-            using (var subject = pattern.Prepare(bytes, window, working, default))
+            var error = Assert.Throws<LythonRegexException>(() =>
             {
-                var error = Assert.Throws<LythonRegexException>(() =>
+                if (iterate)
                 {
-                    if (iterate)
-                    {
-                        using var cursor = subject.Find(default);
-                        cursor.TryNext(captures, out _, default);
-                    }
-                    else subject.TryMatch(LythonRegexMatchMode.Match, captures, out _, default);
-                });
-                Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
-                Assert.True(error.RequestedBytes > 0);
-            }
+                    using var subject = pattern.Prepare(bytes, window, working, default);
+                    using var cursor = subject.Find(default);
+                    cursor.TryNext(captures, out _, default);
+                }
+                else pattern.TryMatch(bytes, window, LythonRegexMatchMode.Match, captures, out _, working, default);
+            });
+            Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
+            Assert.True(error.RequestedBytes > 0);
             Assert.Equal(0, working.ReservedBytes);
             Assert.Equal(programBytes, retained.ReservedBytes);
-            using var next = pattern.Prepare(bytes, window, owner, default);
-            Assert.True(next.TryMatch(LythonRegexMatchMode.Match, captures, out _, default));
+            Assert.True(pattern.TryMatch(bytes, window, LythonRegexMatchMode.Match, captures, out _, owner, default));
         }
         Assert.Equal(0, retained.ReservedBytes);
     }

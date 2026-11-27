@@ -227,8 +227,8 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 return PyNone.Instance;
             }
-            // Single matches need no iterator state. Keep working storage
-            // local until the provider and the final projection have finished.
+            // Single matches borrow the original subject only for the call.
+            // The capture slots remain available for validation and projection.
             var window = Window(range, context, span);
             var count = pattern.CaptureSlotCount;
             using var scratch = count > RegexCompiler.InlineCaptureCapacity
@@ -238,8 +238,7 @@ internal sealed partial class LythonRuntime
             Span<LythonRegexCapture?> slots = buffer;
             slots = scratch is null ? slots[..count] : new LythonRegexCapture?[count];
             var original = range.Original;
-            using var subject = OpenSubject(pattern, original, window, context, span);
-            if (!RegexCompiler.TryMatch(subject, mode, slots, out var lastIndex,
+            if (!RegexCompiler.TryMatch(pattern.Regex, original.Utf8Bytes, window, mode, slots, out var lastIndex,
                 context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern)) return PyNone.Instance;
             ValidateMatch(original, window, mode, slots, lastIndex, context, span);
             return CreateMatchObject(pattern, original, window, slots, lastIndex, context, span);

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1862 match once on the compiled pattern](results/2026-11-27-pattern-one-shot/README.md)
+removes the prepared subject from runtime and frontend one-shot matching.
+Both log scripts allocate about 221 KB less per run at matching peaks.
+Their CPU falls 0.29–3.67% in the matched comparison. The unchanged
+cursor control uses 0.17–3.82% more CPU. CSV and compile-only timing span
+zero. Both focused Release targets and five independent goldens pass.
+
 [B1861 profile the delivered compiled log search](results/2026-11-27-direct-regex-cpu/README.md)
 reuses the B1860 image. Of 1,222 samples, 538 have core leaves, 290 have
 backend leaves and 175 have CLR lock or monitor leaves. Both quiet gates

@@ -773,26 +773,36 @@ sealed class WindowProvider : ILythonRegexProvider
         public int Flags => flags;
         public int CaptureSlotCount => 1;
         public IReadOnlyList<LythonRegexNamedGroup> NamedGroups { get; } = [];
-        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window,
-            ILythonMemoryBudget owner, CancellationToken token)
+        private void ValidateWindow(ReadOnlyMemory<byte> input, LythonRegexWindow window, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (!input.Span.SequenceEqual("éx!"u8) || window != new LythonRegexWindow(1, 2, 2, 3))
                 throw new Exception("Installed provider lost its original subject/window.");
+        }
+        public bool TryMatch(ReadOnlyMemory<byte> input, LythonRegexWindow window, LythonRegexMatchMode mode,
+            Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget owner, CancellationToken token)
+        {
+            ValidateWindow(input, window, token);
+            captures[0] = new(2, 3);
+            lastIndex = null;
+            return true;
+        }
+        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window,
+            ILythonMemoryBudget owner, CancellationToken token)
+        {
+            ValidateWindow(input, window, token);
             return new Subject();
         }
         public void Dispose() { if (!_disposed) { _disposed = true; owner.Dispose(); provider.Closed++; } }
     }
     private sealed class Subject : ILythonRegexSubject
     {
-        public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); captures[0] = new(2, 3); lastIndex = null; return true; }
         public ILythonRegexCursor Find(CancellationToken token)
-        { token.ThrowIfCancellationRequested(); return new Cursor(this); }
+        { token.ThrowIfCancellationRequested(); return new Cursor(); }
         public void Dispose() { }
     }
-    private sealed class Cursor(Subject subject) : ILythonRegexCursor
+    private sealed class Cursor : ILythonRegexCursor
     {
         private bool _done;
         public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
@@ -801,7 +811,8 @@ sealed class WindowProvider : ILythonRegexProvider
             lastIndex = null;
             if (_done) return false;
             _done = true;
-            return subject.TryMatch(LythonRegexMatchMode.Search, captures, out lastIndex, token);
+            captures[0] = new(2, 3);
+            return true;
         }
         public void Dispose() => _done = true;
     }

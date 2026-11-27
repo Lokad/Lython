@@ -31,8 +31,8 @@ internal static class RegexCancellationFixture
         using (var warmOwner = budget.CreateScope())
         {
             using var warm = provider.Compile("(?:a|b){1,3}"u8.ToArray(), new(32, false), warmOwner, default);
-            using var subject = warm.Prepare("a!"u8.ToArray(), new(0, 2, 0, 2), warmOwner, default);
-            _ = subject.TryMatch(LythonRegexMatchMode.Search, new LythonRegexCapture?[warm.CaptureSlotCount], out _, default);
+            _ = warm.TryMatch("a!"u8.ToArray(), new(0, 2, 0, 2), LythonRegexMatchMode.Search,
+                new LythonRegexCapture?[warm.CaptureSlotCount], out _, warmOwner, default);
         }
         Action operation;
         using (var owner = budget.CreateScope())
@@ -59,13 +59,17 @@ internal static class RegexCancellationFixture
                 var input = new byte[1024 * 1024];
                 for (var offset = 0; offset < input.Length; offset += 4)
                     "abac"u8.CopyTo(input.AsSpan(offset));
-                subject = pattern.Prepare(input, new(0, input.Length, 0, input.Length), owner, default);
-                if (stage == "cursor") cursor = subject.Find(default);
+                var window = new LythonRegexWindow(0, input.Length, 0, input.Length);
+                if (stage == "cursor")
+                {
+                    subject = pattern.Prepare(input, window, owner, default);
+                    cursor = subject.Find(default);
+                }
                 var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
                 operation = stage switch
                 {
                     "match" or "value-match" or "grouped-match" =>
-                        () => subject.TryMatch(LythonRegexMatchMode.Search, captures, out _, cancellation.Token),
+                        () => pattern.TryMatch(input, window, LythonRegexMatchMode.Search, captures, out _, owner, cancellation.Token),
                     "cursor" => () => cursor!.TryNext(captures, out _, cancellation.Token),
                     _ => throw new ArgumentException("Unknown cancellation stage.", nameof(stage)),
                 };

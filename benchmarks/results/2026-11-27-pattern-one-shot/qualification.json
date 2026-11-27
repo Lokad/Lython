@@ -1,0 +1,65 @@
+{
+  "version": "0.5.0",
+  "checks": [
+    {
+      "platform": "windows",
+      "target": "net10.0",
+      "passed": 743,
+      "packages": {
+        "lokad.utf8regex": {
+          "nupkgSHA256": "885f381af4d90a30859995b513edacfce3b3a577dee48f5ac2af3037d9a0de64",
+          "assemblySHA256": "8a1dda6363c67afface2b1f6d11597762428be0f7d4e9b1ce61ceb58204d9312"
+        },
+        "lokad.utf8regex.pythonre": {
+          "nupkgSHA256": "697ccb4a75180fdc72d821a87d0f32f4bbaf1c02c0e1f5cb03c8b4ed61857451",
+          "assemblySHA256": "f6ab04e34d1319b6e1aabdd7f7f186a4a3a0e70653ecd93cc9a5d25ca7916574"
+        }
+      }
+    },
+    {
+      "platform": "windows",
+      "target": "net11.0",
+      "passed": 743,
+      "packages": {
+        "lokad.utf8regex": {
+          "nupkgSHA256": "885f381af4d90a30859995b513edacfce3b3a577dee48f5ac2af3037d9a0de64",
+          "assemblySHA256": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab"
+        },
+        "lokad.utf8regex.pythonre": {
+          "nupkgSHA256": "697ccb4a75180fdc72d821a87d0f32f4bbaf1c02c0e1f5cb03c8b4ed61857451",
+          "assemblySHA256": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7"
+        }
+      }
+    },
+    {
+      "platform": "ubuntu",
+      "target": "net10.0",
+      "passed": 743,
+      "packages": {
+        "lokad.utf8regex": {
+          "nupkgSHA256": "885f381af4d90a30859995b513edacfce3b3a577dee48f5ac2af3037d9a0de64",
+          "assemblySHA256": "8a1dda6363c67afface2b1f6d11597762428be0f7d4e9b1ce61ceb58204d9312"
+        },
+        "lokad.utf8regex.pythonre": {
+          "nupkgSHA256": "697ccb4a75180fdc72d821a87d0f32f4bbaf1c02c0e1f5cb03c8b4ed61857451",
+          "assemblySHA256": "f6ab04e34d1319b6e1aabdd7f7f186a4a3a0e70653ecd93cc9a5d25ca7916574"
+        }
+      }
+    },
+    {
+      "platform": "ubuntu",
+      "target": "net11.0",
+      "passed": 743,
+      "packages": {
+        "lokad.utf8regex": {
+          "nupkgSHA256": "885f381af4d90a30859995b513edacfce3b3a577dee48f5ac2af3037d9a0de64",
+          "assemblySHA256": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab"
+        },
+        "lokad.utf8regex.pythonre": {
+          "nupkgSHA256": "697ccb4a75180fdc72d821a87d0f32f4bbaf1c02c0e1f5cb03c8b4ed61857451",
+          "assemblySHA256": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7"
+        }
+      }
+    }
+  ]
+}

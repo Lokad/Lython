@@ -502,7 +502,6 @@ public sealed class RegexProviderContractTests
 
     [Theory]
     [InlineData("compile", "Regex pattern compilation")]
-    [InlineData("prepare", "Regex constant-subject preparation")]
     [InlineData("match", "Regex constant matching")]
     public async Task FrontendAdmissionDiagnosticsPreserveProviderOperationAndExplanation(string stage, string operation)
     {
@@ -923,15 +922,9 @@ public sealed class RegexProviderContractTests
             var error = Assert.ThrowsAny<Exception>(() => engine.Compile("import re\np=re.compile('x')", budget));
             Assert.Contains("Regex pattern compilation returned no result", error.Message);
         }
-        else if (stage == "prepare")
-        {
-            var error = Assert.ThrowsAny<Exception>(() => engine.Compile("import re\np=re.compile('x')\nm=p.match('x')\nreturn m", budget));
-            Assert.Contains("Regex constant-subject preparation returned no result", error.Message);
-        }
         Assert.Equal(0, budget.ReservedBytes);
 
-        var match = stage == "find" ? "list(p.finditer(text))" : "p.match(text)";
-        using (var script = engine.Compile($"import re\np=re.compile(pattern)\nresult={match}\nprint('after')", budget))
+        using (var script = engine.Compile("import re\np=re.compile(pattern)\nresult=list(p.finditer(text))\nprint('after')", budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -1220,7 +1213,7 @@ public sealed class RegexProviderContractTests
     }
 
     [Fact]
-    public void FrontendCancelsDuringCaptureAdmissionAndClosesThePreparedSubject()
+    public void FrontendCancellationBeforeMatchingClosesTheCompiledPattern()
     {
         var budget = new AdmissionGateBudget();
         using var cancellation = new CancellationTokenSource();
@@ -1228,7 +1221,8 @@ public sealed class RegexProviderContractTests
         {
             ExpectedToken = cancellation.Token,
             CaptureSlots = 12, // Large enough to require admitted capture storage.
-            OnPrepare = (_, _) => budget.OnNextResizeGrowth = cancellation.Cancel,
+            OnMetadata = () => budget.OnNextResizeGrowth = cancellation.Cancel,
+            OnPrepare = (_, _) => Assert.Fail("Cancellation reached provider matching."),
         };
         var engine = new LythonEngine(provider);
         using (var script = engine.Compile("import re\np=re.compile('x')\nreturn p.match('x').group()", budget, cancellation.Token))
@@ -1630,7 +1624,7 @@ public sealed class RegexProviderContractTests
         var engine = new LythonEngine(provider);
         using var script = engine.Compile(stage switch
         {
-            "find" or "next" => "import re\nreturn list(re.finditer(pattern,text))",
+            "prepare" or "find" or "next" => "import re\nreturn list(re.finditer(pattern,text))",
             "substitute" => "import re\nreturn re.sub(pattern,'y',text)",
             "split" => "import re\nreturn re.split(pattern,text)",
             _ => "import re\nreturn re.search(pattern,text).group()",
@@ -2104,6 +2098,46 @@ public sealed class RegexProviderContractTests
             {
                 get { ObjectDisposedException.ThrowIf(_disposed, this); provider.OnMetadata?.Invoke(); return provider.GroupListOverride ?? _names; }
             }
+            public bool TryMatch(ReadOnlyMemory<byte> input, LythonRegexWindow window, LythonRegexMatchMode mode,
+                Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget owner, CancellationToken token)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                var scope = owner.CreateScope();
+                try
+                {
+                    Reserve(scope, 1024);
+                    provider.Work("match", token);
+                    provider.OnPrepare?.Invoke(input, window);
+                    return WriteMatch(input, window, captures, out lastIndex, scope, token);
+                }
+                finally { provider.Cleanup(scope); }
+            }
+
+            internal bool WriteMatch(ReadOnlyMemory<byte> input, LythonRegexWindow window,
+                Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryScope owner, CancellationToken token)
+            {
+                lastIndex = null;
+                if (provider.MatchFactory is { } factory)
+                {
+                    var fixture = factory(input, window);
+                    if (fixture is null) return false;
+                    fixture.Captures.CopyTo(captures);
+                    lastIndex = fixture.LastIndex;
+                    return true;
+                }
+                if (provider.Refuse) Reserve(owner, long.MaxValue);
+                var text = Encoding.UTF8.GetString(input.Span);
+                if (!text.Equals("x", (Flags & 2) != 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return false;
+                for (var i = 0; i < captures.Length; i++)
+                {
+                    if (i == 1) provider.CancelCapture?.Cancel();
+                    token.ThrowIfCancellationRequested();
+                    captures[i] = new(0, input.Length);
+                }
+                if (captures.Length > 1) lastIndex = captures.Length - 1;
+                return true;
+            }
+
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
@@ -2141,31 +2175,8 @@ public sealed class RegexProviderContractTests
         {
             private bool _disposed;
             internal int ActiveCursors;
-            public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
-                CancellationToken token)
-            {
-                provider.Work("match", token);
-                lastIndex = null;
-                if (provider.MatchFactory is { } factory)
-                {
-                    var fixture = factory(input, window);
-                    if (fixture is null) return false;
-                    fixture.Captures.CopyTo(captures);
-                    lastIndex = fixture.LastIndex;
-                    return true;
-                }
-                if (provider.Refuse) Reserve(owner, long.MaxValue);
-                var text = Encoding.UTF8.GetString(input.Span);
-                if (!text.Equals("x", (pattern.Flags & 2) != 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return false;
-                for (var i = 0; i < captures.Length; i++)
-                {
-                    if (i == 1) provider.CancelCapture?.Cancel();
-                    token.ThrowIfCancellationRequested();
-                    captures[i] = new(0, input.Length);
-                }
-                if (captures.Length > 1) lastIndex = captures.Length - 1;
-                return true;
-            }
+            internal bool WriteMatch(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
+                => pattern.WriteMatch(input, window, captures, out lastIndex, owner, token);
             public ILythonRegexCursor Find(CancellationToken token)
             {
                 provider.Work("find", token);
@@ -2205,7 +2216,7 @@ public sealed class RegexProviderContractTests
                 }
                 if (_done) return false;
                 _done = true;
-                return subject.TryMatch(LythonRegexMatchMode.Search, captures, out lastIndex, token);
+                return subject.WriteMatch(captures, out lastIndex, token);
             }
             public void Dispose()
             {

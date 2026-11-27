@@ -14,8 +14,9 @@ once their users finish. Admission refusal is terminal and cleanup refunds
 each owner synchronously.
 
 The original UTF-8 subject and separate byte bounds preserve lookbehind,
-anchors and absolute capture ranges. One-shot matches with zero or one
-capture group use local range slots. A single group's participation determines
+anchors and absolute capture ranges. The pattern borrows the subject for
+each one-shot call. One-shot matches with zero or one capture group use
+local range slots. A single group's participation determines
 `lastindex`. Multi-group one-shot matches and iteration read last-close metadata
 from their funded range snapshot and release it after copying. The active token
 reaches compilation, one-shot matching, cursor creation and each advance.

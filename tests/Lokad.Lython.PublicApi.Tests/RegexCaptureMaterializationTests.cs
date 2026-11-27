@@ -140,7 +140,7 @@ public sealed class RegexCaptureMaterializationTests
         provider.Compete = true;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
         {
-            Assert.True(provider.SubjectClosed);
+            Assert.True(provider.MatchCompleted);
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal(new System.Numerics.BigInteger(8192), result.ReturnValue);
         }
@@ -206,7 +206,7 @@ public sealed class RegexCaptureMaterializationTests
         provider.Compete = true;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
         {
-            Assert.True(provider.SubjectClosed);
+            Assert.True(provider.MatchCompleted);
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Equal(6, result.Failure?.Span?.Line);
@@ -255,7 +255,7 @@ public sealed class RegexCaptureMaterializationTests
         provider.Compete = true;
         using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
         {
-            Assert.True(provider.SubjectClosed);
+            Assert.True(provider.MatchCompleted);
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Equal(4, result.Failure?.Span?.Line);
@@ -281,14 +281,14 @@ public sealed class RegexCaptureMaterializationTests
     private sealed class CompetingProvider(LythonMemoryBudget budget) : ILythonRegexProvider, IDisposable
     {
         private ILythonMemoryReservation? _held;
-        public bool Compete, SubjectClosed;
+        public bool Compete, MatchCompleted;
         public long HeldBytes => _held?.Bytes ?? 0;
         public ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
             ILythonMemoryBudget owner, CancellationToken token)
             => new Pattern(this, Utf8RegexProvider.Instance.Compile(pattern, options, owner, token));
         private void Closed()
         {
-            SubjectClosed = true;
+            MatchCompleted = true;
             if (!Compete) return;
             Compete = false;
             var bytes = budget.LimitBytes!.Value - budget.ReservedBytes - 8192;
@@ -301,24 +301,17 @@ public sealed class RegexCaptureMaterializationTests
             public int Flags => inner.Flags;
             public int CaptureSlotCount => inner.CaptureSlotCount;
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups => inner.NamedGroups;
+            public bool TryMatch(ReadOnlyMemory<byte> input, LythonRegexWindow window, LythonRegexMatchMode mode,
+                Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget memoryOwner, CancellationToken token)
+            {
+                var matched = inner.TryMatch(input, window, mode, captures, out lastIndex, memoryOwner, token);
+                owner.Closed();
+                return matched;
+            }
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window,
                 ILythonMemoryBudget memoryOwner, CancellationToken token)
-                => new Subject(owner, inner.Prepare(input, window, memoryOwner, token));
+                => inner.Prepare(input, window, memoryOwner, token);
             public void Dispose() => inner.Dispose();
-        }
-        private sealed class Subject(CompetingProvider owner, ILythonRegexSubject inner) : ILythonRegexSubject
-        {
-            private bool _disposed;
-            public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
-                CancellationToken token) => inner.TryMatch(mode, captures, out lastIndex, token);
-            public ILythonRegexCursor Find(CancellationToken token) => inner.Find(token);
-            public void Dispose()
-            {
-                if (_disposed) return;
-                _disposed = true;
-                inner.Dispose();
-                owner.Closed();
-            }
         }
     }
 }

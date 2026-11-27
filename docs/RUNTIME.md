@@ -2916,7 +2916,8 @@ Invalid provider metadata fails explicitly (including a compilation exception
 for a broken host contract);
 ordinary guest pattern errors retain their Python diagnostics. The last-closed
 index must name a participating capture whenever any positive group participated.
-Prepared subjects provide match/search/fullmatch and finditer progression.
+Compiled patterns handle one-shot match/search/fullmatch directly in analysis
+and at runtime. Prepared subjects provide finditer progression.
 Lython owns captured splitting, template/callable substitution, expansion and
 public scalar offsets;
 providers expose no replacement or split dialect.
@@ -2998,22 +2999,25 @@ and byte window bounds with the same UTF-8 routine. Runtime matches and cursors
 can borrow an existing, subject-owned rune index for interior Unicode bounds.
 Constant analysis encodes known subjects under its working owner. Unknown
 bounds remain uncertain. With clamped `pos` greater
-than `endpos`, Lython resolves `search` and `fullmatch` to `None` before provider
-subject preparation. An anchored `match` passes the reversed window to the
+than `endpos`, Lython resolves `search` and `fullmatch` to `None` before calling
+the provider. An anchored `match` passes the reversed window to the
 provider, since a zero-width match can succeed. Substitution rewrites the
 selected window and preserves the original prefix and suffix. Splitting returns
 the window's parts.
 Large non-ASCII capture projections check cancellation while ordering byte
-coordinates. The prepared subject funds and reuses this working storage.
+coordinates. Lython funds this working storage and reuses it across cursor advances.
 Both extensions preserve original assertion context. Reversed
 substitution bounds raise `ValueError` before invoking replacement callbacks.
 
-`ILythonRegexSubject.TryMatch` and `ILythonRegexCursor.TryNext` fill caller-owned
+`ILythonRegexPattern.TryMatch` and `ILythonRegexCursor.TryNext` fill caller-owned
 capture spans with exactly `CaptureSlotCount` entries, including slot zero and
 null for unmatched groups. They report success and the last-closed group index;
 buffer contents after exhaustion or failure are unspecified. Providers finish
-all writes before returning and retain no buffer reference. Lython admits one
-working buffer per prepared operation and snapshots retained matches separately.
+all writes before returning and retain no buffer reference. One-shot matching
+admits its captures before invoking the provider. The provider borrows the
+subject and allowance for that call and completes cleanup before returning.
+Lython admits a reusable capture buffer per cursor and snapshots retained
+matches separately.
 
 The prepared operation owns Unicode projection working storage and its scalar
 cursor, seeded from the original window. One admitted coordinate array is reused

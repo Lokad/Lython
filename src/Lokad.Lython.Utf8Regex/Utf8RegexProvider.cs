@@ -262,75 +262,35 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             _namedGroups = named.AsReadOnly();
         }
 
-        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ObjectDisposedException.ThrowIf(_regex is null, this);
-            return new Subject(this, subject, window, memoryOwner, cancellationToken);
-        }
-
-        public void Dispose()
-        {
-            // The caller has drained subjects/cursors and metadata borrows.
-            if (Interlocked.Exchange(ref _regex, null) is not { } regex) return;
-            try { regex.Dispose(); }
-            finally { _namedGroups = null; _owner.Dispose(); }
-        }
-    }
-
-    private sealed class Subject : ILythonRegexSubject
-    {
-        internal readonly Pattern Pattern;
-        private ReadOnlyMemory<byte> _input;
-        private readonly ILythonMemoryBudget _budget;
-        private readonly LythonRegexWindow _window;
-        private bool _disposed;
-
-        internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
-        {
-            Pattern = pattern; _input = input; _window = window; _budget = owner;
-            token.ThrowIfCancellationRequested();
-            ValidateWindow();
-        }
-
-        private void ValidateWindow()
-        {
-            var start = _window.StartByte;
-            var end = _window.EndByte;
-            if (_window.Pos < 0 || _window.EndPos < 0 ||
-                (uint)start > (uint)_input.Length || (uint)end > (uint)_input.Length ||
-                start < _input.Length && (_input.Span[start] & 0xc0) == 0x80 ||
-                end < _input.Length && (_input.Span[end] & 0xc0) == 0x80)
-                throw new ArgumentOutOfRangeException(nameof(_window), "Regex window bounds must be clamped to the original scalar length.");
-        }
-
-        public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
+        public bool TryMatch(ReadOnlyMemory<byte> subject, LythonRegexWindow window, LythonRegexMatchMode mode,
+            Span<LythonRegexCapture?> captures, out int? lastIndex, ILythonMemoryBudget memoryOwner,
             CancellationToken cancellationToken)
         {
             lastIndex = null;
-            if (captures.Length != Pattern.CaptureSlotCount) throw new ArgumentException("Capture buffer length must equal CaptureSlotCount.", nameof(captures));
             cancellationToken.ThrowIfCancellationRequested();
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            if (_window.Pos > _window.EndPos)
+            var regex = Regex;
+            ValidateWindow(subject.Span, window);
+            if (captures.Length != CaptureSlotCount)
+                throw new ArgumentException("Capture buffer length must equal CaptureSlotCount.", nameof(captures));
+            if (window.Pos > window.EndPos)
             {
                 if (mode != LythonRegexMatchMode.Match) return false;
                 throw new LythonRegexException(LythonRegexFailure.Capability,
                     "PythonRe 0.5 does not support Python match with pos greater than endpos.");
             }
-            var regex = Pattern.Regex;
             var backendMode = mode switch
             {
                 LythonRegexMatchMode.Match => Utf8PythonMatchMode.Match,
                 LythonRegexMatchMode.FullMatch => Utf8PythonMatchMode.FullMatch,
                 _ => Utf8PythonMatchMode.Search,
             };
-            using var owner = _budget.CreateScope();
+            using var owner = memoryOwner.CreateScope();
             var allowance = new RegexAllowance(owner);
             if (captures.Length <= 2)
             {
                 // With one subgroup, participation determines lastindex.
                 // The backend writes into slots scoped to this call.
-                var bounds = Backend((Regex: regex, Input: _input, Window: _window, Mode: backendMode,
+                var bounds = Backend((Regex: regex, Input: subject, Window: window, Mode: backendMode,
                     Allowance: allowance, HasGroup: captures.Length == 2),
                     static (state, token) =>
                     {
@@ -355,7 +315,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             }
             // The one-shot range writer lacks last-close metadata. Borrow the
             // producer's funded range result only while copying it.
-            using var cursor = Backend((Regex: regex, Input: _input, Window: _window, Mode: backendMode, Allowance: allowance),
+            using var cursor = Backend((Regex: regex, Input: subject, Window: window, Mode: backendMode, Allowance: allowance),
                 static (state, token) => state.Regex.CreateMatchCursor(state.Input, state.Window.StartByte,
                     token, state.Allowance, mode: state.Mode, endOffsetInBytes: state.Window.EndByte),
                 cancellationToken, patternSource: regex);
@@ -368,23 +328,65 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             return true;
         }
 
+        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_regex is null, this);
+            return new Subject(this, subject, window, memoryOwner, cancellationToken);
+        }
+
+        public void Dispose()
+        {
+            // The caller has drained subjects/cursors and metadata borrows.
+            if (Interlocked.Exchange(ref _regex, null) is not { } regex) return;
+            try { regex.Dispose(); }
+            finally { _namedGroups = null; _owner.Dispose(); }
+        }
+    }
+
+    private static void ValidateWindow(ReadOnlySpan<byte> input, LythonRegexWindow window)
+    {
+        var start = window.StartByte;
+        var end = window.EndByte;
+        if (window.Pos < 0 || window.EndPos < 0 ||
+            (uint)start > (uint)input.Length || (uint)end > (uint)input.Length ||
+            start < input.Length && (input[start] & 0xc0) == 0x80 ||
+            end < input.Length && (input[end] & 0xc0) == 0x80)
+            throw new ArgumentOutOfRangeException(nameof(window), "Regex window bounds must be clamped to the original scalar length.");
+    }
+
+    private static void CopyCaptures(Utf8PythonRangeMatch data, Span<LythonRegexCapture?> captures, CancellationToken token)
+    {
+        for (var i = 0; i < captures.Length; i++)
+        {
+            token.ThrowIfCancellationRequested();
+            if (!data.TryGetGroup(i, out var group) || !group.Success) { captures[i] = null; continue; }
+            var start = group.StartOffsetInBytes;
+            var end = group.EndOffsetInBytes;
+            captures[i] = new(start, end);
+        }
+    }
+
+    private sealed class Subject : ILythonRegexSubject
+    {
+        internal readonly Pattern Pattern;
+        private ReadOnlyMemory<byte> _input;
+        private readonly ILythonMemoryBudget _budget;
+        private readonly LythonRegexWindow _window;
+        private bool _disposed;
+
+        internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
+        {
+            Pattern = pattern; _input = input; _window = window; _budget = owner;
+            token.ThrowIfCancellationRequested();
+            ValidateWindow(input.Span, window);
+        }
+
         public ILythonRegexCursor Find(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_disposed, this);
             return new Cursor(this, cancellationToken);
-        }
-
-        private static void CopyCaptures(Utf8PythonRangeMatch data, Span<LythonRegexCapture?> captures, CancellationToken token)
-        {
-            for (var i = 0; i < captures.Length; i++)
-            {
-                token.ThrowIfCancellationRequested();
-                if (!data.TryGetGroup(i, out var group) || !group.Success) { captures[i] = null; continue; }
-                var start = group.StartOffsetInBytes;
-                var end = group.EndOffsetInBytes;
-                captures[i] = new(start, end);
-            }
         }
 
         public void Dispose()
