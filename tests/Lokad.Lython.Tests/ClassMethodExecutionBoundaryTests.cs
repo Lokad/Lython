@@ -435,6 +435,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         var tap = new SuspendedTap(cancellation.Token);
         context.Variables["tap"] = tap;
         var pending = method.InvokeAsync([CallArgumentValue.Positional(iterator)], CallSpan, context);
+        var resumedTap = new SuspendedTap(cancellation.Token);
         try
         {
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -456,13 +457,24 @@ public sealed class ClassMethodExecutionBoundaryTests
             {
                 tap.Release.SetResult();
                 var generator = Assert.IsAssignableFrom<IPyAsyncIteratorValue>(await pending);
-                var first = await generator.TryMoveNextAsync();
+                context.Variables["tap"] = resumedTap;
+                var advancing = generator.TryMoveNextAsync().AsTask();
+                await resumedTap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(advancing.IsCompleted);
+                Assert.NotNull(resumedTap.Frame);
+                Assert.Same(iterator, Local(resumedTap.Frame, "self"));
+                resumedTap.Release.SetResult();
+                var first = await advancing;
                 Assert.True(first.HasValue);
                 Assert.Same(iterator, first.Value);
             }
             AssertUnwound(context);
         }
-        finally { tap.Release.TrySetResult(); }
+        finally
+        {
+            tap.Release.TrySetResult();
+            resumedTap.Release.TrySetResult();
+        }
     }
 
     [Theory]

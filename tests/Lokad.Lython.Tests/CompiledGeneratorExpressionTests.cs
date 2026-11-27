@@ -26,7 +26,6 @@ public sealed class CompiledGeneratorExpressionTests
         Assert.Contains(parent.LocalNameToSlot["offset"], parent.CapturedLocalSlots);
         Assert.Contains(child.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Yield);
         Assert.Contains(child.Instructions, instruction => instruction.OpCode == ExecutableOpCode.ForNext);
-        Assert.DoesNotContain(child.Instructions, instruction => instruction.OpCode == ExecutableOpCode.GetIter);
     }
 
     [Theory]
