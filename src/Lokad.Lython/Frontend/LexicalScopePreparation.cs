@@ -85,6 +85,7 @@ internal static class LexicalScopePreparation
 
         public ScopeDirectiveFacts BindGeneratorAssignments(ExpressionSyntax expression, ScopeDirectiveFacts facts)
         {
+            if (facts.HasNoOutwardAssignments) return facts;
             var assigned = new HashSet<string>(StringComparer.Ordinal);
             ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, assigned);
             if (assigned.Count == 0) return facts;

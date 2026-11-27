@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.generated-comprehension-report",
+    "mode": "sync",
+    "clr": [
+      330384,
+      330384
+    ],
+    "peak": [
+      353981,
+      353981
+    ],
+    "compiled": [
+      2057056,
+      2057056
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "sync",
+    "clr": [
+      22792,
+      22792
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "diagnostic.generator-lambda-default-outward-assignment",
+    "mode": "sync",
+    "clr": [
+      15656,
+      15656
+    ],
+    "peak": [
+      5469,
+      5469
+    ],
+    "compiled": [
+      49157,
+      49157
+    ]
+  },
+  {
+    "case": "diagnostic.generated-comprehension-report",
+    "mode": "async",
+    "clr": [
+      330632,
+      330632
+    ],
+    "peak": [
+      353981,
+      353981
+    ],
+    "compiled": [
+      2057056,
+      2057056
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "async",
+    "clr": [
+      23040,
+      23040
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "diagnostic.generator-lambda-default-outward-assignment",
+    "mode": "async",
+    "clr": [
+      15904,
+      15904
+    ],
+    "peak": [
+      5469,
+      5469
+    ],
+    "compiled": [
+      49157,
+      49157
+    ]
+  }
+]

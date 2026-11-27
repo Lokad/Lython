@@ -537,6 +537,10 @@ after the executable frame ends, independently of its relinquished slot capacity
 Module facts also pass through lowering into instruction construction. The lexical
 preparation walk records class-cell demand from lexical reads and nonlocal
 directives. It decides implicit `super` preloads after seeing later declarations.
+The enclosing binding walk records when a comprehension has no outward
+assignments. Generator scope preparation and static name diagnostics reuse
+that proof. Nested comprehension assignments and lambda defaults retain their
+enclosing lexical bindings.
 The module supplies binding facts. Each class creates a fresh cell when its
 descendants require one. Its suite can separately capture an enclosing cell.
 Builtin object slot descriptors keep their original defining class when assigned

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1856 reuse the comprehension binding proof](results/2026-11-27-comprehension-assignments/README.md)
+removes repeated outward-assignment scans for comprehensions with none.
+The generated report allocates 75,264 B less during compilation and
+takes 3.74–4.80% less elapsed through result. Compile-only timing spans
+zero. Emitted tapes, compiled admission and 127 refusal levels agree.
+
 [B1855 adopt the signed PythonRe 0.5.0 release](results/2026-11-27-regex-signed-release/README.md)
 qualifies the funded range adapter on both Release targets and platforms.
 Module log-search CPU falls 15.93–19.21% and compilation through result

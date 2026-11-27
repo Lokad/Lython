@@ -33,6 +33,7 @@ public sealed class GeneratorExpressionBoundaryTests
         { "builtin-name-store", "g=((len:=i) for i in range(3))\nprint(list(g),len)", "[0, 1, 2] 2\n" },
         { "first-binding-without-yield", "g=(i for i in (7,) if (count:=i)<0)\nprint(list(g),count)", "[] 7\n" },
         { "lambda-walrus-is-local", "total=0\ng=((lambda:(total:=7))() for i in range(2))\nprint(list(g),total)", "[7, 7] 0\n" },
+        { "lambda-default-walrus-escapes", "def run():\n total=-1\n g=((lambda value=(total:=i):value) for i in range(3))\n first=next(g)\n print(first(),total)\n print([f() for f in g],total)\nrun()", "0 0\n[1, 2] 2\n" },
         { "global-walrus-not-in-locals", "total=-1\ng=((total:=i,'total' in locals()) for i in range(2))\nprint(list(g),total)", "[(0, False), (1, False)] 1\n" },
         { "nonlocal-walrus-in-locals", "def run():\n total=-1\n g=((total:=i,locals().get('total','missing')) for i in range(2))\n return list(g),total\nprint(run())", "([(0, 0), (1, 1)], 1)\n" },
         { "nonlocal-snapshot-after-rebinding", "def run():\n total=0\n g=(locals().get('total','missing') for i in range(2) if i>0 or (total:=1))\n print(next(g))\n total=10\n print(next(g),total)\nrun()", "1\n10 10\n" },

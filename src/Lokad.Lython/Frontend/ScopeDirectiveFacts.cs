@@ -35,6 +35,10 @@ internal sealed record ScopeDirectiveFacts(
     // Scope validation visits child suites and records their directive effects.
     public bool ContainsDirectivesInBody { get; set; }
 
+    // The enclosing scope's binding walk also visits comprehension reads.
+    // A proven empty result lets later passes skip the same subtree.
+    internal bool HasNoOutwardAssignments { get; set; }
+
     public static ScopeDirectiveFacts Empty { get; } = new(
         new HashSet<string>(StringComparer.Ordinal),
         new HashSet<string>(StringComparer.Ordinal),
@@ -334,23 +338,29 @@ internal static class ScopeDirectiveFactsCollector
     internal static void CollectExpressionBindings(ExpressionSyntax expression, ICollection<string> names)
         => CollectExpressionBindings(expression, names, static (collection, name) => collection.Add(name));
 
-    internal static void CollectExpressionBindings<TState>(ExpressionSyntax expression, TState state, Action<TState, string> add)
+    internal static bool CollectExpressionBindings<TState>(ExpressionSyntax expression, TState state, Action<TState, string> add)
     {
+        var found = false;
         if (expression is LambdaExpressionSyntax lambda)
         {
             foreach (var parameter in lambda.Parameters)
-                if (parameter.DefaultValue is not null) CollectExpressionBindings(parameter.DefaultValue, state, add);
-            return;
+                if (parameter.DefaultValue is not null) found |= CollectExpressionBindings(parameter.DefaultValue, state, add);
+            return found;
         }
 
+        var comprehension = (expression as ComprehensionExpressionSyntax)?.PreparedScopeFacts;
+        if (comprehension is { HasNoOutwardAssignments: true }) return false;
         if (expression is AssignmentExpressionSyntax assignment)
         {
             add(state, assignment.Name);
+            found = true;
         }
 
         foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
         {
-            CollectExpressionBindings(child, state, add);
+            found |= CollectExpressionBindings(child, state, add);
         }
+        if (!found && comprehension is not null) comprehension.HasNoOutwardAssignments = true;
+        return found;
     }
 }
