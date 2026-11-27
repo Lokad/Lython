@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1909 isolate inline value slots to shared JSON records](results/2026-11-27-isolated-inline-json-records/README.md)
+keeps the 8.3–8.7% JSON allocation reduction and restores quoted CSV
+allocation to baseline. Dense sync uses 0.60–2.68% less CPU locally.
+Dense async elapsed rises 0.25–1.52%, while its CPU and the CSV control
+span zero. Kept for the removed allocation and lower admission.
+
+[B1908 embed the starting values of shared JSON records](results/2026-11-27-inline-json-records/README.md)
+reduces JSON allocation 8.3–8.7% in both APIs. Dense async CPU falls
+4.36–7.74% locally and the other CPU lanes span zero. Larger ordinary
+dictionary shells raise quoted CSV allocation 4.34–4.35%. Preserve the
+first trial separately from the isolated-shell refinement.
+
 [B1907 release private JSON file input after built-in decoding](results/2026-11-27-private-json-document/README.md)
 preserves funding for returned views and lets repeated unshared loads
 reuse the allowance. Dense JSON and configuration allocate 288 B less

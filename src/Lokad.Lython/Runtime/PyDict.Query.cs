@@ -1,6 +1,6 @@
 namespace Lokad.Lython.Runtime;
 
-internal sealed partial class PyDict
+internal partial class PyDict
 {
     // Protocol comparisons retain their original key/value borrows across
     // reentrant mutation and suspension, independently of the live table.

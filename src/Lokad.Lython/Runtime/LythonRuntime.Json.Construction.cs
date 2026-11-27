@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
             var position = SkipJsonWhitespace(bytesView, opening + 1, context, state.Span);
             var capacity = position < bytesView.Length && bytesView[position] == (byte)'"' ? 4 : 0;
             object result = isObject && state.Options.ObjectPairsHook is null
-                ? expected.Keys is { } keys && capacity != 0 ? keys.CreateRecord(context, state.Span, capacity)
+                ? expected.Keys is { } keys && capacity != 0 ? keys.CreateJsonRecord(context, state.Span)
                     : new PyDict(capacity, context.MemoryGovernor, state.Span)
                 : new PyList(0, context.MemoryGovernor, state.Span);
             JsonFrames(ref state)[state.Depth++] = new(result, expected, position, isObject);

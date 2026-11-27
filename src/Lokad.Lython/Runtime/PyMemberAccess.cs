@@ -31,7 +31,8 @@ internal static class PyMemberAccess
             [typeof(double)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.FloatMembers.TryGetMember((double)target, memberName, out value),
             [typeof(PyBytes)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
             [typeof(PyList)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
-            [typeof(PyDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),
+            [typeof(PyDict)] = TryGetDictionaryMember,
+            [PyDict.InlineJsonRecordType] = TryGetDictionaryMember,
             [typeof(PyTuple)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyTuple)target, memberName, out value),
             [typeof(PyDecimalTuple)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyDecimalTuple)target, memberName, out value),
             [typeof(PyRange)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.RangeMembers.TryGetMember((PyRange)target, memberName, out value),
@@ -173,6 +174,9 @@ internal static class PyMemberAccess
 
         return TryResolveNonContextual(target, memberName, out value);
     }
+
+    private static bool TryGetDictionaryMember(object target, string memberName, [MaybeNullWhen(false)] out object value)
+        => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value);
 
     private static bool TryResolveNonContextual(object target, string memberName, [MaybeNullWhen(false)] out object value)
     {

@@ -1,0 +1,141 @@
+{
+  "sourceRevision": "8c05ed06787ef58c7608a226f41aed4db6caa178",
+  "candidatePatchSHA256": "06e01bcb379771c5d90b14144d50e0c8f0738629a157ebc8e68ef915e40a7f74",
+  "quietMachine": false,
+  "collectionSeconds": 139.41355180999994,
+  "rows": [
+    {
+      "case": "diagnostic.nested-json-document",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.8733359763033175,
+        "reference": 0.9046399925373135,
+        "candidate-control": 0.8757892980769231,
+        "reference-control": 0.8927441799065421
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.8530805687203792,
+        "reference": 0.8582089552238806,
+        "candidate-control": 0.8413461538461539,
+        "reference-control": 0.8644859813084113
+      },
+      "elapsedChangePercent": [
+        -3.460383853492399,
+        -1.899187047222639
+      ],
+      "cpuChangePercent": [
+        -2.676715176715183,
+        -0.5975685143210341
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 1.3324996005033451,
+        "candidate": 0.2809138567713809
+      },
+      "cpuSpreadsPercent": {
+        "reference": 0.731409995936616,
+        "candidate": 1.3947190250507724
+      },
+      "maximumElapsedIqrPercent": 6.170291795551328
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 5.304249,
+        "candidate-control": 5.595969095238095,
+        "reference": 5.418237460526316,
+        "candidate": 5.33196782051282
+      },
+      "cpuMilliseconds": {
+        "reference-control": 5.394736842105263,
+        "candidate-control": 5.714285714285714,
+        "reference": 5.394736842105263,
+        "candidate": 5.384615384615385
+      },
+      "elapsedChangePercent": [
+        -1.59220854829637,
+        5.499743606269125
+      ],
+      "cpuChangePercent": [
+        -0.18761726078797558,
+        5.92334494773521
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 2.1490028188027255,
+        "candidate": 4.951291598378105
+      },
+      "cpuSpreadsPercent": {
+        "reference": 0.0,
+        "candidate": 6.122448979591821
+      },
+      "maximumElapsedIqrPercent": 4.370390724527564
+    },
+    {
+      "case": "diagnostic.nested-json-lines.optional-details",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "candidate": 3.3282176694915258,
+        "reference": 3.294316917355372,
+        "candidate-control": 3.343895028169014,
+        "reference-control": 3.4740131393442626
+      },
+      "cpuMilliseconds": {
+        "candidate": 3.4745762711864407,
+        "reference": 3.3884297520661155,
+        "candidate-control": 3.380281690140845,
+        "reference-control": 3.5245901639344264
+      },
+      "elapsedChangePercent": [
+        -4.1967449173279885,
+        1.5049587534353703
+      ],
+      "cpuChangePercent": [
+        -4.094333442515563,
+        2.5423728813559476
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 5.454733909849452,
+        "candidate": 0.4710436706468091
+      },
+      "cpuSpreadsPercent": {
+        "reference": 4.018392642942836,
+        "candidate": 2.7895480225988756
+      },
+      "maximumElapsedIqrPercent": 4.00241563617721
+    },
+    {
+      "case": "diagnostic.nested-json-document",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "reference-control": 0.9255992248908297,
+        "candidate-control": 0.9278768221153846,
+        "reference": 0.919548243792325,
+        "candidate": 0.9335652337662338
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.8951965065502183,
+        "candidate-control": 0.8413461538461539,
+        "reference": 0.8803611738148984,
+        "candidate": 0.8874458874458875
+      },
+      "elapsedChangePercent": [
+        0.24606732193661607,
+        1.52433437489925
+      ],
+      "cpuChangePercent": [
+        -6.015478424015008,
+        0.8047508047507979
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 0.6580384595755051,
+        "candidate": 0.6130567673714227
+      },
+      "cpuSpreadsPercent": {
+        "reference": 1.6851416414735088,
+        "candidate": 5.4792826221397695
+      },
+      "maximumElapsedIqrPercent": 8.91116577628933
+    }
+  ],
+  "verifiedTimedBatches": 112
+}

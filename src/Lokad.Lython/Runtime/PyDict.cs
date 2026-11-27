@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyDictStorage, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
+internal partial class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyDictStorage, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
 {
     private IPyDictStorage _items;
     private MemoryGovernor? _memoryGovernor;
@@ -29,7 +29,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     public PyDict(PyDict other, MemoryGovernor governor) : this(other, governor, null) { }
     public PyDict(PyDict other, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
         : this(other._nativeItems is null ? other.Count
-            : other._recordKeys is null ? other._nativeItems.Length : other._nativeValues!.Length,
+            : other._recordKeys is null ? other._nativeItems.Length : other.RecordValueSlots.Length,
             governor, allocationSpan, other._keysOnly)
     {
         try
@@ -122,7 +122,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 {
                     context.CheckExecution(mappingSpan);
                     var count = Math.Min(1024, _nativeCount - offset);
-                    _nativeValues!.AsSpan(offset, count).CopyTo(copy!._nativeValues.AsSpan(offset, count));
+                    RecordValueSlots.Slice(offset, count).CopyTo(copy!._nativeValues.AsSpan(offset, count));
                     offset += count;
                 }
                 copy!._nativeCount = _nativeCount;

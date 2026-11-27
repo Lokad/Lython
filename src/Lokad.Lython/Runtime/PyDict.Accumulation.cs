@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed partial class PyDict
+internal partial class PyDict
 {
     // The get and assignment share this one probe only while neither operation
     // nor the intervening addition can invoke a protocol or an admission hook.
@@ -11,7 +11,7 @@ internal sealed partial class PyDict
     internal bool TryAccumulateWithoutAdmission(PyString key, object fallback, BigInteger increment,
         LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan)
     {
-        if (_nativeItems is null || _nativeValues is null || HasProtocolKeys
+        if (_nativeItems is null || _keysOnly || HasProtocolKeys
             || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
         var hash = HashNativeString(key, context, querySpan);
         var index = FindNativeIndex(key, hash, context, querySpan);

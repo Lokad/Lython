@@ -86,6 +86,13 @@ keeps the frames funded until it completes or unwinds. Construction resumes
 at the saved UTF-8 byte offset before converting a public `raw_decode` end
 position to a Unicode scalar index.
 
+For JSON objects with a learned key layout, the first four value slots
+live in the dictionary itself. Wider objects reserve the final value
+array before copying. A shape change reserves private backing before
+mutation. Each dictionary owns its values and keeps the shared keys funded.
+Successful built-in `json.load()` releases a private native text read,
+with backing still used by returned strings kept under the execution owner.
+
 Default JSON integers outside the fast signed-64-bit path use the CLR's exact
 decimal parser. A short token uses a bounded stack buffer for the character
 parse. .NET 11 reads longer tokens directly from UTF-8, while .NET 10 converts

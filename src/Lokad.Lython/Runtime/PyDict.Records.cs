@@ -1,10 +1,36 @@
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed partial class PyDict
+internal partial class PyDict
 {
     private RecordKeys? _recordKeys;
+    private const int InlineRecordCapacity = 4;
+    // The reference slots fit inside the existing conservative shell charge.
+    // Inline rows still reserve the same storage credit for each scalar.
+    private const long InlineRecordValueBytes = InlineRecordCapacity * RuntimeMemoryEstimates.ScalarStorageBytes;
+
+    private sealed class InlineJsonRecord(NativeKey[] keys, RecordKeys layout, long sequence,
+        MemoryGovernor owner, LythonSourceSpan span)
+        : PyDict(keys, layout, sequence, InlineRecordCapacity, owner, span, inlineValues: true)
+    {
+        [InlineArray(InlineRecordCapacity)]
+        private struct InlineRecordValues { private object? _first; }
+
+        private InlineRecordValues _values;
+        internal Span<object?> ValuesInShell => _values;
+    }
+
+    internal static Type InlineJsonRecordType => typeof(InlineJsonRecord);
+
+    private Span<object?> RecordValueSlots
+        => _nativeValues is { } values ? values : ((InlineJsonRecord)this).ValuesInShell;
+
+    private long OwnedNativeValueBytes
+        => _recordKeys is not null && _nativeValues is null ? InlineRecordValueBytes
+            : NativeValueStorageBytes(_nativeValues?.Length ?? 0);
+
     internal bool HasSharedRecordKeys => _recordKeys is not null;
 
     internal bool TryGetDefinitionValue(PyString key, int position, [MaybeNullWhen(false)] out object value,
@@ -14,7 +40,7 @@ internal sealed partial class PyDict
         // A value assignment keeps its slot. Deletion, promotion or replacement
         // can invalidate this proof, so fall through to the ordinary lookup.
         if (_recordKeys is not null && (uint)position < (uint)NativeExtent &&
-            ReferenceEquals(_nativeItems![position].Key, key) && _nativeValues![position] is { } current)
+            ReferenceEquals(_nativeItems![position].Key, key) && RecordValueSlots[position] is { } current)
         {
             context.CheckExecution(span);
             value = current;
@@ -49,7 +75,7 @@ internal sealed partial class PyDict
             }
             cached = new(layout, key, index);
         }
-        value = IsNativeLive(index) ? _nativeValues![index] : null;
+        value = IsNativeLive(index) ? RecordValueSlots[index] : null;
         return value is not null;
     }
 
@@ -96,22 +122,28 @@ internal sealed partial class PyDict
             return new RecordKeys(keys, null, count, count);
         }
 
+        internal PyDict CreateJsonRecord(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+            => CreateRecord(context, span, InlineRecordCapacity, inlineValues: true);
+
         internal PyDict CreateRecord(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int initialCapacity)
+            => CreateRecord(context, span, initialCapacity, inlineValues: false);
+
+        private PyDict CreateRecord(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int initialCapacity,
+            bool inlineValues)
         {
             context.CheckExecution(span);
             var owner = context.MemoryGovernor;
             if (_owner is not null && !ReferenceEquals(_owner, owner))
                 throw new InvalidOperationException("Record keys must retain their execution owner.");
             var capacity = NativeCapacity(initialCapacity);
-            var bytes = RecordBytes(capacity);
+            var bytes = inlineValues ? NativeShellBytes + InlineRecordValueBytes : RecordBytes(capacity);
             owner.Reserve(bytes, span);
             try
             {
                 context.CheckExecution(span);
-                var record = new PyDict(_keys, this, _sequence, capacity, owner, span)
-                {
-                    _nativeCommittedBytes = bytes,
-                };
+                PyDict record = inlineValues ? new InlineJsonRecord(_keys, this, _sequence, owner, span)
+                    : new PyDict(_keys, this, _sequence, capacity, owner, span);
+                record._nativeCommittedBytes = bytes;
                 owner.Commit(bytes);
                 return record;
             }
@@ -274,11 +306,12 @@ internal sealed partial class PyDict
         }
     }
 
-    private PyDict(NativeKey[] keys, RecordKeys layout, long sequence, int capacity, MemoryGovernor owner, LythonSourceSpan? span)
+    private PyDict(NativeKey[] keys, RecordKeys layout, long sequence, int capacity, MemoryGovernor owner, LythonSourceSpan? span,
+        bool inlineValues = false)
     {
         _memoryGovernor = owner; _allocationSpan = span; _items = this;
         _nativeItems = keys; _recordKeys = layout; _nativeSequence = sequence;
-        _nativeValues = capacity == 0 ? [] : new object?[capacity];
+        _nativeValues = inlineValues ? null : capacity == 0 ? [] : new object?[capacity];
     }
 
     internal RecordKeys? SharedRecordKeys => _recordKeys;
@@ -329,7 +362,7 @@ internal sealed partial class PyDict
         }
         System.Diagnostics.Debug.Assert(_nativeCount < _recordKeys.Count &&
             ReferenceEquals(_nativeItems![_nativeCount].Key, key));
-        _nativeValues![_nativeCount++] = value;
+        RecordValueSlots[_nativeCount++] = value;
     }
 
     internal void SetRecordItem(PyString key, object value, LythonRuntime.ExecutionContext context,
@@ -342,9 +375,10 @@ internal sealed partial class PyDict
         {
             context.CheckExecution(span);
             EnsureRecordValueCapacity(checked(_nativeCount + 1), context, span);
-            if (_nativeValues![_nativeCount] is null)
+            var slots = RecordValueSlots;
+            if (slots[_nativeCount] is null)
             {
-                _nativeValues[_nativeCount++] = value;
+                slots[_nativeCount++] = value;
                 _version++;
                 return;
             }
@@ -354,21 +388,24 @@ internal sealed partial class PyDict
 
     private void EnsureRecordValueCapacity(int targetCount, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (targetCount <= _nativeValues!.Length) return;
+        if (targetCount <= RecordValueSlots.Length) return;
         // The ordered prefix has outgrown its backing. Its remaining keys are
         // already immutable, so admit the layout's final value capacity once.
         var capacity = NativeCapacity(_recordKeys!.Count);
         using var replacement = _memoryGovernor!.ReserveTemporary(NativeValueStorageBytes(capacity), span);
         context.CheckExecution(span);
-        var previous = _nativeValues;
+        var previous = RecordValueSlots;
+        var wasInline = _nativeValues is null;
+        var previousBytes = OwnedNativeValueBytes;
         var values = new object?[capacity];
         for (var offset = 0; offset < previous.Length; offset += 4096)
         {
             context.CheckExecution(span);
-            previous.AsSpan(offset, Math.Min(4096, previous.Length - offset)).CopyTo(values.AsSpan(offset));
+            previous.Slice(offset, Math.Min(4096, previous.Length - offset)).CopyTo(values.AsSpan(offset));
         }
         _nativeValues = values;
-        var bytes = NativeValueStorageBytes(capacity) - NativeValueStorageBytes(previous.Length);
+        if (wasInline) previous.Clear();
+        var bytes = NativeValueStorageBytes(capacity) - previousBytes;
         replacement.Commit(bytes);
         _nativeCommittedBytes += bytes;
     }

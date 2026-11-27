@@ -568,8 +568,8 @@ internal sealed partial class LythonRuntime
                                         ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeStringKeyDictionary((Dictionary<string, object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                         : valueType == typeof(Dictionary<object, object?>)
                                             ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeObjectKeyDictionary((Dictionary<object, object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
-                                            : valueType == typeof(PyDict)
-                                                ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyDict((PyDict)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
+                                            : value is PyDict dictionary
+                                                ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyDict(dictionary, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                                 : throw RuntimeErrors.Type("initial global values may contain only supported scalar and collection values", null);
 
             static T NormalizeContainer<T>(object container, HashSet<object> activeContainers, Dictionary<object, object> normalizedContainers, MemoryGovernor.TemporaryMemoryReservation memoScratch, Func<T> normalize)

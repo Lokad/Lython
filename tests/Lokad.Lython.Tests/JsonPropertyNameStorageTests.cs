@@ -66,7 +66,7 @@ public sealed class JsonPropertyNameStorageTests
             ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
             : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
         var first = await Read();
-        var dictionaries = first.Select(item => Assert.IsType<PyDict>(item)).ToArray();
+        var dictionaries = first.Select(item => Assert.IsAssignableFrom<PyDict>(item)).ToArray();
         var keys = dictionaries.Where(dict => dict.Count != 0)
             .Select(dict => Assert.IsType<PyString>(dict.Items.Single().Key)).ToArray();
         Assert.Same(keys[0], keys[1]);
@@ -82,7 +82,7 @@ public sealed class JsonPropertyNameStorageTests
         // or corrupt a hint used by a later decode in this execution.
         bytes[3] = (byte)'z';
         var second = await Read();
-        var next = second.Select(item => Assert.IsType<PyDict>(item)).ToArray();
+        var next = second.Select(item => Assert.IsAssignableFrom<PyDict>(item)).ToArray();
         Assert.Equal("alpha", keys[0].AsString());
         Assert.Equal("zlpha", Assert.IsType<PyString>(next[0].Items.Single().Key).AsString());
         Assert.Equal("alpha", Assert.IsType<PyString>(next[1].Items.Single().Key).AsString());
@@ -109,10 +109,10 @@ public sealed class JsonPropertyNameStorageTests
             var result = Assert.IsType<PyTuple>(asynchronous
                 ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                 : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
-            var first = Assert.IsType<PyDict>(result[0]);
-            var second = Assert.IsType<PyDict>(result[1]);
-            var firstDetails = Assert.IsType<PyDict>(first.Items.First().Value);
-            var secondDetails = Assert.IsType<PyDict>(second.Items.First().Value);
+            var first = Assert.IsAssignableFrom<PyDict>(result[0]);
+            var second = Assert.IsAssignableFrom<PyDict>(result[1]);
+            var firstDetails = Assert.IsAssignableFrom<PyDict>(first.Items.First().Value);
+            var secondDetails = Assert.IsAssignableFrom<PyDict>(second.Items.First().Value);
             Assert.Same(first.Keys.First(), second.Keys.First());
             Assert.Same(firstDetails.Keys.Single(), secondDetails.Keys.Single());
 
