@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1860 refresh warm log search against CPython](results/2026-11-27-direct-regex-cpython/README.md)
+measures `7305efabf` with stock CPython 3.13.16. Compiled search takes
+2.885–2.931× CPython elapsed and module search 2.063–2.090×. The first
+run fails the post-run quietness gate. Both quiet checks, both independent
+goldens and all 56 measured batches pass in the same-image repeat.
+
 [B1859 use direct one-shot ranges on signed PythonRe 0.5.0](results/2026-11-27-signed-regex-small-match/README.md)
 removes cursor construction for zero- and one-group matches. Allocation
 falls 39.76–49.78% at matching peaks. Compiled one-group CPU falls

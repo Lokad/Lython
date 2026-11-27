@@ -8,8 +8,8 @@
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Diagnostic. [B1849]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
-| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Diagnostic. [B1858]. |
-| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Diagnostic. [B1858]. |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Diagnostic. [B1860]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27088–3.30482 ms | 1.58144–1.58565 ms | 2.063–2.090× | Diagnostic. [B1860]. |
 | CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Historical. Inconclusive around parity. [B1844]. |
 | File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
@@ -19,10 +19,13 @@ B1849 measures `9cee6f423` on November 27, 2026 UTC with comparison host
 checkpoint used `a1b3a3325` with the same comparison host. Historical
 rows retain their original revisions and dates. [B1849] · [B1844].
 
-B1858 measures `c665a179e` with the same comparison host on November 27,
-2026 UTC. It uses the optional signed PythonRe 0.5.0 adapter for the log
-searches. Both log scripts search each line and consume a capture. Their
-timings include the host file path, matching and result processing. [B1858].
+B1860 measures `7305efabf` with the same comparison host on November 27,
+2026 UTC. Both log scripts use the optional signed PythonRe 0.5.0 adapter,
+search each line and consume a capture. Their timings include the host file
+path, matching and result processing. B1858 measures the earlier
+`c665a179e` image and supplies the log compile-to-result comparison. The
+first B1860 run failed the post-run quietness gate. The table uses a
+same-image repeat with both checks passing. [B1860] · [B1858].
 
 Wide async shipment overlaps its earlier range. Nested JSON runs at
 1.148–1.155× CPython, up from 1.094–1.114× in B1844. B1848 compared the
@@ -64,6 +67,8 @@ The paired metadata measurement at fixed runtime is available separately.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Historical diagnostic. [B1858]. |
+| Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Historical diagnostic. [B1858]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22055–2.25324 ms | 1.82279–1.83105 ms | 1.213–1.236× | Diagnostic. [B1844]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.73690–0.74752 ms | 0.67124–0.67384 ms | 1.094–1.114× | Diagnostic. [B1844]. |
 | CSV summary after reading and splitting lines | 4,096 records / 57,361 B | 2.24651–2.30881 ms | 3.15392–3.21418 ms | 0.699–0.732× | Diagnostic. [B1844]. |
@@ -333,6 +338,7 @@ document reproduction.
 [B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md
 
 [B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
+[B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md
 [B1844]: ../benchmarks/results/2026-11-27-post-csv-json-cpython/README.md
 [B1834]: ../benchmarks/results/2026-11-27-current-cpython/README.md

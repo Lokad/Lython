@@ -1,0 +1,22 @@
+{
+  "scripts.regex-log-search.compiled": {
+    "inputs": [
+      {
+        "name": "events.log",
+        "bytes": 86954,
+        "records": 3072
+      }
+    ],
+    "sourceBytes": 345
+  },
+  "scripts.regex-log-search.module": {
+    "inputs": [
+      {
+        "name": "events.log",
+        "bytes": 86954,
+        "records": 3072
+      }
+    ],
+    "sourceBytes": 318
+  }
+}

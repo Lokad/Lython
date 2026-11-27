@@ -1,0 +1,11 @@
+{
+  "timedBatches": 56,
+  "quietBefore": true,
+  "quietAfter": false,
+  "busyWindows": [
+    7.5376884422110555
+  ],
+  "reasons": [
+    "Idle CPU exceeds three-percent median or five-percent maximum."
+  ]
+}
