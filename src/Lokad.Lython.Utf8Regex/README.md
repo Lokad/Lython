@@ -1,72 +1,34 @@
 # Lython Utf8Regex adapter
 
-Optional PythonRe 0.4.0 integration for Lython, kept as a non-packable project in
-this repository. No adapter NuGet package is produced or published. Applications
-can reference the project directly. The core package has no dependency on this
-adapter or its backend. Bind `Utf8RegexProvider.Instance` explicitly when
-constructing `LythonEngine`.
+Applications can reference this non-packable project and pass
+`Utf8RegexProvider.Instance` to `LythonEngine`. The adapter uses pinned
+PythonRe 0.5.0. Core ships independently through its Lython-owned provider
+contract.
 
-Compilation and actual matching receive the active CancellationToken.
-Cached patterns retain no caller token. A cursor owns its cancellation source;
-each advance registers the current token only for that operation, drains the
-registration and finishes backend cleanup before returning its working allowance.
-There is no background matching, timeout/work quota or retry. Individual CLR
-encoding/allocation calls remain atomic; cancellation is cooperative.
+Compilation uses the active token and a program scope. One-shot matching
+and cursors use separate working scopes under the caller's allowance.
+The producer requests admission for its own storage and the adapter funds
+copied UTF-8 group names. Each producer owner can reuse reservation capacity
+until its last live claim ends. Dispose cursors, subjects and then the pattern
+once their users finish. Admission refusal is terminal and cleanup refunds
+each owner synchronously.
 
-Each compilation returns a fresh disposable pattern handle with a child scope
-borrowing the supplied owner. Dispose cursors, then subjects, then the pattern;
-finish all operations and metadata borrows first. Pattern disposal drops managed
-backend references and refunds program/metadata funding without closing
-the borrowed parent. It is idempotent; a closed pattern cannot prepare new work.
-Prepared working scopes
-share that allowance and refund on disposal. Iteration discovers one match at a
-time and funds current scratch/snapshots instead of all future matches.
-Preparation receives the original subject with scalar pos/endpos and their byte
-bounds. Lython capture results contain byte ranges only; the adapter no longer
-builds a whole-subject coordinate map or transports copied capture strings.
-`TryMatch`/`TryNext` fill the caller's admitted capture span, including every
-unmatched slot, without allocating a Lython match carrier or capture array.
-The pinned backend still creates detailed snapshots internally, a temporary bridge
-independent of core contract development. Pattern handles expose UTF-8 named-group
-entries in capture order; the adapter encodes the backend's string names once.
-Lython owns its copied native metadata independently of backend handle disposal.
-A borrowed
-prefix view and starting byte preserve anchors, lookbehind and end assertions;
-captures keep absolute coordinates, including captures before pos. No subject
-window copy is required. PythonRe 0.4 cannot express Python's reversed-window
-`match` semantics (`pos > endpos`): this reports an explicit capability error.
-Reversed search/fullmatch/iteration are empty. Lython's nonstandard substitution
-window extension rejects reversed bounds with ValueError before callbacks.
-Split, substitution and expansion are shaped by Lython from capture ranges.
-The adapter exposes only matching and cursor operations; its template decoding,
-replacement-cache estimates and cache lock are removed. Lython's shared UTF-8
-parser uses refundable per-operation plans, with independent retained-output
-admission. The pinned backend's detailed cursor snapshots still create unused
-capture strings internally; native range-only producer APIs can remove that bridge.
-Large subjects and captures reserve conservative peaks before backend work.
-No independent allowance is imposed when the supplied root is unbounded. Hosts
-retain acquired inputs until all users finish and allow headroom for incidental
-backend/framework storage; these estimates are not an enforced backend heap bound.
+The original UTF-8 subject and separate byte bounds preserve lookbehind,
+anchors and absolute capture ranges. The adapter fills the caller's capture span and
+reads last-close metadata before releasing the funded range snapshot.
+Bounded one-shot calls use a cursor to obtain last-close metadata. The active
+token reaches compilation, cursor creation and each advance. Cached patterns
+hold no prior caller token.
 
-Matching uses Unicode scalars, including supplementary characters. Captures keep
-Python opening-order numbering and the backend's last-closed capture metadata.
-Native cursor progression handles adjacent empty/nonempty matches, including
-`.*?`, without a pattern-specific implementation. Effective flags include global
-prefixes across ignored comments/verbose whitespace; scoped flags do not leak.
-The adapter reads that validated prefix from the original UTF-8, without accessing
-backend pattern text. Reported Python flags can differ from dispatched parsing
-flags when guest bitwise methods return unusual values; those semantics remain.
-Lython retains its documented str-pattern subset; bytes, LOCALE and Unicode-name
-lookup are excluded. Backend construction backstops and internal safety remain
-separate from core qualification; selecting this provider does not certify its
-internals or couple core releases to them.
+Reversed anchored `match` raises a capability error with this backend.
+Reversed search, fullmatch and iteration return no matches. The adapter also
+reports a capability error for staged parsing or compilation that requires
+separate guest flag callbacks. Lython shapes split, expansion and replacement
+from capture ranges. `Pattern.flags` preserves the guest's reported flags and
+reflects any global inline prefixes. Scoped flags stay local.
 
-Validation separates the [cooperating-provider contract controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
-for forwarding/unwind from [real-adapter capability controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs),
-[isolated in-flight/lifetime checks](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs)
-and [independent CPython goldens](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterSemanticsTests.cs).
-The public-API suite references this adapter project directly; the
-[Release package gate](../../tests/README.md#delivery-checks) qualifies only the core package.
-The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
-is unqualified timing, not backend cancellation or safety certification.
-See [runtime regex providers](../../docs/RUNTIME.md#regex-providers) for the current provider and adapter contract.
+The [runtime guide](../../docs/RUNTIME.md#regex-providers) describes the core
+contract. [Adapter semantics](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterSemanticsTests.cs),
+[backend lifetime checks](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs)
+and [cooperating-provider tests](../../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
+exercise distinct parts of the boundary.

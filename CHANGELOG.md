@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Update the optional repository adapter to PythonRe 0.5.0. Fund program and
+  match storage through the producer allowance, use range-only captures and
+  forward the active token directly to each cursor advance.
 - Reuse existing immutable character values for one-byte JSON strings, including
   ASCII escapes. Skip per-token allocation and admission for these values.
 - Complete simple `startswith` and `endswith` helpers on exact strings without

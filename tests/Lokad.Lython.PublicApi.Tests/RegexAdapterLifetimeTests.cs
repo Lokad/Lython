@@ -63,6 +63,31 @@ public sealed class RegexAdapterLifetimeTests
     }
 
     [Theory]
+    [InlineData(1)]
+    [InlineData(48)]
+    public void UnicodeGroupNamesAndLastCloseUseAbsoluteByteRanges(int nameLength)
+    {
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
+        {
+            var name = new string('é', nameLength);
+            var bytes = System.Text.Encoding.UTF8.GetBytes($"(?<=é)(?P<{name}>(a))b");
+            using var pattern = Utf8RegexProvider.Instance.Compile(bytes, new(32, false), owner, default);
+            var named = Assert.Single(pattern.NamedGroups);
+            Assert.Equal(1, named.Index);
+            Assert.Equal(name, System.Text.Encoding.UTF8.GetString(named.Name.Span));
+            using var subject = pattern.Prepare("préab!"u8.ToArray(), new(3, 5, 4, 6), owner, default);
+            Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[3];
+            Assert.True(subject.TryMatch(LythonRegexMatchMode.FullMatch, captures, out var lastIndex, default));
+            Assert.Equal(new LythonRegexCapture(4, 6), captures[0]);
+            Assert.Equal(new LythonRegexCapture(4, 5), captures[1]);
+            Assert.Equal(captures[1], captures[2]);
+            Assert.Equal(1, lastIndex);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("compile")]
     [InlineData("match")]
     [InlineData("cursor")]
@@ -122,7 +147,7 @@ public sealed class RegexAdapterLifetimeTests
     }
 
     [Fact]
-    public void CursorCreationCancellationReturnsTheCallerTokenAndUnwinds()
+    public void FirstWorkingAdmissionCancellationReturnsTheAdvanceTokenAndUnwinds()
     {
         var budget = new AdmissionGateBudget();
         using (var owner = budget.CreateScope())
@@ -131,35 +156,62 @@ public sealed class RegexAdapterLifetimeTests
             using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
             var baseline = budget.Root.ReservedBytes;
             using var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default);
+            using var cursor = subject.Find(default);
+            var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
             budget.OnNextReserve = cancellation.Cancel;
-            var error = Assert.ThrowsAny<OperationCanceledException>(() => subject.Find(cancellation.Token));
+            var error = Assert.ThrowsAny<OperationCanceledException>(() => cursor.TryNext(captures, out _, cancellation.Token));
             Assert.Equal(cancellation.Token, error.CancellationToken);
             Assert.Equal(baseline, budget.Root.ReservedBytes);
-            using var cursor = subject.Find(default);
-            Assert.True(cursor.TryNext(new LythonRegexCapture?[pattern.CaptureSlotCount], out _, default));
+            using var next = subject.Find(default);
+            Assert.True(next.TryNext(captures, out _, default));
         }
         Assert.Equal(0, budget.Root.ReservedBytes);
     }
 
-    [Fact]
-    public void RefusedCursorAdmissionLeavesPatternAndWorkingOwnerReusable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RefusedWorkingAdmissionLeavesTheFundedPatternReusable(bool iterate)
     {
         var retained = new LythonMemoryBudget();
         var working = new LythonMemoryBudget(0);
         using (var owner = retained.CreateScope())
         {
             using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+            var programBytes = retained.ReservedBytes;
+            Assert.True(programBytes > 0);
+            var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
             using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
             {
-                var error = Assert.Throws<LythonRegexException>(() => subject.Find(default));
+                var error = Assert.Throws<LythonRegexException>(() =>
+                {
+                    if (iterate)
+                    {
+                        using var cursor = subject.Find(default);
+                        cursor.TryNext(captures, out _, default);
+                    }
+                    else subject.TryMatch(LythonRegexMatchMode.Match, captures, out _, default);
+                });
                 Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
                 Assert.True(error.RequestedBytes > 0);
             }
             Assert.Equal(0, working.ReservedBytes);
+            Assert.Equal(programBytes, retained.ReservedBytes);
             using var next = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default);
-            Assert.True(next.TryMatch(LythonRegexMatchMode.Match, new LythonRegexCapture?[pattern.CaptureSlotCount], out _, default));
+            Assert.True(next.TryMatch(LythonRegexMatchMode.Match, captures, out _, default));
         }
         Assert.Equal(0, retained.ReservedBytes);
+    }
+
+    [Fact]
+    public void RefusedProgramConstructionReleasesItsTemporaryOwner()
+    {
+        var budget = new LythonMemoryBudget(0);
+        var error = Assert.Throws<LythonRegexException>(() =>
+            Utf8RegexProvider.Instance.Compile("(?P<name>a+)"u8.ToArray(), new(32, false), budget, default));
+        Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
+        Assert.True(error.RequestedBytes > 0);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
 }

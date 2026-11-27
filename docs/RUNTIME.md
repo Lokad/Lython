@@ -2895,8 +2895,8 @@ from the original pattern and optional scalar position. Unknown positions leave
 line/column as `None`. Error payloads and original-pattern aliases stay funded
 until their owner ends, including after a failed compilation. Managed `strptime`
 errors have no generated regex pattern/position and report `None` for those fields.
-The optional PythonRe0.4 adapter normalizes its UTF-16 error offsets on failure;
-this bridge does not add pattern conversions to successful matching.
+The optional PythonRe 0.5 adapter converts UTF-16 error offsets to scalar
+positions only on failure.
 
 Providers receive borrowed UTF-8 data and shared memory owners. Immutable,
 concurrent-safe metadata includes effective Python flags (inline flags and implicit
@@ -3066,17 +3066,17 @@ borrowed results obey the interface's operation lifetime.
 ### Optional Utf8Regex adapter
 
 `new LythonEngine(Lokad.Lython.Utf8Regex.Utf8RegexProvider.Instance)` selects the
-optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.4.0. The adapter
-is a repository project, not a published NuGet package. Its separate qualification
-does not certify backend safety or couple core releases to it.
+optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.5.0.
+Applications reference the non-packable repository project. Core has its own
+release and dependency graph.
 
 | Capability | Current adapter behavior |
 | --- | --- |
 | In-flight cancellation | Active tokens reach compilation, matching and cursor work, including advances used by substitutions and splitting. Isolated tests interrupt real backend compilation, matching and cursor advance. Cancelled cursor creation returns the caller token after cleanup. |
 | UTF-8/offsets | Matching uses scalars, including supplementary characters. Providers return absolute capture byte ranges; Lython projects scalar offsets from the original subject. |
-| Windows | Original-prefix views preserve anchors/lookbehind and end bounds without a prefix copy. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
+| Windows | The original subject and explicit byte bounds preserve anchors, lookbehind and the end position. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
 | Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags are read from the validated original UTF-8, including verbose trivia; scoped flags stay local. Reported flags preserve guest bitwise results independently of dispatched parsing behavior. |
-| Iteration/storage | Matching and lazy cursors estimate backend scratch from the original prefix through `endpos`. The caller funds the entire subject. Lython template plans are private per-operation storage, and retained output is funded independently. Conservative estimates require backend and framework headroom. |
+| Iteration/storage | The producer admits its program and working storage against separate borrowed scopes. One-shot matching and iteration copy byte ranges and last-close metadata while their funded range snapshots are live. The caller funds the original subject and Lython funds output retained beyond the operation. |
 
 See the [adapter README](../src/Lokad.Lython.Utf8Regex/README.md) and
 [capability tests](../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).

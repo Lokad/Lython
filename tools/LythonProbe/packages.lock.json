@@ -4,8 +4,8 @@
     "net10.0": {
       "Lokad.Utf8Regex": {
         "type": "Transitive",
-        "resolved": "0.4.0",
-        "contentHash": "SpEYyYGmHyY7Udh3/Koe8Iopy5SUdDnrP4RNf1dT2rWICvfWOKAFDUo7OqZgkjQzlD/1BLlF56aqUMEAN6+hMg=="
+        "resolved": "0.5.0",
+        "contentHash": "vSaVGnAugqDoofBpzCAxnFU+90SwP1yg3xqhPGjKUaJjgnR4GpnrTtpmAwiODbkVLUN2N38RWTcwZ494GjFecA=="
       },
       "lokad.lython": {
         "type": "Project"
@@ -14,24 +14,24 @@
         "type": "Project",
         "dependencies": {
           "Lokad.Lython": "[0.11.0, )",
-          "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+          "Lokad.Utf8Regex.PythonRe": "[0.5.0, )"
         }
       },
       "Lokad.Utf8Regex.PythonRe": {
         "type": "CentralTransitive",
-        "requested": "[0.4.0, )",
-        "resolved": "0.4.0",
-        "contentHash": "SEBSxN/DxJSxQ42P0KMy+eOjHmkZiuVn9+D2fx1k1uCOVImW4XJIIbeGOjRMGn1f5z5xm0TBzh61mRmdYmmPLw==",
+        "requested": "[0.5.0, )",
+        "resolved": "0.5.0",
+        "contentHash": "SCzgOhQal64N5Yl28wIxjqoSA/f/UUUFGp/phALzZfYTDKg08XReVvLxuEK65rnsbFasduyPVHJQN1SNrdSxbg==",
         "dependencies": {
-          "Lokad.Utf8Regex": "[0.4.0]"
+          "Lokad.Utf8Regex": "[0.5.0]"
         }
       }
     },
     "net11.0": {
       "Lokad.Utf8Regex": {
         "type": "Transitive",
-        "resolved": "0.4.0",
-        "contentHash": "SpEYyYGmHyY7Udh3/Koe8Iopy5SUdDnrP4RNf1dT2rWICvfWOKAFDUo7OqZgkjQzlD/1BLlF56aqUMEAN6+hMg=="
+        "resolved": "0.5.0",
+        "contentHash": "vSaVGnAugqDoofBpzCAxnFU+90SwP1yg3xqhPGjKUaJjgnR4GpnrTtpmAwiODbkVLUN2N38RWTcwZ494GjFecA=="
       },
       "lokad.lython": {
         "type": "Project"
@@ -40,16 +40,16 @@
         "type": "Project",
         "dependencies": {
           "Lokad.Lython": "[0.11.0, )",
-          "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+          "Lokad.Utf8Regex.PythonRe": "[0.5.0, )"
         }
       },
       "Lokad.Utf8Regex.PythonRe": {
         "type": "CentralTransitive",
-        "requested": "[0.4.0, )",
-        "resolved": "0.4.0",
-        "contentHash": "SEBSxN/DxJSxQ42P0KMy+eOjHmkZiuVn9+D2fx1k1uCOVImW4XJIIbeGOjRMGn1f5z5xm0TBzh61mRmdYmmPLw==",
+        "requested": "[0.5.0, )",
+        "resolved": "0.5.0",
+        "contentHash": "SCzgOhQal64N5Yl28wIxjqoSA/f/UUUFGp/phALzZfYTDKg08XReVvLxuEK65rnsbFasduyPVHJQN1SNrdSxbg==",
         "dependencies": {
-          "Lokad.Utf8Regex": "[0.4.0]"
+          "Lokad.Utf8Regex": "[0.5.0]"
         }
       }
     }

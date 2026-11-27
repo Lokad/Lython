@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1855 adopt the signed PythonRe 0.5.0 release](results/2026-11-27-regex-signed-release/README.md)
+qualifies the funded range adapter on both Release targets and platforms.
+Module log-search CPU falls 15.93–19.21% and compilation through result
+14.77–19.00%. Warm compiled search improves with more worker spread.
+The optional adapter changes independently of the core package.
+
 [B1854 fuse asynchronous executable frame driving](results/2026-11-27-async-frame-driver/README.md)
 removes the per-frame task handoff and one state machine. Both Release
 targets and Python goldens pass. File-fed async uses 0.51–7.02% less CPU,

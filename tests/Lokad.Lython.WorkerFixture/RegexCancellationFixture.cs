@@ -45,8 +45,14 @@ internal static class RegexCancellationFixture
             }
             else
             {
-                pattern = provider.Compile("(a+)+$"u8.ToArray(), new(32, false), owner, default);
-                subject = pattern.Prepare(Encoding.UTF8.GetBytes(new string('a', 128) + "!"), new(0, 129, 0, 129), owner, default);
+                // The development producer resolves the 0.4 nested-repeat
+                // fixture before the controller can cancel. Use a successful
+                // consuming search over repeating distinct alternatives.
+                pattern = provider.Compile("(?P<value>(?:ab|ac)+)"u8.ToArray(), new(32, false), owner, default);
+                var input = new byte[1024 * 1024];
+                for (var offset = 0; offset < input.Length; offset += 4)
+                    "abac"u8.CopyTo(input.AsSpan(offset));
+                subject = pattern.Prepare(input, new(0, input.Length, 0, input.Length), owner, default);
                 if (stage == "cursor") cursor = subject.Find(default);
                 var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
                 operation = stage switch

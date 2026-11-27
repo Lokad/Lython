@@ -10,14 +10,16 @@ public sealed class Utf8RegexSubjectLifetimeTests
     public void DisposedSubjectAndCursorReleaseTheBorrowedInput()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), budget, default);
+        using var pattern = Utf8RegexProvider.Instance.Compile("(?<=b)(a)"u8.ToArray(), new(32, false), budget, default);
         var baseline = budget.ReservedBytes;
         var (prepared, input) = OpenSubject(pattern, budget);
         using var subject = prepared;
         using var cursor = subject.Find(default);
-        Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[1];
-        Assert.True(cursor.TryNext(captures, out _, default));
+        Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[2];
+        Assert.True(cursor.TryNext(captures, out var lastIndex, default));
         Assert.Equal(new LythonRegexCapture(1, 2), captures[0]);
+        Assert.Equal(captures[0], captures[1]);
+        Assert.Equal(1, lastIndex);
         Assert.True(budget.ReservedBytes > baseline);
 
         cursor.Dispose();

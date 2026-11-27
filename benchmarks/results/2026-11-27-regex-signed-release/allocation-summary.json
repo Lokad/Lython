@@ -1,0 +1,74 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "sync",
+    "clr": [
+      14082210,
+      3511782
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "sync",
+    "clr": [
+      14278802,
+      3708318
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "sync",
+    "clr": [
+      3019284,
+      3019270
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "async",
+    "clr": [
+      14082482,
+      3511998
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "async",
+    "clr": [
+      14278962,
+      3708534
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "async",
+    "clr": [
+      3019542,
+      3019486
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ]
+  }
+]
