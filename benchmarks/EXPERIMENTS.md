@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1875 attribute generated Python compilation](results/2026-11-27-current-frontend-profile/README.md)
+finds the largest resolved compiler shares in abstract analysis and
+executable emission on Windows. The quiet launch ran out of space before
+sampling. All 181 local batches verify. Inspect duplicate identifier
+resolution storage and preserve the diagnostic boundaries.
+
 [B1874 give the eager JSON call its own traversal](results/2026-11-27-json-eager-traversal/README.md)
 removes the private iterator per eager result while sharing the renderer with
 chunked encoding. The default and escaped exports allocate about 123 KB less
