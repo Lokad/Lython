@@ -1,4 +1,5 @@
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 using System.Numerics;
 
@@ -320,13 +321,6 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         _borrowStorage = borrowStorage;
     }
 
-    // Per-element argument arrays scale with the element, not the output: one
-    // 24B CallArgumentValue slot (placement enum plus two references) per item,
-    // live beside the drained element while the call runs. The sync shape drains
-    // lazily, so it grows the reservation incrementally like the shared drains;
-    // the async shape reuses the leased drain and covers the exact final array.
-    private const long ArgumentSlotBytes = 24;
-
     private LythonRuntime.PyGenerator? ListYieldSource(out PyExecutableFunction? function, out object? receiver, out int arity)
     {
         function = LythonRuntime.IterationFunction(_function, out receiver) as PyExecutableFunction;
@@ -440,33 +434,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         if (TryStartSequenceCallback(current, asynchronous: false, out var rowResult, out _))
             return rowResult;
 
-        // The argument array duplicates the streamed element beside it; grow a
-        // transient reservation with the backing list (mirroring the shared
-        // drains) and cover the final exact array, released after the call.
-        using var scratch = _context.MemoryGovernor.ReserveTemporary(0, _span);
-        var collected = new List<CallArgumentValue>();
-        var chargedCapacity = 0;
-        foreach (var item in PyIteration.Cursor.Create(current, _span, _context))
-        {
-            if (collected.Count == collected.Capacity)
-            {
-                var predicted = collected.Capacity == 0 ? 4L : (long)collected.Capacity * 2L;
-                scratch.Grow(checked(ArgumentSlotBytes * (predicted - chargedCapacity)), _span);
-                chargedCapacity = (int)predicted;
-            }
-
-            collected.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)));
-            _context.CheckExecution(_span);
-            if (collected.Capacity > chargedCapacity)
-            {
-                scratch.Grow(ArgumentSlotBytes * (collected.Capacity - chargedCapacity), _span);
-                chargedCapacity = collected.Capacity;
-            }
-        }
-
-        scratch.Grow(ArgumentSlotBytes * collected.Count, _span);
-        var args = collected.ToArray();
-        return PyIterationResult.Yield(LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(args, _span, _context)));
+        return InvokeIterableRowAsync(current, asynchronous: false).GetAwaiter().GetResult();
     }
 
     public ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -517,21 +485,45 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             if (iterable is null) return PyIterationResult.End;
         }
 
-        using var lease = await PyIteration.MaterializeLeasedAsync(iterable, _span, _context).ConfigureAwait(false);
-        var values = lease.Items;
-        // The drained list stays leased beside this exact-size copy, released
-        // after the call completes.
-        using var scratch = _context.MemoryGovernor.ReserveTemporary(checked(ArgumentSlotBytes * (long)values.Count), _span);
-        var args = values.Count == 0
-            ? Array.Empty<CallArgumentValue>()
-            : new CallArgumentValue[values.Count];
-        for (var index = 0; index < values.Count; index++)
+        return await InvokeIterableRowAsync(iterable, asynchronous: true).ConfigureAwait(false);
+    }
+
+    private async ValueTask<PyIterationResult> InvokeIterableRowAsync(object iterable, bool asynchronous)
+    {
+        // Consume one owned argument buffer directly. Suspend with it funded
+        // through the source pull, binding and any callback cleanup.
+        using var arguments = new CallExpansion.CallArgumentAccumulator(0, _context, _function, span: _span);
+        using (var cursor = asynchronous
+            ? await PyIteration.Cursor.CreateAsync(iterable, _span, _context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(iterable, _span, _context))
         {
-            args[index] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(values[index]));
+            var generator = cursor.GetBulkGenerator(_context);
+            var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
+            while (next.HasValue)
+            {
+                arguments.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(next.Value)), _span);
+                var limit = arguments.BufferedCapacity;
+                if (generator is not null && limit != 0)
+                    next = asynchronous
+                        ? await generator.AdvanceBufferedAsync(arguments, limit).ConfigureAwait(false)
+                        : generator.AdvanceBuffered(arguments, limit);
+                else next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
+            }
         }
 
-        var value = LythonRuntime.RuntimeValue(await (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).InvokeAsync(args, _span, _context).ConfigureAwait(false));
-        return PyIterationResult.Yield(value);
+        var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
+        object value;
+        if (callable is LythonRuntime.ISpanCallable)
+            value = asynchronous
+                ? await callable.InvokeBorrowedAsync(arguments.Arguments, _span, _context).ConfigureAwait(false)
+                : callable.InvokeBorrowed(arguments.Arguments, _span, _context);
+        else
+        {
+            var packet = arguments.ToArray();
+            value = asynchronous ? await callable.InvokeAsync(packet, _span, _context).ConfigureAwait(false)
+                : callable.Invoke(packet, _span, _context);
+        }
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
     }
 
     private ValueTask<PyIterationResult> StartZipRowAsync(PyZipIterator zip)

@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Collect arbitrary `starmap` rows into one admitted argument buffer.
+  Ordinary callbacks bind from the filled prefix, including after suspended
+  pulls, and generators can fill funded capacity in batches.
 - Breaking provider API. Move one-shot matching to `ILythonRegexPattern.TryMatch`.
   Providers now receive the original subject, window and borrowed budget
   for each call and finish their borrow before returning. Prepared subjects

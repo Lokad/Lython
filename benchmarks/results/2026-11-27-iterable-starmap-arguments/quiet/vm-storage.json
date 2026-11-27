@@ -1,0 +1,10 @@
+{
+  "before": 9576448,
+  "requiredBeforeStage": 12684986,
+  "replicas": [
+    "/home/lokad/lython-bench-checks/async-frame-driver-b1854-20261127/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/async-frame-driver-repeat-b1863-20261127/candidate/Lokad.Lython.dll"
+  ],
+  "backedUpCore": "96891f66f35b419c331e8eea08f4d185ef92dbae4f231eb35a0711a7a01bdff4",
+  "after": 15417344
+}

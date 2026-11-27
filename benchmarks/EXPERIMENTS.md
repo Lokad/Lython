@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1864 collect iterable `starmap` rows directly into the call packet](results/2026-11-27-iterable-starmap-arguments/README.md)
+removes the second collection for ordinary callbacks. The generated-row
+report allocates 4.96% less with a 224 B increase in peak admission.
+Quiet sync CPU falls 4.27–8.66% and async CPU falls 2.73–6.25%. The
+adverse local sync result and the moving exact-row control remain visible.
+
 [B1863 repeat the async frame-driver pair](results/2026-11-27-async-frame-driver-repeat/README.md)
 uses the same B1854 images in reverse lane order. File-fed async again
 uses less CPU. Wide sync and async span zero, and bound async uses

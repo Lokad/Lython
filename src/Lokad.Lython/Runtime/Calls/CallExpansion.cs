@@ -408,11 +408,12 @@ internal static class CallExpansion
         // Lowered callers keep their borrowed storage through invocation.
         // Executable callers keep funding on this temporary stack value.
         public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target,
-            bool deferSingleStar = false, MemoryGovernor.TemporaryMemoryReservation? storage = null)
+            bool deferSingleStar = false, MemoryGovernor.TemporaryMemoryReservation? storage = null,
+            LythonSourceSpan? span = null)
         {
             var capacity = Math.Max(sourceArgumentCount, 4);
             _count = 0;
-            _span = null;
+            _span = span;
             _context = context;
             _deferSingleStar = deferSingleStar;
             _bindsNativeKeywords = target is PyFunctionBase or PyBoundMethod { Function: PyFunctionBase };
@@ -420,8 +421,17 @@ internal static class CallExpansion
             _keywordNames = null;
             _governor = context.MemoryGovernor;
             _reservation = storage;
-            Grow(EstimateArgumentBytes(capacity), null);
-            _values = new CallArgumentValue[capacity];
+            Grow(EstimateArgumentBytes(capacity), span);
+            try
+            {
+                context.CheckExecution(span);
+                _values = new CallArgumentValue[capacity];
+            }
+            catch
+            {
+                if (_retainedBytes != 0) _governor.Release(_retainedBytes);
+                throw;
+            }
         }
 
         private void Grow(long bytes, LythonSourceSpan? span)
@@ -520,6 +530,17 @@ internal static class CallExpansion
                 " got multiple values for keyword argument '" + name + "'", span);
 
         internal ReadOnlySpan<CallArgumentValue> Arguments => _values.AsSpan(0, _count);
+
+        internal int BufferedCapacity => _count < _values.Length ? _values.Length : 0;
+
+        internal bool TryAppendBufferedPositional(LythonRuntime.ExecutableSlot value, int limit)
+        {
+            // Leave the final item for ordinary advancement. Appends here
+            // consume only capacity the caller has already admitted.
+            if (_count >= limit - 1) return false;
+            _values[_count++] = CallArgumentValue.Positional(value.Object.RequireNotNull());
+            return true;
+        }
 
         public CallArgumentValue[] ToArray()
         {

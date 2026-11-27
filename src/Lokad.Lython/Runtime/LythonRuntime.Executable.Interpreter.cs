@@ -1,5 +1,6 @@
 using System.Numerics;
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -250,6 +251,10 @@ internal sealed partial class LythonRuntime
             {
                 if (list.Count >= Math.Min(_yieldLimit, list.Capacity) - 1) return false;
                 list.Add(value.Object.RequireNotNull());
+            }
+            else if (destination is CallExpansion.CallArgumentAccumulator arguments)
+            {
+                if (!arguments.TryAppendBufferedPositional(value, _yieldLimit)) return false;
             }
             else
             {
