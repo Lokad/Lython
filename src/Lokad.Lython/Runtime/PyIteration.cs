@@ -245,6 +245,9 @@ internal static partial class PyIteration
         internal static IAsyncEnumerable<object> ForAsyncEnumeration(object value, LythonSourceSpan span)
             => Create(value, span);
         internal static IAsyncEnumerable<object> ForAsyncEnumeration(object value, LythonSourceSpan span,
+            LythonRuntime.ExecutionContext context) => CreateForAsyncPull(value, span, context);
+
+        internal static Cursor CreateForAsyncPull(object value, LythonSourceSpan span,
             LythonRuntime.ExecutionContext context)
             => value is PyInstance or IPyProtocolIterator ? new Cursor(value, span, context: context)
                 : Create(value, span, context);

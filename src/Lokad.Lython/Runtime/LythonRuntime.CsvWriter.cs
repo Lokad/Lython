@@ -34,30 +34,50 @@ internal sealed partial class LythonRuntime
         public static ValueTask<object> WriteRowFromValueAsync(CsvWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
             => WriteRowCoreAsync(writer, row, span, context, true);
 
-        private static async ValueTask<object> WriteRowsAsync(CsvWriterObject writer, object rows, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        internal static async ValueTask<object> WriteRowsAsync(CsvWriterObject writer, object rows,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous, CsvDictWriterObject? mapping = null)
         {
-            if (asynchronous)
-                await foreach (var row in PyIteration.Cursor.ForAsyncEnumeration(rows, span, context).ConfigureAwait(false))
-                    await WriteRowCoreAsync(writer, row, span, context, true).ConfigureAwait(false);
-            else foreach (var row in PyIteration.Cursor.Create(rows, span, context))
-                     _ = await WriteRowCoreAsync(writer, row, span, context, false).ConfigureAwait(false);
-            return PyNone.Instance;
+            using var cursor = asynchronous ? PyIteration.Cursor.CreateForAsyncPull(rows, span, context)
+                : PyIteration.Cursor.Create(rows, span, context);
+            while (true)
+            {
+                var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false) : cursor.TryMoveNext();
+                if (!next.HasValue) return PyNone.Instance;
+                await WriteRowCoreAsync(writer, next.Value, span, context, asynchronous, mapping).ConfigureAwait(false);
+            }
         }
 
         internal static async ValueTask<object> WriteRowCoreAsync(CsvWriterObject writer, object row, LythonSourceSpan span,
-            ExecutionContext context, bool asynchronous, IAsyncEnumerable<object>? values = null)
+            ExecutionContext context, bool asynchronous, CsvDictWriterObject? mapping = null)
         {
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var count = 0;
             try
             {
-                if (values is not null)
-                    await foreach (var item in values.ConfigureAwait(false)) await AppendAsync(item).ConfigureAwait(false);
-                else if (asynchronous)
-                    await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(row, span, context).ConfigureAwait(false))
-                        await AppendAsync(item).ConfigureAwait(false);
-                else foreach (var item in PyIteration.Cursor.Create(row, span, context))
-                         await AppendAsync(item).ConfigureAwait(false);
+                if (mapping is not null)
+                    await CsvDictWriterMembers.ValidateRowAsync(mapping, row, span, context, asynchronous).ConfigureAwait(false);
+                var fields = mapping is null ? row : mapping.FieldNames;
+                var list = fields as PyList;
+                using (var cursor = list is not null ? null
+                    : asynchronous ? PyIteration.Cursor.CreateForAsyncPull(fields, span, context)
+                    : PyIteration.Cursor.Create(fields, span, context))
+                {
+                    while (true)
+                    {
+                        var next = list is not null
+                            ? count < list.Count ? PyIterationResult.Yield(list[count]) : PyIterationResult.End
+                            : asynchronous ? await cursor!.TryMoveNextAsync().ConfigureAwait(false) : cursor!.TryMoveNext();
+                        if (!next.HasValue) break;
+                        var item = mapping is null ? next.Value
+                            : await CsvDictWriterMembers.GetFieldAsync(mapping, row, next.Value, span, context, asynchronous).ConfigureAwait(false);
+                        context.CheckExecution(span);
+                        var numeric = IsNumeric(item);
+                        var text = item is PyNone ? PyString.Empty
+                            : await FormatSuspendedFieldAsync(item, 's', null, context, span, asynchronous).ConfigureAwait(false);
+                        if (count++ != 0) builder.Append(writer.Options.Delimiter);
+                        AppendField(builder, text, numeric, writer, context, span);
+                    }
+                }
                 if (count == 1 && builder.Length == 0)
                 {
                     if (writer.Options.Quoting == CsvQuotingMode.None) throw CsvError("single empty field record must be quoted", span);
@@ -84,16 +104,6 @@ internal sealed partial class LythonRuntime
                     : InvokeCallableTarget(writer.WriteTarget, span, span, context, () => [CallArgumentValue.Positional(rendered)]);
             }
             finally { builder.Release(); }
-
-            async ValueTask AppendAsync(object item)
-            {
-                context.CheckExecution(span);
-                var numeric = IsNumeric(item);
-                var text = item is PyNone ? PyString.Empty
-                    : await FormatSuspendedFieldAsync(item, 's', null, context, span, asynchronous).ConfigureAwait(false);
-                if (count++ != 0) builder.Append(writer.Options.Delimiter);
-                AppendField(builder, text, numeric, writer, context, span);
-            }
         }
 
         private static bool IsNumeric(object value)

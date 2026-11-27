@@ -210,6 +210,72 @@ public sealed class CsvTextStreamTests : LifetimeScenario
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DictWriterKeepsLiveFieldsAndDiscardsAnInterruptedRow(bool asynchronous, bool cancel)
+    {
+        using var script = Compile("""
+            import csv
+            fields = ['first', 'second']
+            class Row:
+                def get(self, key, default):
+                    if key == 'first':
+                        fields.append('third')
+                        writer.restval = 'updated'
+                        return 'x' * 128
+                    if key == 'second':
+                        with open('/marker') as marker:
+                            return marker.read() + ':' + default
+                    return default
+            with open('/out', 'w', newline='') as output:
+                writer = csv.DictWriter(output, fields, extrasaction='ignore', restval='missing', lineterminator='\n')
+                def rows():
+                    yield {'first': 'prefix', 'second': 'ok'}
+                    output.flush()
+                    yield Row()
+                writer.writerows(rows())
+            """);
+        var budget = new LythonMemoryBudget(262144);
+        using var cancellation = new CancellationTokenSource();
+        var options = new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token };
+        var expectedPrefix = "prefix,ok\n";
+        var expected = expectedPrefix + new string('x', 128) + ",tail:updated,updated\n";
+        if (!asynchronous)
+        {
+            var host = new MockLythonHost();
+            host.SeedFile("/marker", "tail");
+            using (var result = script.Run(host, options)) Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, host.ReadText("/out"));
+        }
+        else
+        {
+            var host = new DelayedLythonHost();
+            host.SeedFile("/marker", "tail");
+            var started = cancel ? host.PauseReadUntilCancellation("/marker") : null;
+            var pending = script.RunAsync(host, options);
+            if (started is not null)
+            {
+                try
+                {
+                    await started.WaitAsync(TimeSpan.FromSeconds(10));
+                    Assert.False(pending.IsCompleted);
+                    Assert.True(budget.ReservedBytes > 0);
+                }
+                finally { cancellation.Cancel(); }
+            }
+            using (var result = await pending.WaitAsync(TimeSpan.FromSeconds(10)))
+            {
+                if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.Failure?.Attribution?.Reason);
+                else Assert.True(result.Success, result.Failure?.Message);
+            }
+            Assert.Equal(cancel ? expectedPrefix : expected, host.ReadText("/out"));
+            Assert.Equal(2, host.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("lookup", false)]
     [InlineData("row", false)]
     [InlineData("write", false)]

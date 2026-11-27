@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1867 share the CSV output row loop](results/2026-11-27-csv-dictwriter-row-loop/README.md)
+removes the async iterator that staged `DictWriter` fields. The full dictionary
+report uses 9.39–9.49% less CLR allocation at the same admitted peak. The local
+async repeat uses 4.52–8.88% less CPU and the original slowdown in the unchanged
+map does not recur. The initial dictionary CPU ranges span zero.
+
 [B1866 share the iterable argument reader](results/2026-11-27-shared-iterable-call-arguments/README.md)
 eliminates duplicate starred drains and uses admitted generator batching.
 Quiet starred-row CPU falls 3.55–5.38% sync and 9.29–10.22% async at

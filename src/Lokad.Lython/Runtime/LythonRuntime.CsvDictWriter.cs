@@ -18,25 +18,15 @@ internal sealed partial class LythonRuntime
                     HeaderSignature, (args, span, context) => HeaderAsync(writer, span, context, true)),
                 "writerow" => BoundCallable.Create((args, span, context) => RowAsync(writer, args[0], span, context, false).GetAwaiter().GetResult(),
                     RowSignature, (args, span, context) => RowAsync(writer, args[0], span, context, true)),
-                "writerows" => BoundCallable.Create((args, span, context) => RowsAsync(writer, args[0], span, context, false).GetAwaiter().GetResult(),
-                    RowsSignature, (args, span, context) => RowsAsync(writer, args[0], span, context, true)),
+                "writerows" => BoundCallable.Create((args, span, context) => CsvWriterMembers.WriteRowsAsync(writer.Writer, args[0], span, context, false, writer).GetAwaiter().GetResult(),
+                    RowsSignature, (args, span, context) => CsvWriterMembers.WriteRowsAsync(writer.Writer, args[0], span, context, true, writer)),
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
         private static ValueTask<object> RowAsync(CsvDictWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-            => CsvWriterMembers.WriteRowCoreAsync(writer.Writer, PyNone.Instance, span, context, asynchronous,
-                ValuesAsync(writer, row, span, context, asynchronous));
+            => CsvWriterMembers.WriteRowCoreAsync(writer.Writer, row, span, context, asynchronous, writer);
 
-        private static async ValueTask<object> RowsAsync(CsvDictWriterObject writer, object rows, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            if (asynchronous)
-                await foreach (var row in PyIteration.Cursor.ForAsyncEnumeration(rows, span, context).ConfigureAwait(false))
-                    await RowAsync(writer, row, span, context, true).ConfigureAwait(false);
-            else foreach (var row in PyIteration.Cursor.Create(rows, span, context))
-                     await RowAsync(writer, row, span, context, false).ConfigureAwait(false);
-            return PyNone.Instance;
-        }
         private static async ValueTask<object> HeaderAsync(CsvDictWriterObject writer, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var header = new PyDict(context.MemoryGovernor, span);
@@ -57,7 +47,8 @@ internal sealed partial class LythonRuntime
             }
             return await RowAsync(writer, header, span, context, asynchronous).ConfigureAwait(false);
         }
-        private static async IAsyncEnumerable<object> ValuesAsync(CsvDictWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        internal static async ValueTask ValidateRowAsync(CsvDictWriterObject writer, object row,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var action = asynchronous
                 ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Equal, writer.ExtrasAction, PyString.FromString("raise"), context, span).ConfigureAwait(false)
@@ -74,25 +65,17 @@ internal sealed partial class LythonRuntime
                 if (asynchronous ? await IsTruthyAsync(wrong, context, span).ConfigureAwait(false) : IsTruthy(wrong, context, span))
                     throw new LythonRuntimeException("ValueError", "dict contains fields not in fieldnames", span);
             }
-            if (writer.FieldNames is PyList list)
-            {
-                for (var i = 0; i < list.Count; i++) yield return await GetAsync(list[i]).ConfigureAwait(false);
-            }
-            else if (asynchronous)
-                await foreach (var name in PyIteration.Cursor.ForAsyncEnumeration(writer.FieldNames, span, context).ConfigureAwait(false))
-                    yield return await GetAsync(name).ConfigureAwait(false);
-            else foreach (var name in PyIteration.Cursor.Create(writer.FieldNames, span, context))
-                     yield return await GetAsync(name).ConfigureAwait(false);
+        }
 
-            async ValueTask<object> GetAsync(object name)
-            {
-                context.CheckExecution(span);
-                var get = asynchronous ? await PyTextStream.ResolveMemberAsync(row, "get", span, context).ConfigureAwait(false)
-                    : PyTextStream.ResolveMember(row, "get", span, context);
-                CallArgumentValue[] args = [CallArgumentValue.Positional(name), CallArgumentValue.Positional(writer.RestValue)];
-                return asynchronous ? await InvokeCallableTargetAsync(get, span, span, context, args).ConfigureAwait(false)
-                    : InvokeCallableTarget(get, span, span, context, args);
-            }
+        internal static async ValueTask<object> GetFieldAsync(CsvDictWriterObject writer, object row, object name,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            context.CheckExecution(span);
+            var get = asynchronous ? await PyTextStream.ResolveMemberAsync(row, "get", span, context).ConfigureAwait(false)
+                : PyTextStream.ResolveMember(row, "get", span, context);
+            CallArgumentValue[] args = [CallArgumentValue.Positional(name), CallArgumentValue.Positional(writer.RestValue)];
+            return asynchronous ? await InvokeCallableTargetAsync(get, span, span, context, args).ConfigureAwait(false)
+                : InvokeCallableTarget(get, span, span, context, args);
         }
     }
 }
