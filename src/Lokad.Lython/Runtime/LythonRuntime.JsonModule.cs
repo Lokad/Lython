@@ -207,21 +207,41 @@ internal sealed partial class LythonRuntime
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var text = ReadDocumentAsync(bound.Values[0], span, context, false).GetAwaiter().GetResult();
-            return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context);
-        }
+            => LoadCoreAsync(bound, extras, span, context, false).GetAwaiter().GetResult();
 
-        private async ValueTask<object> LoadAsync(
+        private ValueTask<object> LoadAsync(
             BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
+            => LoadCoreAsync(bound, extras, span, context, true);
+
+        private async ValueTask<object> LoadCoreAsync(
+            BoundBuiltinArguments bound,
+            IReadOnlyList<KeyValuePair<string, object>> extras,
+            LythonSourceSpan span,
+            ExecutionContext context,
+            bool asynchronous)
         {
             context.CheckExecution(span);
-            var text = await ReadDocumentAsync(bound.Values[0], span, context, true).ConfigureAwait(false);
-            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
+            var source = bound.Values[0];
+            var text = await ReadDocumentAsync(source, span, context, asynchronous).ConfigureAwait(false);
+            var decoder = ResolveDecoderClass(GetOptional(bound.Values, 1), span);
+            var result = asynchronous
+                ? await DecodeWithClassAsync(text, decoder, bound, extras, span, context).ConfigureAwait(false)
+                : DecodeWithClass(text, decoder, bound, extras, span, context);
+            // A native text read creates a private document. A built-in
+            // decode can keep views of its backing, but cannot expose its
+            // original shell on success. Syntax errors and custom decoders
+            // can publish that very string, so they keep the ordinary owner.
+            if (source is ExecutionContext.TextFileHandle &&
+                ReferenceEquals(decoder, JsonDecoderClass.Instance) &&
+                ReferenceEquals(text.OwnerMemoryGovernor, context.MemoryGovernor))
+            {
+                context.MemoryGovernor.RefundUnpublishedValue(text);
+                context.CheckExecution(span);
+            }
+            return result;
         }
 
         private object Loads(

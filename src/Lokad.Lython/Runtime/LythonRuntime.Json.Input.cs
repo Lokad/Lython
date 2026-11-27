@@ -11,6 +11,12 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<PyString> ReadDocumentAsync(object source, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
+            if (source is ExecutionContext.TextFileHandle file)
+            {
+                var text = asynchronous ? await file.ReadAsync(-1).ConfigureAwait(false) : file.Read();
+                return RequireLoadsText(text, context, span);
+            }
+
             var read = asynchronous
                 ? await PyTextStream.ResolveMemberAsync(source, "read", span, context).ConfigureAwait(false)
                 : PyTextStream.ResolveMember(source, "read", span, context);

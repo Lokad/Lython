@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1907 release private JSON file input after built-in decoding](results/2026-11-27-private-json-document/README.md)
+preserves funding for returned views and lets repeated unshared loads
+reuse the allowance. Dense JSON and configuration allocate 288 B less
+per invocation. The 112 local batches show adverse async elapsed with
+a moving CSV control, leaving timing inconclusive.
+
 [B1906 current scripts against CPython](results/2026-11-27-current-cpython-a159f24/README.md)
 compares production `a159f24f2` against CPython 3.13.16 on the quiet VM.
 Iterable shipment is 1.074–1.097× CPython warm sync and 1.212–1.226×

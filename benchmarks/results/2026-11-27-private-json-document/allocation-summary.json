@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "sync",
+    "clr": [
+      1127352,
+      1127064
+    ],
+    "peak": [
+      2855754,
+      2854734
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "sync",
+    "clr": [
+      34128,
+      33840
+    ],
+    "peak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "async",
+    "clr": [
+      1127568,
+      1127280
+    ],
+    "peak": [
+      2855754,
+      2854734
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "async",
+    "clr": [
+      34344,
+      34056
+    ],
+    "peak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  }
+]

@@ -5,6 +5,71 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonRetainedTextTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SuccessfulNativeLoadsReleaseUnsharedDocuments(bool asynchronous)
+    {
+        const string source = """
+            import json
+            total = 0
+            for _ in range(6):
+                with open('/input.json') as source:
+                    total += json.load(source)
+            return total
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var files = new MockLythonHost();
+        files.SeedFile("/input.json", new string(' ', 20 * 1024) + "3");
+        var budget = new LythonMemoryBudget(140 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(files, options) : script.Run(files, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new System.Numerics.BigInteger(18), result.ReturnValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeLoadKeepsBackingUsedByReturnedViews(bool asynchronous)
+    {
+        const string source = """
+            import json
+            import time
+            time.time()
+            with open('/input.json') as source:
+                value = json.load(source)
+            time.time()
+            return value
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        const int documentBytes = 48 * 1024;
+        var unshared = await RetainedBytes("short");
+        var shared = await RetainedBytes("a retained JSON string");
+        Assert.True(shared - unshared >= documentBytes);
+
+        async Task<long> RetainedBytes(string value)
+        {
+            var files = new MockLythonHost();
+            files.SeedFile("/input.json", new string(' ', documentBytes - value.Length - 2) + "\"" + value + "\"");
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 1024 * 1024, files);
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(value, result.ReturnValue);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+            return host.AtSecondGate - budget.AtGate;
+        }
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
