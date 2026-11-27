@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1899 borrow the established lookup array](results/2026-11-27-frame-cache-borrow/README.md)
+removes the function lookup after a frame borrows the array. Peak
+admission matches and allocation is effectively flat. All CPU ranges
+span zero, with 7.18–7.72% same-image CPU spread in iterable sync.
+All four goldens and 112 timed batches verify. Withdraw the prototype.
+
 [B1898 repeat the bound-cache comparison with reversed worker placement](results/2026-11-27-bound-cache-owner-repeat/README.md)
 uses the exact B1897 images. Bound async CPU spans −1.08% to +3.63%, and
 the wide control spans zero. Keep the original adverse result. All 56
