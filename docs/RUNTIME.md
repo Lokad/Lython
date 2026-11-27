@@ -913,13 +913,17 @@ alongside those operands. For a wider exact list or
 tuple with a complete positional supply, `starmap` can fill the callback's
 native frame slots directly, including the receiver. A pending callback
 transfers its live slots into the existing admitted continuation. Other
-exact rows use an admitted argument packet. For arbitrary iterable rows,
-`starmap` fills an admitted call accumulator directly and binds ordinary
-callbacks from its live prefix. Same-command generators can fill already
-funded positions in a single advance. An excess yield returns to the
-consumer before the argument buffer grows. Starred calls share this
-reader and preserve their own expansion order and diagnostics. A callable
-that requires an owned array receives it before invocation. Async `starmap`
+exact rows use an admitted argument packet. A same-command generator row
+can fill a compatible executable callback's admitted workspace directly.
+Private scalar slots stay native through the ready callback and its result,
+while observable identities stay attached to their values. A suspended
+callback keeps the workspace charged. Generator rows with missing or
+excess arguments and other iterable rows bind from the admitted call
+accumulator.
+An excess yield returns to the consumer before the argument buffer grows.
+Starred calls share the buffered reader and preserve their own expansion
+order and diagnostics. A callable that requires an owned array receives it
+before invocation. Async `starmap`
 returns a ready row directly when its source and callback complete
 immediately. If a source suspends, the continuation can also finish the
 callback or drain an arbitrary row, keeping its working storage charged

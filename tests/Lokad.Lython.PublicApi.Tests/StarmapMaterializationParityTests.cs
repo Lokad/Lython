@@ -187,6 +187,39 @@ public sealed class StarmapMaterializationParityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task GeneratorRowsPreservePublishedScalarAliases(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            def row(step):
+                yield marker
+                yield marker
+                yield 1000 + step
+                yield 1000.0 + step
+            def choose(first, second, integer, floating):
+                if first is second and integer == floating:
+                    return first
+                return -1
+            marker = int('9001')
+            values = list(starmap(choose, [row(2)]))
+            print(values[0] is marker, values)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True [9001]\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ExactRowsKeepLiveDefaultsAndRetainedAliases(bool asynchronous)
     {
         const string source = """

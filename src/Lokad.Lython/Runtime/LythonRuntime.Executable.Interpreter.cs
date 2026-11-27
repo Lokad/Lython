@@ -274,7 +274,9 @@ internal sealed partial class LythonRuntime
             else if (destination is ExecutableSlot[] slots)
             {
                 if (_yieldPositionOrListArity >= _yieldLimit) return false;
-                slots[_yieldPositionOrListArity++].Object = value.Object.RequireNotNull();
+                // The source has retired this operand. The callback's admitted
+                // slots can keep its native value until Python observes it.
+                slots[_yieldPositionOrListArity++] = value;
             }
             else
             {

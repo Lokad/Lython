@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1910 preserve native slots across a generator row and ready callback](results/2026-11-27-private-generator-row-slots/README.md)
+removes 131,128 B of managed allocation per iterable shipment in both
+APIs at matching admission. On the same-image local repeat, async
+iterable CPU falls 3.33–5.76% and both controls span zero. The initial
+bound slowdown and wide iterable spreads remain archived.
+
 [B1909 isolate inline value slots to shared JSON records](results/2026-11-27-isolated-inline-json-records/README.md)
 keeps the 8.3–8.7% JSON allocation reduction and restores quoted CSV
 allocation to baseline. Dense sync uses 0.60–2.68% less CPU locally.

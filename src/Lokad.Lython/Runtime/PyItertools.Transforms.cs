@@ -525,10 +525,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
                 // Its ordinary completion or promotion returns the loan.
                 var bound = workspace;
                 workspace = default;
-                var result = asynchronous
-                    ? await function.InvokeBoundAsync(bound, _span).ConfigureAwait(false)
-                    : function.InvokeBound(bound, _span);
-                return PyIterationResult.Yield(LythonRuntime.RuntimeValue(result));
+                var result = LythonRuntime.StartBoundIterationFunction(function, bound, _span, asynchronous, out var pending);
+                return result.HasValue ? result : PyIterationResult.Yield(await pending.ConfigureAwait(false));
             }
 
             // Preserve the first excess yield and every prefetched value.

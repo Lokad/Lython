@@ -177,17 +177,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 throw;
             }
         }
-        finally
-        {
-            try { frame?.LeaveFunctionCall(); }
-            finally
-            {
-                // One relinquishment covers native success, entry failure and
-                // a framed body. A throwing refund must never return it again.
-                if (frame?.RetainsBoundWorkspace(boundArguments.Values) != true)
-                    LythonRuntime.ReturnBoundArguments(boundArguments, CodeObject.ValueStorageCapacity);
-            }
-        }
+        finally { ReleaseBoundInvocation(boundArguments, frame); }
     }
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -234,14 +224,17 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 throw;
             }
         }
+        finally { ReleaseBoundInvocation(boundArguments, frame); }
+    }
+
+    internal void ReleaseBoundInvocation(in BoundFunctionArguments boundArguments, LythonRuntime.ExecutionContext? frame)
+    {
+        try { frame?.LeaveFunctionCall(); }
         finally
         {
-            try { frame?.LeaveFunctionCall(); }
-            finally
-            {
-                if (frame?.RetainsBoundWorkspace(boundArguments.Values) != true)
-                    LythonRuntime.ReturnBoundArguments(boundArguments, CodeObject.ValueStorageCapacity);
-            }
+            // A throwing refund must never return the same workspace again.
+            if (frame?.RetainsBoundWorkspace(boundArguments.Values) != true)
+                LythonRuntime.ReturnBoundArguments(boundArguments, CodeObject.ValueStorageCapacity);
         }
     }
 

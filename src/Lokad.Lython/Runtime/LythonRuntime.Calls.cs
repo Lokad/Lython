@@ -651,6 +651,26 @@ internal sealed partial class LythonRuntime
         return FinishIterationFunction(function, result, frame, owned, span, asynchronous, out pending);
     }
 
+    internal static PyIterationResult StartBoundIterationFunction(PyExecutableFunction function, BoundFunctionArguments owned,
+        LythonSourceSpan span, bool asynchronous, out ValueTask<object> pending)
+    {
+        pending = default;
+        ExecutionContext? frame = null;
+        var transferred = false;
+        try
+        {
+            if (function.TryStartBoundInvocation(owned, span, out var result, out frame) && frame is null)
+                return PyIterationResult.Yield(result);
+
+            // The ordinary frame path owns the loan through execution and cleanup.
+            transferred = true;
+            if (!asynchronous) return PyIterationResult.Yield(function.InvokeBound(owned, span, frame));
+            pending = function.InvokeBoundAsync(owned, span, frame);
+            return TakeCompletedIterationCallback(ref pending);
+        }
+        finally { if (!transferred) function.ReleaseBoundInvocation(owned, frame); }
+    }
+
     private static PyIterationResult FinishIterationFunction(PyFunctionBase function, ExecutableSlot result,
         ExecutionContext? frame, BoundFunctionArguments owned, LythonSourceSpan span, bool asynchronous,
         out ValueTask<object> pending)
