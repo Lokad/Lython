@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1831 admit initial list backing directly](results/2026-11-27-fixed-initial-list/README.md)
+removes a temporary lease from ordinary list construction. Nested-array JSON
+Lines allocates about 128 KiB less per script in both APIs at matching peaks.
+The second async comparison reverses the first CPU result, and the flat record
+control has wide spread. Whole-script timing remains inconclusive.
+
 [B1830 share the suspended zip pull](results/2026-11-27-shared-pending-zip/README.md)
 removes the fixed-unpack async wrapper. A gated pull allocates 136 fewer CLR
 bytes per fixed-unpack row. Inline storage and complete-script allocation and

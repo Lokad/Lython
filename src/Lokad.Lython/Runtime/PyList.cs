@@ -29,10 +29,14 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         _allocationSpan = allocationSpan;
         ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         var bytes = EstimateCapacityBytes(capacity);
-        using var backing = governor?.ReserveTemporary(bytes, allocationSpan);
-        _items = capacity == 0 ? [] : new object[capacity];
-        backing?.Commit(bytes);
-        if (backing is not null) _committedBytes = bytes;
+        governor?.Reserve(bytes, allocationSpan);
+        try { _items = capacity == 0 ? [] : new object[capacity]; }
+        catch { governor?.ReleaseReserved(bytes); throw; }
+        if (governor is not null)
+        {
+            governor.Commit(bytes);
+            _committedBytes = bytes;
+        }
     }
 
     public PyList(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)

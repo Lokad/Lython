@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
-            return new PyList([], context.MemoryGovernor, span);
+            return new PyList(0, context.MemoryGovernor, span);
         }
 
         if (arguments.Length != 1)
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
-            return new PyList([], context.MemoryGovernor, span);
+            return new PyList(0, context.MemoryGovernor, span);
         }
 
         if (arguments.Length != 1)

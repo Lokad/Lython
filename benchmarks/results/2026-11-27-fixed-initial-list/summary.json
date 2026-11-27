@@ -1,0 +1,135 @@
+{
+  "sourceRevision": "a768ff8d7f22c3076ebbd49f80d6baac5b640211",
+  "sourcePatchSHA256": "225acc3ef75b04614405d1b9cd978eb197d6b9eb66b8bf8f593ffb44143228d6",
+  "timedBatches": 84,
+  "quietQualified": false,
+  "collectionSeconds": 104.89504989003763,
+  "rows": [
+    {
+      "case": "diagnostic.json-lines-nested-arrays",
+      "lane": "warm",
+      "processMedianUs": {
+        "candidate": {
+          "elapsed": 3537.2929494949494,
+          "cpu": 3636.3636363636365
+        },
+        "reference": {
+          "elapsed": 3643.6362280701755,
+          "cpu": 3859.6491228070176
+        },
+        "candidate-control": {
+          "elapsed": 3644.2789137931036,
+          "cpu": 3793.103448275862
+        },
+        "reference-control": {
+          "elapsed": 3560.9588425925926,
+          "cpu": 3703.703703703704
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          -2.918603063499292,
+          2.3398212358963555
+        ],
+        "cpu": [
+          -5.785123966942152,
+          2.4137931034482696
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          2.3217731271892195,
+          3.0245152387909924
+        ],
+        "cpu": [
+          4.210526315789465,
+          4.310344827586188
+        ]
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm-async",
+      "processMedianUs": {
+        "reference-control": {
+          "elapsed": 4048.2400186915884,
+          "cpu": 4299.065420560748
+        },
+        "candidate-control": {
+          "elapsed": 4376.641636363636,
+          "cpu": 4431.818181818182
+        },
+        "reference": {
+          "elapsed": 3572.6884102564104,
+          "cpu": 3846.153846153846
+        },
+        "candidate": {
+          "elapsed": 3834.579534653465,
+          "cpu": 4455.445544554455
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          -5.2778610717647005,
+          22.50275237547308
+        ],
+        "cpu": [
+          3.0879446640316166,
+          15.841584158415834
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          13.310749604414784,
+          14.136154872040162
+        ],
+        "cpu": [
+          11.775700934579447,
+          0.5331302361005319
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.json-lines-nested-arrays",
+      "lane": "warm-async",
+      "processMedianUs": {
+        "candidate": {
+          "elapsed": 5751.199095238095,
+          "cpu": 5714.285714285715
+        },
+        "reference": {
+          "elapsed": 4984.4756282051285,
+          "cpu": 5128.205128205128
+        },
+        "candidate-control": {
+          "elapsed": 5292.568153846154,
+          "cpu": 5769.2307692307695
+        },
+        "reference-control": {
+          "elapsed": 5217.03259770115,
+          "cpu": 5402.298850574713
+        }
+      },
+      "percentChange": {
+        "elapsed": [
+          1.447864369839058,
+          15.382229229778721
+        ],
+        "cpu": [
+          5.775075987841949,
+          12.5
+        ]
+      },
+      "sameSourceSpreadPercent": {
+        "elapsed": [
+          4.665625571124776,
+          8.665565148342026
+        ],
+        "cpu": [
+          5.344827586206891,
+          0.9615384615384581
+        ]
+      }
+    }
+  ]
+}
