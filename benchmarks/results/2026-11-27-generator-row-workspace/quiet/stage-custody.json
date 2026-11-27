@@ -1,0 +1,26 @@
+{
+  "before": 18006016,
+  "afterReclaim": 29655040,
+  "afterStaging": 17670144,
+  "requiredBeforeStage": 24837313,
+  "deduplicated": [
+    {
+      "path": "/home/lokad/lython-bench-checks/lexical-return-quiet-b1901-20261127/candidate/Lokad.Lython.dll",
+      "sha256": "a3ad864a948469c2b828b8c83eb3752c420b58ab0ba7d3f99376bc8c7626494f",
+      "localImage": ".git\\agent-notes\\review-20261031\\lexical-return-summaries-20261127\\comparison\\candidate",
+      "archiveSha": "3add3dafa7554f3ff45cfc01672e77e0d92456470b74777779a92087ffd2ed17"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/generator-outer-quiet-b1895-20261127/reference/Lokad.Lython.dll",
+      "sha256": "1b62b6d16903c0855cd3de819f81bcbb23c9c99e92fccc9c94f41d765a413b6c",
+      "localImage": ".git\\agent-notes\\review-20261031\\direct-generator-outer-20261127\\comparison\\reference",
+      "archiveSha": "5ebdd6756d269af2395cbb3ff18e12cfedbf4218db30497c463f7a8d53863275"
+    }
+  ],
+  "expandedBytes": 11854401,
+  "reused": {
+    "donor": 62,
+    "paired": 0
+  },
+  "streamed": true
+}

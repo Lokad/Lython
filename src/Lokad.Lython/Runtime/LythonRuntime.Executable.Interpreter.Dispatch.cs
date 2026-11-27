@@ -255,7 +255,7 @@ internal sealed partial class LythonRuntime
                             execution.Stack.RetireTo(instruction.LiveExtent);
                             break;
                         case ExecutableOpCode.MakeList:
-                            if (invocation is { _listYieldArity: > 0 } && invocation.TryStageListYield(instruction)) break;
+                            if (invocation is { RequestedListYield: true } && invocation.TryStageListYield(instruction)) break;
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 CreateListFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
                             break;

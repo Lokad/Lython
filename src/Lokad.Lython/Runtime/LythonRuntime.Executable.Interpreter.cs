@@ -86,7 +86,6 @@ internal sealed partial class LythonRuntime
         internal void DetachExecutableExecution()
         {
             StopBufferingYields();
-            _listYieldArity = 0;
             HasStagedListYield = false;
             ClearExecutableBindings();
             _execution.Stack = default;
@@ -178,23 +177,28 @@ internal sealed partial class LythonRuntime
 
         private object? _yieldDestination;
         private int _yieldLimit;
-        private int _listYieldArity;
+        // A drain and a staged-list request are exclusive. With a slot
+        // destination this is the next write position. With no destination
+        // it is the list arity requested by the consumer.
+        private int _yieldPositionOrListArity;
+        private bool RequestedListYield => _yieldPositionOrListArity > 0 && _yieldDestination is null;
         internal bool HasStagedListYield { get; private set; }
 
-        internal void RequestListYield(int arity) => _listYieldArity = arity;
+        internal void RequestListYield(int arity) => _yieldPositionOrListArity = arity;
 
         private bool TryStageListYield(in ExecutableInstruction display)
         {
             var next = _execution.InstructionIndex + 1;
             var instructions = _execution.Code.Instructions;
             var start = display.InputStart;
-            if (display.ItemCount != _listYieldArity || display.ResultSlot != start || display.HasResultConsumer ||
+            var arity = _yieldPositionOrListArity;
+            if (display.ItemCount != arity || display.ResultSlot != start || display.HasResultConsumer ||
                 MirrorsExecutableLocals || MirrorLocalStores || next >= instructions.Length)
                 return false;
 
             ref readonly var yield = ref instructions[next];
             if (yield.OpCode != ExecutableOpCode.Yield || yield.InputStart != start || yield.ResultSlot != start ||
-                _execution.Stack.LiveExtent != start + _listYieldArity || !_execution.Stack.CanRetireWithoutCleanup(start))
+                _execution.Stack.LiveExtent != start + arity || !_execution.Stack.CanRetireWithoutCleanup(start))
                 return false;
 
             // The next instruction still performs its ordinary cancellation
@@ -223,16 +227,18 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal void BufferYields(object destination, int limit)
+        internal void BufferYields(object destination, int limit, int start)
         {
             _yieldDestination = destination;
             _yieldLimit = limit;
+            _yieldPositionOrListArity = start;
         }
 
         internal void StopBufferingYields()
         {
             _yieldDestination = null;
             _yieldLimit = 0;
+            _yieldPositionOrListArity = 0;
         }
 
         private bool TryBufferYield(object destination)
@@ -264,6 +270,11 @@ internal sealed partial class LythonRuntime
             else if (destination is CallExpansion.CallArgumentAccumulator arguments)
             {
                 if (!arguments.TryAppendBufferedPositional(value, _yieldLimit)) return false;
+            }
+            else if (destination is ExecutableSlot[] slots)
+            {
+                if (_yieldPositionOrListArity >= _yieldLimit) return false;
+                slots[_yieldPositionOrListArity++].Object = value.Object.RequireNotNull();
             }
             else
             {

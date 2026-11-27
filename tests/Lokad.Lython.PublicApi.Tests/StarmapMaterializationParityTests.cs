@@ -127,6 +127,66 @@ public sealed class StarmapMaterializationParityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task GeneratorRowsDrainBeforeCallbackOrArityError(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            marker = []
+            events = []
+            def consume(value, item='initial'):
+                if value is marker:
+                    with open('callback.txt') as callback:
+                        return callback.read() + item
+                return 'wrong value'
+            def row(count):
+                yield marker
+                with open('input.txt') as source:
+                    for i in range(count):
+                        part = source.read(1)
+                        events.append(part)
+                        yield part
+                consume.__defaults__ = ('changed',)
+                events.append('done')
+            batches = starmap(consume, [row(0), row(1), row(3), row(1)])
+            print(next(batches), events)
+            print(next(batches), events)
+            try:
+                next(batches)
+            except TypeError:
+                print('arity', events)
+            print(next(batches), events)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        var mock = asynchronous ? null : new MockLythonHost();
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        mock?.SeedFile("/input.txt", "abc");
+        mock?.SeedFile("/callback.txt", "callback ");
+        delayed?.SeedFile("/input.txt", "abc");
+        delayed?.SeedFile("/callback.txt", "callback ");
+        using (var result = asynchronous ? await script.RunAsync(delayed!, options) : script.Run(mock!, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(
+                "callback changed ['done']\n" +
+                "callback a ['done', 'a', 'done']\n" +
+                "arity ['done', 'a', 'done', 'a', 'b', 'c', 'done']\n" +
+                "callback a ['done', 'a', 'done', 'a', 'b', 'c', 'done', 'a', 'done']\n",
+                result.StandardOutput);
+        }
+        if (delayed is not null)
+        {
+            Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(7, delayed.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ExactRowsKeepLiveDefaultsAndRetainedAliases(bool asynchronous)
     {
         const string source = """

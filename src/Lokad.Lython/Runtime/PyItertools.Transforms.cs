@@ -488,26 +488,92 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         return await InvokeIterableRowAsync(iterable, asynchronous: true).ConfigureAwait(false);
     }
 
-    private async ValueTask<PyIterationResult> InvokeIterableRowAsync(object iterable, bool asynchronous)
+    private ValueTask<PyIterationResult> InvokeIterableRowAsync(object iterable, bool asynchronous)
+    {
+        if (iterable is LythonRuntime.PyGenerator generator && generator.CanBufferFor(_context) &&
+            LythonRuntime.IterationFunction(_function, out var receiver) is PyExecutableFunction { CanStartInline: true } function &&
+            !function.CodeObject.HasDirectOperandReturn && ReferenceEquals(function.DefinitionContext.State, _context.State))
+        {
+            var firstArgument = receiver is null ? 0 : 1;
+            if (function.PositionalCount > firstArgument && function.SupportsPositionalBinding)
+                return InvokeGeneratorRowAsync(generator, function, receiver, firstArgument, asynchronous);
+        }
+        return InvokeGeneralIterableRowAsync(iterable, asynchronous);
+    }
+
+    private async ValueTask<PyIterationResult> InvokeGeneratorRowAsync(LythonRuntime.PyGenerator generator,
+        PyExecutableFunction function, object? receiver, int firstArgument, bool asynchronous)
+    {
+        var capacity = function.CodeObject.ValueStorageCapacity;
+        var workspace = LythonRuntime.RentFunctionArgumentStorage(function, _span, _context, capacity);
+        try
+        {
+            var values = workspace.Values;
+            if (receiver is not null) values[0].Object = receiver;
+            _context.CheckExecution(_span);
+            _context.State.CheckInterpreterStack(_span);
+            var end = function.PositionalCount;
+            var excess = asynchronous
+                ? await generator.AdvanceBufferedAsync(values, end, firstArgument).ConfigureAwait(false)
+                : generator.AdvanceBuffered(values, end, firstArgument);
+            var count = firstArgument;
+            while (count < end && !values[count].IsUnassigned) count++;
+            if (!excess.HasValue && count == end)
+            {
+                _context.CheckExecution(_span);
+                // The call now owns exactly the slots filled by the generator.
+                // Its ordinary completion or promotion returns the loan.
+                var bound = workspace;
+                workspace = default;
+                var result = asynchronous
+                    ? await function.InvokeBoundAsync(bound, _span).ConfigureAwait(false)
+                    : function.InvokeBound(bound, _span);
+                return PyIterationResult.Yield(LythonRuntime.RuntimeValue(result));
+            }
+
+            // Preserve the first excess yield and every prefetched value.
+            // The dynamic binder still handles defaults and arity errors.
+            using var arguments = new CallExpansion.CallArgumentAccumulator(0, _context, _function, span: _span);
+            for (var i = firstArgument; i < count; i++)
+                arguments.Add(CallArgumentValue.Positional(values[i].Object.RequireNotNull()), _span);
+            var drained = workspace;
+            workspace = default;
+            LythonRuntime.ReturnBoundArguments(drained, capacity);
+            if (excess.HasValue)
+            {
+                arguments.Add(CallArgumentValue.Positional(excess.Value), _span);
+                await arguments.AppendPositionalIterableAsync(generator, _span, asynchronous).ConfigureAwait(false);
+            }
+            var value = await InvokeCollectedRow(arguments, asynchronous).ConfigureAwait(false);
+            return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
+        }
+        finally
+        {
+            if (workspace.Values is not null)
+                LythonRuntime.ReturnBoundArguments(workspace, capacity);
+        }
+    }
+
+    private async ValueTask<PyIterationResult> InvokeGeneralIterableRowAsync(object iterable, bool asynchronous)
     {
         // Consume one owned argument buffer directly. Suspend with it funded
         // through the source pull, binding and any callback cleanup.
         using var arguments = new CallExpansion.CallArgumentAccumulator(0, _context, _function, span: _span);
         await arguments.AppendPositionalIterableAsync(iterable, _span, asynchronous).ConfigureAwait(false);
-
-        var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
-        object value;
-        if (callable is LythonRuntime.ISpanCallable)
-            value = asynchronous
-                ? await callable.InvokeBorrowedAsync(arguments.Arguments, _span, _context).ConfigureAwait(false)
-                : callable.InvokeBorrowed(arguments.Arguments, _span, _context);
-        else
-        {
-            var packet = arguments.ToArray();
-            value = asynchronous ? await callable.InvokeAsync(packet, _span, _context).ConfigureAwait(false)
-                : callable.Invoke(packet, _span, _context);
-        }
+        var value = await InvokeCollectedRow(arguments, asynchronous).ConfigureAwait(false);
         return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
+    }
+
+    private ValueTask<object> InvokeCollectedRow(CallExpansion.CallArgumentAccumulator arguments, bool asynchronous)
+    {
+        var callable = _function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
+        if (callable is LythonRuntime.ISpanCallable)
+            return asynchronous ? callable.InvokeBorrowedAsync(arguments.Arguments, _span, _context)
+                : new(callable.InvokeBorrowed(arguments.Arguments, _span, _context));
+
+        var packet = arguments.ToArray();
+        return asynchronous ? callable.InvokeAsync(packet, _span, _context)
+            : new(callable.Invoke(packet, _span, _context));
     }
 
     private ValueTask<PyIterationResult> StartZipRowAsync(PyZipIterator zip)

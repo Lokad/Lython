@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1905 drain generator rows into their callback workspace](results/2026-11-27-generator-row-workspace/README.md)
+removes the separate call packet for exact positional callbacks. The
+refinement saves about 164 KB per iterable shipment and restores the
+generator-reduction control's allocation. Quiet sync elapsed falls
+0.67–3.18%, with CPU and async elapsed spanning zero. Both WSL passes
+and the quiet comparison verify 364 batches.
+
 [B1904 attribute the current generator shipment](results/2026-11-27-post-yield-shipment-profile/README.md)
 profiles the delivered yield path. Iterable shipment uses 65.9% of
 sampled Lython thread time under generator advancement, 10.4% under
