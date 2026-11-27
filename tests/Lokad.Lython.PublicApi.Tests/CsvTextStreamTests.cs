@@ -276,6 +276,48 @@ public sealed class CsvTextStreamTests : LifetimeScenario
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DictWriterAwaitsDictionaryKeyEquality(bool cancel)
+    {
+        using var script = Compile("""
+            import csv, sys
+            class Key:
+                def __hash__(self):
+                    return hash('name')
+                def __eq__(self, other):
+                    with open('/marker') as marker:
+                        return marker.read() == other
+            writer = csv.DictWriter(sys.stdout, ['name'], extrasaction='ignore', lineterminator='\n')
+            writer.writerow({Key(): 'matched'})
+            """);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/marker", "name");
+        var started = cancel ? host.PauseReadUntilCancellation("/marker") : null;
+        var budget = new LythonMemoryBudget(262144);
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token });
+        if (started is not null)
+        {
+            try
+            {
+                await started.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > 0);
+            }
+            finally { cancellation.Cancel(); }
+        }
+        using (var result = await pending.WaitAsync(TimeSpan.FromSeconds(10)))
+        {
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.Failure?.Attribution?.Reason);
+            else Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(cancel ? "" : "matched\n", result.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("lookup", false)]
     [InlineData("row", false)]
     [InlineData("write", false)]

@@ -88,6 +88,19 @@ public sealed class CsvCanonicalStateTests
                 except ValueError:
                     print(width, len(output.getvalue()))
             """, "64 128\n65 130\n"];
+        yield return ["dictwriter-formatting-reentry", """
+            import csv, io
+            class Cell:
+                def __str__(self):
+                    row['second'] = 'new'
+                    writer.restval = 'updated'
+                    return 'cell'
+            row = {'first': Cell(), 'second': 'old'}
+            output = io.StringIO()
+            writer = csv.DictWriter(output, ['first', 'second', 'missing'], restval='default', lineterminator='\n')
+            writer.writerow(row)
+            print(repr(output.getvalue()))
+            """, "'cell,new,updated\\n'\n"];
         yield return new object[] { "none-quotechar", "import csv\nprint(list(csv.reader(['a,\"b\"'],quotechar=None)))", "[['a', '\"b\"']]\n" };
         yield return new object[] { "none-delimiter", "import csv\ntry:csv.reader(['a,b'],delimiter=None)\nexcept TypeError:print('TypeError')\nelse:print('accepted')", "TypeError\n" };
         yield return new object[] { "none-lineterminator", "import csv,io\ntry:csv.writer(io.StringIO(),lineterminator=None)\nexcept TypeError:print('TypeError')\nelse:print('accepted')", "TypeError\n" };

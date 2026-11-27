@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1870 read eligible dictionary CSV fields directly](results/2026-11-27-csv-dictwriter-direct-fields/README.md)
+removes bound `dict.get` argument transport per field. The report allocates
+54.47–54.48% less at matching admitted peaks. Local sync uses 33.31–37.82%
+less CPU, and the local async repeat uses 35.48–42.86% less. The unchanged
+file-fed map uses more CPU on repeat with high same-image spread.
+
 [B1869 compare the CSV dictionary re-export with CPython](results/2026-11-27-csv-dictwriter-cpython/README.md)
 uses the delivered `6e59cd41e` image. Warm elapsed is 0.635–0.642× sync and
 0.772–0.787× async against CPython 3.13.16. Compile-to-result is 0.643–0.665×.

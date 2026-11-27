@@ -72,10 +72,18 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static async ValueTask<object> GetFieldAsync(CsvDictWriterObject writer, object row, object name,
+        internal static ValueTask<object> GetFieldAsync(CsvDictWriterObject writer, object row, object name,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
+            return row is PyDict dictionary && dictionary.CanReadKeySynchronously(name)
+                ? new(InvokeDictionaryGet(dictionary, name, writer.RestValue, span, context))
+                : GetMappingFieldAsync(writer, row, name, span, context, asynchronous);
+        }
+
+        private static async ValueTask<object> GetMappingFieldAsync(CsvDictWriterObject writer, object row, object name,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
             var get = asynchronous ? await PyTextStream.ResolveMemberAsync(row, "get", span, context).ConfigureAwait(false)
                 : PyTextStream.ResolveMember(row, "get", span, context);
             CallArgumentValue[] args = [CallArgumentValue.Positional(name), CallArgumentValue.Positional(writer.RestValue)];

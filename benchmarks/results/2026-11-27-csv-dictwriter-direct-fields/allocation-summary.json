@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-dictwriter-report",
+    "mode": "sync",
+    "clr": [
+      3129438,
+      1424972
+    ],
+    "peak": [
+      2316075,
+      2316075
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-writer-report-control",
+    "mode": "sync",
+    "clr": [
+      1538880,
+      1538880
+    ],
+    "peak": [
+      3104123,
+      3104123
+    ],
+    "compiled": [
+      72992,
+      72992
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808768,
+      808768
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-dictwriter-report",
+    "mode": "async",
+    "clr": [
+      3129686,
+      1424656
+    ],
+    "peak": [
+      2316075,
+      2316075
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-writer-report-control",
+    "mode": "async",
+    "clr": [
+      1539214,
+      1539208
+    ],
+    "peak": [
+      3104123,
+      3104123
+    ],
+    "compiled": [
+      72992,
+      72992
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808984,
+      808984
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  }
+]
