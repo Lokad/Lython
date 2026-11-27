@@ -156,8 +156,21 @@ internal sealed partial class LythonRuntime
         internal ValueTask<PyIterationResult> AdvanceBufferedAsync(object destination, int limit)
             => AdvanceAsync(PyNone.Instance, null, destination, limit);
 
+        // Private callers must transfer a staged yield before starting the
+        // callback. The ordinary result remains empty until that transfer.
+        internal PyIterationResult AdvanceListYield(int arity)
+            => Advance(PyNone.Instance, null, listYieldArity: arity);
+
+        internal ValueTask<PyIterationResult> AdvanceListYieldAsync(int arity)
+            => AdvanceAsync(PyNone.Instance, null, listYieldArity: arity);
+
+        internal bool HasStagedListYield => _frame?.HasStagedListYield == true;
+
+        internal void TransferStagedListYield(Span<ExecutableSlot> destination)
+            => _frame!.TransferStagedListYield(destination);
+
         private PyIterationResult Advance(object sent, LythonRuntimeException? injected,
-            object? destination = null, int limit = 0)
+            object? destination = null, int limit = 0, int listYieldArity = 0)
         {
             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
             if (!_started && injected is not null) { Complete(); throw injected; }
@@ -166,12 +179,12 @@ internal sealed partial class LythonRuntime
             var entered = false;
             try
             {
-                EnterFrame(frame, previousException, destination, limit);
+                EnterFrame(frame, previousException, destination, limit, listYieldArity);
                 entered = true;
                 frame.Resume(sent, injected);
                 frame.Execute();
                 var result = ReadResult(frame);
-                if (!result.HasValue) Complete();
+                if (!frame.HasYield) Complete();
                 return result;
             }
             catch (LythonRuntimeException exception)
@@ -183,11 +196,11 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             catch { Complete(); throw; }
-            finally { if (entered) LeaveFrame(frame, previousException, destination is not null); }
+            finally { if (entered) LeaveFrame(frame, previousException, destination is not null, listYieldArity); }
         }
 
         private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected,
-            object? destination = null, int limit = 0)
+            object? destination = null, int limit = 0, int listYieldArity = 0)
         {
             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
             if (!_started && injected is not null) { Complete(); throw injected; }
@@ -196,12 +209,12 @@ internal sealed partial class LythonRuntime
             var entered = false;
             try
             {
-                EnterFrame(frame, previousException, destination, limit);
+                EnterFrame(frame, previousException, destination, limit, listYieldArity);
                 entered = true;
                 frame.Resume(sent, injected);
                 await frame.ExecuteAsync().ConfigureAwait(false);
                 var result = ReadResult(frame);
-                if (!result.HasValue) Complete();
+                if (!frame.HasYield) Complete();
                 return result;
             }
             catch (LythonRuntimeException exception)
@@ -213,7 +226,7 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             catch { Complete(); throw; }
-            finally { if (entered) LeaveFrame(frame, previousException, destination is not null); }
+            finally { if (entered) LeaveFrame(frame, previousException, destination is not null, listYieldArity); }
         }
 
         private bool CanAdvance(object sent, LythonRuntimeException? injected)
@@ -225,7 +238,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private void EnterFrame(ExecutionContext frame, PyException? previousException, object? destination, int limit)
+        private void EnterFrame(ExecutionContext frame, PyException? previousException, object? destination, int limit, int listYieldArity)
         {
             frame.EnterFunctionCall(_span);
             try { frame.EnterInterpreterFrame(_span); }
@@ -238,11 +251,13 @@ internal sealed partial class LythonRuntime
             // Reentry and stack admission have succeeded. A rejected nested
             // pull must never overwrite the current advance's destination.
             if (destination is not null) frame.BufferYields(destination, limit);
+            if (listYieldArity != 0) frame.RequestListYield(listYieldArity);
         }
 
-        private void LeaveFrame(ExecutionContext frame, PyException? previousException, bool buffered)
+        private void LeaveFrame(ExecutionContext frame, PyException? previousException, bool buffered, int listYieldArity)
         {
             if (buffered) frame.StopBufferingYields();
+            if (listYieldArity != 0) frame.RequestListYield(0);
             _running = false;
             frame.State.SetCurrentException(previousException);
             frame.LeaveExecutableSlots();

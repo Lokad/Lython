@@ -366,6 +366,15 @@ internal static partial class PyIteration
             return zip;
         }
 
+        internal LythonRuntime.PyGenerator? ListYieldGeneratorForPull(LythonRuntime.ExecutionContext context)
+        {
+            var generator = GetBulkGenerator(context);
+            if (generator is null) return null;
+            CheckExecution();
+            CheckStackForPull();
+            return generator;
+        }
+
         private PyIterationResult TryMoveNextCore()
         {
             if (_disposed || _value is null) return PyIterationResult.End;

@@ -85,6 +85,8 @@ internal sealed partial class LythonRuntime
         internal void DetachExecutableExecution()
         {
             StopBufferingYields();
+            _listYieldArity = 0;
+            HasStagedListYield = false;
             ClearExecutableBindings();
             _execution.Stack = default;
             _pendingAbrupt = null;
@@ -165,6 +167,50 @@ internal sealed partial class LythonRuntime
 
         private object? _yieldDestination;
         private int _yieldLimit;
+        private int _listYieldArity;
+        internal bool HasStagedListYield { get; private set; }
+
+        internal void RequestListYield(int arity) => _listYieldArity = arity;
+
+        private bool TryStageListYield(in ExecutableInstruction display)
+        {
+            var next = _execution.InstructionIndex + 1;
+            var instructions = _execution.Code.Instructions;
+            var start = display.InputStart;
+            if (display.ItemCount != _listYieldArity || display.ResultSlot != start || display.HasResultConsumer ||
+                MirrorsExecutableLocals || MirrorLocalStores || next >= instructions.Length)
+                return false;
+
+            ref readonly var yield = ref instructions[next];
+            if (yield.OpCode != ExecutableOpCode.Yield || yield.InputStart != start || yield.ResultSlot != start ||
+                _execution.Stack.LiveExtent != start + _listYieldArity || !_execution.Stack.CanRetireWithoutCleanup(start))
+                return false;
+
+            // The next instruction still performs its ordinary cancellation
+            // check and suspension. Its input remains a private slot range.
+            HasStagedListYield = true;
+            return true;
+        }
+
+        internal void TransferStagedListYield(Span<ExecutableSlot> destination)
+        {
+            System.Diagnostics.Debug.Assert(HasStagedListYield);
+            var start = _execution.Code.Instructions[_execution.InstructionIndex - 1].InputStart;
+            System.Diagnostics.Debug.Assert(_execution.Stack.LiveExtent == start + destination.Length);
+            var items = _execution.Stack.Values.AsSpan(start, destination.Length);
+            try
+            {
+                // Publish the same aliases that a Python list would expose.
+                // Calling or admitting a continuation happens after retirement.
+                for (var i = 0; i < items.Length; i++)
+                    destination[i].Object = items[i].Object.RequireNotNull();
+            }
+            finally
+            {
+                HasStagedListYield = false;
+                _execution.Stack.RetireTo(start);
+            }
+        }
 
         internal void BufferYields(object destination, int limit)
         {

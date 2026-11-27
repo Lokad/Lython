@@ -644,6 +644,13 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
+    internal static PyIterationResult StartIterationListYield(PyExecutableFunction function, object? receiver, PyGenerator generator,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous, out ValueTask<object> pending)
+    {
+        function.StartStagedListYield(generator, receiver, context, span, out var result, out var frame, out var owned);
+        return FinishIterationFunction(function, result, frame, owned, span, asynchronous, out pending);
+    }
+
     private static PyIterationResult FinishIterationFunction(PyFunctionBase function, ExecutableSlot result,
         ExecutionContext? frame, BoundFunctionArguments owned, LythonSourceSpan span, bool asynchronous,
         out ValueTask<object> pending)
@@ -665,7 +672,7 @@ internal sealed partial class LythonRuntime
         return PyIterationResult.Yield(value);
     }
 
-    private static PyFunctionBase? IterationFunction(object callable, out object? receiver)
+    internal static PyFunctionBase? IterationFunction(object callable, out object? receiver)
     {
         receiver = null;
         if (callable is PyFunctionBase function) return function;

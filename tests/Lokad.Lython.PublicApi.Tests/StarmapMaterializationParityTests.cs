@@ -228,6 +228,102 @@ public sealed class StarmapMaterializationParityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task GeneratorListYieldKeepsAliasesAndAllowsCallbackToResumeSource(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            marker = []
+            def produce():
+                held = (marker, 21000 + len(marker))
+                sent = yield [held[0], held[1], held[1]]
+                yield [sent, marker]
+            def inspect(a, b, c):
+                return a is marker, b is c, rows.send('sent')
+            class Callback:
+                def call(self, a, b, c):
+                    return inspect(a, b, c)
+            rows = produce()
+            mapped = starmap(Callback().call, rows)
+            same_object, same_int, row = next(mapped)
+            print(same_object, same_int, type(row) is list, row[0], row[1] is marker, list(mapped))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True True sent True []\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GeneratorListYieldKeepsStorageThroughSuspendedSourceOrCallback(bool pauseCallback)
+    {
+        const string source = """
+            from itertools import starmap
+            marker = []
+            def pause(value):
+                with open('/pause') as stream:
+                    stream.read()
+                return value
+            def identity(value):
+                return value
+            source_op = identity if pause_callback else pause
+            callback_op = pause if pause_callback else identity
+            def callback(a, b, c, d, e):
+                return callback_op(a)
+            rows = ([source_op(value), 2, 3, 4, 5] for value in [marker])
+            print(next(starmap(callback, rows)) is marker, list(rows))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var globals = new Dictionary<string, object?> { ["pause_callback"] = pauseCallback };
+        var host = new DelayedLythonHost();
+        host.SeedFile("/pause", "content");
+        var started = host.PauseReadUntilCancellation("/pause");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions
+        {
+            MemoryBudget = budget, Globals = globals, CancellationToken = cancellation.Token,
+        });
+        try
+        {
+            await started.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var interrupted = await pending;
+            Assert.Equal(LythonFailureReason.Cancelled, interrupted.FailureAttribution?.Reason);
+            Assert.Empty(interrupted.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        var completedHost = new DelayedLythonHost();
+        completedHost.SeedFile("/pause", "content");
+        using (var completed = await script.RunAsync(completedHost, new LythonRunOptions { MemoryBudget = budget, Globals = globals }))
+        {
+            Assert.True(completed.Success, completed.Failure?.Message);
+            Assert.Equal("True []\n", completed.StandardOutput);
+        }
+        Assert.Equal(1, completedHost.ClosedFileCount);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ZipOperandsSurviveReentrantPullsAndRetainedSource(bool asynchronous)
     {
         const string source = """

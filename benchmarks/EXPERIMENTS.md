@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1819 generator list-yield handoff](results/2026-11-27-starmap-slot-handoff/README.md)
+transfers the existing generator operands into the callback's actual slots.
+Shipment allocation falls 16–18% and peak admission falls 18–25% in both
+APIs. Five-field sync uses 3.45–6.21% less process CPU in the local
+comparison. Async CPU remains unresolved. Keep the direct transfer and
+its reentry, suspension and ownership coverage.
+
 [B1818 mapped numeric accumulation](results/2026-11-27-aggregate-map-loop/README.md)
 accumulates completed map results before returning to the asynchronous
 `sum` loop. File-fed allocation and admission match. Both affected timing

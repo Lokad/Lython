@@ -327,6 +327,14 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     // the async shape reuses the leased drain and covers the exact final array.
     private const long ArgumentSlotBytes = 24;
 
+    private LythonRuntime.PyGenerator? ListYieldSource(out PyExecutableFunction? function, out object? receiver, out int arity)
+    {
+        function = LythonRuntime.IterationFunction(_function, out receiver) as PyExecutableFunction;
+        arity = (function?.PositionalCount ?? 0) - (receiver is null ? 0 : 1);
+        return arity > 0 && function is { CanStartInline: true } && function.HasCompletePositionalSupply(arity, receiver)
+            ? _source.ListYieldGeneratorForPull(_context) : null;
+    }
+
     private bool TryStartSequenceCallback(object current, bool asynchronous, out PyIterationResult result,
         out ValueTask<object> pending)
     {
@@ -422,10 +430,12 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             return hasRow ? LythonRuntime.StartIterationCallback(_function, operands, zip.Arity, _borrowStorage,
                 _span, _context, asynchronous: false, out _) : PyIterationResult.End;
         }
-        if (!(_source.TryMoveNext() is { HasValue: true, Value: var current }))
-        {
-            return PyIterationResult.End;
-        }
+        var generator = ListYieldSource(out var function, out var receiver, out var arity);
+        var next = generator is null ? _source.TryMoveNext() : generator.AdvanceListYield(arity);
+        if (generator?.HasStagedListYield == true)
+            return LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context, asynchronous: false, out _);
+        if (!next.HasValue) return PyIterationResult.End;
+        var current = next.Value;
 
         if (TryStartSequenceCallback(current, asynchronous: false, out var rowResult, out _))
             return rowResult;
@@ -464,11 +474,16 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         _context.CheckExecution(_span);
         if (_source.ShortZipForPull() is { } zip)
             return await StartZipRowAsync(zip).ConfigureAwait(false);
-        var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasValue)
+        var generator = ListYieldSource(out var function, out var receiver, out var arity);
+        var next = await (generator is null ? _source.TryMoveNextAsync() : generator.AdvanceListYieldAsync(arity))
+            .ConfigureAwait(false);
+        if (generator?.HasStagedListYield == true)
         {
-            return PyIterationResult.End;
+            var staged = LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context, asynchronous: true, out var stagedPending);
+            return staged.HasValue ? staged : PyIterationResult.Yield(await stagedPending.ConfigureAwait(false));
         }
+        if (!next.HasValue) return PyIterationResult.End;
+        var current = next.Value;
 
         if (TryStartSequenceCallback(current, asynchronous: true, out var rowResult, out var pending))
             return rowResult.HasValue ? rowResult : PyIterationResult.Yield(await pending.ConfigureAwait(false));

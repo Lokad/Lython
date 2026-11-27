@@ -134,7 +134,8 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.Yield:
                         {
                             if (invocation is null) return InstructionPause.ContextRequired;
-                            var value = execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
+                            var value = invocation.HasStagedListYield ? default
+                                : execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
                             // A private funded consumer can take an ordinary
                             // discarded yield without suspending this frame or
                             // publishing the unused send(None) result. Retain
@@ -259,6 +260,7 @@ internal sealed partial class LythonRuntime
                             execution.Stack.RetireTo(instruction.LiveExtent);
                             break;
                         case ExecutableOpCode.MakeList:
+                            if (invocation is { _listYieldArity: > 0 } && invocation.TryStageListYield(instruction)) break;
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 CreateListFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
                             break;

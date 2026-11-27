@@ -341,10 +341,34 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
         // These are the callee's actual positional slots. A suspended prefix
         // moves its live slots into the ordinary admitted continuation.
-        if (TryStartSuppliedOperandReturn(arguments, receiver, span, out result)) return true;
+        StartFilledPositionalRow(values, arguments, receiver, span, out result, out frame, out owned);
+        return true;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal void StartStagedListYield(LythonRuntime.PyGenerator generator, object? receiver, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame,
+        out BoundFunctionArguments owned)
+    {
+        NativeValues buffer = default;
+        Span<LythonRuntime.ExecutableSlot> values = buffer;
+        var first = 0;
+        if (receiver is not null) values[first++].Object = receiver;
+        var arguments = values[first..PositionalCount];
+        generator.TransferStagedListYield(arguments);
+        context.CheckExecution(span);
+        StartFilledPositionalRow(values, arguments, receiver, span, out result, out frame, out owned);
+    }
+
+    private void StartFilledPositionalRow(Span<LythonRuntime.ExecutableSlot> values, Span<LythonRuntime.ExecutableSlot> arguments,
+        object? receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result,
+        out LythonRuntime.ExecutionContext? frame, out BoundFunctionArguments owned)
+    {
+        frame = null;
+        owned = default;
+        if (TryStartSuppliedOperandReturn(arguments, receiver, span, out result)) return;
         StartInline(values[..CodeObject.ValueStorageCapacity], null, span, false, default,
             out _, out result, out frame, out owned);
-        return true;
     }
 
     // Prove the actual physical footprint of a straight-line expression.

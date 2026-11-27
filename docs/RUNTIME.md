@@ -892,6 +892,14 @@ transfers its live slots into the existing admitted continuation. Other
 exact rows use an admitted argument packet, and arbitrary iterables use
 the general argument drain.
 
+For a compatible executable callback, `starmap` can take the operands of an
+exact list display yielded by a generator in the same command. The generator
+suspends at its usual yield boundary. Its admitted slots hold the values
+until the callback's actual argument slots receive their Python identities.
+The source operands are retired before the callback runs, so the callback can
+resume the generator. Direct pulls and unmatched displays still yield Python
+objects normally.
+
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume
 path. The continuation consumes that pull once and resumes in source
