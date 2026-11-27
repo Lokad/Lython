@@ -1,0 +1,331 @@
+[
+  {
+    "label": "first-line-sync",
+    "case": "diagnostic.file-search-first-line",
+    "invocations": 46080,
+    "guestClockSeconds": 3.633095013,
+    "sampleCount": 1167,
+    "guestRuntimeAncestry": 482,
+    "unmappedLeafSamples": 969,
+    "sampleGroups": {
+      "file acquisition": {
+        "total": 285,
+        "unknownKernelLeaf": 237,
+        "unknownNonKernelLeaf": 2
+      },
+      "file transport reads and writes": {
+        "total": 32,
+        "unknownKernelLeaf": 31,
+        "unknownNonKernelLeaf": 0
+      },
+      "worker scheduling": {
+        "total": 60,
+        "unknownKernelLeaf": 51,
+        "unknownNonKernelLeaf": 3
+      },
+      "fixture reset": {
+        "total": 505,
+        "unknownKernelLeaf": 451,
+        "unknownNonKernelLeaf": 7
+      },
+      "output verification": {
+        "total": 151,
+        "unknownKernelLeaf": 122,
+        "unknownNonKernelLeaf": 4
+      },
+      "builtins": {
+        "total": 5,
+        "unknownKernelLeaf": 0,
+        "unknownNonKernelLeaf": 0
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "511189",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511190",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511191",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511192",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511193",
+        "name": ".NET Finalizer",
+        "seconds": 0.01
+      },
+      {
+        "tid": "511194",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.010000000000000009
+      },
+      {
+        "tid": "511196",
+        "name": ".NET TP Worker",
+        "seconds": 0.6000000000000001
+      },
+      {
+        "tid": "511197",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511198",
+        "name": ".NET TP Worker",
+        "seconds": 1.33
+      },
+      {
+        "tid": "511199",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511200",
+        "name": ".NET TP Worker",
+        "seconds": 0.1299999999999999
+      },
+      {
+        "tid": "511201",
+        "name": "Lython executio",
+        "seconds": 2.38
+      },
+      {
+        "tid": "511202",
+        "name": ".NET TP Worker",
+        "seconds": 1.6
+      }
+    ]
+  },
+  {
+    "label": "config-edit-sync",
+    "case": "scripts.config-edit.small",
+    "invocations": 52224,
+    "guestClockSeconds": 4.169461463,
+    "sampleCount": 1130,
+    "guestRuntimeAncestry": 541,
+    "unmappedLeafSamples": 885,
+    "sampleGroups": {
+      "file acquisition": {
+        "total": 270,
+        "unknownKernelLeaf": 225,
+        "unknownNonKernelLeaf": 6
+      },
+      "file transport reads and writes": {
+        "total": 30,
+        "unknownKernelLeaf": 26,
+        "unknownNonKernelLeaf": 0
+      },
+      "worker scheduling": {
+        "total": 40,
+        "unknownKernelLeaf": 36,
+        "unknownNonKernelLeaf": 1
+      },
+      "fixture reset": {
+        "total": 371,
+        "unknownKernelLeaf": 324,
+        "unknownNonKernelLeaf": 10
+      },
+      "output verification": {
+        "total": 173,
+        "unknownKernelLeaf": 141,
+        "unknownNonKernelLeaf": 1
+      },
+      "builtins": {
+        "total": 7,
+        "unknownKernelLeaf": 0,
+        "unknownNonKernelLeaf": 0
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "511222",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511223",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511224",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511225",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511226",
+        "name": ".NET Finalizer",
+        "seconds": 0.01
+      },
+      {
+        "tid": "511227",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.07000000000000006
+      },
+      {
+        "tid": "511228",
+        "name": ".NET BGC",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511229",
+        "name": ".NET TP Worker",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511230",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511231",
+        "name": ".NET TP Worker",
+        "seconds": 1.7799999999999998
+      },
+      {
+        "tid": "511232",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511233",
+        "name": ".NET TP Worker",
+        "seconds": 0.53
+      },
+      {
+        "tid": "511234",
+        "name": "Lython executio",
+        "seconds": 2.8099999999999996
+      },
+      {
+        "tid": "511235",
+        "name": ".NET TP Worker",
+        "seconds": 0.7199999999999998
+      }
+    ]
+  },
+  {
+    "label": "first-line-async",
+    "case": "diagnostic.file-search-first-line",
+    "invocations": 44544,
+    "guestClockSeconds": 3.577096993,
+    "sampleCount": 1264,
+    "guestRuntimeAncestry": 451,
+    "unmappedLeafSamples": 1068,
+    "sampleGroups": {
+      "file acquisition": {
+        "total": 257,
+        "unknownKernelLeaf": 225,
+        "unknownNonKernelLeaf": 4
+      },
+      "file transport reads and writes": {
+        "total": 29,
+        "unknownKernelLeaf": 26,
+        "unknownNonKernelLeaf": 0
+      },
+      "worker scheduling": {
+        "total": 45,
+        "unknownKernelLeaf": 32,
+        "unknownNonKernelLeaf": 4
+      },
+      "fixture reset": {
+        "total": 468,
+        "unknownKernelLeaf": 428,
+        "unknownNonKernelLeaf": 8
+      },
+      "output verification": {
+        "total": 162,
+        "unknownKernelLeaf": 127,
+        "unknownNonKernelLeaf": 11
+      },
+      "builtins": {
+        "total": 12,
+        "unknownKernelLeaf": 0,
+        "unknownNonKernelLeaf": 0
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "511258",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511259",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511260",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511261",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511262",
+        "name": ".NET Finalizer",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511263",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.07000000000000006
+      },
+      {
+        "tid": "511265",
+        "name": ".NET TP Worker",
+        "seconds": 1.12
+      },
+      {
+        "tid": "511266",
+        "name": ".NET TP Gate",
+        "seconds": 0.14999999999999997
+      },
+      {
+        "tid": "511267",
+        "name": ".NET TP Worker",
+        "seconds": 1.2400000000000002
+      },
+      {
+        "tid": "511268",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "511269",
+        "name": ".NET TP Worker",
+        "seconds": 0.71
+      },
+      {
+        "tid": "511270",
+        "name": "Lython executio",
+        "seconds": 2.3500000000000005
+      },
+      {
+        "tid": "511271",
+        "name": ".NET TP Worker",
+        "seconds": 0.97
+      }
+    ]
+  }
+]

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1816 short file-script CPU attribution](results/2026-11-27-current-short-script-profile/README.md)
+finds 257–285 samples under file acquisition across three six-second
+captures. Most have unresolved kernel leaves. Builtin table creation has
+5–12 samples. Keep the current managed stack workers and separate output
+verification in any further diagnostic of the short-script gap.
+
 [B1815 protected file search against CPython](results/2026-11-27-compiled-prefix-cpython/README.md)
 measures the delivered B1814 source on the quiet VM. A late match takes
 0.603–0.609× CPython elapsed warm sync and 0.560–0.575× through result.
