@@ -7,6 +7,8 @@
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.72813–1.81626 ms | 1.66921–1.66997 ms | 1.035–1.088× | Diagnostic. [B1849]. |
 | Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 2.60896–2.67250 ms | 1.97476–1.98458 ms | 1.315–1.353× | Diagnostic. [B1865]. |
 | Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Diagnostic. [B1865]. |
+| CSV shipment re-export with `DictWriter` | 2,048 records / 27,350 B | 1.74944–1.76297 ms | 2.74569–2.75434 ms | 0.635–0.642× | Diagnostic. [B1869]. |
+| CSV shipment re-export with `DictWriter`, Lython `RunAsync` | 2,048 records / 27,350 B | 2.12564–2.14952 ms | 2.73113–2.75321 ms | 0.772–0.787× | Diagnostic. [B1869]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Diagnostic. [B1865]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
@@ -22,6 +24,11 @@ rows. B1865 measures `aae8992e0` with the same host and date for
 the two iterable-row shipment lanes and file-fed map. The earlier B1844
 checkpoint used `a1b3a3325` with the same comparison host. Historical
 rows retain their original revisions and dates. [B1865] · [B1849] · [B1844].
+
+B1869 measures `6e59cd41e` on the same machine and date. The shipment
+re-export reads and writes 27,350 bytes. Its file-fed map control takes
+0.294–0.329× CPython with 11.81% Lython worker spread, leaving its change
+from B1865 inconclusive. [B1869].
 
 B1860 measures `7305efabf` with the same comparison host on November 27,
 2026 UTC. Both log scripts use the optional signed PythonRe 0.5.0 adapter,
@@ -151,6 +158,8 @@ use `8aef89b09`.
 | Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.76639–0.76762 ms | 1.12265–1.13974 ms | 0.672–0.684× | Diagnostic. [B1849]. |
 | Generated comprehension report, 96 rules / 20,988 B source | Compilation only | 1.92082–1.94344 ms | 2.74657–2.75148 ms | 0.698–0.708× | Diagnostic. [B1858]. |
 | Generated comprehension report, 96 rules / 20,988 B source | Compile-to-result | 2.37403–2.38947 ms | 2.85875–2.89189 ms | 0.821–0.836× | Diagnostic. [B1858]. |
+| CSV shipment re-export, 360 B of source | Compilation only | 0.01653–0.01674 ms | 0.03124–0.03132 ms | 0.528–0.536× | Diagnostic. [B1869]. |
+| CSV shipment re-export, 2,048 records | Compile-to-result | 1.84274–1.87090 ms | 2.81251–2.86722 ms | 0.643–0.665× | Diagnostic. [B1869]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | Compile-to-result | 3.47070–3.54680 ms | 1.01756–1.06519 ms | 3.258–3.486× | Diagnostic. [B1858]. |
 | Generated guarded report, 96 rules / 24,587 B source | Compilation only | 1.07349–1.09714 ms | 1.86806–1.88237 ms | 0.570–0.587× | Historical diagnostic. [B1844]. |
 | Generated guarded report, 96 rules / 24,587 B source | Compile-to-result | 1.12661–1.13546 ms | 1.92108–1.92126 ms | 0.586–0.591× | Historical diagnostic. [B1844]. |
@@ -228,6 +237,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Validate eligible `DictWriter` rows in native slots | Relative to `fd3e24896`, the complete report allocates 56.50–56.99% less and needs 65.82% less peak admission. Local CPU falls 52.82–55.11% sync and 47.93–52.86% async. | The unchanged plain writer takes 0.67–2.73% longer locally. File-fed map timing spans zero. [B1868](../benchmarks/results/2026-11-27-csv-dictwriter-native-validation/README.md). |
 | Share the iterable reader across starred calls and `starmap` | Starred generator rows use 3.55–5.38% less sync CPU and 9.29–10.22% less async CPU in the quiet repeat, at matching allocations and admission. | Local async elapsed initially rises. The quiet `starmap` control takes 0.46–1.13% longer with CPU reaching parity. [B1866](../benchmarks/results/2026-11-27-shared-iterable-call-arguments/README.md). |
 | Collect iterable `starmap` rows into one call buffer | Allocation falls 4.96% in both APIs. Quiet CPU falls 4.27–8.66% sync and 2.73–6.25% async for the generated-row shipment report. | Peak shared admission rises 224 B. The initial adverse local sync result reverses on the quiet VM. Both quiet CPU controls span zero. [B1864](../benchmarks/results/2026-11-27-iterable-starmap-arguments/README.md). |
 | Call compiled patterns directly for one-shot regex matching | Both log scans allocate about 221 KB less per run (9.90–10.86%) at matching peak admission. Warm CPU falls 0.29–3.67% across the two scripts. | Cursor control CPU rises 0.17–3.82%. CSV and compile-only timing span zero. [B1862](../benchmarks/results/2026-11-27-pattern-one-shot/README.md). |
@@ -346,6 +356,7 @@ document reproduction.
 [B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md
 
 [B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
+[B1869]: ../benchmarks/results/2026-11-27-csv-dictwriter-cpython/README.md
 [B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md

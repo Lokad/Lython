@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1869 compare the CSV dictionary re-export with CPython](results/2026-11-27-csv-dictwriter-cpython/README.md)
+uses the delivered `6e59cd41e` image. Warm elapsed is 0.635–0.642× sync and
+0.772–0.787× async against CPython 3.13.16. Compile-to-result is 0.643–0.665×.
+All 140 batches and both quiet checks pass. The file-fed control has 11.81%
+Lython worker spread.
+
 [B1868 validate CSV fields in native dictionary slots](results/2026-11-27-csv-dictwriter-native-validation/README.md)
 removes the keys view and three temporary sets from eligible dictionary rows.
 The report allocates 56.50–56.99% less and its admitted peak falls 65.82%.

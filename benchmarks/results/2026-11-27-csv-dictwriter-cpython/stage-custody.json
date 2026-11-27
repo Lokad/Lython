@@ -1,0 +1,18 @@
+{
+  "before": 7434240,
+  "afterReclaim": 13275136,
+  "afterStaging": 7241728,
+  "reclaimed": [
+    "/home/lokad/lython-bench-checks/ready-fixed-unpack-b1852-20261127/candidate/Lokad.Lython.dll"
+  ],
+  "retiredReplica": {
+    "root": "ready-fixed-unpack-b1852-20261127",
+    "archiveSHA256": "a05522ba65986a363f03c814e2459d64a3aca6f08a7b46b51e8f18a104fe42ce",
+    "coreSHA256": "eaac54cb7a2597f403d9740d731a1a9f20e8936acd07bab10b2248649a092e13",
+    "length": 5835264
+  },
+  "requiredBeforeStage": 12674096,
+  "deduplicated": [],
+  "expandedBytes": 5982640,
+  "streamed": true
+}
