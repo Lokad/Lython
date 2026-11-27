@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1818 mapped numeric accumulation](results/2026-11-27-aggregate-map-loop/README.md)
+accumulates completed map results before returning to the asynchronous
+`sum` loop. File-fed allocation and admission match. Both affected timing
+ranges span zero, including a pinned repeat with a variable bound shipment
+control. Keep the runtime trial private and retain the new semantics and
+cleanup regressions.
+
 [B1817 iterable starmap arguments](results/2026-11-27-starmap-iterable-arguments/README.md)
 uses the expanded-call accumulator in both APIs. Sync allocation falls
 by 32,768 bytes in either CSV script, while async allocation rises 4.53–5.19%

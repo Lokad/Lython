@@ -1,0 +1,98 @@
+[
+  {
+    "case": "scripts.file-search.large",
+    "mode": "sync",
+    "clr": [
+      56160,
+      56160
+    ],
+    "peak": [
+      36512,
+      36512
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808528,
+      808528
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "mode": "sync",
+    "clr": [
+      1092936,
+      1092936
+    ],
+    "peak": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "sync",
+    "clr": [
+      1099736,
+      1099736
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "mode": "async",
+    "clr": [
+      56408,
+      56408
+    ],
+    "peak": [
+      36512,
+      36512
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808744,
+      808744
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-routing-callbacks",
+    "mode": "async",
+    "clr": [
+      1093120,
+      1093176
+    ],
+    "peak": [
+      2817644,
+      2817644
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-bound-starmap",
+    "mode": "async",
+    "clr": [
+      1099920,
+      1100150
+    ],
+    "peak": [
+      2822785,
+      2822785
+    ]
+  }
+]

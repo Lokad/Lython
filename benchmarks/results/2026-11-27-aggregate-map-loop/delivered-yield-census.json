@@ -1,0 +1,60 @@
+{
+  "revision": "c10f06884",
+  "coreSHA256": "40afae7deb08a103e2952231a5b8b04088e649a56c8076116a7aeff7fe6c9b4c",
+  "cases": [
+    {
+      "case": "diagnostic.shipment-starmap-short-lists",
+      "sourceSHA": "39136a00a4531eafa2a20e8b5102ff702a34112fffc53a86abeb397287ae7a01",
+      "yields": [
+        {
+          "function": "<genexpr>",
+          "mirrors": false,
+          "producer": "MakeList",
+          "producerOutput": 4,
+          "yieldInput": 4
+        }
+      ],
+      "fixedListYields": [
+        {
+          "producerIndex": 8,
+          "arity": 3,
+          "yieldIndex": 9,
+          "sameSlot": true
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.shipment-starmap-wide-lists",
+      "sourceSHA": "5c0785fcd4022153f8545b04ab795fc9f54c67f600035e83b7efd534e9550b42",
+      "yields": [
+        {
+          "function": "<genexpr>",
+          "mirrors": false,
+          "producer": "MakeList",
+          "producerOutput": 4,
+          "yieldInput": 4
+        }
+      ],
+      "fixedListYields": [
+        {
+          "producerIndex": 10,
+          "arity": 5,
+          "yieldIndex": 11,
+          "sameSlot": true
+        }
+      ]
+    },
+    {
+      "case": "diagnostic.shipment-bound-starmap",
+      "sourceSHA": "6ca3fad36fe2ebb5196a681c06f153254d4659772e8c2238d5dba4c3324f2ea1",
+      "yields": [],
+      "fixedListYields": []
+    },
+    {
+      "case": "diagnostic.shipment-file-fed-map",
+      "sourceSHA": "9fd3353444e385f679bd58867e06cc3f28ba87368090c541d16bb001cd3b30b8",
+      "yields": [],
+      "fixedListYields": []
+    }
+  ]
+}

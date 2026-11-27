@@ -7,6 +7,98 @@ public sealed class SumCursorCompatibilityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task MappedSumPreservesOverflowCompensationAndReentrantAddition(bool asynchronous)
+    {
+        const string source = """
+            identity = lambda value: value
+            print(sum(map(identity, (2, 3)), (1 << 63) - 1))
+            print(sum(map(identity, (1e16, 1.0, -1e16)), 0.0))
+            events = []
+            class Addend:
+                def __radd__(self, left):
+                    events.append(left)
+                    return left + next(rows)
+            def apply(value):
+                events.append(value)
+                return Addend() if value == 1 else value
+            rows = map(apply, (5, 1, 2, 3))
+            print(sum(rows), events, next(rows, 'end'))
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("9223372036854775812\n1.0\n10 [5, 1, 5, 2, 3] end\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task MappedSumResumesSinglePullAndJoinsPendingIo(bool suspendSource, bool cancel)
+    {
+        const string source = """
+            def values():
+                yield 1
+                if suspend_source:
+                    with open('pause') as file:
+                        file.read()
+                yield 2
+                yield 3
+            def apply(value, number):
+                assert value is marker
+                calls.append(number)
+                if not suspend_source and number == 2:
+                    with open('pause') as file:
+                        file.read()
+                return number
+            marker = []
+            calls = []
+            rows = map(apply, (marker, marker, marker), values())
+            print(sum(rows), calls, next(rows, 'end'))
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/pause", "content");
+        using var cancellation = new CancellationTokenSource();
+        var entered = cancel ? host.PauseReadUntilCancellation("/pause") : null;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["suspend_source"] = suspendSource } };
+        var pending = script.RunAsync(host, options, cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                await entered.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(result.Success != cancel, result.Failure?.Message);
+            Assert.Equal(cancel ? "" : "6 [1, 2, 3] end\n", result.StandardOutput);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ExactRangePreservesStartAliasesTypesAndLargeBounds(bool asynchronous)
     {
         const string source = """
