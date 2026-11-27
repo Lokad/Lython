@@ -1,0 +1,206 @@
+{
+  "diagnostic.shipment-starmap-iterable-rows": {
+    "removed": 5,
+    "code": [
+      {
+        "function": "arguments",
+        "removed": 4,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 1,
+            "input": 1,
+            "result": 1
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 1,
+            "input": 1,
+            "result": 1
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 1,
+            "input": 1,
+            "result": 1
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 1,
+            "input": 1,
+            "result": 1
+          }
+        ]
+      },
+      {
+        "function": "<genexpr>",
+        "removed": 1,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic.shipment-bound-starmap": {
+    "removed": 0,
+    "code": []
+  },
+  "diagnostic.shipment-file-fed-map": {
+    "removed": 0,
+    "code": []
+  },
+  "diagnostic.shipment-starmap-wide-lists": {
+    "removed": 1,
+    "code": [
+      {
+        "function": "<genexpr>",
+        "removed": 1,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 4,
+            "input": 4,
+            "result": 4
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic.shipment-row-generator-reduction": {
+    "removed": 1,
+    "code": [
+      {
+        "function": "<genexpr>",
+        "removed": 1,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          }
+        ]
+      }
+    ]
+  },
+  "generator-protocol": {
+    "removed": 7,
+    "code": [
+      {
+        "function": "flow",
+        "removed": 4,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          },
+          {
+            "kind": "Yield",
+            "discard": false,
+            "popAfter": false,
+            "extent": 4,
+            "input": 3,
+            "result": 3
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          }
+        ]
+      },
+      {
+        "function": "child",
+        "removed": 1,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 0,
+            "input": 0,
+            "result": 0
+          }
+        ]
+      },
+      {
+        "function": "parent",
+        "removed": 1,
+        "yields": [
+          {
+            "kind": "YieldFrom",
+            "discard": false,
+            "popAfter": false,
+            "extent": 2,
+            "input": 1,
+            "result": 1
+          },
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 1,
+            "input": 1,
+            "result": 1
+          }
+        ]
+      },
+      {
+        "function": "<genexpr>",
+        "removed": 1,
+        "yields": [
+          {
+            "kind": "Yield",
+            "discard": true,
+            "popAfter": false,
+            "extent": 3,
+            "input": 3,
+            "result": 3
+          }
+        ]
+      }
+    ]
+  }
+}

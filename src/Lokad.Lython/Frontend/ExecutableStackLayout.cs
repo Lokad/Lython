@@ -677,7 +677,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or
                 ExecutableOpCode.Unary or ExecutableOpCode.MatchException or
                 ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FinishFormattedString or
-                ExecutableOpCode.Yield or ExecutableOpCode.YieldFrom => (1, 1),
+                ExecutableOpCode.YieldFrom => (1, 1),
+            ExecutableOpCode.Yield => (1, instruction.DiscardsYieldResult ? 0 : 1),
             ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => (2, 1),
             ExecutableOpCode.CompareJumpIfFalse => (2, 0),
             ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet => (instruction.ItemCount, 1),

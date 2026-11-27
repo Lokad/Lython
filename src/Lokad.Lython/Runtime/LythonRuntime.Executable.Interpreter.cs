@@ -92,7 +92,6 @@ internal sealed partial class LythonRuntime
             _execution.Stack = default;
             _pendingAbrupt = null;
             _execution.InstructionIndex = 0;
-            _waitingForSend = false;
             _sentValue = PyNone.Instance;
             _injectedException = null;
             _delegation = null;
@@ -115,7 +114,6 @@ internal sealed partial class LythonRuntime
         // The mutable stack lives in this invocation, including across generator
         // suspension. Helpers must borrow it by reference rather than copy it.
         private PendingAbruptSignal? _pendingAbrupt;
-        private bool _waitingForSend;
         private object _sentValue = PyNone.Instance;
         private LythonRuntimeException? _injectedException;
         private GeneratorDelegation? _delegation;
@@ -163,19 +161,19 @@ internal sealed partial class LythonRuntime
             // the authoritative cells written through escaped closures.
             if (MirrorsExecutableLocals || MirrorLocalStores)
                 SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
+            var yielded = HasYield;
             HasYield = false;
-            _sentValue = sent;
             _injectedException = injected;
-            if (_waitingForSend)
-            {
-                _waitingForSend = false;
-                if (injected is null)
-                {
-                    var yielded = _execution.Code.Instructions[_execution.InstructionIndex - 1];
-                    _execution.Stack.PublishValue(yielded.ResultSlot, yielded.LiveExtent, sent);
-                }
-                _sentValue = PyNone.Instance;
-            }
+            _sentValue = _delegation is null ? PyNone.Instance : sent;
+
+            // Keep the yield instruction current on exception injection.
+            // Its protected region and source span own the suspension.
+            if (!yielded || injected is not null || _delegation is not null) return;
+            ref readonly var yield = ref _execution.Code.Instructions[_execution.InstructionIndex];
+            System.Diagnostics.Debug.Assert(yield.OpCode == ExecutableOpCode.Yield);
+            if (!yield.DiscardsYieldResult)
+                _execution.Stack.PublishValue(yield.ResultSlot, yield.LiveExtent, sent);
+            _execution.InstructionIndex++;
         }
 
         private object? _yieldDestination;
@@ -208,7 +206,7 @@ internal sealed partial class LythonRuntime
         internal void TransferStagedListYield(Span<ExecutableSlot> destination)
         {
             System.Diagnostics.Debug.Assert(HasStagedListYield);
-            var start = _execution.Code.Instructions[_execution.InstructionIndex - 1].InputStart;
+            var start = _execution.Code.Instructions[_execution.InstructionIndex].InputStart;
             System.Diagnostics.Debug.Assert(_execution.Stack.LiveExtent == start + destination.Length);
             var items = _execution.Stack.Values.AsSpan(start, destination.Length);
             try

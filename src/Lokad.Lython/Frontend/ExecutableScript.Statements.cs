@@ -59,9 +59,15 @@ internal sealed partial class ExecutableScript
                     return CompileAssignmentStatement(statement, currentBlock);
 
                 case ExpressionStatementSyntax expressionStatement:
-                    currentBlock = CompileExpression(expressionStatement.Expression, currentBlock);
+                {
+                    var expression = expressionStatement.Expression;
+                    while (expression is ParenthesizedExpressionSyntax parentheses) expression = parentheses.Inner;
+                    if (expression is YieldExpressionSyntax { Delegated: false } yielded)
+                        return CompileYield(yielded, currentBlock, discardResult: true);
+                    currentBlock = CompileExpression(expression, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.PopTop(expressionStatement.Span));
                     return currentBlock;
+                }
 
                 case IfStatementSyntax ifStatement:
                     return CompileIfStatement(ifStatement, currentBlock);

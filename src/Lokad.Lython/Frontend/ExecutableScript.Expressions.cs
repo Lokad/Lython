@@ -57,11 +57,7 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.UnpackValues(new UnpackingLayout(1, -1), unpacked.Span));
                     return currentBlock;
                 case YieldExpressionSyntax yielded:
-                    if (yielded.Value is null)
-                        AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), yielded.Span));
-                    else currentBlock = CompileExpression(yielded.Value, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Yield(yielded.Delegated, yielded.Span));
-                    return currentBlock;
+                    return CompileYield(yielded, currentBlock);
                 case ParenthesizedExpressionSyntax parenthesized:
                     currentBlock = CompileExpression(parenthesized.Inner, currentBlock);
                     return currentBlock;
@@ -263,6 +259,15 @@ internal sealed partial class ExecutableScript
         // for its deciding edge (CPython returns operands, not bools) and
         // test it with the left span like the lowered path does, so both
         // join edges arrive with the same stack depth.
+        private int CompileYield(YieldExpressionSyntax yielded, int currentBlock, bool discardResult = false)
+        {
+            if (yielded.Value is null)
+                AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), yielded.Span));
+            else currentBlock = CompileExpression(yielded.Value, currentBlock);
+            AddInstruction(currentBlock, ExecutableInstruction.Yield(yielded.Delegated, yielded.Span, discardResult));
+            return currentBlock;
+        }
+
         private int CompileShortCircuitExpression(BinaryExpressionSyntax binary, int currentBlock)
         {
             currentBlock = CompileExpression(binary.Left, currentBlock);

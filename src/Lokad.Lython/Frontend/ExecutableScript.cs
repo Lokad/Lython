@@ -299,6 +299,7 @@ internal readonly record struct ExecutableInstruction
         ? new(_primaryOperand, _secondaryOperand) : throw InvalidOperand(nameof(UnpackLayout));
     public bool HasAssertionMessage => ReadPrimaryOperand(ExecutableOpCode.FailAssertion, nameof(HasAssertionMessage)) != 0;
     public bool HasRaiseCause => ReadPrimaryOperand(ExecutableOpCode.Raise, nameof(HasRaiseCause)) != 0;
+    internal bool DiscardsYieldResult => _primaryOperand != 0;
 
     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Import, span, importIndex);
@@ -509,8 +510,8 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ReturnNone(LythonSourceSpan span)
         => new(ExecutableOpCode.ReturnNone, span);
 
-    public static ExecutableInstruction Yield(bool delegated, LythonSourceSpan span)
-        => new(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
+    public static ExecutableInstruction Yield(bool delegated, LythonSourceSpan span, bool discardResult = false)
+        => new(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span, discardResult ? 1 : 0);
 
     public ExecutableInstruction WithTargetIndex(int targetBlockIndex)
         => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse

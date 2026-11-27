@@ -129,8 +129,7 @@ internal sealed partial class ExecutableScript
             }
             if (yielding)
             {
-                AddInstruction(block, ExecutableInstruction.Yield(false, item.Span));
-                AddInstruction(block, ExecutableInstruction.PopTop(item.Span));
+                AddInstruction(block, ExecutableInstruction.Yield(false, item.Span, discardResult: true));
             }
             else if (value is not null)
             {

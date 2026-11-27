@@ -136,34 +136,26 @@ internal sealed partial class LythonRuntime
                             if (invocation is null) return InstructionPause.ContextRequired;
                             var value = invocation.HasStagedListYield ? default
                                 : execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
-                            // A private funded consumer can take an ordinary
-                            // discarded yield without suspending this frame or
-                            // publishing the unused send(None) result. Retain
-                            // real resume boundaries for mirrored namespaces,
-                            // delegated yields and outstanding cleanup.
-                            var following = execution.InstructionIndex + 1;
+                            // A private funded consumer can take a discarded
+                            // yield without entering the resume path. Mirrored
+                            // namespaces still synchronize at each resume.
                             var buffered = invocation._yieldDestination;
-                            var discardsSend = !invocation.MirrorsExecutableLocals && !invocation.MirrorLocalStores
-                                && following < instructions.Length
-                                && instructions[following].OpCode == ExecutableOpCode.PopTop;
-                            if (discardsSend && buffered is not null
+                            var directBuffer = instruction.DiscardsYieldResult
+                                && !invocation.MirrorsExecutableLocals && !invocation.MirrorLocalStores;
+                            if (directBuffer && buffered is not null
                                 && invocation.TryAppendBufferedYield(buffered, value))
                             {
-                                scope.CheckExecution(instructions[following].Span);
                                 scope.State.SetCurrentException(invocation.HasActiveHandler
                                     ? scope.State.CurrentException : invocation._entryActiveException);
-                                execution.Stack.RetireTo(instructions[following].LiveExtent);
-                                execution.InstructionIndex += 2;
+                                execution.InstructionIndex++;
                                 continue;
                             }
-                            invocation!.YieldValue = value;
-                            invocation!.HasYield = true;
-                            invocation!._waitingForSend = true;
-                            execution.InstructionIndex++;
+                            invocation.YieldValue = value;
+                            invocation.HasYield = true;
                             // The same prefix owns other completed yields too.
                             // A declined direct sum must reach ordinary addition
                             // without probing or changing its state twice.
-                            if (!discardsSend && buffered is not null && invocation.TryBufferYield(buffered)) continue;
+                            if (!directBuffer && buffered is not null && invocation.TryBufferYield(buffered)) continue;
                             return InstructionPause.Boundary;
                         }
                         case ExecutableOpCode.YieldFrom:

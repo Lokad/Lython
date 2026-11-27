@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1903 retire discarded send results at direct yields](results/2026-11-27-direct-yield-resume/README.md)
+removes the discard instruction, unused send publication and buffered
+opcode lookahead. Iterable shipment elapsed falls 1.16–3.84% sync and
+0.93–1.85% async on WSL, with all CPU ranges spanning zero. Admission
+matches and 168 timed batches verify. VM disk space precludes a quiet
+repeat under the existing staging floor.
+
 [B1902 share assignment targets throughout the frontend](results/2026-11-27-assignment-targets/README.md)
 removes the parallel unpacking target hierarchy and conversions during
 analysis and lowering. The record transform allocates 2,800 B less per
