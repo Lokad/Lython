@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1904 attribute the current generator shipment](results/2026-11-27-post-yield-shipment-profile/README.md)
+profiles the delivered yield path. Iterable shipment uses 65.9% of
+sampled Lython thread time under generator advancement, 10.4% under
+positional binding and entry, and 2.2% under argument-buffer allocation.
+The regions overlap. All 41 captured batches verify.
+
 [B1903 retire discarded send results at direct yields](results/2026-11-27-direct-yield-resume/README.md)
 removes the discard instruction, unused send publication and buffered
 opcode lookahead. Iterable shipment elapsed falls 1.16–3.84% sync and
