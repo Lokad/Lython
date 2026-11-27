@@ -2,16 +2,16 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.21170–2.25079 ms | 1.81365–1.83653 ms | 1.204–1.241× | Diagnostic. [B1849]. |
-| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 1.88707–1.97045 ms | 1.82219–1.83011 ms | 1.031–1.081× | Diagnostic. [B1849]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 6.59418–7.32776 ms | 5.96587–6.06126 ms | 1.088–1.228× | Local WSL diagnostic. [B1881]. |
+| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 7.04538–7.47891 ms | 5.97461–6.17809 ms | 1.140–1.252× | Local WSL diagnostic. [B1881]. |
 | Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.72813–1.81626 ms | 1.66921–1.66997 ms | 1.035–1.088× | Diagnostic. [B1849]. |
-| Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 2.60896–2.67250 ms | 1.97476–1.98458 ms | 1.315–1.353× | Diagnostic. [B1865]. |
-| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Diagnostic. [B1865]. |
+| Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 3.42958–3.66051 ms | 2.25860–2.34191 ms | 1.464–1.621× | Local WSL diagnostic. [B1881]. |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 4.14039–4.19706 ms | 2.23555–2.25895 ms | 1.833–1.877× | Local WSL diagnostic. [B1881]. |
 | CSV shipment re-export with `DictWriter` | 2,048 records / 27,350 B | 1.74944–1.76297 ms | 2.74569–2.75434 ms | 0.635–0.642× | Diagnostic. [B1869]. |
 | CSV shipment re-export with `DictWriter`, Lython `RunAsync` | 2,048 records / 27,350 B | 2.12564–2.14952 ms | 2.73113–2.75321 ms | 0.772–0.787× | Diagnostic. [B1869]. |
 | Default JSON Lines export | 768 records / 47,361 B input | 1.19990–1.30230 ms | 1.47476–1.54651 ms | 0.776–0.883× | Local WSL diagnostic. [B1880]. |
 | Default JSON Lines export, Lython `RunAsync` | 768 records / 47,361 B input | 1.25198–1.32638 ms | 1.49664–1.55189 ms | 0.807–0.886× | Local WSL diagnostic. [B1880]. |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Diagnostic. [B1865]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 1.10825–1.11422 ms | 3.09238–3.14538 ms | 0.352–0.360× | Local WSL diagnostic. [B1881]. |
 | Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 2.88760–2.90887 ms | 0.99232–1.00082 ms | 2.885–2.931× | Diagnostic. [B1860]. |
@@ -78,6 +78,11 @@ come from the paired run with shared workers and interleaved hosting modes.
 The same checkpoint measures the CSV re-export at 0.441–0.499× CPython
 and the Unicode report at 0.789–0.853×. These are local diagnostics. [B1880].
 
+B1881 uses the same WSL image and CPython baseline. Wide and iterable
+shipment rotate `Run` and `RunAsync` through shared workers. The iterable
+case shows the larger gap in both elapsed and process CPU. Wide async
+Lython worker spread is 11.12%. [B1881].
+
 The first-line search gap is about 15–16 µs in B1834. A separate B1815
 diagnostic measured about 23 µs with verification and 29–30 µs before it.
 The earlier interval still includes mediated I/O, output capture and
@@ -90,6 +95,11 @@ The paired metadata measurement at fixed runtime is available separately.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.21170–2.25079 ms | 1.81365–1.83653 ms | 1.204–1.241× | Historical quiet diagnostic. [B1849]. |
+| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 1.88707–1.97045 ms | 1.82219–1.83011 ms | 1.031–1.081× | Historical quiet diagnostic. [B1849]. |
+| Iterable-row `starmap` shipment report | 2,048 records / 27,350 B | 2.60896–2.67250 ms | 1.97476–1.98458 ms | 1.315–1.353× | Historical quiet diagnostic. [B1865]. |
+| Iterable-row `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 3.03004–3.09430 ms | 1.96767–1.99960 ms | 1.515–1.573× | Historical quiet diagnostic. [B1865]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40958–0.41425 ms | 1.36354–1.36786 ms | 0.299–0.304× | Historical quiet diagnostic. [B1865]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Historical diagnostic. [B1849]. |
 | Compiled-pattern log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.27639–3.30195 ms | 0.95498–0.99697 ms | 3.286–3.458× | Historical diagnostic. [B1858]. |
 | Module-level log search, PythonRe 0.5.0 | 3,072 lines / 86,954 B | 3.70378–3.76358 ms | 1.55773–1.57929 ms | 2.345–2.416× | Historical diagnostic. [B1858]. |
@@ -372,6 +382,7 @@ document reproduction.
 [B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
 [B1869]: ../benchmarks/results/2026-11-27-csv-dictwriter-cpython/README.md
 [B1880]: ../benchmarks/results/2026-11-27-wsl-current-cpython/README.md
+[B1881]: ../benchmarks/results/2026-11-27-wsl-shipment-cpython/README.md
 [B1865]: ../benchmarks/results/2026-11-27-iterable-starmap-cpython/README.md
 [B1860]: ../benchmarks/results/2026-11-27-direct-regex-cpython/README.md
 [B1858]: ../benchmarks/results/2026-11-27-compiler-regex-cpython/README.md

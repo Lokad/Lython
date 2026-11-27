@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1881 compare the current shipment scripts with CPython](results/2026-11-27-wsl-shipment-cpython/README.md)
+finds the larger current gap in iterable rows. Local async process CPU is
+1.837–1.901× CPython, versus 1.061–1.243× for the wide report. The file-fed
+map control uses 0.371–0.374×. All 140 batches verify.
+
 [B1880 compare current compiler and file workloads with CPython](results/2026-11-27-wsl-current-cpython/README.md)
 uses the checked CPython 3.13.16 runtime on pinned WSL workers. CSV re-export
 takes 0.441–0.499× CPython warm and ordinary definitions 0.669–0.740× through
