@@ -1,0 +1,81 @@
+{
+  "sourceRevision": "9cee6f42393f16344c9bab46e67e309bf38cd9a0",
+  "coreSha256": "2d5881154c1db7bea8e58e3afd13d6e4bbc926918b044b0cf4f8f7d63dc286b2",
+  "obtainedFrom": "Read-only instruction and storage snapshot",
+  "rows": [
+    {
+      "case": "diagnostic.generated-ordinary-definitions",
+      "name": "build",
+      "capacity": 164,
+      "localSlots": 97,
+      "actualPeakExtent": 101,
+      "peakOutsideDeferredDefaults": 101,
+      "starts": 96,
+      "deferred": 93,
+      "survivingPeakInstructions": [
+        {
+          "index": 919,
+          "operation": "Binary",
+          "span": {
+            "Start": 8345,
+            "Length": 11,
+            "Line": 99,
+            "Column": 34
+          }
+        },
+        {
+          "index": 923,
+          "operation": "Binary",
+          "span": {
+            "Start": 8375,
+            "Length": 10,
+            "Line": 99,
+            "Column": 64
+          }
+        }
+      ]
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "name": "make_rules",
+      "capacity": 7,
+      "localSlots": 3,
+      "actualPeakExtent": 6,
+      "peakOutsideDeferredDefaults": 6,
+      "starts": 2,
+      "deferred": 0,
+      "survivingPeakInstructions": [
+        {
+          "index": 3,
+          "operation": "Binary",
+          "span": {
+            "Start": 74,
+            "Length": 9,
+            "Line": 2,
+            "Column": 52
+          }
+        },
+        {
+          "index": 6,
+          "operation": "Binary",
+          "span": {
+            "Start": 97,
+            "Length": 9,
+            "Line": 2,
+            "Column": 75
+          }
+        },
+        {
+          "index": 12,
+          "operation": "Binary",
+          "span": {
+            "Start": 211,
+            "Length": 9,
+            "Line": 4,
+            "Column": 37
+          }
+        }
+      ]
+    }
+  ]
+}

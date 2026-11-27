@@ -1,0 +1,56 @@
+{
+  "diagnostic.shipment-starmap-wide-lists": {
+    "inputs": [
+      {
+        "name": "shipments.csv",
+        "bytes": 27350,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 1546
+  },
+  "diagnostic.generated-ordinary-definitions": {
+    "inputs": [],
+    "sourceBytes": 8641
+  },
+  "diagnostic.shipment-bound-starmap": {
+    "inputs": [
+      {
+        "name": "shipments.csv",
+        "bytes": 27350,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 1462
+  },
+  "diagnostic.shipment-file-fed-map": {
+    "inputs": [
+      {
+        "name": "shipments.csv",
+        "bytes": 27350,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 194
+  },
+  "diagnostic.nested-json-document": {
+    "inputs": [
+      {
+        "name": "shipments.json",
+        "bytes": 103331,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 385
+  },
+  "diagnostic.text-summary.nonlocal-computed-width.large": {
+    "inputs": [
+      {
+        "name": "input.txt",
+        "bytes": 35840,
+        "records": 3072
+      }
+    ],
+    "sourceBytes": 615
+  }
+}

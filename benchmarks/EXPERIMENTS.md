@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1849 refresh CPython comparisons after ready inserts](results/2026-11-27-post-ready-insertion-cpython/README.md)
+uses `9cee6f423` for six scripts and eight lanes. Wide shipment takes
+1.031–1.081× CPython sync and 1.204–1.241× async. File-fed map takes
+0.300–0.308×. Nested JSON rises to 1.148–1.155×, with cause open.
+The compiler snapshot proves the 93 deferred defaults do not determine
+the ordinary factory's physical operand capacity.
+
 [B1848 repeat the earlier JSON control](results/2026-11-27-dictreader-json-control/README.md)
 reuses both B1846 images and measures nested JSON first and last with
 opposite worker orders. Both positions span zero in elapsed and CPU. The

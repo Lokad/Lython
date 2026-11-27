@@ -2,20 +2,26 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22055–2.25324 ms | 1.82279–1.83105 ms | 1.213–1.236× | Diagnostic. [B1844]. |
-| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.73690–0.74752 ms | 0.67124–0.67384 ms | 1.094–1.114× | Diagnostic. [B1844]. |
-| CSV summary after reading and splitting lines | 4,096 records / 57,361 B | 2.24651–2.30881 ms | 3.15392–3.21418 ms | 0.699–0.732× | Diagnostic. [B1844]. |
-| Nested-object JSON Lines summary, Lython `RunAsync` | 4,096 records / 159,744 B | 3.60192–3.64138 ms | 4.44444–4.46048 ms | 0.808–0.819× | Diagnostic. [B1844]. |
-| CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Inconclusive around parity. [B1844]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.21170–2.25079 ms | 1.81365–1.83653 ms | 1.204–1.241× | Diagnostic. [B1849]. |
+| Five-item `starmap` shipment report | 2,048 records / 27,350 B | 1.88707–1.97045 ms | 1.82219–1.83011 ms | 1.031–1.081× | Diagnostic. [B1849]. |
+| Bound `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 1.72813–1.81626 ms | 1.66921–1.66997 ms | 1.035–1.088× | Diagnostic. [B1849]. |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.41105–0.42158 ms | 1.36997–1.37152 ms | 0.300–0.308× | Diagnostic. [B1849]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.77037–0.77301 ms | 0.66955–0.67079 ms | 1.148–1.155× | Diagnostic. [B1849]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89492–0.90934 ms | 0.96086–0.96766 ms | 0.925–0.946× | Diagnostic. [B1849]. |
+| CSV summary through a line generator, Lython `RunAsync` | 4,096 records / 57,361 B | 3.26270–3.36718 ms | 3.36407–3.37740 ms | 0.966–1.001× | Historical. Inconclusive around parity. [B1844]. |
 | File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
-| Configuration edit | 181 B input | 0.06925–0.06940 ms | 0.06144–0.06186 ms | 1.120–1.130× | Historical diagnostic. [B1834]. |
-| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.85825–0.92594 ms | 0.94030–0.94431 ms | 0.909–0.985× | Historical diagnostic. Lython worker spread is 7.89%. [B1815]. |
 
-B1844 measures `a1b3a3325` on November 27, 2026 UTC with the
-comparison host from `05c1059de`. The first five rows use this
-revision. Earlier rows retain their original measurement dates and revisions.
-[B1844].
+B1849 measures `9cee6f423` on November 27, 2026 UTC with comparison host
+`05c1059de`. The first six rows use this revision. The earlier B1844
+checkpoint used `a1b3a3325` with the same comparison host. Historical
+rows retain their original revisions and dates. [B1849] · [B1844].
+
+Wide async shipment overlaps its earlier range. Nested JSON runs at
+1.148–1.155× CPython, up from 1.094–1.114× in B1844. B1848 compared the
+earlier CSV-only change directly, and its repeat spans zero. The two
+CPython checkpoints bracket several runtime changes. [B1849] · [B1844] ·
+[B1848](../benchmarks/results/2026-11-27-dictreader-json-control/README.md).
 
 B1834 measures `4a6000316` with the comparison host from `05c1059de`.
 B1823 measures `489fde50e` and B1815 measures `c10f06884`. Those
@@ -48,6 +54,12 @@ The paired metadata measurement at fixed runtime is available separately.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22055–2.25324 ms | 1.82279–1.83105 ms | 1.213–1.236× | Diagnostic. [B1844]. |
+| Nested-object JSON document summary | 2,048 records / 103,331 B | 0.73690–0.74752 ms | 0.67124–0.67384 ms | 1.094–1.114× | Diagnostic. [B1844]. |
+| CSV summary after reading and splitting lines | 4,096 records / 57,361 B | 2.24651–2.30881 ms | 3.15392–3.21418 ms | 0.699–0.732× | Diagnostic. [B1844]. |
+| Nested-object JSON Lines summary, Lython `RunAsync` | 4,096 records / 159,744 B | 3.60192–3.64138 ms | 4.44444–4.46048 ms | 0.808–0.819× | Diagnostic. [B1844]. |
+| Configuration edit | 181 B input | 0.06925–0.06940 ms | 0.06144–0.06186 ms | 1.120–1.130× | Historical diagnostic. [B1834]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.85825–0.92594 ms | 0.94030–0.94431 ms | 0.909–0.985× | Historical diagnostic. Lython worker spread is 7.89%. [B1815]. |
 | JSON Lines summary with record helper | 5,120 lines / 110,592 B | 3.12574–3.13816 ms | 4.15785–4.16446 ms | 0.751–0.755× | Diagnostic. [B1805]. |
 | JSON Lines summary with record helper, Lython `RunAsync` | 4,096 records / 110,592 B | 3.24048–3.32348 ms | 4.15220–4.16260 ms | 0.778–0.800× | Diagnostic. [B1834]. |
 | Nested-array JSON Lines summary, Lython `RunAsync` | 4,096 records / 131,826 B | 4.04103–4.12341 ms | 4.54020–4.60559 ms | 0.877–0.908× | Diagnostic. [B1834]. |
@@ -115,19 +127,21 @@ use `8aef89b09`.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.57069–0.57212 ms | 0.94880–0.95184 ms | 0.600–0.603× | Diagnostic. [B1844]. |
-| Generated guarded report, 96 rules / 24,587 B source | Compilation only | 1.07349–1.09714 ms | 1.86806–1.88237 ms | 0.570–0.587× | Diagnostic. [B1844]. |
-| Generated guarded report, 96 rules / 24,587 B source | Compile-to-result | 1.12661–1.13546 ms | 1.92108–1.92126 ms | 0.586–0.591× | Diagnostic. [B1844]. |
-| Generated ordinary definitions | Compile-to-result | 0.75919–0.76152 ms | 1.12423–1.13454 ms | 0.669–0.677× | Diagnostic. [B1834]. |
-| Five-item `starmap` shipment report | Compile-to-result | 2.39930–2.44152 ms | 2.14403–2.14737 ms | 1.117–1.139× | Diagnostic. [B1823]. |
-| File search, match at line 1,025, 319 B of source | Compilation only | 0.01677–0.01698 ms | 0.03059–0.03078 ms | 0.545–0.555× | Diagnostic. [B1815]. |
-| File search, match at line 1,025 | Compile-to-result | 0.11875–0.12018 ms | 0.20888–0.21198 ms | 0.560–0.575× | Diagnostic. [B1815]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.56833–0.56893 ms | 0.95428–0.95543 ms | 0.595–0.596× | Diagnostic. [B1849]. |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compile-to-result | 0.76639–0.76762 ms | 1.12265–1.13974 ms | 0.672–0.684× | Diagnostic. [B1849]. |
+| Generated guarded report, 96 rules / 24,587 B source | Compilation only | 1.07349–1.09714 ms | 1.86806–1.88237 ms | 0.570–0.587× | Historical diagnostic. [B1844]. |
+| Generated guarded report, 96 rules / 24,587 B source | Compile-to-result | 1.12661–1.13546 ms | 1.92108–1.92126 ms | 0.586–0.591× | Historical diagnostic. [B1844]. |
+| Five-item `starmap` shipment report | Compile-to-result | 2.39930–2.44152 ms | 2.14403–2.14737 ms | 1.117–1.139× | Historical diagnostic. [B1823]. |
+| File search, match at line 1,025, 319 B of source | Compilation only | 0.01677–0.01698 ms | 0.03059–0.03078 ms | 0.545–0.555× | Historical diagnostic. [B1815]. |
+| File search, match at line 1,025 | Compile-to-result | 0.11875–0.12018 ms | 0.20888–0.21198 ms | 0.560–0.575× | Historical diagnostic. [B1815]. |
 
 <details>
 <summary>Earlier compilation and compile-to-result measurements</summary>
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Generated ordinary definitions, 96 definitions / 8,641 B source | Compilation only | 0.57069–0.57212 ms | 0.94880–0.95184 ms | 0.600–0.603× | Diagnostic. [B1844]. |
+| Generated ordinary definitions | Compile-to-result | 0.75919–0.76152 ms | 1.12423–1.13454 ms | 0.669–0.677× | Diagnostic. [B1834]. |
 | Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56532–0.57200 ms | 0.93722–0.93900 ms | 0.602–0.610× | Diagnostic. [B1834]. |
 | Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56925–0.57157 ms | 1.10194–1.10238 ms | 0.516–0.519× | Diagnostic. [B1805]. |
 | Generated ordinary definitions | Compile-to-result | 0.75729–0.76925 ms | 1.11806–1.12177 ms | 0.675–0.688× | Diagnostic. [B1805]. |
@@ -305,5 +319,6 @@ document reproduction.
 [B1827]: ../benchmarks/results/2026-11-27-short-command-boundary/README.md
 [B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md
 
+[B1849]: ../benchmarks/results/2026-11-27-post-ready-insertion-cpython/README.md
 [B1844]: ../benchmarks/results/2026-11-27-post-csv-json-cpython/README.md
 [B1834]: ../benchmarks/results/2026-11-27-current-cpython/README.md
