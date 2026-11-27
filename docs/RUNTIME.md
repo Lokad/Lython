@@ -2925,6 +2925,10 @@ ordinary guest pattern errors retain their Python diagnostics. The last-closed
 index must name a participating capture whenever any positive group participated.
 Compiled patterns handle one-shot match/search/fullmatch directly in analysis
 and at runtime. Prepared subjects provide finditer progression.
+Ordinary executable calls to the module pattern operations bind in fixed
+managed slots. A pending pattern lookup keeps the argument values it needs
+after those slots go out of scope. Missing options remain distinct from an
+explicit Python `None`.
 Lython owns captured splitting, template/callable substitution, expansion and
 public scalar offsets;
 providers expose no replacement or split dialect.

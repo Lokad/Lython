@@ -244,14 +244,14 @@ internal sealed partial class LythonRuntime
                 "re.compile(pattern[, flags])", span, context, false).GetAwaiter().GetResult(),
             static async (arguments, span, context) => await RegexCompiler.CreatePattern(arguments,
                 "re.compile(pattern[, flags])", span, context, true).ConfigureAwait(false));
-        private static readonly BuiltinCallable SearchMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Search, RegexPatternOperation.Search);
-        private static readonly BuiltinCallable MatchMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Match, RegexPatternOperation.Match);
-        private static readonly BuiltinCallable FullMatchMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.FullMatch, RegexPatternOperation.FullMatch);
-        private static readonly BuiltinCallable FindAllMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.FindAll, RegexPatternOperation.FindAll);
-        private static readonly BuiltinCallable FindIterMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.FindIter, RegexPatternOperation.FindIter);
-        private static readonly BuiltinCallable SubMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Sub, RegexPatternOperation.Sub);
-        private static readonly BuiltinCallable SubCountMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Subn, RegexPatternOperation.SubCount);
-        private static readonly BuiltinCallable SplitMethod = CreatePatternBuiltin(LythonKnownCallableSignatures.Regex.Split, RegexPatternOperation.Split);
+        private static readonly ModulePatternBuiltin SearchMethod = new(LythonKnownCallableSignatures.Regex.Search, RegexPatternOperation.Search);
+        private static readonly ModulePatternBuiltin MatchMethod = new(LythonKnownCallableSignatures.Regex.Match, RegexPatternOperation.Match);
+        private static readonly ModulePatternBuiltin FullMatchMethod = new(LythonKnownCallableSignatures.Regex.FullMatch, RegexPatternOperation.FullMatch);
+        private static readonly ModulePatternBuiltin FindAllMethod = new(LythonKnownCallableSignatures.Regex.FindAll, RegexPatternOperation.FindAll);
+        private static readonly ModulePatternBuiltin FindIterMethod = new(LythonKnownCallableSignatures.Regex.FindIter, RegexPatternOperation.FindIter);
+        private static readonly ModulePatternBuiltin SubMethod = new(LythonKnownCallableSignatures.Regex.Sub, RegexPatternOperation.Sub);
+        private static readonly ModulePatternBuiltin SubCountMethod = new(LythonKnownCallableSignatures.Regex.Subn, RegexPatternOperation.SubCount);
+        private static readonly ModulePatternBuiltin SplitMethod = new(LythonKnownCallableSignatures.Regex.Split, RegexPatternOperation.Split);
 
         private ReModule() : base("re")
         {
@@ -291,11 +291,32 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static BuiltinCallable CreatePatternBuiltin(LythonCallableSignature signature, RegexPatternOperation operation)
-            => BuiltinCallable.CreateWithPresence(signature,
-                (arguments, span, context) => RePatternMembers.ExecuteModule(arguments, span, context, signature.Name, operation, false)
-                    .GetAwaiter().GetResult(),
-                (arguments, span, context) => RePatternMembers.ExecuteModule(arguments, span, context, signature.Name, operation, true));
+        private sealed class ModulePatternBuiltin(LythonCallableSignature signature, RegexPatternOperation operation)
+            : BuiltinCallable(signature)
+        {
+            // re.sub and re.subn have the widest fixed signature.
+            [System.Runtime.CompilerServices.InlineArray(7)]
+            private struct FinalValues { private object _first; }
+
+            protected override bool UsesMissingArgumentSlots => true;
+            protected override int GetBindingCapacity(ExecutableCallSite call) => 0;
+
+            protected override ValueTask<object> InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
+                ExecutionContext context, bool asynchronous)
+            {
+                context.CheckExecution(call.CallSpan);
+                FinalValues values = default;
+                var count = CallBinder.BindFixedExecutableArguments(operands, call, Signature, context, values,
+                    useNullForOmittedArguments: true);
+                return RePatternMembers.ExecuteModule(values[..count], call.CallSpan, context, Signature.Name, operation, asynchronous);
+            }
+
+            protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => RePatternMembers.ExecuteModule(arguments, span, context, Signature.Name, operation, false).GetAwaiter().GetResult();
+
+            protected override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => RePatternMembers.ExecuteModule(arguments, span, context, Signature.Name, operation, true);
+        }
 
         private object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

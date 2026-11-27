@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1887 bind module regex arguments in fixed slots](results/2026-11-27-borrow-regex-arguments/README.md)
+removes one funded binding array per ordinary call. The module log saves
+196,608 CLR bytes at equal peak admission in both APIs. Local process CPU
+falls 0.14–8.99% sync and 0.74–4.50% async. The unchanged CSV control
+uses 0.34–1.27% more CPU. Four independent goldens and 112 batches verify.
+
 [B1886 attribute current log search](results/2026-11-27-log-search-profile/README.md)
 reuses the B1885 image. The producer accounts for about 25–27% of
 sampled managed stack time and the adapter 7–10%. Module search also

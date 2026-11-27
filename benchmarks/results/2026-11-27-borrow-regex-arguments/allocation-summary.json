@@ -1,0 +1,130 @@
+[
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "sync",
+    "clr": [
+      1791160,
+      1594552
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "sync",
+    "clr": [
+      1594624,
+      1594624
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex.cursor-records",
+    "mode": "sync",
+    "clr": [
+      429584,
+      429584
+    ],
+    "peak": [
+      523444,
+      523444
+    ],
+    "compiled": [
+      128172,
+      128172
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "sync",
+    "clr": [
+      3018750,
+      3018750
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ],
+    "compiled": [
+      157658,
+      157658
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "async",
+    "clr": [
+      1791376,
+      1594768
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "async",
+    "clr": [
+      1594896,
+      1594896
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex.cursor-records",
+    "mode": "async",
+    "clr": [
+      429800,
+      429800
+    ],
+    "peak": [
+      523444,
+      523444
+    ],
+    "compiled": [
+      128172,
+      128172
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "mode": "async",
+    "clr": [
+      3018966,
+      3018966
+    ],
+    "peak": [
+      9040266,
+      9040266
+    ],
+    "compiled": [
+      157658,
+      157658
+    ]
+  }
+]

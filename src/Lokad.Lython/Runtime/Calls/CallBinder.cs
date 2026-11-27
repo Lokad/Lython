@@ -276,10 +276,10 @@ internal static class CallBinder
 
     internal static int BindFixedExecutableArguments(Span<LythonRuntime.ExecutableSlot> operands,
         ExecutableCallSite call, LythonCallableSignature signature, LythonRuntime.ExecutionContext context,
-        scoped Span<object> values)
+        scoped Span<object> values, bool useNullForOmittedArguments = false)
         => BindArgumentValues(new OperandInputs(operands, call.ArgumentForms, context),
             call.CallSpan, signature.Name, PythonCallableKind.Builtin, signature.Parameters,
-            out _, out _, out _, values);
+            out _, out _, out _, values, useNullForOmittedArguments: useNullForOmittedArguments);
 
     private static BoundBuiltinArguments BindNamedArgumentsCore<T>(
         T arguments,

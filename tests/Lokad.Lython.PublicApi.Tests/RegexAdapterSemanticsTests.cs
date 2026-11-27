@@ -213,6 +213,7 @@ public sealed class RegexAdapterSemanticsTests
     [InlineData("re.compile(',').split('a,b,c',Index('maxsplit', 1 << 40))", "maxsplit\n['a', 'b', 'c']")]
     [InlineData("re.compile(',').sub('/', 'a,b,c',Index('count'),pos=Index('pos'),endpos=Index('endpos',4))", "count\npos\nendpos\na/b,c")]
     [InlineData("re.search('é','aéz',pos=Index('pos')).group()", "pos\né")]
+    [InlineData("re.search(re.compile('é'), 'aéz', flags=Flag(), pos=Index('pos'), endpos=2).group()", "flags\npos\né")]
     [InlineData("re.split(',','a,b,c',Index('maxsplit'))", "maxsplit\n['a', 'b,c']")]
     [InlineData("re.sub(',','/','a,b,c',Index('count'))", "count\na/b,c")]
     [InlineData("re.subn(',','/','a,b,c',count=Index('count', 1 << 40))", "count\n('a/b/c', 2)")]
@@ -229,6 +230,9 @@ public sealed class RegexAdapterSemanticsTests
                         value = int(source.read())
                     print(self.name)
                     return value + self.offset
+            class Flag:
+                def __bool__(self):
+                    return bool(Index('flags', -1).__index__())
             print('entry')
             print({expression})
             """);
@@ -334,6 +338,7 @@ public sealed class RegexAdapterSemanticsTests
     [InlineData("re.sub('é', 'x', 'aéz', count=Index())")]
     [InlineData("re.compile('é', Flag())")]
     [InlineData("re.compile(re.compile('é'), Flag())")]
+    [InlineData("re.search(re.compile('é'), 'aéz', flags=Flag(), pos=Index(), endpos=2)")]
     [InlineData("re.compile(Pattern(), UnreachableFlag())")]
     public async Task CancellingARegexArgumentAwaitsFileCleanupAndRefunds(string expression)
     {
