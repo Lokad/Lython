@@ -28,13 +28,12 @@ internal sealed partial class LythonRuntime
         internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, bool asynchronous)
         {
-            // Fund the retained frame, namespace/nonlocal map and native cursor
+            // Fund the retained frame and any mirrored bindings
             // before their allocation or the effectful outer __iter__ call.
             var bytes = checked(EstimateStorage(code) + 256L + 96L * code.ScopeFacts.NonlocalNames.Count);
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, span);
             governor.Commit(bytes);
-            PyIteration.Cursor? cursor = null;
             PyGenerator? generator = null;
             try
             {
@@ -49,23 +48,16 @@ internal sealed partial class LythonRuntime
                 var outer = asynchronous
                     ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
                     : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
-                cursor = PyIteration.Cursor.FromGeneratorOuter(outer, outerSpan, context);
-                // Invalid outer acquisition creates no escaping closure. Admit
-                // retention before publication, after the cursor can be cleaned up.
+                // Invalid outer acquisition creates no escaping closure.
+                // Admit retention before publishing the borrowed iterator.
                 ChargeClosureRetention(context.FunctionClosureContext, governor, span);
                 if (code.RequiresLocalVariableMirroring) RetainLocalsForLambda(context.FunctionClosureContext);
-                frame.Variables[".0"] = outer.Iterator;
-                frame.SeedGeneratorOuter(outer.Iterator, cursor);
-                cursor = null; // ownership transferred to the retained frame
+                frame.SeedGeneratorOuter(outer);
                 return generator;
             }
             catch
             {
-                try
-                {
-                    try { cursor?.Dispose(); }
-                    finally { generator?.Complete(); }
-                }
+                try { generator?.Complete(); }
                 finally { governor.Release(bytes); }
                 throw;
             }

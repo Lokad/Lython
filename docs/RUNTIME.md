@@ -573,10 +573,11 @@ Local slots can receive the completed value directly. Module declarations
 retain their live namespace entries, and decorators can observe prior bindings
 until publication.
 Generator expressions use the same executable generator and
-protocols in class suites and annotations as at ordinary executable sites. Their
-frame and cursor storage is admitted at construction, which can reject a tight
-allowance earlier than deferred interpretation. Annotations and lazy type metadata
-retain their expression evaluator.
+protocols in class suites and annotations as at ordinary executable sites.
+The admitted frame loops over the acquired iterator directly. Its `.0` local
+exposes the original Python object, including when advancement uses a user
+protocol adapter. Only mirrored frames copy that local into their namespace.
+Annotations and lazy type metadata retain their expression evaluator.
 Each abstract binding state caches resolutions by syntax-node identity and clears
 them when its facts change; clones and branch joins have independent caches.
 Container and callback queries inspect shared fact payloads

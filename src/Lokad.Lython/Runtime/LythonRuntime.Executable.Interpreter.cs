@@ -132,10 +132,14 @@ internal sealed partial class LythonRuntime
             => _execution.InstructionIndex < _execution.Code.Instructions.Length
                 ? _execution.Code.Instructions[_execution.InstructionIndex].Span : null;
 
-        internal void SeedGeneratorOuter(object iterator, PyIteration.Cursor cursor)
+        internal void SeedGeneratorOuter(IPyIteratorValue iterator)
         {
-            WriteLocalValue(_execution.Locals, _execution.Code.LocalNameToSlot[".0"], iterator);
-            _execution.Stack.PublishValue(_execution.Code.FirstTemporarySlot, _execution.Code.FirstTemporarySlot + 1, cursor);
+            // The loop borrows the acquired iterator. Locals expose the
+            // original Python object when the protocol needs an adapter.
+            var visibleIterator = iterator is PyUserIterator user ? user.Iterator : iterator;
+            WriteLocalValue(_execution.Locals, _execution.Code.LocalNameToSlot[".0"], visibleIterator);
+            if (MirrorLocalStores) Variables[".0"] = visibleIterator;
+            _execution.Stack.PublishValue(_execution.Code.FirstTemporarySlot, _execution.Code.FirstTemporarySlot + 1, iterator);
         }
 
         internal void ReleaseGeneratorTemporaries()

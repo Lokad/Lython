@@ -234,7 +234,9 @@ Generator expressions acquire the outer iterator at construction and defer their
 remaining work. All creation sites, including class suites and annotations, support
 `send`, `throw` and `close` through the same executable generator. Closing a
 generator expression does not close a separately retained Python outer iterator;
-native resources still receive deterministic cleanup.
+native resources still receive deterministic cleanup. Lython advances the acquired
+outer iterator directly on first resume. CPython 3.13 calls a custom outer
+iterator's `__iter__` again at that point.
 
 ## Explicit boundaries
 

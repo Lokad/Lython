@@ -4,31 +4,24 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyIteration
 {
-    internal readonly record struct GeneratorOuter(object Iterator, PyUserIterator? User = null);
-
-    internal static GeneratorOuter AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static IPyIteratorValue AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (value is PyInstance or IPyProtocolIterator)
-            return AcquiredUserOuter(PyUserIterator.Create(value, context, span));
-        if (value is IPyIteratorValue) return new(value);
+            return PyUserIterator.Create(value, context, span);
+        if (value is IPyIteratorValue iterator) return iterator;
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        PyEnumerableIterator iterator;
-        try { iterator = new PyEnumerableIterator(value, span, context); }
+        try { return new PyEnumerableIterator(value, span, context); }
         catch
         {
             context.MemoryGovernor.Release(PyIteratorBase.IteratorValueBytes);
             throw;
         }
-        return new(iterator);
     }
 
-    internal static async ValueTask<GeneratorOuter> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static async ValueTask<IPyIteratorValue> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value is PyInstance or IPyProtocolIterator
-            ? AcquiredUserOuter(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false))
+            ? await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false)
             : AcquireGeneratorOuter(value, span, context);
-
-    private static GeneratorOuter AcquiredUserOuter(PyUserIterator user)
-        => new(user.Iterator, user);
 
     // The lease keeps private backing funded through callbacks, suspension and
     // conversion. Dispose only after every user relinquishes the working list.
@@ -203,10 +196,6 @@ internal static partial class PyIteration
         private IEnumerator<object>? _syncEnumerator;
         private object _current = PyNone.Instance;
         private bool _disposed;
-        internal static Cursor FromGeneratorOuter(GeneratorOuter outer, LythonSourceSpan span,
-            LythonRuntime.ExecutionContext context)
-            => new(outer.Iterator, span, outer.User, context);
-
         // CLR collection builders share this single-pass cursor; native consumers
         // use TryMoveNext directly. Source identity preserves their capacity hints
         // and self-extension snapshots without a second enumerable wrapper.

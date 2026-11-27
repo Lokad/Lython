@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1893 use the acquired generator-expression iterator directly](results/2026-11-27-direct-generator-outer/README.md)
+removes the extra cursor and the eager namespace write for optimized
+frames. The per-row CSV report allocates 13.09% less at matching peaks.
+Local sync CPU increases in both passes. Async CPU spans zero on the
+reverse-placement repeat. All 224 batches and four goldens verify.
+
 [B1892 fill the admitted call buffer](results/2026-11-27-full-positional-buffer/README.md)
 removes one generator frame entry for a four-yield row. Peaks match and
 allocation is effectively flat. Iterable CPU and the adverse file-fed
