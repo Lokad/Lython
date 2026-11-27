@@ -23,12 +23,11 @@
 | File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Historical diagnostic. [B1834]. |
 | File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Historical diagnostic. [B1834]. |
 
-B1849 measures `9cee6f423` on November 27, 2026 UTC with comparison host
-`05c1059de` for the exact-row shipment, nested JSON and Unicode report
-rows. B1865 measures `aae8992e0` with the same host and date for
-the two iterable-row shipment lanes and file-fed map. The earlier B1844
-checkpoint used `a1b3a3325` with the same comparison host. Historical
-rows retain their original revisions and dates. [B1865] · [B1849] · [B1844].
+The bound shipment and Unicode rows use `9cee6f423` with comparison host
+`05c1059de` on November 27, 2026 UTC. The CSV line-generator summary uses
+`a1b3a3325` with the same host and date. The earlier iterable shipment
+and file-fed map checkpoint on `aae8992e0` remains available for comparison.
+[B1849] · [B1844] · [B1865].
 
 B1869 measures `6e59cd41e` on the same machine and date. The shipment
 re-export reads and writes 27,350 bytes. Its file-fed map control takes
@@ -282,6 +281,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Use the outer iterator directly in generator expressions | The 2,048-row CSV reduction allocates 13.09% less at the same admitted peak. Quiet process CPU falls 6.27–6.79% sync and 1.61–4.71% async. | The quiet run reverses the original WSL sync increase. Both file-fed controls span zero. The comparison covers `63ae080ac` and `af9558316`. [B1893](../benchmarks/results/2026-11-27-direct-generator-outer/README.md) · [B1895](../benchmarks/results/2026-11-27-generator-outer-quiet/README.md). |
 | Reuse shared JSON layouts across missing trailing fields | A nested Lines report with alternating optional fields allocates 41.5% less and lowers peak shared admission by 31.4%. Local process CPU falls 13.57–17.32% sync and 17.82–19.36% async. | Dense document and file-fed CSV CPU span zero. The unchanged CSV elapsed moves favorably. [B1889](../benchmarks/results/2026-11-27-json-shared-prefix/README.md). |
 | Bind module regex arguments in fixed slots | The module log allocates 10.98% less at identical peak admission. WSL elapsed falls 2.17–11.03% sync and 1.55–6.22% async with lower process CPU. | The compiled-pattern control spans zero and the unchanged CSV control uses 0.34–1.27% more CPU. [B1887](../benchmarks/results/2026-11-27-borrow-regex-arguments/README.md). |
 | Own the working reservation directly in one-shot regex calls | Both 3,072-line logs allocate 11.0–12.2% less at identical peak admission on the signed 0.5.0 adapter. | Local CPU spans zero in both affected lanes. The unchanged CSV control varies. [B1884](../benchmarks/results/2026-11-27-direct-regex-allowance/README.md). |

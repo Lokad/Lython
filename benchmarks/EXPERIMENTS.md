@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1895 confirm generator-expression timing on the quiet VM](results/2026-11-27-generator-outer-quiet/README.md)
+reverses the adverse B1893 sync CPU result on the exact original images.
+The reduction uses 6.27–6.79% less CPU sync and 1.61–4.71% less async.
+Both file-fed controls span zero. All 112 batches and both quiet gates pass.
+
 [B1894 apply the outer iterator protocol on first resume](results/2026-11-27-generator-resume-protocol/README.md)
 closes the CPython 3.13 parity gap while retaining the direct native entry.
 CSV allocation and admission match B1893. Local elapsed spans zero and
