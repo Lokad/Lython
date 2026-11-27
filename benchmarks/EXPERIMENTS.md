@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1845 attribute active CPU after the shipment checkpoint](results/2026-11-27-post-cpython-shipment-cpu/README.md)
+uses the unchanged B1844 image on two scripts. Wide shipment has 241
+nearest instruction-prefix samples and 100 for fixed unpacking. File-fed
+map has 78 nearest samples in the DictReader row activation. Both quiet
+gates and independent CPython goldens pass. The counts are diagnostic.
+
 [B1844 refresh the quiet CPython comparison](results/2026-11-27-post-csv-json-cpython/README.md)
 measures `a1b3a3325` on seven scripts. Wide async shipment takes
 1.213–1.236× CPython elapsed, nested JSON Lines 0.808–0.819×, and the
