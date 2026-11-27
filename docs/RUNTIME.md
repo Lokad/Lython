@@ -3091,7 +3091,7 @@ release and dependency graph.
 | UTF-8/offsets | Matching uses scalars, including supplementary characters. Providers return absolute capture byte ranges; Lython projects scalar offsets from the original subject. |
 | Windows | The original subject and explicit byte bounds preserve anchors, lookbehind and the end position. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
 | Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags are read from the validated original UTF-8, including verbose trivia; scoped flags stay local. Reported flags preserve guest bitwise results independently of dispatched parsing behavior. |
-| Iteration/storage | The producer admits program and working storage against separate borrowed scopes. One-shot matches with zero or one group use local range slots. Multi-group one-shot matches and iteration copy ranges and last-close metadata before releasing their funded snapshots. The caller funds the original subject and Lython funds retained output. |
+| Iteration/storage | The producer admits program and working storage against the borrowed allowance. A one-shot call owns its working reservation. Cursors have their own working scopes. One-shot matches with zero or one group use local range slots. Multi-group one-shot matches and iteration copy ranges and last-close metadata before releasing their funded snapshots. The caller funds the original subject and Lython funds retained output. |
 
 See the [adapter README](../src/Lokad.Lython.Utf8Regex/README.md) and
 [capability tests](../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).

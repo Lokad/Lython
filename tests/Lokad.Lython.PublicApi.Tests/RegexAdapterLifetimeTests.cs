@@ -152,24 +152,35 @@ public sealed class RegexAdapterLifetimeTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void FirstWorkingAdmissionCancellationReturnsTheAdvanceTokenAndUnwinds()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FirstWorkingAdmissionCancellationReturnsTheCurrentTokenAndUnwinds(bool iterate)
     {
         var budget = new AdmissionGateBudget();
         using (var owner = budget.CreateScope())
         {
             using var cancellation = new CancellationTokenSource();
-            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+            using var pattern = Utf8RegexProvider.Instance.Compile((iterate ? "a"u8 : "(a)"u8).ToArray(), new(32, false), owner, default);
             var baseline = budget.Root.ReservedBytes;
-            using var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default);
-            using var cursor = subject.Find(default);
+            var input = "a"u8.ToArray();
+            var window = new LythonRegexWindow(0, 1, 0, 1);
+            using var subject = iterate ? pattern.Prepare(input, window, owner, default) : null;
+            using var cursor = subject?.Find(default);
             var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
             budget.OnNextReserve = cancellation.Cancel;
-            var error = Assert.ThrowsAny<OperationCanceledException>(() => cursor.TryNext(captures, out _, cancellation.Token));
+            var error = Assert.ThrowsAny<OperationCanceledException>(() =>
+            {
+                if (cursor is not null) cursor.TryNext(captures, out _, cancellation.Token);
+                else pattern.TryMatch(input, window, LythonRegexMatchMode.Match, captures, out _, owner, cancellation.Token);
+            });
             Assert.Equal(cancellation.Token, error.CancellationToken);
             Assert.Equal(baseline, budget.Root.ReservedBytes);
-            using var next = subject.Find(default);
-            Assert.True(next.TryNext(captures, out _, default));
+            using (var next = subject?.Find(default))
+                Assert.True(next is null
+                    ? pattern.TryMatch(input, window, LythonRegexMatchMode.Match, captures, out _, owner, default)
+                    : next.TryNext(captures, out _, default));
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
         }
         Assert.Equal(0, budget.Root.ReservedBytes);
     }

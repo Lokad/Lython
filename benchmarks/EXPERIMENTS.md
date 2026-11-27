@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1884 give one-shot matching its working reservation directly](results/2026-11-27-direct-regex-allowance/README.md)
+removes a per-call child scope in the signed 0.5.0 adapter. Both log
+scans allocate 11.0–12.2% less at matching admitted peaks. CPU spans zero
+in both affected lanes and the unchanged CSV control uses more CPU with
+55.49% reference elapsed spread. Four independent goldens and 112 batches
+verify. Keep the shorter lifetime and allocation result.
+
 [B1883 buffer the first positional generator pull](results/2026-11-27-first-buffered-positional-pull/README.md)
 removes a private cursor and one generator entry per four-yield row.
 The iterable report allocates 6.38% less at identical admission peaks.

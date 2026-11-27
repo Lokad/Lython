@@ -5,8 +5,9 @@ Applications can reference this non-packable project and pass
 PythonRe 0.5.0. Core ships independently through its Lython-owned provider
 contract.
 
-Compilation uses the active token and a program scope. One-shot matching
-and cursors use separate working scopes under the caller's allowance.
+Compilation uses the active token and a program scope. A one-shot match owns
+its working reservation directly under the caller's allowance. Cursors keep
+their own working scopes.
 The producer requests admission for its own storage and the adapter funds
 copied UTF-8 group names. Each producer owner can reuse reservation capacity
 until its last live claim ends. Dispose cursors, subjects and then the pattern

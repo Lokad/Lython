@@ -113,12 +113,12 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         return storage;
     }
 
-    // Aggregate the producer's live claims in one reservation per owner. A
-    // partially released reservation leaves reusable capacity for that owner.
-    // The final producer release returns the full reservation synchronously.
-    private sealed class RegexAllowance(ILythonMemoryBudget owner) : IUtf8MemoryAllowance
+    // Aggregate the producer's live claims in one reservation. A partial
+    // release leaves reusable capacity until the final release or owner close.
+    private sealed class RegexAllowance(ILythonMemoryBudget owner) : IUtf8MemoryAllowance, IDisposable
     {
         private readonly object _gate = new();
+        private ILythonMemoryBudget? _budget = owner;
         private ILythonMemoryReservation? _storage;
         private long _liveBytes;
 
@@ -127,6 +127,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             if (bytes == 0) return true;
             lock (_gate)
             {
+                var budget = _budget ?? throw new ObjectDisposedException(nameof(RegexAllowance));
                 if (bytes > (ulong)(long.MaxValue - _liveBytes)) return false;
                 var total = _liveBytes + (long)bytes;
                 if (_storage is { } storage)
@@ -135,7 +136,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 }
                 else
                 {
-                    if (!owner.TryReserve(total, out var admitted)) return false;
+                    if (!budget.TryReserve(total, out var admitted)) return false;
                     _storage = admitted;
                 }
                 _liveBytes = total;
@@ -149,11 +150,25 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             {
                 System.Diagnostics.Debug.Assert(bytes <= (ulong)_liveBytes);
                 _liveBytes -= (long)bytes;
-                if (_liveBytes != 0) return;
-                var storage = _storage;
-                _storage = null;
-                storage?.Dispose();
+                if (_liveBytes == 0) ReleaseStorage();
             }
+        }
+
+        public void Dispose()
+        {
+            lock (_gate)
+            {
+                _budget = null;
+                _liveBytes = 0;
+                ReleaseStorage();
+            }
+        }
+
+        private void ReleaseStorage()
+        {
+            var storage = _storage;
+            _storage = null;
+            storage?.Dispose();
         }
     }
 
@@ -284,8 +299,9 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 LythonRegexMatchMode.FullMatch => Utf8PythonMatchMode.FullMatch,
                 _ => Utf8PythonMatchMode.Search,
             };
-            using var owner = memoryOwner.CreateScope();
-            var allowance = new RegexAllowance(owner);
+            // All backend users and capture copies finish before this call
+            // returns. The aggregate reservation is its entire working owner.
+            using var allowance = new RegexAllowance(memoryOwner);
             if (captures.Length <= 2)
             {
                 // With one subgroup, participation determines lastindex.
