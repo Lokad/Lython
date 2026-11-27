@@ -61,8 +61,10 @@ internal sealed record AssignmentStatementSyntax(
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
-internal abstract record AssignmentTargetSyntax(
-    LythonSourceSpan Span);
+internal abstract record AssignmentTargetSyntax(LythonSourceSpan Span)
+{
+    public bool IsStarred { get; init; }
+}
 
 internal sealed record NameAssignmentTargetSyntax(
     string Name,
@@ -86,7 +88,7 @@ internal sealed record MemberAssignmentTargetSyntax(
     LythonSourceSpan Span) : AssignmentTargetSyntax(Span);
 
 internal sealed record UnpackingAssignmentTargetGroupSyntax(
-    IReadOnlyList<UnpackingTargetSyntax> Targets,
+    IReadOnlyList<AssignmentTargetSyntax> Targets,
     LythonSourceSpan Span) : AssignmentTargetSyntax(Span);
 
 internal sealed record ChainedAssignmentStatementSyntax(
@@ -146,56 +148,6 @@ internal sealed record AugmentedAssignmentStatementSyntax(
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
-internal abstract record UnpackingTargetSyntax(LythonSourceSpan Span)
-{
-    public abstract bool IsStarred { get; }
-}
-
-internal sealed record UnpackingNameTargetSyntax(
-    string Name,
-    bool Starred,
-    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
-{
-    public override bool IsStarred => Starred;
-}
-
-internal sealed record UnpackingSubscriptTargetSyntax(
-    ExpressionSyntax Target,
-    ExpressionSyntax Index,
-    bool Starred,
-    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
-{
-    public override bool IsStarred => Starred;
-}
-
-internal sealed record UnpackingSliceTargetSyntax(
-    ExpressionSyntax Target,
-    ExpressionSyntax? Start,
-    ExpressionSyntax? End,
-    ExpressionSyntax? Step,
-    bool Starred,
-    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
-{
-    public override bool IsStarred => Starred;
-}
-
-internal sealed record UnpackingMemberTargetSyntax(
-    ExpressionSyntax Target,
-    string MemberName,
-    bool Starred,
-    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
-{
-    public override bool IsStarred => Starred;
-}
-
-internal sealed record UnpackingNestedTargetSyntax(
-    IReadOnlyList<UnpackingTargetSyntax> Items,
-    bool Starred,
-    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
-{
-    public override bool IsStarred => Starred;
-}
-
 internal readonly struct UnpackingLayout
 {
     internal UnpackingLayout(int targetCount, int starredTargetIndex)
@@ -214,7 +166,7 @@ internal readonly struct UnpackingLayout
 
     public int? MaximumReadCount => HasStarredTarget ? null : checked(TargetCount + 1);
 
-    public static UnpackingLayout FromTargets(IReadOnlyList<UnpackingTargetSyntax> targets)
+    public static UnpackingLayout FromTargets(IReadOnlyList<AssignmentTargetSyntax> targets)
     {
         for (var index = 0; index < targets.Count; index++)
         {
@@ -266,7 +218,7 @@ internal readonly struct UnpackingLayout
 }
 
 internal sealed record UnpackingAssignmentStatementSyntax(
-    IReadOnlyList<UnpackingTargetSyntax> Targets,
+    IReadOnlyList<AssignmentTargetSyntax> Targets,
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 

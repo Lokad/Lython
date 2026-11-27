@@ -20,21 +20,8 @@ internal abstract record LoweredStoreTarget(LythonSourceSpan Span)
         _ => throw new InvalidOperationException("Unknown assignment target."),
     };
 
-    internal static LoweredUnpackingStoreTarget FromUnpacking(IReadOnlyList<UnpackingTargetSyntax> targets, LythonSourceSpan span)
-        => new LoweredUnpackingStoreTarget(targets.Select(LowerUnpacking).ToArray(), UnpackingLayout.FromTargets(targets), span);
-
-    private static LoweredStoreTarget LowerUnpacking(UnpackingTargetSyntax target) => target switch
-    {
-        UnpackingNameTargetSyntax name => new LoweredNameStoreTarget(name.Name, name.Span),
-        UnpackingMemberTargetSyntax member => new LoweredMemberStoreTarget(
-            LoweredScript.LowerExpression(member.Target), member.MemberName, member.Span),
-        UnpackingSubscriptTargetSyntax item => new LoweredSubscriptStoreTarget(
-            LoweredScript.LowerExpression(item.Target), LoweredScript.LowerExpression(item.Index), item.Span),
-        UnpackingSliceTargetSyntax slice => new LoweredSliceStoreTarget(
-            LoweredScript.LowerExpression(slice.Target), Lower(slice.Start), Lower(slice.End), Lower(slice.Step), slice.Span),
-        UnpackingNestedTargetSyntax nested => FromUnpacking(nested.Items, nested.Span),
-        _ => throw new InvalidOperationException("Unknown unpacking target."),
-    };
+    internal static LoweredUnpackingStoreTarget FromUnpacking(IReadOnlyList<AssignmentTargetSyntax> targets, LythonSourceSpan span)
+        => new LoweredUnpackingStoreTarget(targets.Select(FromSyntax).ToArray(), UnpackingLayout.FromTargets(targets), span);
 
     internal static LoweredStoreTarget FromLoop(LoopTargetSyntax target, LythonSourceSpan span) => target switch
     {

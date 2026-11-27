@@ -159,7 +159,7 @@ internal static class StatementSyntaxTraversal
             case UnpackingAssignmentStatementSyntax unpacking:
                 yield return unpacking.Expression;
                 foreach (var target in unpacking.Targets)
-                    foreach (var read in AssignmentTargetFacts.Reads(AssignmentTargetFacts.FromUnpacking(target))) yield return read;
+                    foreach (var read in AssignmentTargetFacts.Reads(target)) yield return read;
                 break;
 
             case WithStatementSyntax withStatement:

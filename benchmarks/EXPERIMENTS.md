@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1902 share assignment targets throughout the frontend](results/2026-11-27-assignment-targets/README.md)
+removes the parallel unpacking target hierarchy and conversions during
+analysis and lowering. The record transform allocates 2,800 B less per
+compile, and the function-free configuration allocates 2,056 B more.
+Diagnostics, admission, emitted code and 112 timed batches verify.
+Elapsed and CPU ranges span zero.
+
 [B1901 calculate return-summary eligibility during lexical preparation](results/2026-11-27-lexical-return-summaries/README.md)
 removes an independent function-body walk. Exact diagnostics, code,
 admission and 224 timed batches verify. Quiet function-free compilation

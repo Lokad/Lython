@@ -365,36 +365,6 @@ internal static class StaticScopeDirectiveDiagnostics
         }
     }
 
-    private static void CollectSeenNames(UnpackingTargetSyntax target, HashSet<string> names)
-    {
-        switch (target)
-        {
-            case UnpackingNameTargetSyntax name:
-                names.Add(name.Name);
-                break;
-
-            case UnpackingSubscriptTargetSyntax subscript:
-                CollectSeenNames(subscript.Target, names);
-                CollectSeenNames(subscript.Index, names);
-                break;
-
-            case UnpackingSliceTargetSyntax slice:
-                CollectSeenNames(slice.Target, names);
-                if (slice.Start is not null) CollectSeenNames(slice.Start, names);
-                if (slice.End is not null) CollectSeenNames(slice.End, names);
-                if (slice.Step is not null) CollectSeenNames(slice.Step, names);
-                break;
-
-            case UnpackingMemberTargetSyntax member:
-                CollectSeenNames(member.Target, names);
-                break;
-
-            case UnpackingNestedTargetSyntax nested:
-                foreach (var nestedItem in nested.Items) CollectSeenNames(nestedItem, names);
-                break;
-        }
-    }
-
     private static void CollectSeenNames(LoopTargetSyntax target, HashSet<string> names)
     {
         switch (target)

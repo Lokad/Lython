@@ -113,7 +113,7 @@ internal static class StaticNameBindingDiagnostics
             case ChainedAssignmentStatementSyntax chained:
                 foreach (var target in chained.Targets)
                 {
-                    AnalyzeLoopStores(AssignmentTargetFacts.ToLoop(target), context, maybeAssigned);
+                    AnalyzeAssignmentStores(target, context, maybeAssigned);
                 }
                 break;
 
@@ -134,12 +134,12 @@ internal static class StaticNameBindingDiagnostics
 
             case UnpackingAssignmentStatementSyntax unpacking:
                 foreach (var target in unpacking.Targets)
-                    AnalyzeLoopStores(AssignmentTargetFacts.ToLoop(AssignmentTargetFacts.FromUnpacking(target)), context, maybeAssigned);
+                    AnalyzeAssignmentStores(target, context, maybeAssigned);
                 break;
 
             case WithStatementSyntax withStatement:
                 if (withStatement.Target is not null)
-                    AnalyzeLoopStores(AssignmentTargetFacts.ToLoop(withStatement.Target), context, maybeAssigned);
+                    AnalyzeAssignmentStores(withStatement.Target, context, maybeAssigned);
                 AnalyzeStatements(withStatement.Body, context, maybeAssigned);
                 break;
 
@@ -383,32 +383,54 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeLoopStores(LoopTargetSyntax target, StaticAnalysisContext context,
         AssignmentFacts assigned)
     {
-        if (target is LoopTupleTargetSyntax tuple)
+        switch (target)
         {
-            foreach (var child in tuple.Items) AnalyzeLoopStores(child, context, assigned);
+            case LoopTupleTargetSyntax tuple:
+                foreach (var child in tuple.Items) AnalyzeLoopStores(child, context, assigned);
+                break;
+            case LoopStoreTargetSyntax store:
+                AnalyzeStoreReadsThenBindings(store.Target, context, assigned);
+                break;
+            case LoopNameTargetSyntax name:
+                assigned.Add(name.Name);
+                break;
+            case LoopStarredTargetSyntax starred:
+                assigned.Add(starred.Name);
+                break;
+        }
+    }
+
+    private static void AnalyzeAssignmentStores(AssignmentTargetSyntax target,
+        StaticAnalysisContext context, AssignmentFacts assigned)
+    {
+        if (target is UnpackingAssignmentTargetGroupSyntax group)
+        {
+            foreach (var child in group.Targets)
+            {
+                // A starred group is treated as one store by this diagnostic pass.
+                if (child is UnpackingAssignmentTargetGroupSyntax { IsStarred: true })
+                    AnalyzeStoreReadsThenBindings(child, context, assigned);
+                else
+                    AnalyzeAssignmentStores(child, context, assigned);
+            }
+        }
+        else
+        {
+            AnalyzeStoreReadsThenBindings(target, context, assigned);
+        }
+    }
+
+    private static void AnalyzeStoreReadsThenBindings(AssignmentTargetSyntax target,
+        StaticAnalysisContext context, AssignmentFacts assigned)
+    {
+        if (target is NameAssignmentTargetSyntax name)
+        {
+            assigned.Add(name.Name);
             return;
         }
         foreach (var read in AssignmentTargetFacts.Reads(target)) AnalyzeExpression(read, context, assigned);
-        AddLoopTarget(target, assigned);
-    }
-
-    private static void AddLoopTarget(LoopTargetSyntax target, AssignmentFacts maybeAssigned)
-    {
-        switch (target)
-        {
-            case LoopStoreTargetSyntax store:
-                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) maybeAssigned.Add(binding);
-                break;
-            case LoopNameTargetSyntax nameTarget:
-                maybeAssigned.Add(nameTarget.Name);
-                break;
-            case LoopStarredTargetSyntax starredTarget:
-                maybeAssigned.Add(starredTarget.Name);
-                break;
-            case LoopTupleTargetSyntax tupleTarget:
-                foreach (var item in tupleTarget.Items) AddLoopTarget(item, maybeAssigned);
-                break;
-        }
+        if (target is UnpackingAssignmentTargetGroupSyntax group)
+            foreach (var binding in AssignmentTargetFacts.Names(group)) assigned.Add(binding);
     }
 
     // Assignment changes use the lexical scope's existing slot order.

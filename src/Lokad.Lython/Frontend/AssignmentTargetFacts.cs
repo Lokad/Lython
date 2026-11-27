@@ -2,21 +2,11 @@ namespace Lokad.Lython.Frontend;
 
 internal static class AssignmentTargetFacts
 {
-    public static AssignmentTargetSyntax FromUnpacking(UnpackingTargetSyntax target) => target switch
-    {
-        UnpackingNameTargetSyntax name => new NameAssignmentTargetSyntax(name.Name, name.Span),
-        UnpackingSubscriptTargetSyntax item => new SubscriptAssignmentTargetSyntax(item.Target, item.Index, item.Span),
-        UnpackingSliceTargetSyntax slice => new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span),
-        UnpackingMemberTargetSyntax member => new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
-        UnpackingNestedTargetSyntax nested => new UnpackingAssignmentTargetGroupSyntax(nested.Items, nested.Span),
-        _ => throw new InvalidOperationException("Unknown unpacking target."),
-    };
-
     public static LoopTargetSyntax ToLoop(AssignmentTargetSyntax target) => target switch
     {
         NameAssignmentTargetSyntax name => new LoopNameTargetSyntax(name.Name) { OriginalSpan = name.Span },
         UnpackingAssignmentTargetGroupSyntax group => new LoopTupleTargetSyntax(group.Targets.Select(item =>
-            item.IsStarred ? Starred(FromUnpacking(item)) : ToLoop(FromUnpacking(item))).ToArray()) { OriginalSpan = group.Span },
+            item.IsStarred ? Starred(item) : ToLoop(item)).ToArray()) { OriginalSpan = group.Span },
         _ => new LoopStoreTargetSyntax(target),
     };
 
@@ -31,7 +21,7 @@ internal static class AssignmentTargetFacts
         if (target is NameAssignmentTargetSyntax name) yield return name.Name;
         if (target is UnpackingAssignmentTargetGroupSyntax group)
             foreach (var item in group.Targets)
-                foreach (var child in Names(FromUnpacking(item))) yield return child;
+                foreach (var child in Names(item)) yield return child;
     }
 
     public static IEnumerable<ExpressionSyntax> Reads(LoopTargetSyntax target)
@@ -57,7 +47,7 @@ internal static class AssignmentTargetFacts
                 break;
             case UnpackingAssignmentTargetGroupSyntax group:
                 foreach (var item in group.Targets)
-                    foreach (var read in Reads(FromUnpacking(item))) yield return read;
+                    foreach (var read in Reads(item)) yield return read;
                 break;
         }
     }

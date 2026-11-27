@@ -92,13 +92,13 @@ internal static partial class StaticBindingEngine
                 {
                     foreach (var target in unpacking.Targets)
                     {
-                        ForgetUnpackingTargetBinding(target, bindings);
+                        ForgetAssignmentTargetBindings(target, bindings);
                     }
                 }
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
-                ForgetAugmentedAssignmentBindings(augmented.Target, bindings);
+                ForgetAssignmentTargetBindings(augmented.Target, bindings);
                 break;
 
             case DeleteStatementSyntax deleteStatement:
@@ -168,28 +168,6 @@ internal static partial class StaticBindingEngine
         {
             case NameAssignmentTargetSyntax name:
                 UpdateBinding(name.Name, value, bindings);
-                break;
-
-            case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
-                bindings.ForgetValue(subscriptIdentifier.Name);
-                break;
-
-            case SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
-                bindings.ForgetValue(sliceIdentifier.Name);
-                break;
-
-            case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
-                bindings.ForgetValue(memberIdentifier.Name);
-                break;
-        }
-    }
-
-    private static void ForgetAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax name:
-                bindings.BindUnknown(name.Name);
                 break;
 
             case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
@@ -393,7 +371,7 @@ internal static partial class StaticBindingEngine
     }
 
     private static bool TryBindUnpackingTargets(
-        IReadOnlyList<UnpackingTargetSyntax> targets,
+        IReadOnlyList<AssignmentTargetSyntax> targets,
         ExpressionSyntax expression,
         AbstractState bindings)
     {
@@ -406,7 +384,7 @@ internal static partial class StaticBindingEngine
     }
 
     private static bool BindUnpackingTargetList(
-        IReadOnlyList<UnpackingTargetSyntax> targets,
+        IReadOnlyList<AssignmentTargetSyntax> targets,
         IReadOnlyList<AbstractValue> items,
         LythonSourceSpan span,
         AbstractState bindings)
@@ -450,17 +428,17 @@ internal static partial class StaticBindingEngine
         return true;
     }
 
-    private static void BindUnpackingTarget(UnpackingTargetSyntax target, AbstractValue value, AbstractState bindings)
+    private static void BindUnpackingTarget(AssignmentTargetSyntax target, AbstractValue value, AbstractState bindings)
     {
         switch (target)
         {
-            case UnpackingNameTargetSyntax name:
+            case NameAssignmentTargetSyntax name:
                 bindings.Set(name.Name, value);
                 return;
 
-            case UnpackingNestedTargetSyntax nested:
+            case UnpackingAssignmentTargetGroupSyntax nested:
                 if (TryGetFixedSequenceItems(value, out var nestedItems)
-                    && BindUnpackingTargetList(nested.Items, nestedItems, nested.Span, bindings))
+                    && BindUnpackingTargetList(nested.Targets, nestedItems, nested.Span, bindings))
                 {
                     return;
                 }
@@ -468,33 +446,33 @@ internal static partial class StaticBindingEngine
                 break;
         }
 
-        ForgetUnpackingTargetBinding(target, bindings);
+        ForgetAssignmentTargetBindings(target, bindings);
     }
 
-    private static void ForgetUnpackingTargetBinding(UnpackingTargetSyntax target, AbstractState bindings)
+    private static void ForgetAssignmentTargetBindings(AssignmentTargetSyntax target, AbstractState bindings)
     {
         switch (target)
         {
-            case UnpackingNameTargetSyntax name:
+            case NameAssignmentTargetSyntax name:
                 bindings.BindUnknown(name.Name);
                 break;
 
-            case UnpackingSubscriptTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
+            case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
                 bindings.ForgetValue(subscriptIdentifier.Name);
                 break;
 
-            case UnpackingSliceTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
+            case SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
                 bindings.ForgetValue(sliceIdentifier.Name);
                 break;
 
-            case UnpackingMemberTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
+            case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
                 bindings.ForgetValue(memberIdentifier.Name);
                 break;
 
-            case UnpackingNestedTargetSyntax nested:
-                foreach (var nestedItem in nested.Items)
+            case UnpackingAssignmentTargetGroupSyntax nested:
+                foreach (var nestedItem in nested.Targets)
                 {
-                    ForgetUnpackingTargetBinding(nestedItem, bindings);
+                    ForgetAssignmentTargetBindings(nestedItem, bindings);
                 }
 
                 break;

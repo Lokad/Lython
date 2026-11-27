@@ -344,7 +344,7 @@ internal static class PostponedAnnotationText
                     yield return T("(");
                     foreach (var fragment in Separated(group.Targets.Select(target =>
                         (target.IsStarred ? new[] { T("*") } : Array.Empty<Fragment>())
-                            .Concat(AssignmentTarget(AssignmentTargetFacts.FromUnpacking(target)))), ", ")) yield return fragment;
+                            .Concat(AssignmentTarget(target))), ", ")) yield return fragment;
                     if (group.Targets.Count == 1) yield return T(",");
                     yield return T(")"); break;
                 default: throw new InvalidOperationException("Unknown annotation store target.");

@@ -216,7 +216,7 @@ internal sealed partial class Parser
 
     private StatementSyntax? ParseUnpackingAssignmentStatement()
     {
-        var targets = new List<UnpackingTargetSyntax>();
+        var targets = new List<AssignmentTargetSyntax>();
         var starredCount = 0;
         var firstToken = _position;
 
@@ -241,16 +241,13 @@ internal sealed partial class Parser
                 return null;
             }
 
-            CollectionDisplayItemSyntax item = isStarred
-                ? new CollectionUnpackingItemSyntax(itemExpression, itemExpression.Span)
-                : new CollectionValueItemSyntax(itemExpression);
-            if (!TryConvertUnpackingItem(item, out var unpackingTarget) || unpackingTarget is null)
+            if (!TryConvertAssignmentTarget(itemExpression, isStarred, groupSpan: null, out var unpackingTarget))
             {
                 AddDiagnostic("LA1068", "Unsupported assignment target.", itemExpression.Span);
                 return null;
             }
 
-            targets.Add(unpackingTarget);
+            targets.Add(unpackingTarget.RequireNotNull());
             if (CurrentToken != Token.Comma)
             {
                 break;
@@ -468,51 +465,50 @@ internal sealed partial class Parser
         return target;
     }
 
-    private bool TryConvertExpressionToAssignmentTarget(ExpressionSyntax expression, out AssignmentTargetSyntax? target)
+    private static bool TryConvertExpressionToAssignmentTarget(ExpressionSyntax expression, out AssignmentTargetSyntax? target)
+        => TryConvertAssignmentTarget(expression, isStarred: false, expression.Span, out target);
+
+    private static bool TryConvertAssignmentTarget(ExpressionSyntax expression, bool isStarred,
+        LythonSourceSpan? groupSpan, out AssignmentTargetSyntax? target)
     {
-        switch (UnwrapParenthesizedTarget(expression))
+        expression = UnwrapParenthesizedTarget(expression);
+        target = expression switch
         {
-            case IdentifierExpressionSyntax identifier:
-                target = new NameAssignmentTargetSyntax(identifier.Name, identifier.Span);
-                return true;
-            case SubscriptExpressionSyntax subscript:
-                target = new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span);
-                return true;
-            case SliceExpressionSyntax slice:
-                target = new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span);
-                return true;
-            case MemberExpressionSyntax member:
-                target = new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span);
-                return true;
-            case TupleLiteralExpressionSyntax tuple when TryConvertSequenceExpressionToTargets(tuple.Items, out var tupleTargets):
-                target = new UnpackingAssignmentTargetGroupSyntax(tupleTargets, expression.Span);
-                return true;
-            case ListLiteralExpressionSyntax list when TryConvertSequenceExpressionToTargets(list.Items, out var listTargets):
-                target = new UnpackingAssignmentTargetGroupSyntax(listTargets, expression.Span);
-                return true;
-            default:
-                target = null;
-                return false;
-        }
+            IdentifierExpressionSyntax identifier =>
+                new NameAssignmentTargetSyntax(identifier.Name, identifier.Span) { IsStarred = isStarred },
+            SubscriptExpressionSyntax subscript =>
+                new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span) { IsStarred = isStarred },
+            SliceExpressionSyntax slice =>
+                new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span) { IsStarred = isStarred },
+            MemberExpressionSyntax member =>
+                new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span) { IsStarred = isStarred },
+            TupleLiteralExpressionSyntax tuple when TryConvertSequenceExpressionToTargets(tuple.Items, out var tupleTargets) =>
+                new UnpackingAssignmentTargetGroupSyntax(tupleTargets, groupSpan ?? tuple.Span) { IsStarred = isStarred },
+            ListLiteralExpressionSyntax list when TryConvertSequenceExpressionToTargets(list.Items, out var listTargets) =>
+                new UnpackingAssignmentTargetGroupSyntax(listTargets, groupSpan ?? list.Span) { IsStarred = isStarred },
+            _ => null,
+        };
+        return target is not null;
     }
 
     private static bool TryConvertSequenceExpressionToTargets(
         IReadOnlyList<CollectionDisplayItemSyntax> items,
-        out IReadOnlyList<UnpackingTargetSyntax> targets)
+        out IReadOnlyList<AssignmentTargetSyntax> targets)
     {
         var starredCount = 0;
-        var converted = new UnpackingTargetSyntax[items.Count];
+        var converted = new AssignmentTargetSyntax[items.Count];
         for (var i = 0; i < items.Count; i++)
         {
-            if (items[i].IsUnpacking && ++starredCount > 1)
+            var item = items[i];
+            if (item.IsUnpacking && ++starredCount > 1)
             {
-                targets = Array.Empty<UnpackingTargetSyntax>();
+                targets = Array.Empty<AssignmentTargetSyntax>();
                 return false;
             }
 
-            if (!TryConvertUnpackingItem(items[i], out var convertedItem))
+            if (!TryConvertAssignmentTarget(item.Expression, item.IsUnpacking, groupSpan: null, out var convertedItem))
             {
-                targets = Array.Empty<UnpackingTargetSyntax>();
+                targets = Array.Empty<AssignmentTargetSyntax>();
                 return false;
             }
 
@@ -520,60 +516,6 @@ internal sealed partial class Parser
         }
 
         targets = converted;
-        return true;
-    }
-
-    // Parentheses never change the target like CPython; nested displays stay
-    // unsupported.
-    private static bool TryConvertUnpackingItem(
-        CollectionDisplayItemSyntax item,
-        out UnpackingTargetSyntax? target)
-    {
-        var expression = UnwrapParenthesizedTarget(item.Expression);
-        target = expression switch
-        {
-            IdentifierExpressionSyntax identifier => new UnpackingNameTargetSyntax(
-                identifier.Name,
-                item.IsUnpacking,
-                identifier.Span),
-            SubscriptExpressionSyntax subscript => new UnpackingSubscriptTargetSyntax(
-                subscript.Target,
-                subscript.Index,
-                item.IsUnpacking,
-                subscript.Span),
-            SliceExpressionSyntax slice => new UnpackingSliceTargetSyntax(
-                slice.Target,
-                slice.Start,
-                slice.End,
-                slice.Step,
-                item.IsUnpacking,
-                slice.Span),
-            MemberExpressionSyntax member => new UnpackingMemberTargetSyntax(
-                member.Target,
-                member.MemberName,
-                item.IsUnpacking,
-                member.Span),
-            TupleLiteralExpressionSyntax tuple when TryConvertNestedDisplay(tuple.Items, tuple.Span, item.IsUnpacking, out var nestedTuple) => nestedTuple,
-            ListLiteralExpressionSyntax list when TryConvertNestedDisplay(list.Items, list.Span, item.IsUnpacking, out var nestedList) => nestedList,
-            _ => null,
-        };
-
-        return target is not null;
-    }
-
-    private static bool TryConvertNestedDisplay(
-        IReadOnlyList<CollectionDisplayItemSyntax> items,
-        LythonSourceSpan span,
-        bool isStarred,
-        out UnpackingTargetSyntax? nested)
-    {
-        if (!TryConvertSequenceExpressionToTargets(items, out var nestedTargets))
-        {
-            nested = null;
-            return false;
-        }
-
-        nested = new UnpackingNestedTargetSyntax(nestedTargets, isStarred, span);
         return true;
     }
 

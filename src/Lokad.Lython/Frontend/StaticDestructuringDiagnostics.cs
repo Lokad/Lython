@@ -3,7 +3,7 @@ namespace Lokad.Lython.Frontend;
 internal static class StaticDestructuringDiagnostics
 {
     public static void AnalyzeUnpackingTargets(
-        IReadOnlyList<UnpackingTargetSyntax> targets,
+        IReadOnlyList<AssignmentTargetSyntax> targets,
         ExpressionSyntax valueExpression,
         LythonSourceSpan span,
         List<LythonDiagnostic> diagnostics,
