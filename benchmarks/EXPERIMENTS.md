@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1894 apply the outer iterator protocol on first resume](results/2026-11-27-generator-resume-protocol/README.md)
+closes the CPython 3.13 parity gap while retaining the direct native entry.
+CSV allocation and admission match B1893. Local elapsed spans zero and
+the unchanged file-fed CPU control moves. All 84 timed batches verify.
+
 [B1893 use the acquired generator-expression iterator directly](results/2026-11-27-direct-generator-outer/README.md)
 removes the extra cursor and the eager namespace write for optimized
 frames. The per-row CSV report allocates 13.09% less at matching peaks.

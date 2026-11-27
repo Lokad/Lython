@@ -108,7 +108,7 @@ public sealed class GeneratorConstructionScenarioTests
             g = (x for x in It())
             at_creation = list(log)
             result = list(g)
-            return [at_creation, result]
+            return [at_creation, result, log]
             """);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
@@ -116,12 +116,64 @@ public sealed class GeneratorConstructionScenarioTests
         var values = Assert.IsType<List<object?>>(sync.ReturnValue);
         Assert.Equal(new List<object?> { "iter" }, Assert.IsType<List<object?>>(values[0]));
         Assert.Empty(Assert.IsType<List<object?>>(values[1]));
+        Assert.Equal(new List<object?> { "iter", "iter", "next" }, Assert.IsType<List<object?>>(values[2]));
 
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         var asyncValues = Assert.IsType<List<object?>>(asyncResult.ReturnValue);
         Assert.Equal(new List<object?> { "iter" }, Assert.IsType<List<object?>>(asyncValues[0]));
         Assert.Empty(Assert.IsType<List<object?>>(asyncValues[1]));
+        Assert.Equal(new List<object?> { "iter", "iter", "next" }, Assert.IsType<List<object?>>(asyncValues[2]));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FirstResumeCanSuspendInsideOuterIteratorAcquisition(bool cancel)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("""
+            class Cursor:
+                def __iter__(self):
+                    with open('/iterator.txt') as source:
+                        return iter([source.read()])
+                def __next__(self): return 'original'
+            outer = Cursor()
+            class Source:
+                def __iter__(self): return outer
+            g = ((value, locals()['.0'] is outer) for value in Source())
+            print('created')
+            print(next(g))
+            """, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/iterator.txt", "replacement");
+        using var cancellation = new CancellationTokenSource();
+        var entered = cancel ? host.PauseReadUntilCancellation("/iterator.txt") : null;
+        var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            if (entered is not null)
+            {
+                await entered.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(result.Success == !cancel, result.Failure?.Message);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Equal(cancel ? "created\n" : "created\n('replacement', True)\n", result.StandardOutput);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 
     [Fact]

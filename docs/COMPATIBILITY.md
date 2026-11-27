@@ -230,13 +230,12 @@ guards, computed exception headers and enclosing definition inputs. Python-forbi
 yield in comprehension bodies, postponed annotations and generic annotation scopes
 is rejected at compilation. Generator frame/code introspection is excluded.
 
-Generator expressions acquire the outer iterator at construction and defer their
-remaining work. All creation sites, including class suites and annotations, support
-`send`, `throw` and `close` through the same executable generator. Closing a
-generator expression does not close a separately retained Python outer iterator;
-native resources still receive deterministic cleanup. Lython advances the acquired
-outer iterator directly on first resume. CPython 3.13 calls a custom outer
-iterator's `__iter__` again at that point.
+Generator expressions acquire the outer iterator at construction. On first resume,
+they apply the iteration protocol to that object again, as in CPython 3.13. The
+`.0` local still exposes the original iterator. All creation sites, including class
+suites and annotations, support `send`, `throw` and `close` through the same
+executable generator. Closing an expression leaves a separately retained outer
+iterator usable. Native resources receive deterministic cleanup.
 
 ## Explicit boundaries
 

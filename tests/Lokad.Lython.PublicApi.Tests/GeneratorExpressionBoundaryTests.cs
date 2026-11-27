@@ -67,6 +67,36 @@ public sealed class GeneratorExpressionBoundaryTests
             g.close()
             print(next(outer))
             """, "iter\n(1, True)\n(9, True)\n9\n" },
+        { "outer-resume-replaces-loop-iterator", """
+            class Cursor:
+                def __iter__(self):
+                    print('resume')
+                    return iter([9, 10])
+                def __next__(self): return 1
+            outer = Cursor()
+            class Source:
+                def __iter__(self):
+                    print('acquire')
+                    return outer
+            g = ((value, locals()['.0'] is outer) for value in Source())
+            print('created')
+            print(next(g), g.send(None))
+            g.close()
+            print(next(outer))
+            """, "acquire\ncreated\nresume\n(9, True) (10, True)\n1\n" },
+        { "outer-resume-stop-translates", """
+            class Cursor:
+                def __iter__(self): raise StopIteration('resume')
+                def __next__(self): return 1
+            outer = Cursor()
+            class Source:
+                def __iter__(self): return outer
+            g = (value for value in Source())
+            print('created')
+            try: next(g)
+            except RuntimeError as error: print(str(error.__cause__))
+            print(next(g, 'end'))
+            """, "created\nresume\nend\n" },
         { "unstarted-close", "events=[]\nclass Source:\n def __iter__(self):events.append('iter');return self\n def __next__(self):events.append('next');return 1\ng=(i for i in Source())\ng.close()\nprint(events,next(g,'end'))", "['iter'] end\n" },
         { "send-discards-resumed-value", "g=(i*2 for i in range(3))\nprint(next(g),g.send(99),g.send(None),next(g,'end'))", "0 2 4 end\n" },
         { "throw-before-start", "events=[]\ndef source():\n events.append('started')\n yield 1\ng=(i for i in source())\ntry:g.throw(ValueError('before'))\nexcept ValueError as error:print(str(error))\nprint(events,next(g,'end'))", "before\n[] end\n" },

@@ -4,10 +4,10 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyIteration
 {
-    internal static IPyIteratorValue AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static object AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (value is PyInstance or IPyProtocolIterator)
-            return PyUserIterator.Create(value, context, span);
+            return PyUserIterator.Acquire(value, context, span);
         if (value is IPyIteratorValue iterator) return iterator;
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         try { return new PyEnumerableIterator(value, span, context); }
@@ -18,10 +18,10 @@ internal static partial class PyIteration
         }
     }
 
-    internal static async ValueTask<IPyIteratorValue> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static ValueTask<object> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value is PyInstance or IPyProtocolIterator
-            ? await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false)
-            : AcquireGeneratorOuter(value, span, context);
+            ? PyUserIterator.AcquireAsync(value, context, span)
+            : new(AcquireGeneratorOuter(value, span, context));
 
     // The lease keeps private backing funded through callbacks, suspension and
     // conversion. Dispose only after every user relinquishes the working list.

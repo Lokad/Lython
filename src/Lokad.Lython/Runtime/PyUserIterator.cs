@@ -7,13 +7,16 @@ internal sealed class PyUserIterator : IPyAsyncIteratorValue
     private readonly LythonSourceSpan _span;
 
     public static PyUserIterator Create(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => new(ResolveIterator(InvokeIter(iterable, context, span), context, span), context, span);
+        => new(Acquire(iterable, context, span), context, span);
 
     public static async ValueTask<PyUserIterator> CreateAsync(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var resolved = await InvokeIterAsync(iterable, context, span).ConfigureAwait(false);
-        return new PyUserIterator(ResolveIterator(resolved, context, span), context, span);
-    }
+        => new(ResolveIterator(await InvokeIterAsync(iterable, context, span).ConfigureAwait(false), context, span), context, span);
+
+    internal static object Acquire(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => ResolveIterator(InvokeIter(iterable, context, span), context, span);
+
+    internal static async ValueTask<object> AcquireAsync(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => ResolveIterator(await InvokeIterAsync(iterable, context, span).ConfigureAwait(false), context, span);
 
     private PyUserIterator(object iterator, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {

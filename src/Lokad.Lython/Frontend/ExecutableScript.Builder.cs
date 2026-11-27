@@ -228,8 +228,13 @@ internal sealed partial class ExecutableScript
             var entryBlock = CreateBlock();
             int? exitBlock;
             if (generatorExpression is not null)
+            {
+                // The constructor supplies .0. On first resume Python iterates
+                // that object, which can run a custom protocol a second time.
+                AddInstruction(entryBlock, ExecutableInstruction.GetIter(generatorExpression.Generator.Clauses[0].Iterable.Span));
                 exitBlock = CompileComprehensionBody(generatorExpression.Generator.Clauses, generatorExpression.Generator.ItemExpression,
                     null, generatorExpression.Span, entryBlock, yielding: true);
+            }
             else if (lambda is not null)
             {
                 CompileReturnValue(lambda.Body, entryBlock, lambda.Span);
