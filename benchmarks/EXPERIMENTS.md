@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1861 profile the delivered compiled log search](results/2026-11-27-direct-regex-cpu/README.md)
+reuses the B1860 image. Of 1,222 samples, 538 have core leaves, 290 have
+backend leaves and 175 have CLR lock or monitor leaves. Both quiet gates
+pass and 2,048 invocations verify. The sample points to a one-shot
+provider boundary for source assessment.
+
 [B1860 refresh warm log search against CPython](results/2026-11-27-direct-regex-cpython/README.md)
 measures `7305efabf` with stock CPython 3.13.16. Compiled search takes
 2.885–2.931× CPython elapsed and module search 2.063–2.090×. The first
