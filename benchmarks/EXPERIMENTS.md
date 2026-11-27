@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1848 repeat the earlier JSON control](results/2026-11-27-dictreader-json-control/README.md)
+reuses both B1846 images and measures nested JSON first and last with
+opposite worker orders. Both positions span zero in elapsed and CPU. The
+unaffected Unicode text control varies across workers. Both CPython
+goldens, all 84 batches and both quiet checks pass.
+
 [B1847 insert ready collection values inline](results/2026-11-27-direct-prepared-inserts/README.md)
 removes the expansion activation for ordinary inserts in both APIs. Quiet
 wide sync shipment uses 1.89–4.98% less CPU and the dictionary/set index
