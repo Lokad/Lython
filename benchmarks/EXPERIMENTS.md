@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1834 refresh representative CPython comparisons](results/2026-11-27-current-cpython/README.md)
+uses the delivered list-growth core and updated comparison host. First-line
+search takes 1.294–1.304× CPython elapsed, wide async shipment 1.334–1.409×
+and ordinary definitions 0.669–0.677× through result. Both quiet gates and
+all 224 batches pass. The record keeps revised script sizes and timing
+boundaries alongside the previous measurements.
+
 [B1833 validate list growth and snapshot admission](results/2026-11-27-list-growth-transaction/README.md)
 preserves reentrant list changes and terminal refund-callback refusal. Direct
 reservations remove the per-copy lease. Nested-array Lines allocates another

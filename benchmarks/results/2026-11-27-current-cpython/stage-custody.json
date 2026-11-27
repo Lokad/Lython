@@ -1,0 +1,22 @@
+{
+  "before": 3018752,
+  "afterReclaim": 14622720,
+  "afterStaging": 7720960,
+  "requiredBeforeStage": 11407369,
+  "deduplicated": [
+    {
+      "source": "ordinary-default-operands-b1675-20261125/candidate/Lokad.Lython.dll",
+      "destination": "ordinary-default-operands-b1675c-20261125/candidate/Lokad.Lython.dll",
+      "sha256": "a9ed22ffacc2407115b7b26059d0ebba91d1a04f9d5024e5d6c4f79de1992d46",
+      "bytesRecovered": 5808128
+    },
+    {
+      "source": "native-dictionary-prepared-consumers-b1712b-20261125/reference/Lokad.Lython.dll",
+      "destination": "unified-builtin-reservation-b1714b-20261125/reference/Lokad.Lython.dll",
+      "sha256": "474a0b04b15b2b23f6f51b831341517b2e4910c1a5f380bb85515d32d8a417cf",
+      "bytesRecovered": 5795840
+    }
+  ],
+  "expandedBytes": 6813065,
+  "streamed": true
+}

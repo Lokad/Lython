@@ -1,0 +1,51 @@
+{
+  "diagnostic.file-search-first-line": [
+    {
+      "name": "input.txt",
+      "bytes": 42010,
+      "lines": 2049,
+      "nonblank": 2049
+    }
+  ],
+  "scripts.file-search.large": [
+    {
+      "name": "input.txt",
+      "bytes": 42010,
+      "lines": 2049,
+      "nonblank": 2049
+    }
+  ],
+  "scripts.config-edit.small": [
+    {
+      "name": "config.json",
+      "bytes": 181,
+      "lines": 1,
+      "nonblank": 1
+    }
+  ],
+  "diagnostic.shipment-starmap-wide-lists": [
+    {
+      "name": "shipments.csv",
+      "bytes": 27350,
+      "lines": 2049,
+      "nonblank": 2049
+    }
+  ],
+  "scripts.json-summary-helpers.large": [
+    {
+      "name": "input.jsonl",
+      "bytes": 110592,
+      "lines": 5120,
+      "nonblank": 4096
+    }
+  ],
+  "diagnostic.json-lines-nested-arrays": [
+    {
+      "name": "input.jsonl",
+      "bytes": 131826,
+      "lines": 5120,
+      "nonblank": 4096
+    }
+  ],
+  "diagnostic.generated-ordinary-definitions": []
+}

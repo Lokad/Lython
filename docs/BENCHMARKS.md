@@ -3,21 +3,23 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON Lines summary with record helper | 5,120 lines / 110,592 B | 3.12574–3.13816 ms | 4.15785–4.16446 ms | 0.751–0.755× | Diagnostic. [B1805]. |
-| JSON Lines summary with record helper, Lython `RunAsync` | 5,120 lines / 110,592 B | 3.21453–3.23051 ms | 4.13075–4.14701 ms | 0.775–0.782× | Diagnostic. [B1805]. |
+| JSON Lines summary with record helper, Lython `RunAsync` | 4,096 records / 110,592 B | 3.24048–3.32348 ms | 4.15220–4.16260 ms | 0.778–0.800× | Diagnostic. [B1834]. |
+| Nested-array JSON Lines summary, Lython `RunAsync` | 4,096 records / 131,826 B | 4.04103–4.12341 ms | 4.54020–4.60559 ms | 0.877–0.908× | Diagnostic. [B1834]. |
 | Five-item `starmap` shipment report | 2,048 records / 27,350 B | 2.16876–2.22905 ms | 1.83627–1.84352 ms | 1.176–1.214× | Diagnostic. [B1823]. |
-| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.46637–2.46954 ms | 1.80589–1.81313 ms | 1.360–1.367× | Diagnostic. [B1823]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.41579–2.53935 ms | 1.80178–1.81128 ms | 1.334–1.409× | Diagnostic. Lython worker spread is 5.11%. [B1834]. |
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.44933–0.45386 ms | 1.36115–1.36441 ms | 0.329–0.333× | Diagnostic. [B1823]. |
-| File search, match at line 1,025 | 42,010 B file | 0.08292–0.08345 ms | 0.13705–0.13762 ms | 0.603–0.609× | Diagnostic. [B1815]. |
-| File search, match at line 1,025, Lython `RunAsync` | 42,010 B file | 0.08385–0.08518 ms | 0.13787–0.13931 ms | 0.602–0.618× | Diagnostic. [B1815]. |
-| File search, match at line 1 | 42,010 B file | 0.07438–0.07471 ms | 0.05127–0.05131 ms | 1.450–1.457× | Diagnostic. [B1815]. |
+| File search, match at line 1,025 | 42,010 B file | 0.07531–0.07592 ms | 0.13725–0.13909 ms | 0.541–0.553× | Diagnostic. [B1834]. |
+| File search, match at line 1 | 42,010 B file | 0.06591–0.06623 ms | 0.05077–0.05093 ms | 1.294–1.304× | Diagnostic. [B1834]. |
+| Configuration edit | 181 B input | 0.06925–0.06940 ms | 0.06144–0.06186 ms | 1.120–1.130× | Diagnostic. [B1834]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.85825–0.92594 ms | 0.94030–0.94431 ms | 0.909–0.985× | Diagnostic. Lython worker spread is 7.89%. [B1815]. |
 
-B1823 measures `489fde50e` and B1815 measures `c10f06884` on November 27,
-2026 UTC. B1805 measures `cb258fe7f` on November 26, 2026 UTC. All use
-stock CPython 3.13.16.
+B1834 measures `4a6000316` with the comparison host from `05c1059de`.
+B1823 measures `489fde50e` and B1815 measures `c10f06884`. Those
+checkpoints ran on November 27, 2026 UTC. B1805 measures `cb258fe7f`
+on November 26, 2026 UTC. All use stock CPython 3.13.16.
 Ratios divide Lython elapsed by CPython elapsed. Above 1× means Lython
 takes longer. Ranges span all pairings of medians from two workers per
-engine. [B1823] · [B1815] · [B1805].
+engine. [B1834] · [B1823] · [B1815] · [B1805].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. Warm execution uses a compiled script in a running process.
@@ -31,21 +33,23 @@ active. CPython uses its native file APIs. Fixture reset and request
 framing sit outside the elapsed execution clock. The raw process CPU
 measurements cover the wider request.
 
-On the B1815 revision, a separate timing probe measures the first-line
-gap at 29–30 µs before verification. Lython spends about 6 µs less on
-verification, bringing the complete command gap to about 23 µs. The
-earlier interval still includes mediated I/O, output capture and cleanup.
-[B1827].
-
-The comparison host now uses one managed metadata read per path component
-on its normal path. The paired host measurement keeps the Lython core fixed.
-The table above retains the original worker images. [B1828].
+The first-line search gap is about 15–16 µs in B1834. A separate B1815
+diagnostic measured about 23 µs with verification and 29–30 µs before it.
+The earlier interval still includes mediated I/O, output capture and
+cleanup. The runtime and comparison host both changed between checkpoints.
+The paired metadata measurement at fixed runtime is available separately.
+[B1834] · [B1827] · [B1828].
 
 <details>
 <summary>Earlier warm measurements and revisions</summary>
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON Lines summary with record helper, Lython `RunAsync` | 5,120 lines / 110,592 B | 3.21453–3.23051 ms | 4.13075–4.14701 ms | 0.775–0.782× | Diagnostic. [B1805]. |
+| Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.46637–2.46954 ms | 1.80589–1.81313 ms | 1.360–1.367× | Diagnostic. [B1823]. |
+| File search, match at line 1,025 | 42,010 B file | 0.08292–0.08345 ms | 0.13705–0.13762 ms | 0.603–0.609× | Diagnostic. [B1815]. |
+| File search, match at line 1,025, Lython `RunAsync` | 42,010 B file | 0.08385–0.08518 ms | 0.13787–0.13931 ms | 0.602–0.618× | Diagnostic. [B1815]. |
+| File search, match at line 1 | 42,010 B file | 0.07438–0.07471 ms | 0.05127–0.05131 ms | 1.450–1.457× | Diagnostic. [B1815]. |
 | Five-item `starmap` shipment report, Lython `RunAsync` | 2,048 records / 27,350 B | 2.60249–2.80150 ms | 1.81483–1.84158 ms | 1.413–1.544× | Diagnostic. Lython worker spread is 7.65%. [B1805]. |
 | Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.83407–0.84667 ms | 0.94136–0.96632 ms | 0.863–0.899× | Diagnostic. [B1805]. |
 | Shipment callback report | 2,048 records / 27,350 B | 1.77070–1.78975 ms | 1.62509–1.64124 ms | 1.079–1.101× | Diagnostic. [B1791]. |
@@ -102,8 +106,8 @@ use `8aef89b09`.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56925–0.57157 ms | 1.10194–1.10238 ms | 0.516–0.519× | Diagnostic. [B1805]. |
-| Generated ordinary definitions | Compile-to-result | 0.75729–0.76925 ms | 1.11806–1.12177 ms | 0.675–0.688× | Diagnostic. [B1805]. |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56532–0.57200 ms | 0.93722–0.93900 ms | 0.602–0.610× | Diagnostic. [B1834]. |
+| Generated ordinary definitions | Compile-to-result | 0.75919–0.76152 ms | 1.12423–1.13454 ms | 0.669–0.677× | Diagnostic. [B1834]. |
 | Five-item `starmap` shipment report | Compile-to-result | 2.39930–2.44152 ms | 2.14403–2.14737 ms | 1.117–1.139× | Diagnostic. [B1823]. |
 | File search, match at line 1,025, 319 B of source | Compilation only | 0.01677–0.01698 ms | 0.03059–0.03078 ms | 0.545–0.555× | Diagnostic. [B1815]. |
 | File search, match at line 1,025 | Compile-to-result | 0.11875–0.12018 ms | 0.20888–0.21198 ms | 0.560–0.575× | Diagnostic. [B1815]. |
@@ -113,6 +117,8 @@ use `8aef89b09`.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56925–0.57157 ms | 1.10194–1.10238 ms | 0.516–0.519× | Diagnostic. [B1805]. |
+| Generated ordinary definitions | Compile-to-result | 0.75729–0.76925 ms | 1.11806–1.12177 ms | 0.675–0.688× | Diagnostic. [B1805]. |
 | Generated ordinary definitions, 8,641 B of source | Compilation only | 0.56433–0.56881 ms | 1.08677–1.09431 ms | 0.516–0.523× | Diagnostic. [B1791]. |
 | Shipment callback report | Compile-to-result | 1.86382–1.88807 ms | 1.89602–1.90010 ms | 0.981–0.996× | Diagnostic. [B1791]. |
 | Generated ordinary definitions | Compile-to-result | 0.77094–0.77810 ms | 1.12002–1.12085 ms | 0.688–0.695× | Diagnostic. [B1791]. |
@@ -282,3 +288,5 @@ document reproduction.
 [B1823]: ../benchmarks/results/2026-11-27-starmap-slot-cpython/README.md
 [B1827]: ../benchmarks/results/2026-11-27-short-command-boundary/README.md
 [B1828]: ../benchmarks/results/2026-11-27-file-metadata-observation/README.md
+
+[B1834]: ../benchmarks/results/2026-11-27-current-cpython/README.md
