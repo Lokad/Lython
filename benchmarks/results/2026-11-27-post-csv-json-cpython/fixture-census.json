@@ -1,0 +1,60 @@
+{
+  "diagnostic.shipment-starmap-wide-lists": {
+    "inputs": [
+      {
+        "name": "shipments.csv",
+        "bytes": 27350,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 1546
+  },
+  "diagnostic.nested-json-document": {
+    "inputs": [
+      {
+        "name": "shipments.json",
+        "bytes": 103331,
+        "records": 2048
+      }
+    ],
+    "sourceBytes": 385
+  },
+  "diagnostic.csv-summary-list-input": {
+    "inputs": [
+      {
+        "name": "input.csv",
+        "bytes": 57361,
+        "records": 4096
+      }
+    ],
+    "sourceBytes": 670
+  },
+  "diagnostic.generated-ordinary-definitions": {
+    "inputs": [],
+    "sourceBytes": 8641
+  },
+  "diagnostic.nested-json-lines": {
+    "inputs": [
+      {
+        "name": "input.jsonl",
+        "bytes": 159744,
+        "records": 4096
+      }
+    ],
+    "sourceBytes": 618
+  },
+  "diagnostic.csv-summary-iterator-input": {
+    "inputs": [
+      {
+        "name": "input.csv",
+        "bytes": 57361,
+        "records": 4096
+      }
+    ],
+    "sourceBytes": 707
+  },
+  "diagnostic.generated-guarded-report": {
+    "inputs": [],
+    "sourceBytes": 24587
+  }
+}
