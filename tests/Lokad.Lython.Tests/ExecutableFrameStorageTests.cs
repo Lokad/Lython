@@ -20,19 +20,32 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         Assert.True((caches ? code.LookupCacheCount : code.LocalNames.Count) >= capacity);
-        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var owner = budget.CreateScope())
+
+        // Exercise the exact failure path before measuring its allocation.
+        // A fresh allowance and frame still have to refuse the same storage.
+        var first = await RunRefusedFrameAsync();
+        var allocated = await RunRefusedFrameAsync();
+        output.WriteLine($"Refused {(caches ? "cache" : "local")} frame, async={asynchronous}: {first} allocated bytes on first use, {allocated} on repeat.");
+        // A single reference array at this capacity exceeds 64 KiB on
+        // supported x64 targets. Allow error and setup overhead while
+        // establishing that denied storage was never allocated.
+        Assert.True(allocated < capacity * 4L, $"Allocated {allocated} bytes before reporting refused admission.");
+
+        async Task<long> RunRefusedFrameAsync()
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-            var effects = new PyList(1, context.MemoryGovernor, null);
-            context.Variables["effects"] = effects;
-            if (caches) context.Variables["item"] = new PyList();
-            // Cache backing is requested at the first generic lookup. Leave
-            // room for the small operand array and preceding assignment.
-            var workingHeadroom = caches ? 1024 : 0;
-            Assert.True(budget.TryReserve(4 * 1024 * 1024 - budget.ReservedBytes - workingHeadroom, out var blocker));
-            using (blocker)
+            var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+            long bytes;
+            using (var owner = budget.CreateScope())
             {
+                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var effects = new PyList(1, context.MemoryGovernor, null);
+                context.Variables["effects"] = effects;
+                if (caches) context.Variables["item"] = new PyList();
+                // Cache backing is requested at the first generic lookup. Leave
+                // room for the small operand array and preceding assignment.
+                var workingHeadroom = caches ? 1024 : 0;
+                Assert.True(budget.TryReserve(4 * 1024 * 1024 - budget.ReservedBytes - workingHeadroom, out var blocker));
+                using var withheld = blocker;
                 LythonRuntimeException? failure = null;
                 var before = GC.GetAllocatedBytesForCurrentThread();
                 try
@@ -46,23 +59,19 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
                     else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
                 }
                 catch (LythonRuntimeException error) { failure = error; }
-                var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-                output.WriteLine($"Refused {(caches ? "cache" : "local")} frame, async={asynchronous}: {allocated} allocated bytes.");
+                bytes = GC.GetAllocatedBytesForCurrentThread() - before;
                 Assert.NotNull(failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.InRange(failure.Attribution?.Requested ?? 0L, capacity * (long)IntPtr.Size, long.MaxValue);
-                // A single reference array at this capacity exceeds 64 KiB on
-                // supported x64 targets. Allow ample error/setup overhead while
-                // proving that denied storage was not allocated first.
-                Assert.True(allocated < capacity * 4L, $"Allocated {allocated} bytes before reporting refused admission.");
                 Assert.Equal(caches ? 1 : 0, effects.Count);
                 Assert.Null(context.CurrentExecutableFrame);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
+            Assert.Equal(0, budget.ReservedBytes);
+            return bytes;
         }
-        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
