@@ -273,20 +273,14 @@ internal sealed partial class LythonRuntime
                     if (asynchronous) return CompleteCallValue(InvokeReceiverMethodAsync(receiverMethod, receiver, new ReceiverArguments(_execution.Stack.Values, start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, this), start);
                     result = InvokeReceiverMethod(receiverMethod, receiver, new ReceiverArguments(_execution.Stack.Values, start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, this);
                 }
-                else if (target is PyFunctionBase function)
+                else if (target is PyGeneratorFunction generator)
                 {
-                    var arguments = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                     var receiver = call.HasReceiver && _execution.Stack[start] is not PyNone ? _execution.Stack[start] : null;
-                    if (asynchronous) return CompleteCallValue(InvokeCallableFromOperandsAsync(function, arguments,
-                        call.CallSpan, this, receiver, call), start);
-                    result = InvokeCallableFromOperands(function, arguments, call.CallSpan, this, receiver, call);
+                    return ExecuteGeneratorCall(generator, receiver, call, start, asynchronous);
                 }
-                else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
+                else if (target is PyBoundMethod { Function: PyGeneratorFunction method } bound)
                 {
-                    var arguments = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                    if (asynchronous) return CompleteCallValue(InvokeCallableFromOperandsAsync(method, arguments,
-                        call.CallSpan, this, bound.Receiver, call), start);
-                    result = InvokeCallableFromOperands(method, arguments, call.CallSpan, this, bound.Receiver, call);
+                    return ExecuteGeneratorCall(method, bound.Receiver, call, start, asynchronous);
                 }
                 else
                 {
@@ -302,6 +296,17 @@ internal sealed partial class LythonRuntime
                 _execution.Stack.RetireTo(start);
                 throw;
             }
+        }
+
+        private ValueTask ExecuteGeneratorCall(PyGeneratorFunction generator, object? receiver,
+            ExecutableCallSite call, int start, bool asynchronous)
+        {
+            var arguments = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+            if (asynchronous)
+                return CompleteCallValue(CreateGeneratorFromOperandsAsync(generator, arguments, call.CallSpan, this, receiver, call), start);
+            var result = CreateGeneratorFromOperands(generator, arguments.Span, call.CallSpan, this, receiver, call);
+            PublishInstructionResult(_execution.Code.Instructions[_execution.InstructionIndex], result);
+            return default;
         }
 
         // Native results above travel as objects. Only potentially asynchronous

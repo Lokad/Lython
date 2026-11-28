@@ -962,6 +962,10 @@ or excess yield transfers the live slots and instruction position to
 ordinary generator advancement. A pending pull keeps the generator
 and callback storage admitted until their users and cleanup finish.
 
+Ordinary direct and bound generator calls transfer their bound workspace
+straight to generator construction. An asynchronous default lookup can
+suspend with the workspace admitted. The body begins on the first pull.
+
 A generator expression passed directly to the evaluated builtin `sum` can
 reduce in the instruction that acquires the generator's outer source.
 Instruction layout identifies the adjacent single consumer. The runtime checks

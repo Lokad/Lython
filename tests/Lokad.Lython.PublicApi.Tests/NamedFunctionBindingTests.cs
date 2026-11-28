@@ -181,6 +181,54 @@ return target(value='body')
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GeneratorCallsBindProtocolDefaultsBeforeTheirFirstPull(bool asynchronous)
+    {
+        const string source = """
+events = []
+class Key:
+    def __hash__(self): return hash('suffix')
+    def __eq__(self, other):
+        events.append('lookup')
+        with open('default.txt') as source:
+            return source.read() == other
+def target(value, *, suffix='?'):
+    events.append('direct')
+    yield value + suffix
+class Receiver:
+    def target(self, value, *, suffix='?'):
+        events.append('bound')
+        yield value + suffix
+target.__kwdefaults__ = {Key(): '!'}
+Receiver.target.__kwdefaults__ = {Key(): '!'}
+saved = Receiver().target
+direct = target(value='left')
+bound = saved(value='right')
+print(events)
+print(next(direct), next(bound))
+print(events)
+""";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join('\n', script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            var host = new MockLythonHost(); host.SeedFile("/default.txt", "suffix");
+            var delayed = new DelayedLythonHost(); delayed.SeedFile("/default.txt", "suffix");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("['lookup', 'lookup']\nleft! right!\n['lookup', 'lookup', 'direct', 'bound']\n", result.StandardOutput);
+                if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static IReadOnlyList<object?> Sequence(object? value)
         => Assert.IsAssignableFrom<IReadOnlyList<object?>>(value);
 }

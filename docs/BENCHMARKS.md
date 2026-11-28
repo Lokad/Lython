@@ -124,6 +124,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Construct generators directly from bound arguments | On the quiet repeat, a default-heavy generator workload uses 3.73–5.28% less CPU in `Run` and 6.45–6.94% less in `RunAsync`. Configuration elapsed and both staged CSV clocks span zero. Admission matches. [B1993](../benchmarks/results/2026-11-28-generator-construction-transport/README.md). |
 | Publish builtin `__new__` descriptors on demand | First compilation allocates 44–48 KB less at matching admission. Compile-only traces lose the eager runtime initializer and four unrelated owner initializers. Fresh-process timing and quiet warm timing span zero. [B1990](../benchmarks/results/2026-11-28-owner-local-type-new-slots/README.md). |
 | Borrow evaluated positional slots for fixed builtins | On the quiet repeat, warm sync CPU falls 10.08–14.11% in the fixed math diagnostic and 0.51–0.85% in module-level regex search. The compiled-search and configuration controls span zero on repeat. Allocation and admission are essentially flat. [B1986](../benchmarks/results/2026-11-28-borrow-fixed-positional-arguments/README.md). |
 | Defer private `starmap` generator frames | The 2,048-row iterable shipment allocates about 816 KiB less in each API at matching admission. Quiet warm async CPU falls 5.84–7.45%. The ordinary tuple and file-fed controls span zero. [B1980](../benchmarks/results/2026-11-28-deferred-starmap-argument-frame/README.md). |

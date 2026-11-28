@@ -97,46 +97,46 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object InvokeCallableFromOperands(
-        PyFunctionBase function, ReadOnlyMemory<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context,
-        object? receiver = null, ExecutableCallSite? callSite = null)
+    private static object CreateGeneratorFromOperands(
+        PyGeneratorFunction function, ReadOnlySpan<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context,
+        object? receiver, ExecutableCallSite callSite)
     {
         context.EnterInterpreterFrame(span);
         try
         {
-            if (TryConstructPositionalGenerator(function, arguments.Span, span, context, receiver, callSite) is { } generator)
+            if (TryConstructPositionalGenerator(function, arguments, span, context, receiver, callSite) is { } generator)
                 return generator;
-            return RuntimeValue(function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite).Object);
+            context.CheckExecution(span);
+            var bound = function.BindCallOperands(arguments, span, context, receiver, callSite);
+            return function.CreateBoundGenerator(bound, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static async ValueTask<object> InvokeCallableFromOperandsAsync(
-        PyFunctionBase function, ReadOnlyMemory<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context,
-        object? receiver = null, ExecutableCallSite? callSite = null)
+    private static async ValueTask<object> CreateGeneratorFromOperandsAsync(
+        PyGeneratorFunction function, ReadOnlyMemory<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context,
+        object? receiver, ExecutableCallSite callSite)
     {
         context.EnterInterpreterFrame(span);
         try
         {
-            // Construction has no guest body to suspend. The current async
-            // boundary already isolates ambient state from allowance callbacks.
+            // Await a live default lookup when necessary. Keep construction
+            // inside this async boundary to isolate allowance callbacks.
             if (TryConstructPositionalGenerator(function, arguments.Span, span, context, receiver, callSite) is { } generator)
                 return generator;
-            // Remaining lowered/mirrored calls bind owned values.
-            // The caller keeps its operand array alive until this call finishes.
-            var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
-            return RuntimeValue((await pending.ConfigureAwait(false)).Object);
+            context.CheckExecution(span);
+            var bound = await function.BindCallOperandsAsync(arguments.Span, span, context, receiver, callSite).ConfigureAwait(false);
+            return function.CreateBoundGenerator(bound, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static object? TryConstructPositionalGenerator(PyFunctionBase function, ReadOnlySpan<ExecutableSlot> operands,
-        LythonSourceSpan span, ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
+    private static object? TryConstructPositionalGenerator(PyGeneratorFunction generator, ReadOnlySpan<ExecutableSlot> operands,
+        LythonSourceSpan span, ExecutionContext context, object? receiver, ExecutableCallSite callSite)
     {
-        if (function is not PyGeneratorFunction generator || callSite is not { IsPositionalOnly: true } ||
-            !generator.HasCompletePositionalSupply(operands.Length, receiver)) return null;
+        if (!callSite.IsPositionalOnly || !generator.HasCompletePositionalSupply(operands.Length, receiver)) return null;
 
         context.CheckExecution(span);
         var arguments = RentFunctionArgumentStorage(generator, span, context, generator.CodeObject.ValueStorageCapacity);

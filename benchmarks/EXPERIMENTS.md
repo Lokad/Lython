@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1993 keep target selection and construct generators directly](results/2026-11-28-generator-construction-transport/README.md)
+keeps allocation and admission effectively flat. Quiet warm CPU falls
+3.73–5.28% sync and 6.45–6.94% async on default-heavy generators. The
+local configuration elapsed increase spans zero on the quiet repeat.
+
 [B1992 refresh process startup against CPython](results/2026-11-28-current-fresh-command-cpython/README.md)
 verifies fourteen quiet launch pairs at `04159957a`. First-line search
 and configuration are 7.24× and 7.83× CPython elapsed. Preserve the
