@@ -239,15 +239,9 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Subscript:
                     {
                         var target = Read(instruction.InputStart, 0);
-                        if (TryReadMachineOperand(Code, Values, instruction.SecondInput, _scope, out var index)
-                            && PyIndexing.TryReadSequenceIndex(target, index, instruction.Span, _scope, out var item))
-                        {
-                            Publish(instruction, item);
-                            break;
-                        }
-                        var key = Read(instruction.SecondInput, 1);
-                        if (target is not PyDict { HasProtocolKeys: false } dictionary || key is not PyString field) return false;
-                        if (instruction.LookupCacheIndex >= 0 && dictionary.HasSharedRecordKeys)
+                        var key = ReadSubscriptKey(Code, Values, Index, target, _scope, _cells, out var machineIndex);
+                        if (instruction.LookupCacheIndex >= 0 &&
+                            target is PyDict { HasSharedRecordKeys: true } dictionary && key is PyString field)
                         {
                             // Reuse the ordinary definition-owned cache. Admit its
                             // backing before proving the current live row layout.
@@ -260,8 +254,9 @@ internal sealed partial class LythonRuntime
                                 break;
                             }
                         }
-                        if (dictionary.HasProtocolKeys) return false;
-                        Publish(instruction, ReadSubscriptValue(dictionary, field, instruction.Span, _scope));
+                        if (!TryReadCompletedSubscript(target, key, machineIndex, instruction.Span, _scope, out var item))
+                            return false;
+                        Publish(instruction, item);
                         break;
                     }
                     case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:

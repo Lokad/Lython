@@ -52,26 +52,6 @@ internal sealed partial class LythonRuntime
             catch { execution.Stack.RetireTo(start); throw; }
         }
 
-        private static bool TryExecuteSequenceIndex(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, in ExecutableInstruction instruction)
-        {
-            // A prepared user descriptor owns the original receiver/key until
-            // resumption. It must finish through the ordinary protocol path.
-            if (invocation?._preparedCallValue is not null) return false;
-            // A nonnumeric key cannot use this path. Probe it without raising
-            // missing-name errors, before resolving an otherwise unused receiver.
-            if (!TryReadMachineOperand(execution.Code, execution.Stack.Values, instruction.SecondInput, scope, out var index))
-                return false;
-            var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
-            try
-            {
-                if (!PyIndexing.TryReadSequenceIndex(receiver, index, instruction.Span, scope, out var value)) return false;
-                PublishInstructionResult(ref execution, invocation, instruction, value);
-                return true;
-            }
-            catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
-        }
-
         // Genuine async work captures its values; raw type protocols use the
         // existing stack scratch. Context promotion runs no guest/admission hook.
         private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
@@ -88,21 +68,25 @@ internal sealed partial class LythonRuntime
             // separate load did. No protocol or admission has run at this point.
             // Descriptor resumption uses the original receiver/key retained in
             // funded protocol slots. Otherwise read prepared positions once.
-            var retained = instruction.OpCode == ExecutableOpCode.Subscript && invocation?._preparedCallValue is not null;
+            var subscript = instruction.OpCode == ExecutableOpCode.Subscript;
+            var retained = subscript && invocation?._preparedCallValue is not null;
             var first = retained ? execution.Stack[instruction.ResultSlot]
                 : ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            long machineIndex = 0;
             var second = instruction.OpCode == ExecutableOpCode.Unary ? null
                 : retained ? execution.Stack[instruction.ResultSlot + 1]
+                : subscript ? ReadSubscriptKey(execution.Code, execution.Stack.Values, execution.InstructionIndex,
+                    first, scope, execution.Captures, out machineIndex)
                 : ReadOperand(ref execution, instruction.SecondInput, scope, 1);
             try
             {
-                if (instruction.OpCode != ExecutableOpCode.Subscript &&
+                if (!subscript &&
                     TryEvaluateClosedArithmetic(instruction, first, second, scope, out var arithmetic))
                 {
                     PublishInstructionResult(ref execution, invocation, instruction, arithmetic);
                     return InstructionPause.Continue;
                 }
-                if (instruction.OpCode == ExecutableOpCode.Subscript && instruction.LookupCacheIndex >= 0 &&
+                if (subscript && instruction.LookupCacheIndex >= 0 &&
                     first is PyDict { HasSharedRecordKeys: true } record && second is PyString field)
                 {
                     // Acquire backing before proving the live layout: admission
@@ -118,28 +102,30 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                var immediate = !asynchronous && invocation is not null ||
-                    instruction.OpCode == ExecutableOpCode.Subscript &&
-                    (second is BigInteger && first is PyList or PyTuple or PyBytes or PyString or PyRange ||
-                     first is PyDict dictionary && dictionary.CanReadKeySynchronously(second!));
-                if (!immediate && invocation is null)
+                if (subscript && !retained &&
+                    TryReadCompletedSubscript(first, second, machineIndex, instruction.Span, scope, out var item))
+                {
+                    PublishInstructionResult(ref execution, invocation, instruction, item);
+                    return InstructionPause.Continue;
+                }
+                if (invocation is null)
                 {
                     return InstructionPause.ContextRequired;
                 }
-                if (instruction.OpCode == ExecutableOpCode.Subscript && invocation is not null &&
+                if (subscript &&
                     invocation.TryBeginTypeSubscription(instruction, first, second!, asynchronous, out nextCall))
                 {
                     pendingSpan = instruction.Span;
                     return InstructionPause.Call;
                 }
-                if (immediate)
+                if (!asynchronous)
                 {
                     var result = instruction.OpCode switch
                     {
                         ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator, first, second!, scope, instruction.Span),
                         ExecutableOpCode.Augmented => EvaluateAugmentedAssignment(first, second!, instruction.AugmentedOperator, scope, instruction.Span),
                         ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, first, scope, instruction.Span),
-                        ExecutableOpCode.Subscript => invocation?._preparedCallValue is not null
+                        ExecutableOpCode.Subscript => invocation._preparedCallValue is not null
                             ? invocation.InvokePreparedTypeSubscription(second!, instruction.Span, false).GetAwaiter().GetResult()
                             : ReadSubscriptValue(first, second!, instruction.Span, scope),
                         _ => throw new InvalidOperationException("Unexpected direct input instruction."),
@@ -148,7 +134,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    pending = WithoutJump(invocation!.ExecuteCapturedValueOperationAsync(instruction, first, second));
+                    pending = WithoutJump(invocation.ExecuteCapturedValueOperationAsync(instruction, first, second));
                     if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                     _ = ConsumeOperation(ref pending);
                 }
@@ -245,5 +231,35 @@ internal sealed partial class LythonRuntime
             }
             catch { _execution.Stack.RetireTo(instruction.ResultSlot); throw; }
         }
+    }
+
+    // A null key represents an exact machine index borrowed from the slots.
+    // Dynamic receivers receive their original Python key, including bool.
+    private static object? ReadSubscriptKey(ExecutableCodeObject code, Span<ExecutableSlot> values,
+        int index, object receiver, ExecutionContext scope, ExecutableCaptures captures, out long machineIndex)
+    {
+        ref readonly var instruction = ref code.Instructions[index];
+        var source = instruction.SecondInput;
+        machineIndex = 0;
+        if (receiver is PyList or PyTuple or PyBytes or PyString &&
+            TryReadMachineOperand(code, values, source, scope, out machineIndex, captures))
+            return null;
+        return ReadExecutableOperand(code, values, source, index, 1, scope, captures);
+    }
+
+    private static bool TryReadCompletedSubscript(object receiver, object? key, long machineIndex,
+        LythonSourceSpan span, ExecutionContext scope, out ExecutableSlot result)
+    {
+        result = default;
+        if (key is null)
+        {
+            result = PyIndexing.ReadMachineSequenceIndex(receiver, machineIndex, span, scope);
+            return true;
+        }
+        if (!(key is BigInteger or bool && receiver is PyList or PyTuple or PyBytes or PyString or PyRange ||
+              receiver is PyDict dictionary && dictionary.CanReadKeySynchronously(key)))
+            return false;
+        result.Object = ReadSubscriptValue(receiver, key, span, scope);
+        return true;
     }
 }

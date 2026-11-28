@@ -268,6 +268,32 @@ public sealed class NativeGeneratorSumTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RepeatedRangeSubscriptsWithBooleanKeysReturnTheirAllowance(bool asynchronous)
+    {
+        const string source = """
+            def reduce(offsets):
+                total = 0
+                for index in range(256):
+                    total += sum(offsets[flag] for flag in (False, True))
+                return total
+            return reduce(range(2))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(16 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new System.Numerics.BigInteger(256), result.ReturnValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RefusedPrivateIteratorAdmissionPrecedesGeneratorEffects(bool asynchronous)
     {
         const string source = """

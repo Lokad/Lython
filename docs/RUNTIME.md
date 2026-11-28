@@ -969,7 +969,12 @@ over an exact list, tuple or range consumes integer yields through the shared
 executable dispatcher. The admitted execution state and subtotal stay local
 to that operation. A cached record field can feed an adjacent scalar comparison
 and yield without publishing their intermediate operands. A guest comparison
-continues with the fetched value in its original slot. Compact generators
+continues with the fetched value in its original slot. Both execution loops
+read a subscript receiver before its key and complete exact builtin lookups
+through the same path. Machine indices can stay unboxed for lists, tuples,
+bytes and strings. Boolean and wide integer keys work for range reads.
+Lookups that call a guest descriptor retain the evaluated receiver and key
+in the admitted continuation slots. Compact generators
 over lists and tuples can use the native loop's fixed managed inline slots
 when lookups have a shared definition owner or the code needs none. When
 native execution transfers, the prepaid array receives the live slots and

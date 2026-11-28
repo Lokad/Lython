@@ -40,7 +40,7 @@ public sealed class StringIndexCacheCancellationTests
 
             var error = Assert.Throws<LythonRuntimeException>(() =>
             {
-                if (native) PyIndexing.TryReadSequenceIndex(input, 1, Span, context, out _);
+                if (native) PyIndexing.ReadMachineSequenceIndex(input, 1, Span, context);
                 else input.GetByteIndexForRuneBoundary(1);
             });
             Assert.Equal(refuse ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled,

@@ -310,8 +310,6 @@ internal sealed partial class LythonRuntime
                             if (TryExecuteBuiltinArithmetic(ref execution, scope, invocation, instruction)) break;
                             goto case ExecutableOpCode.StoreSubscript;
                         case ExecutableOpCode.Subscript:
-                            if (TryExecuteSequenceIndex(ref execution, scope, invocation, instruction)) break;
-                            goto case ExecutableOpCode.StoreSubscript;
                         case ExecutableOpCode.StoreSubscript:
                         case ExecutableOpCode.StoreSubscriptLast:
                             var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
