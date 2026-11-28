@@ -1,0 +1,98 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "asynchronous": false,
+    "requests": [
+      7203,
+      7203
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "asynchronous": true,
+    "requests": [
+      7203,
+      7203
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "asynchronous": false,
+    "requests": [
+      7203,
+      7203
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "asynchronous": true,
+    "requests": [
+      7203,
+      7203
+    ],
+    "peak": [
+      1178293,
+      1178293
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "asynchronous": false,
+    "requests": [
+      69,
+      69
+    ],
+    "peak": [
+      15472,
+      15472
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "asynchronous": true,
+    "requests": [
+      69,
+      69
+    ],
+    "peak": [
+      15472,
+      15472
+    ]
+  },
+  {
+    "case": "diagnostic.fixed-positional-math",
+    "asynchronous": false,
+    "requests": [
+      10,
+      10
+    ],
+    "peak": [
+      1739,
+      1739
+    ]
+  },
+  {
+    "case": "diagnostic.fixed-positional-math",
+    "asynchronous": true,
+    "requests": [
+      10,
+      10
+    ],
+    "peak": [
+      1739,
+      1739
+    ]
+  }
+]

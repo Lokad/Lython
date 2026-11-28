@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static object Sqrt(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Sqrt(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.sqrt", span, context);
             if (value < 0.0)
@@ -100,10 +100,10 @@ internal sealed partial class LythonRuntime
             return Math.Sqrt(value);
         }
 
-        private static object Exp(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Exp(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.exp", span, context, Math.Exp);
 
-        private static object Log(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length is < 1 or > 2)
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
             return Math.Log(x, @base);
         }
 
-        private static object Log10(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log10(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.log10", span, context);
             if (value <= 0.0)
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
             return Math.Log10(value);
         }
 
-        private static object Log2(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Log2(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.log2", span, context);
             if (value <= 0.0)
@@ -153,16 +153,16 @@ internal sealed partial class LythonRuntime
             return Math.Log2(value);
         }
 
-        private static object Sin(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Sin(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.sin", span, context, Math.Sin);
 
-        private static object Cos(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Cos(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.cos", span, context, Math.Cos);
 
-        private static object Tan(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Tan(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.tan", span, context, Math.Tan);
 
-        private static object Asin(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Asin(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.asin", span, context);
             if (value is < -1.0 or > 1.0)
@@ -173,7 +173,7 @@ internal sealed partial class LythonRuntime
             return Math.Asin(value);
         }
 
-        private static object Acos(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Acos(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectUnaryReal(arguments, "math.acos", span, context);
             if (value is < -1.0 or > 1.0)
@@ -184,22 +184,22 @@ internal sealed partial class LythonRuntime
             return Math.Acos(value);
         }
 
-        private static object Atan(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Atan(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.atan", span, context, Math.Atan);
 
-        private static object Atan2(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Atan2(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => BinaryFloat(arguments, "math.atan2", span, context, Math.Atan2);
 
-        private static object Sinh(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Sinh(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.sinh", span, context, Math.Sinh);
 
-        private static object Cosh(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Cosh(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryCheckedFloat(arguments, "math.cosh", span, context, Math.Cosh);
 
-        private static object Tanh(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Tanh(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.tanh", span, context, Math.Tanh);
 
-        private static object Floor(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Floor(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
             return ExpectFloorLike(arguments[0], "math.floor", "__floor__", span, context, static x => Math.Floor(x));
         }
 
-        private static object Ceil(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Ceil(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -219,10 +219,10 @@ internal sealed partial class LythonRuntime
             return ExpectFloorLike(arguments[0], "math.ceil", "__ceil__", span, context, static x => Math.Ceiling(x));
         }
 
-        private static object Fabs(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Fabs(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.fabs", span, context, Math.Abs);
 
-        private static object Trunc(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Trunc(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -232,22 +232,22 @@ internal sealed partial class LythonRuntime
             return ExpectFloorLike(arguments[0], "math.trunc", "__trunc__", span, context, static x => Math.Truncate(x));
         }
 
-        private static object Degrees(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Degrees(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.degrees", span, context, static x => x * (180.0 / Math.PI));
 
-        private static object Radians(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Radians(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.radians", span, context, static x => x * (Math.PI / 180.0));
 
-        private static object IsFinite(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsFinite(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryBool(arguments, "math.isfinite", span, context, static x => double.IsFinite(x));
 
-        private static object IsInf(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsInf(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryBool(arguments, "math.isinf", span, context, static x => double.IsInfinity(x));
 
-        private static object IsNaN(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsNaN(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryBool(arguments, "math.isnan", span, context, static x => double.IsNaN(x));
 
-        private static object Pow(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Pow(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.pow", span, context);
             if (x == 0.0 && double.IsFinite(y) && y < 0.0)
@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
             return max * Math.Sqrt(scaled);
         }
 
-        private static object Fmod(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Fmod(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.fmod", span, context);
             if (y == 0.0 || double.IsInfinity(x))
@@ -312,10 +312,10 @@ internal sealed partial class LythonRuntime
             return x % y;
         }
 
-        private static object CopySign(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object CopySign(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => BinaryFloat(arguments, "math.copysign", span, context, static (x, y) => Math.Abs(x) * (Math.CopySign(1.0, y)));
 
-        private static object IsClose(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object IsClose(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length is < 2 or > 4)
@@ -588,7 +588,7 @@ internal sealed partial class LythonRuntime
             return total;
         }
 
-        private static double ExpectUnaryReal(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static double ExpectUnaryReal(BorrowedBuiltinArguments arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length != 1)
@@ -599,7 +599,7 @@ internal sealed partial class LythonRuntime
             return ExpectReal(arguments[0], owner, span);
         }
 
-        private static BinaryRealArguments ExpectBinaryReal(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static BinaryRealArguments ExpectBinaryReal(BorrowedBuiltinArguments arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length != 2)
@@ -610,25 +610,25 @@ internal sealed partial class LythonRuntime
             return new BinaryRealArguments(ExpectReal(arguments[0], owner, span), ExpectReal(arguments[1], owner, span));
         }
 
-        private static object UnaryFloat(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
+        private static object UnaryFloat(BorrowedBuiltinArguments arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
         {
             var value = ExpectUnaryReal(arguments, owner, span, context);
             return func(value);
         }
 
-        private static object UnaryBool(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, bool> func)
+        private static object UnaryBool(BorrowedBuiltinArguments arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, bool> func)
         {
             var value = ExpectUnaryReal(arguments, owner, span, context);
             return func(value);
         }
 
-        private static object BinaryFloat(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double, double> func)
+        private static object BinaryFloat(BorrowedBuiltinArguments arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double, double> func)
         {
             var (x, y) = ExpectBinaryReal(arguments, owner, span, context);
             return func(x, y);
         }
 
-        private static object UnaryCheckedFloat(ReadOnlySpan<object> arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
+        private static object UnaryCheckedFloat(BorrowedBuiltinArguments arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
         {
             var value = ExpectUnaryReal(arguments, owner, span, context);
             return CheckedMathResult(func(value), owner, span, value);

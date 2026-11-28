@@ -10,13 +10,13 @@ namespace Lokad.Lython.Tests;
 public sealed class ExactBytesSumTests
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
-    private static readonly Type[] SumParameterTypes = [typeof(ReadOnlySpan<object>), typeof(LythonSourceSpan), typeof(Context)];
-    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object> Sum = typeof(LythonRuntime)
+    private static readonly Type[] SumParameterTypes = [typeof(BorrowedBuiltinArguments), typeof(LythonSourceSpan), typeof(Context)];
+    private static readonly Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, object> Sum = typeof(LythonRuntime)
         .GetMethod("Sum", BindingFlags.Static | BindingFlags.NonPublic, SumParameterTypes)!
-        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object>>();
-    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, ValueTask<object>> SumAsync = typeof(LythonRuntime)
+        .CreateDelegate<Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, object>>();
+    private static readonly Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, ValueTask<object>> SumAsync = typeof(LythonRuntime)
         .GetMethod("SumAsync", BindingFlags.Static | BindingFlags.NonPublic, SumParameterTypes)!
-        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, ValueTask<object>>>();
+        .CreateDelegate<Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, ValueTask<object>>>();
 
     public static IEnumerable<object[]> Checkpoints()
     {
@@ -97,7 +97,7 @@ public sealed class ExactBytesSumTests
         new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
 
     private static object Invoke(object[] arguments, Context context, bool asynchronous)
-        => asynchronous ? SumAsync(arguments, Span, context).GetAwaiter().GetResult() : Sum(arguments, Span, context);
+        => asynchronous ? SumAsync(new(arguments), Span, context).GetAwaiter().GetResult() : Sum(new(arguments), Span, context);
 
     private static (object? Result, LythonFailureReason? Reason, LythonSourceSpan? Span) Observe(object source, Context context, bool asynchronous)
     {

@@ -281,6 +281,14 @@ internal static class CallBinder
             call.CallSpan, signature.Name, PythonCallableKind.Builtin, signature.Parameters,
             out _, out _, out _, values, useNullForOmittedArguments: useNullForOmittedArguments);
 
+    // A valid positional call supplies a contiguous prefix of this fixed
+    // signature. Omitted suffix values have the ordinary shorter view.
+    // Other shapes use the binder for diagnostics and placement.
+    internal static bool SuppliesFixedPositionalPrefix(ExecutableCallSite call, NamedCallableParameterLayout parameters)
+        => call.IsPositionalOnly && call.ArgumentCount >= parameters.RequiredCount &&
+            parameters.MaximumPositionalArgumentCount.Accepts(call.ArgumentCount) &&
+            parameters.MaximumArgumentCount.Accepts(call.ArgumentCount);
+
     private static BoundBuiltinArguments BindNamedArgumentsCore<T>(
         T arguments,
         LythonSourceSpan span,

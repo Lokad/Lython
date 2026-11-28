@@ -1,0 +1,130 @@
+[
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "sync",
+    "clr": [
+      1397872,
+      1398046
+    ],
+    "admittedPeak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "sync",
+    "clr": [
+      1397800,
+      1397800
+    ],
+    "admittedPeak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "sync",
+    "clr": [
+      25984,
+      25984
+    ],
+    "admittedPeak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.fixed-positional-math",
+    "mode": "sync",
+    "clr": [
+      857456,
+      857456
+    ],
+    "admittedPeak": [
+      1739,
+      1739
+    ],
+    "compiled": [
+      50704,
+      50704
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "async",
+    "clr": [
+      1398144,
+      1398144
+    ],
+    "admittedPeak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.module",
+    "mode": "async",
+    "clr": [
+      1398016,
+      1398016
+    ],
+    "admittedPeak": [
+      1178293,
+      1178293
+    ],
+    "compiled": [
+      113088,
+      113088
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "async",
+    "clr": [
+      26200,
+      26200
+    ],
+    "admittedPeak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.fixed-positional-math",
+    "mode": "async",
+    "clr": [
+      857672,
+      857672
+    ],
+    "admittedPeak": [
+      1739,
+      1739
+    ],
+    "compiled": [
+      50704,
+      50704
+    ]
+  }
+]

@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
                 : new PyMappingProxy(pattern.NamedGroups, context.MemoryGovernor, span);
         }
 
-        internal static ValueTask<object> ExecuteModule(ReadOnlySpan<object> arguments, LythonSourceSpan span,
+        internal static ValueTask<object> ExecuteModule(BorrowedBuiltinArguments arguments, LythonSourceSpan span,
             ExecutionContext context, string name, RegexPatternOperation operation, bool asynchronous)
         {
             var flagIndex = operation switch
@@ -401,18 +401,20 @@ internal sealed partial class LythonRuntime
                 _ => 2,
             };
             context.CheckExecution(span);
+            var pattern = arguments[0];
             var substitution = flagIndex == 4;
-            var subject = arguments[substitution ? 2 : 1];
             var replacement = substitution ? arguments[1] : null;
-            var count = flagIndex > 2 ? Optional(arguments, flagIndex - 1) : null;
+            var subject = arguments[substitution ? 2 : 1];
+            var count = flagIndex > 2 ? arguments.Optional(flagIndex - 1) : null;
+            var flags = arguments.Optional(flagIndex);
             // The module's window extension also accepts None for an omitted bound.
-            var pos = Optional(arguments, flagIndex + 1);
-            var end = Optional(arguments, flagIndex + 2);
+            var pos = arguments.Optional(flagIndex + 1);
+            var end = arguments.Optional(flagIndex + 2);
             if (pos is PyNone) pos = null;
             if (end is PyNone) end = null;
             // Module-level re functions compile or look up the pattern before
             // the compiled method performs any index or subject operations.
-            var pending = RegexCompiler.ResolvePattern(arguments[0], Optional(arguments, flagIndex), span, context, asynchronous);
+            var pending = RegexCompiler.ResolvePattern(pattern, flags, span, context, asynchronous);
             return pending.IsCompletedSuccessfully
                 ? ExecuteArguments(pending.Result, subject, replacement, count, pos, end, operation, context, span, name, asynchronous)
                 : AwaitModulePattern(pending, subject, replacement, count, pos, end, operation, context, span, name);
@@ -423,9 +425,6 @@ internal sealed partial class LythonRuntime
                 => await ExecuteArguments(await pending.ConfigureAwait(false), subject, replacement, count, pos, end,
                     operation, context, span, name, true).ConfigureAwait(false);
         }
-
-        private static object? Optional(ReadOnlySpan<object> arguments, int index)
-            => index < arguments.Length ? arguments[index] : null;
 
         private static ValueTask<object> Execute(RePatternObject pattern, ReceiverArguments arguments, LythonSourceSpan span,
             ExecutionContext context, string name, RegexPatternOperation operation, bool asynchronous)

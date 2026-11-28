@@ -821,12 +821,13 @@ and other dynamic callables keep their owned packets.
 Live defaults and genuinely suspending default protocols use the same slots.
 Async binding checks the live default dictionary at lookup, after storage admission
 can reenter; it does not save an earlier decision about whether lookup may suspend.
-Ordinary calls to fixed-width math builtins and `sum` place final arguments
-in a managed stack buffer and share signature validation with owned binding.
-These bodies read the span during binding. An asynchronous `sum` keeps the
-bound iterable and start value through pending work and cleanup. Dynamic
-calls and other builtin bodies use the existing owned arguments. Receiver
-methods borrow their caller's existing array window.
+Fixed-width builtins such as `sum` and selected math and regex functions read
+valid positional arguments directly from evaluated slots. Keyword arguments
+bind into a managed stack buffer using the same signature rules as owned calls.
+Bodies read the borrowed arguments before suspension. An asynchronous `sum`
+keeps the iterable and start value through pending work and cleanup. Dynamic
+calls and other builtin bodies use owned arguments. Receiver methods borrow
+their caller's existing array window.
 Calls that need private argument copies admit major copied capacity before
 allocation; small packets use the existing minor control headroom. Caller-owned
 scratch remains funded through pending invocation and awaited cleanup, then
@@ -3026,10 +3027,10 @@ ordinary guest pattern errors retain their Python diagnostics. The last-closed
 index must name a participating capture whenever any positive group participated.
 Compiled patterns handle one-shot match/search/fullmatch directly in analysis
 and at runtime. Prepared subjects provide finditer progression.
-Ordinary executable calls to the module pattern operations bind in fixed
-managed slots. A pending pattern lookup keeps the argument values it needs
-after those slots go out of scope. Missing options remain distinct from an
-explicit Python `None`.
+Module pattern operations share the fixed-width builtin call path. They read
+their arguments before pattern lookup can suspend. A pending lookup keeps the
+values it needs, and missing options remain distinct from an explicit Python
+`None`.
 Lython owns captured splitting, template/callable substitution, expansion and
 public scalar offsets;
 providers expose no replacement or split dialect.

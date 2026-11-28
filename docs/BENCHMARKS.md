@@ -121,6 +121,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Borrow evaluated positional slots for fixed builtins | On the quiet repeat, warm sync CPU falls 10.08–14.11% in the fixed math diagnostic and 0.51–0.85% in module-level regex search. The compiled-search and configuration controls span zero on repeat. Allocation and admission are essentially flat. [B1986](../benchmarks/results/2026-11-28-borrow-fixed-positional-arguments/README.md). |
 | Defer private `starmap` generator frames | The 2,048-row iterable shipment allocates about 816 KiB less in each API at matching admission. Quiet warm async CPU falls 5.84–7.45%. The ordinary tuple and file-fed controls span zero. [B1980](../benchmarks/results/2026-11-28-deferred-starmap-argument-frame/README.md). |
 | Share builtin subscript reads across executable loops | The range-indexed 2,048-row CSV diagnostic allocates about 1.38 MiB less and uses about 2.50 MiB less peak admission in both APIs. Quiet warm async CPU falls 25.26–26.69%. Ordinary tuple CPU remains inconclusive. [B1977](../benchmarks/results/2026-11-28-shared-subscript-completion/README.md). |
 | Share exact scalar arithmetic across both execution loops | Compact exponentiation over 2,048 CSV rows allocates about 272 KiB less in both APIs. Quiet warm async CPU falls 8.48–13.04% at matching admission. All three controls span zero. [B1976](../benchmarks/results/2026-11-28-shared-closed-arithmetic/README.md). |

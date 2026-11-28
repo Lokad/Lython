@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object Sum(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object Sum(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
         return Sum(arguments[0], total, span, context);
@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
         finally { context.MemoryGovernor.ReleaseReserved(64); }
     }
 
-    private static ValueTask<object> SumAsync(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
+    private static ValueTask<object> SumAsync(BorrowedBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
         var iterable = arguments[0];
@@ -389,7 +389,7 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static object ReadSumStart(ReadOnlySpan<object> arguments, LythonSourceSpan span)
+    private static object ReadSumStart(BorrowedBuiltinArguments arguments, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2)
         {
