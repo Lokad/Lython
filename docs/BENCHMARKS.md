@@ -3,9 +3,9 @@
 | Workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Ordinary helper and generator reduction | 2,048 records / 27,350 B | 1.93244–1.93536 ms | 1.99218–2.00428 ms | 0.964–0.971× | Quiet diagnostic, B1974 |
-| Ordinary helper and generator reduction, Lython `RunAsync` | 2,048 records / 27,350 B | 1.99954–2.00830 ms | 1.97528–1.97758 ms | 1.011–1.017× | Quiet diagnostic, B1978 |
+| Ordinary helper and generator reduction, Lython `RunAsync` | 2,048 records / 27,350 B | 1.99760–2.00408 ms | 1.99027–2.00561 ms | 0.996–1.007× | Quiet diagnostic at parity, B1981 |
 | Repeated explicit tuple loop, Lython `RunAsync` | 2,048 records / 27,350 B | 1.08045–1.32569 ms | 1.60263–1.61390 ms | 0.669–0.827× | Quiet diagnostic with 22.70% Lython worker spread, B1974 |
-| Iterable-row shipment, Lython `RunAsync` | 2,048 records / 27,350 B | 2.22377–2.23538 ms | 1.96366–1.96626 ms | 1.131–1.138× | Quiet diagnostic, B1978 |
+| Iterable-row shipment, Lython `RunAsync` | 2,048 records / 27,350 B | 2.00750–2.01325 ms | 1.95756–1.96021 ms | 1.024–1.028× | Quiet diagnostic, B1981 |
 | Markdown report from JSON, Lython `RunAsync` | 3,072 records / 189,441 B | 2.66007–2.78636 ms | 2.58856–2.61006 ms | 1.019–1.076× | Quiet historical, 4.75% Lython worker spread, B1963 |
 | Nested JSON document summary | 2,048 records / 103,331 B | 0.64000–0.65729 ms | 0.67334–0.68318 ms | 0.937–0.976× | Quiet historical, `bfde55b6b`. [B1921](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md). |
 | Nested JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 0.65308–0.66108 ms | 0.67361–0.67902 ms | 0.962–0.981× | Quiet historical, B1932 |
@@ -15,8 +15,9 @@
 | Compiled-pattern regex log search | 3,072 lines / 86,954 B | 2.67783–2.71755 ms | 0.96541–0.97195 ms | 2.755–2.815× | Quiet historical, B1932 |
 | Module-level regex log search | 3,072 lines / 86,954 B | 3.04883–3.09664 ms | 1.54657–1.56180 ms | 1.952–2.002× | Quiet historical, B1932 |
 
-B1978 measures Lython `e78a95b1b` against stock CPython 3.13.16 on
-November 28, 2026 UTC with four goldens and 112 timed batches.
+B1981 measures Lython `f231ce76a` against stock CPython 3.13.16 on
+November 28, 2026 UTC with two goldens and 56 timed batches. B1978
+measures `e78a95b1b` on the same day with four goldens and 112 batches.
 B1974 measures Lython `486bad1ee` against stock CPython 3.13.16 on
 November 28, 2026 UTC. The four-vCPU Azure F4as_v7 ran Ubuntu 24.04.4
 and .NET 11 RC3. B1974 verifies two goldens and 112 timed batches.
@@ -25,7 +26,8 @@ On the same machine, B1963 measures `0b50e6fda` with five goldens and
 196 batches. B1932 measures `2ef73bd71` with seven goldens and 224
 batches. Ratios divide Lython elapsed by CPython elapsed.
 Values above 1× mean Lython takes longer. Ranges span all pairings of
-medians from two workers per engine. [B1978](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md) ·
+medians from two workers per engine. [B1981](../benchmarks/results/2026-11-28-current-iterable-cpython/README.md) ·
+[B1978](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md) ·
 [B1974](../benchmarks/results/2026-11-28-post-record-comparison-cpython/README.md) ·
 [B1968](../benchmarks/results/2026-11-28-short-frontend-cpython/README.md) ·
 [B1963](../benchmarks/results/2026-11-28-ownership-cpython/README.md) ·
@@ -36,7 +38,8 @@ applicable RAM-backed I/O, output and file verification, and previous-result
 disposal. Process CPU also includes fixture reset and framing. Lython uses
 a mediated host and shared admission. CPython uses its native file APIs
 with `-I -S -X utf8`. The regex rows use the optional PythonRe 0.5.0
-adapter. [Current cross-workload CPU](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md) ·
+adapter. [Current shipment CPU](../benchmarks/results/2026-11-28-current-iterable-cpython/README.md) ·
+[File-search and configuration CPU](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md) ·
 [Earlier shipment CPU](../benchmarks/results/2026-11-28-post-record-comparison-cpython/README.md) ·
 [Earlier shipment and report CPU](../benchmarks/results/2026-11-28-ownership-cpython/README.md) ·
 [JSON and regex CPU](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md).
@@ -80,6 +83,7 @@ benchmark reply work. [B1927](../benchmarks/results/2026-11-28-first-command-pha
 
 | Workload, warm execution | Measured Lython revision | Input | Lython / CPython | Measurement status |
 | --- | --- | --- | ---: | --- |
+| Iterable-row shipment, Lython `RunAsync` | `e78a95b1b` | 2,048 records / 27,350 B | 1.131–1.138× | Quiet diagnostic. [B1978](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md). |
 | Ordinary helper and generator reduction, Lython `RunAsync` | `486bad1ee` | 2,048 records / 27,350 B | 1.044–1.057× | Quiet diagnostic. [B1974](../benchmarks/results/2026-11-28-post-record-comparison-cpython/README.md). |
 | Iterable-row shipment, Lython `RunAsync` | `0b50e6fda` | 2,048 records / 27,350 B | 1.068–1.179× | Quiet diagnostic with 6.41% Lython worker spread. [B1963](../benchmarks/results/2026-11-28-ownership-cpython/README.md). |
 | File search, match at line 1, Lython `RunAsync` | `e036d6597` | 42,010 B | 1.359–1.392× | Quiet diagnostic. [B1937](../benchmarks/results/2026-11-28-current-cpython-shipment/README.md). |

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1982 attribute first-line file search](results/2026-11-28-first-line-host-attribution/README.md)
+verifies 1,849 sampled batches at `f231ce76a`. Managed samples locate
+open, write and cleanup inside the comparison host and CLR file stack.
+Preserve the separate warm elapsed boundary.
+
 [B1979 locate iterable CSV reduction costs](results/2026-11-28-current-iterable-profile/README.md)
 verifies two captures and 98 batches at `e78a95b1b`. Iterable generator
 advancement covers 72.6% of resolved managed samples. Its staged

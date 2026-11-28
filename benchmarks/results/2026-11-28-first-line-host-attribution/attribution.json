@@ -1,0 +1,327 @@
+[
+  {
+    "role": "first-line-sync",
+    "runtimeThreadMilliseconds": 436.1771606978974,
+    "inclusiveRegionsMilliseconds": {
+      "mediated text file": 290.49036285738566,
+      "instruction prefix": 393.20163917991954,
+      "mediated open": 114.07030072315824,
+      "memory reservation": 7.183361300750619,
+      "write and file cleanup": 121.09678938741575,
+      "first refill and line assembly": 50.37699683425228,
+      "native arithmetic": 17.449292329544278,
+      "generator exception/stack entry": 1.0728349685668945,
+      "executable frame construction": 7.739084496230362,
+      "module and command setup": 14.587561865500675,
+      "generator outer iteration": 1.102444052696228,
+      "result and output projection": 2.1594979763031006,
+      "callback entry": 1.0846420526504517,
+      "parent callback binding": 1.0846420526504517,
+      "memory refund": 1.08537487940157
+    },
+    "nearestLythonMethods": [
+      [
+        "Lokad.Lython.Runtime.HostOperation+<AwaitAsync>d__6.MoveNext",
+        91.4457622095369
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionState+<>c__DisplayClass187_0.<OpenFileAsync>b__1",
+        85.77752947156418
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<ReadCore>d__14.MoveNext",
+        20.436160884194237
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.IsUnchangedUtf8Text",
+        17.411119146492183
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+        10.821699720123632
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<>c__DisplayClass15_0.<WriteAsync>b__1",
+        7.452847957611084
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.CreateExecutableFunction",
+        6.646940155845641
+      ],
+      [
+        "Lokad.Lython.Runtime.Text.PyString.AsString",
+        6.086034199753385
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile.<LengthHint>b__10_0",
+        5.693553782264644
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.InitializeExecutableWorkState",
+        5.562818624198371
+      ],
+      [
+        "Lokad.Lython.Runtime.HostOperation.Await",
+        5.281717513038529
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<CloseAsync>d__44.MoveNext",
+        5.094720988799963
+      ],
+      [
+        "Lokad.Lython.Runtime.PathOps.RequireContainedPath",
+        4.9208615176695645
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionThreads.Schedule",
+        4.853161881194865
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<CloseAsync>d__18.MoveNext",
+        4.373537846069667
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Reserve",
+        4.313593741866896
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteStructure",
+        3.7577520608901978
+      ],
+      [
+        "Lokad.Lython.Runtime.CallBinder.BindNamedArgumentsCore",
+        3.5547338726887574
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+PrintCallable.AppendOutput",
+        3.5373289632798333
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionState..ctor",
+        3.494794011116028
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.StoreExecutableLocal",
+        3.3508977208405213
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<OpenAsync>d__35.MoveNext",
+        3.327439648361235
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ParseOpenArgumentsAsync>d__172.MoveNext",
+        3.323653678542996
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.RetireTo",
+        3.2480435423581184
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.ResizeOwnership",
+        2.869767558883723
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile.CloseAsync",
+        2.8582699772950946
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext..ctor",
+        2.524482011795044
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.PrepareExecutableCallArguments",
+        2.352949971977239
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.AbandonFrame",
+        2.337570766921999
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionState.LeaveInterpreterFrame",
+        2.294283912422202
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<OpenAsync>d__8.MoveNext",
+        2.265719497062264
+      ],
+      [
+        "Lokad.Lython.Runtime.HostOperation.CompleteSynchronously",
+        2.249500036239624
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryEvaluateIntegerInstruction",
+        2.2473339764405864
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.NeedsRawInput",
+        2.2405869560316205
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass763_0.<Run>b__0",
+        2.219047881560982
+      ]
+    ],
+    "nearestIterableMethods": []
+  },
+  {
+    "role": "first-line-async",
+    "runtimeThreadMilliseconds": 271.2691560191255,
+    "inclusiveRegionsMilliseconds": {
+      "executable frame construction": 2.2700179478988503,
+      "module and command setup": 3.341403925117447,
+      "instruction prefix": 246.9028568869771,
+      "mediated text file": 175.21008397945297,
+      "mediated open": 45.68636273602215,
+      "write and file cleanup": 103.77098564821688,
+      "async iterator move": 23.50063655804354,
+      "first refill and line assembly": 24.619188299758093,
+      "generator outer iteration": 1.1224496616594024,
+      "native arithmetic": 7.736822860450047,
+      "memory refund": 3.4182649545819004,
+      "result and output projection": 1.1158094377210546
+    },
+    "nearestLythonMethods": [
+      [
+        "Lokad.Lython.Runtime.HostOperation+<AwaitAsync>d__6.MoveNext",
+        81.38482998688539
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionState+<>c__DisplayClass187_0.<OpenFileAsync>b__0",
+        42.16069450706391
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+        13.52349787174171
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<ReadCore>d__14.MoveNext",
+        9.869380967521693
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.IsUnchangedUtf8Text",
+        9.057034554175402
+      ],
+      [
+        "Lokad.Lython.Runtime.PyRendering.RenderInteger",
+        4.561020567054811
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionThreads.Take",
+        4.393522374480256
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ExecuteExecutableCodeObjectSlotAsync>d__769.MoveNext",
+        4.233556604522562
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionThreads+AsynchronousWorkItem.Run",
+        3.352431088508638
+      ],
+      [
+        "Lokad.Lython.Runtime.CallBinder.BindArgumentValues",
+        3.35102708395425
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.PrepareExecutableCallArguments",
+        3.322549399520767
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteContextManagerAsync",
+        2.423831177192369
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileWriteState+<FlushAsync>d__27.MoveNext",
+        2.3332279920578003
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.ResizeOwnership",
+        2.286527007117911
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryResolveExecutableGlobal",
+        2.278232974029379
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.InitializeExecutableWorkState",
+        2.2700179478988503
+      ],
+      [
+        "Lokad.Lython.Runtime.CallBinder.BindNamedArgumentsCore",
+        2.253323824287463
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<>c__DisplayClass15_0.<WriteAsync>b__2",
+        2.2174620624236923
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile.FlushAsync",
+        2.2140989303588867
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.PublishSuppliedOperandReturn",
+        2.211802298553721
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall",
+        2.190983828811113
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileWriteState.FlushAsync",
+        2.1878457915045146
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ParseOpenArgumentsAsync>d__172.MoveNext",
+        2.1843564345854247
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.CreateExecutableFunction",
+        2.1761799468763456
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.InvokeReceiverMethodAsync",
+        2.0525410175323486
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.ResolveBuiltinReceiverMethod",
+        1.3495407159580282
+      ],
+      [
+        "Lokad.Lython.Runtime.HostOperation+<AwaitAsync>d__5`1[System.__Canon].MoveNext",
+        1.3167288729173379
+      ],
+      [
+        "Lokad.Lython.Runtime.HostOperation+<AwaitAsync>d__5`1[Lokad.Lython.LythonFileWriteResult].MoveNext",
+        1.208287000656128
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.ReleaseStorage",
+        1.1828098568191763
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.AttachAccounting",
+        1.1747560501098633
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile.<Position>b__9_0",
+        1.1648138308105445
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile.ReadCore",
+        1.1610519886016846
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.InstallWindow",
+        1.1589160719377105
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileWriteState+<PublishBufferedAsync>d__28.MoveNext",
+        1.1557869911193848
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync",
+        1.149170357307412
+      ]
+    ],
+    "nearestIterableMethods": []
+  }
+]
