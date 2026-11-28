@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1931 complete ordinary regex group selection directly](results/2026-11-28-regex-group-resolution/README.md)
+removes the scalar group binding and projection states and the scalar
+tuple closure. The compiled log and Unicode named-group scripts allocate
+about 7.2% and 22.6% less at identical admission peaks. The corrected path
+also eliminates the initial async retained-group allocation regression.
+
 [B1930 borrow qualified callable names during module lookup](results/2026-11-28-borrowed-callable-names/README.md)
 withdraws the span trial after stable workbook CPU rises 2.17–4.29%.
 It saves 7,632 B during first compilation of the 48-rule validator

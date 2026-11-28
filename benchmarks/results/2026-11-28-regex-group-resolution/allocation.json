@@ -1,0 +1,162 @@
+[
+  {
+    "case": "diagnostic.file-search-first-line",
+    "mode": "sync",
+    "clr": [
+      39624,
+      39624
+    ],
+    "peak": [
+      19556,
+      19556
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "sync",
+    "clr": [
+      1593960,
+      1479320
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-groups",
+    "mode": "sync",
+    "clr": [
+      2285424,
+      1769328
+    ],
+    "peak": [
+      2089021,
+      2089021
+    ],
+    "compiled": [
+      117952,
+      117952
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-spans",
+    "mode": "sync",
+    "clr": [
+      1818486,
+      1818576
+    ],
+    "peak": [
+      1463829,
+      1463829
+    ],
+    "compiled": [
+      117456,
+      117456
+    ]
+  },
+  {
+    "case": "diagnostic.regex-unicode-retained-groups",
+    "mode": "sync",
+    "clr": [
+      2475008,
+      2475008
+    ],
+    "peak": [
+      2664413,
+      2664413
+    ],
+    "compiled": [
+      118912,
+      118912
+    ]
+  },
+  {
+    "case": "diagnostic.file-search-first-line",
+    "mode": "async",
+    "clr": [
+      39872,
+      39872
+    ],
+    "peak": [
+      19556,
+      19556
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "scripts.regex-log-search.compiled",
+    "mode": "async",
+    "clr": [
+      1594168,
+      1479480
+    ],
+    "peak": [
+      1178381,
+      1178381
+    ],
+    "compiled": [
+      115680,
+      115680
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-groups",
+    "mode": "async",
+    "clr": [
+      2285640,
+      1769544
+    ],
+    "peak": [
+      2089021,
+      2089021
+    ],
+    "compiled": [
+      117952,
+      117952
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-spans",
+    "mode": "async",
+    "clr": [
+      1818792,
+      1818792
+    ],
+    "peak": [
+      1463829,
+      1463829
+    ],
+    "compiled": [
+      117456,
+      117456
+    ]
+  },
+  {
+    "case": "diagnostic.regex-unicode-retained-groups",
+    "mode": "async",
+    "clr": [
+      2475344,
+      2475344
+    ],
+    "peak": [
+      2664413,
+      2664413
+    ],
+    "compiled": [
+      118912,
+      118912
+    ]
+  }
+]
