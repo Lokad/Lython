@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1939 attribute ordinary generator reduction](results/2026-11-28-ordinary-reduction-profile/README.md)
+captures the two APIs and the file-fed control at `e036d6597`. Generator
+advancement accounts for 32.1% of resolved inclusive async time and
+construction accounts for 9.9%. The control has no generator samples.
+All 203 sampled batches verify.
+
 [B1938 remove the monitor from private match allowance](results/2026-11-28-private-regex-match-allowance/README.md)
 saves 73,728 B per compiled log scan in both APIs. Local warm CPU falls
 6.04–7.51% in the compiled log and 2.27–6.06% in the module log. The
