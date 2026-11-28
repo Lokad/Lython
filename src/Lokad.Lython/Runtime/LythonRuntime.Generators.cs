@@ -36,6 +36,9 @@ internal sealed partial class LythonRuntime
         internal static long EstimateStorage(ExecutableCodeObject code)
             => checked(512L + 96L * (code.LocalNames.Count + code.LookupCacheCount + code.ExceptionRegions.Count));
 
+        internal static long EstimateExpressionShell(ExecutableCodeObject code)
+            => checked(EstimateStorage(code) + 256L + 96L * code.ScopeFacts.NonlocalNames.Count);
+
         internal static async ValueTask<object> CreateExpressionAsync(ExecutableCodeObject code,
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span,
             bool asynchronous, bool privateFrame = false, PyFunctionBase? lookupOwner = null, int sharedLookupStart = -1)
@@ -43,7 +46,7 @@ internal sealed partial class LythonRuntime
             // Fund the shell and its executable slots together before either
             // allocation or the effectful outer __iter__ call. Captures from
             // the parent have their own owner and admission.
-            var shellBytes = checked(EstimateStorage(code) + 256L + 96L * code.ScopeFacts.NonlocalNames.Count);
+            var shellBytes = EstimateExpressionShell(code);
             var totalBytes = checked(shellBytes + ExecutableSlotsBytes(code.ValueStorageCapacity) +
                 ExecutableFrameExtraBytes(code, code.CapturedLocalSlots.Count));
             var governor = context.MemoryGovernor;

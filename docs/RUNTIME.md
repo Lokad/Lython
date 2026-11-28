@@ -959,17 +959,23 @@ position and active exception. A pending pull keeps its frame and
 argument workspace admitted until their users and cleanup finish.
 
 A generator expression passed directly to the evaluated builtin `sum` can
-keep its admitted frame in the call's operand storage. Instruction layout
-identifies eligible operand positions and the runtime checks the evaluated
-callable before acquiring the outer iterator. The existing sum loop advances
-the frame and the operand owns cleanup through return, refusal or cancellation.
-Other call targets and expressions that publish a generator use the ordinary
-iterator object.
-Both routes admit the context shell and its initial executable slots together
-before acquiring the outer iterator. Refusal of that construction is attributed
-to the generator expression. Executable slots retire with the frame. The shell
-keeps its conservative execution-lifetime charge because a yielded value or
-closure can still retain the context after the frame is detached.
+keep its admitted execution state in the call's operand storage. Instruction
+layout identifies eligible operand positions. The runtime checks the evaluated
+callable before acquiring the outer iterator. With an exact builtin list, tuple
+or range, eligible expressions can consume integer yields through the shared
+executable dispatcher. An operation that needs the full generator frame
+transfers the same iterator, slots and instruction position into that frame.
+The existing sum loop continues with the accumulated value, including when
+addition or generator code can suspend. Other call targets and expressions
+that publish a generator use the ordinary iterator object.
+
+Construction admits the context shell and its initial executable slots before
+acquiring the outer iterator. Refusal of that construction is attributed to the
+generator expression. The private operand owns cleanup through return, refusal
+and cancellation. It refunds the prepaid shell if the reduction finishes without
+creating a frame. An instantiated shell keeps its conservative execution-lifetime
+charge because a yielded value or closure can retain the context after the
+executable slots retire.
 
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume

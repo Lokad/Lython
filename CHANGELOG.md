@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Reduce eligible integer generator expressions passed to builtin `sum` in
+  their admitted operand slots. Preserve the iterator and current position when
+  dynamic operations require a generator frame.
 - Share the CSV writer row loop with `DictWriter` and validate eligible native
   row keys against live field names without constructing temporary sets. Reuse
   direct dictionary lookup for eligible fields.

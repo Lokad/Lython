@@ -147,20 +147,23 @@ internal sealed partial class LythonRuntime
                 ? _execution.Code.Instructions[_execution.InstructionIndex].Span : null;
 
         internal void SeedGeneratorOuter(object iterator)
+            => SeedGeneratorOuter(ref _execution, iterator, MirrorLocalStores ? this : null);
+
+        private static void SeedGeneratorOuter(ref ExecutableWorkState work, object iterator, ExecutionContext? mirrored = null)
         {
             // The first GetIter can replace the loop operand. The local still
             // exposes the object acquired during construction.
-            WriteLocalValue(_execution.Locals, _execution.Code.LocalNameToSlot[".0"], iterator);
-            if (MirrorLocalStores) Variables[".0"] = iterator;
-            var slot = _execution.Code.FirstTemporarySlot;
-            _execution.Stack.PublishValue(slot, slot + 1, iterator);
+            WriteLocalValue(work.Locals, work.Code.LocalNameToSlot[".0"], iterator);
+            if (mirrored is not null) mirrored.Variables[".0"] = iterator;
+            var slot = work.Code.FirstTemporarySlot;
+            work.Stack.PublishValue(slot, slot + 1, iterator);
             // Native iterators already satisfy GetIter without guest work.
             if (iterator is IPyIteratorValue and not IPyProtocolIterator)
             {
-                System.Diagnostics.Debug.Assert(_execution.Code.Instructions[_execution.InstructionIndex] is
+                System.Diagnostics.Debug.Assert(work.Code.Instructions[work.InstructionIndex] is
                     { OpCode: ExecutableOpCode.GetIter } entry &&
                     entry.InputStart == slot && entry.ResultSlot == slot && entry.LiveExtent == slot + 1);
-                _execution.InstructionIndex++;
+                work.InstructionIndex++;
             }
         }
 

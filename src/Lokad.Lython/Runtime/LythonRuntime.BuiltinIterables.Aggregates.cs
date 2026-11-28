@@ -113,6 +113,8 @@ internal sealed partial class LythonRuntime
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
+        if (arguments[0] is ExecutionContext.BorrowedGeneratorSum reduction)
+            return reduction.Reduce(context, span, false).GetAwaiter().GetResult();
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         var privateFrame = arguments[0] as ExecutionContext;
         using var cursor = privateFrame is null ? PyIteration.Cursor.Create(arguments[0], span, context) : null;
@@ -123,27 +125,7 @@ internal sealed partial class LythonRuntime
         context.MemoryGovernor.Reserve(64, span);
         try
         {
-            var sum = new SumState(total);
-            // Keep the public generator object through callbacks, which can
-            // advance it or finish it before the next pull.
-            var generator = (object?)privateFrame ?? cursor?.GetBulkGenerator(context);
-            while (true)
-            {
-                var next = generator is null || (privateFrame is null && !sum.CanBuffer)
-                    ? cursor!.TryMoveNext()
-                    : privateFrame is not null
-                        ? PyGenerator.AdvanceFrame(privateFrame, generatorSpan!, null, PyNone.Instance, null,
-                            sum.CanBuffer ? sum : null, 0, 0)
-                        : ((PyGenerator)generator).AdvanceBuffered(sum, 0);
-                if (!next.HasValue) break;
-                if (sum.TryAddResult(ref next)) continue;
-                var item = next.Value;
-                var result = sum.Total is PyInstance || item is PyInstance
-                    ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
-                    : EvaluateAdd(sum.Total, item, context, span);
-                sum.CompleteAddition(item, result);
-            }
-            return sum.Result;
+            return ReduceSum(new SumState(total), privateFrame, cursor, generatorSpan, span, context);
         }
         finally { context.MemoryGovernor.ReleaseReserved(64); }
     }
@@ -151,6 +133,8 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
+        if (arguments[0] is ExecutionContext.BorrowedGeneratorSum reduction)
+            return await reduction.Reduce(context, span, true).ConfigureAwait(false);
         // Exact range items and integer addition cannot invoke guest protocols.
         // Reuse checked synchronous iteration; other starts may suspend in __add__.
         if (arguments[0] is PyRange && PyNumberOps.IsInteger(total)) return Sum(arguments, span, context);
@@ -165,30 +149,59 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor.Reserve(64, span);
             try
             {
-                var sum = new SumState(total);
-                var generator = (object?)privateFrame ?? cursor?.GetBulkGenerator(context);
-                while (true)
-                {
-                    var pending = generator is null || (privateFrame is null && !sum.CanBuffer)
-                        ? cursor!.TryMoveNextAsync()
-                        : privateFrame is not null
-                            ? PyGenerator.AdvanceFrameAsync(privateFrame, generatorSpan!, null, PyNone.Instance, null,
-                                sum.CanBuffer ? sum : null, 0, 0)
-                            : ((PyGenerator)generator).AdvanceBufferedAsync(sum, 0);
-                    var item = await pending.ConfigureAwait(false);
-                    if (!item.HasValue) break;
-                    if (sum.TryAddResult(ref item)) continue;
-                    var value = item.Value;
-                    var result = sum.Total is PyInstance || value is PyInstance
-                        ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, value, context, span).ConfigureAwait(false)
-                        : EvaluateAdd(sum.Total, value, context, span);
-                    sum.CompleteAddition(value, result);
-                }
-                return sum.Result;
+                return await ReduceSumAsync(new SumState(total), privateFrame, cursor, generatorSpan, span, context)
+                    .ConfigureAwait(false);
             }
             finally { context.MemoryGovernor.ReleaseReserved(64); }
         }
         finally { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
+    }
+
+    private static object ReduceSum(SumState sum, ExecutionContext? privateFrame, PyIteration.Cursor? cursor,
+        LythonSourceSpan? generatorSpan, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Keep the public generator object through callbacks, which can
+        // advance it or finish it before the next pull.
+        var generator = (object?)privateFrame ?? cursor?.GetBulkGenerator(context);
+        while (true)
+        {
+            var next = generator is null || (privateFrame is null && !sum.CanBuffer)
+                ? cursor!.TryMoveNext()
+                : privateFrame is not null
+                    ? PyGenerator.AdvanceFrame(privateFrame, generatorSpan!, null, PyNone.Instance, null,
+                        sum.CanBuffer ? sum : null, 0, 0)
+                    : ((PyGenerator)generator).AdvanceBuffered(sum, 0);
+            if (!next.HasValue) return sum.Result;
+            if (sum.TryAddResult(ref next)) continue;
+            var item = next.Value;
+            var result = sum.Total is PyInstance || item is PyInstance
+                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
+                : EvaluateAdd(sum.Total, item, context, span);
+            sum.CompleteAddition(item, result);
+        }
+    }
+
+    private static async ValueTask<object> ReduceSumAsync(SumState sum, ExecutionContext? privateFrame,
+        PyIteration.Cursor? cursor, LythonSourceSpan? generatorSpan, LythonSourceSpan span, ExecutionContext context)
+    {
+        var generator = (object?)privateFrame ?? cursor?.GetBulkGenerator(context);
+        while (true)
+        {
+            var pending = generator is null || (privateFrame is null && !sum.CanBuffer)
+                ? cursor!.TryMoveNextAsync()
+                : privateFrame is not null
+                    ? PyGenerator.AdvanceFrameAsync(privateFrame, generatorSpan!, null, PyNone.Instance, null,
+                        sum.CanBuffer ? sum : null, 0, 0)
+                    : ((PyGenerator)generator).AdvanceBufferedAsync(sum, 0);
+            var item = await pending.ConfigureAwait(false);
+            if (!item.HasValue) return sum.Result;
+            if (sum.TryAddResult(ref item)) continue;
+            var value = item.Value;
+            var result = sum.Total is PyInstance || value is PyInstance
+                ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, value, context, span).ConfigureAwait(false)
+                : EvaluateAdd(sum.Total, value, context, span);
+            sum.CompleteAddition(value, result);
+        }
     }
 
     // Numeric phases are shared by the existing sync/async loops. Fixed 64-bit
@@ -255,19 +268,24 @@ internal sealed partial class LythonRuntime
                 _numericAddition = true;
                 return true;
             }
-            try
-            {
-                _integer = checked(_integer + integer);
-                _numericAddition = true;
-                return true;
-            }
-            catch (OverflowException)
-            {
-                // Exact promotion uses the same guarded general addition.
-                Total = Result;
-                _numericAddition = false;
-                return false;
-            }
+            if (TryAccumulateInteger(integer)) return true;
+            // Exact promotion uses the same guarded general addition.
+            Total = Result;
+            _numericAddition = false;
+            return false;
+        }
+
+        internal bool TryAddBorrowedInteger(in ExecutableSlot value)
+            => (value.TryGetInteger(out var integer) || TryInt64(value.Object.RequireNotNull(), out integer))
+                && TryAccumulateInteger(integer);
+
+        private bool TryAccumulateInteger(long integer)
+        {
+            var next = unchecked(_integer + integer);
+            if (((_integer ^ next) & (integer ^ next)) < 0) return false;
+            _integer = next;
+            _numericAddition = true;
+            return true;
         }
 
         internal bool TryAddNumber(object item)

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1957 reduce private generators in borrowed slots](results/2026-11-28-borrowed-generator-sum/README.md)
+removes the generator frame from eligible integer reductions. The tuple and
+range scripts each save 491,520 CLR bytes in both APIs. The local tuple uses
+8.17–14.88% less sync CPU and 16.18–20.12% less async CPU. Preserve the
+inactive eligibility trial and both aborted timing starts.
+
 [B1949 select the sum source before the loop](results/2026-11-28-sum-source-selection/README.md)
 combines the async pull awaits into one site and saves 220 IL bytes.
 Quiet file-fed async CPU falls 3.48–6.06% at matching admission.

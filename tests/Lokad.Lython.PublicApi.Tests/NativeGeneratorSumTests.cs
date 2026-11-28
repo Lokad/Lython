@@ -72,6 +72,27 @@ public sealed class NativeGeneratorSumTests
         return 'ok'
         """,
         """
+        checks = []
+        class Term:
+            def __add__(self, right):
+                checks.append(right)
+                return 7
+            def __radd__(self, left):
+                checks.append(left)
+                return left + 8
+        def arithmetic(values):
+            return sum(value + 1 for value in values)
+        def consume(values):
+            return sum(value for value in values)
+        assert arithmetic((2, 3, Term(), 4)) == 19
+        assert consume((2, 3, Term(), 4)) == 17
+        assert consume((1 << 62, 1 << 62, -4)) == (1 << 63) - 4
+        assert consume([3, 1e16, 1.0, -1e16, -3]) == 2.0
+        assert consume(range(100)) == 4950
+        assert checks == [1, 5]
+        return 'ok'
+        """,
+        """
         events = []
         def values():
             try:
@@ -152,11 +173,22 @@ public sealed class NativeGeneratorSumTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task PendingGeneratorIoRemainsFundedAndIsJoined(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PendingGeneratorIoRemainsFundedAndIsJoined(bool cancel, bool exactOuter)
     {
-        const string source = """
+        var source = exactOuter ? """
+            class Term:
+                def __radd__(self, total):
+                    assert total == 660
+                    with open('/sum.txt', 'a') as target: target.write('done')
+                    return total + 6
+            def reduce(terms):
+                return sum(term for term in terms)
+            return reduce((220, 440, Term(), 3))
+            """ : """
             def values():
                 yield from range(37)
                 with open('/sum.txt', 'a') as target: target.write('done')

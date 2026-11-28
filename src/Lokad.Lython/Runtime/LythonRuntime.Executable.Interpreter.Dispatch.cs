@@ -15,7 +15,8 @@ internal sealed partial class LythonRuntime
         // The async driver owns the pending operation until resume.
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
-            out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default)
+            out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default,
+            SumState? reduction = null, PyEnumerableIterator? reductionOuter = null)
         {
             pending = default;
             pendingSpan = default;
@@ -120,6 +121,7 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.ApplyDeferredDefinition:
                         case ExecutableOpCode.ApplyOperation:
+                            if (reduction is not null) return InstructionPause.ContextRequired;
                             if (!TryExecutePreparedOperation(ref execution, scope, invocation, instruction, asynchronous, out var operationTask))
                                 return InstructionPause.ContextRequired;
                             if (!asynchronous)
@@ -133,7 +135,14 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.Yield:
                         {
-                            if (invocation is null) return InstructionPause.ContextRequired;
+                            if (invocation is null)
+                            {
+                                if (reduction is null || !instruction.DiscardsYieldResult ||
+                                    !reduction.TryAddBorrowedInteger(execution.Stack.Values[instruction.InputStart]))
+                                    return InstructionPause.ContextRequired;
+                                execution.Stack.RetireTo(instruction.ResultSlot);
+                                break;
+                            }
                             var value = invocation.HasStagedListYield ? default
                                 : execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
                             // A private funded consumer can take a discarded
@@ -216,6 +225,7 @@ internal sealed partial class LythonRuntime
                                 RuntimeValue(execution.Code.Constants[instruction.ConstantIndex]));
                             break;
                         case ExecutableOpCode.LoadGlobalForArithmeticCall:
+                            if (reduction is not null) goto case ExecutableOpCode.LoadGlobal;
                             if (TryCallWithArithmeticArgument(execution.Code, execution.Stack.Values,
                                 ref execution.InstructionIndex, execution.Stack.LiveExtent, scope, out var arithmeticCall))
                             {
@@ -323,7 +333,9 @@ internal sealed partial class LythonRuntime
                             jumped = ConsumeOperation(ref pending);
                             break;
                         case ExecutableOpCode.ForNext:
-                            if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var hasNativeNext, out var nativeNext))
+                            if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var hasNativeNext, out var nativeNext) ||
+                                reductionOuter is not null && TryAdvanceReductionOuter(ref execution, scope, instruction,
+                                    reductionOuter, out hasNativeNext, out nativeNext))
                             {
                                 if (hasNativeNext) PublishInstructionResult(ref execution, invocation, instruction, nativeNext);
                                 else
@@ -343,6 +355,7 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Call:
+                            if (reduction is not null) return InstructionPause.ContextRequired;
                             var call = execution.Code.CallSites[instruction.CallSiteIndex];
                             var callStart = instruction.ResultSlot;
                             object target;
