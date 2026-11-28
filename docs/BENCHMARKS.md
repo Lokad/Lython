@@ -48,6 +48,8 @@ in-process cleanup. OS caches stay warm. Lython runs first in every pair.
 The supervisor validates each decoded reply after the timer stops.
 Embedded use in an already-running process is covered by the warm and
 compile-to-result rows. [B1906](../benchmarks/results/2026-11-27-current-cpython-a159f24/README.md).
+A local phase diagnostic separates first compilation, execution and
+benchmark reply work. [B1927](../benchmarks/results/2026-11-28-first-command-phases/README.md).
 
 ## Earlier measurements
 

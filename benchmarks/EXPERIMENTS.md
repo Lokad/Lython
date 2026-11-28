@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1927 attribute configuration startup](results/2026-11-28-first-command-phases/README.md)
+splits launch, worker work, first compile and first run on the exact
+B1926 payload. The first compile and run have medians of 141.69 ms
+and 75.81 ms in the local instrumented worker. Reply processing takes
+78.74 ms. Two cold JIT traces identify eager callable data construction
+as a concrete core stage. Preserve all local stalls and the separate
+quiet launch observation.
+
 [B1926 compare the compiler checkpoint with CPython](results/2026-11-28-current-cpython-compiler-checkpoint/README.md)
 measures `486b6bb60` on the quiet VM. Iterable shipment takes 1.011–1.023×
 CPython elapsed sync and 1.118–1.149× async. Ordinary definitions compile

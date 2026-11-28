@@ -1,0 +1,364 @@
+[
+  {
+    "trace": "startup-0.nettrace",
+    "counts": {
+      "Other": 761,
+      "Lokad.Lython.Benchmarks": 71,
+      "Lokad.Lython": 103,
+      "Lokad.Lython.Runtime": 961,
+      "Lokad.Lython.Frontend": 783
+    },
+    "milliseconds": {
+      "Other": 47.29408500000124,
+      "Lokad.Lython.Benchmarks": 195.857614,
+      "Lokad.Lython": 18.635613000000262,
+      "Lokad.Lython.Runtime": 104.33137899999781,
+      "Lokad.Lython.Frontend": 100.04909100000015
+    },
+    "longest": [
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.LythonOnceWorker",
+        "Method": "RunAsync",
+        "Signature": "class System.Threading.Tasks.Task  (class Lokad.Lython.Benchmarks.Comparison.ComparisonManifest,class System.IO.Stream,value class System.Threading.CancellationToken,class Lokad.Lython.ILythonHost)",
+        "IlBytes": 79,
+        "Start": 130.972559,
+        "End": 304.516794
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation",
+        "Method": "Grow",
+        "Signature": "instance void  (int64,class Lokad.Lython.LythonSourceSpan)",
+        "IlBytes": 89,
+        "Start": 438.919746,
+        "End": 470.543285
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Frontend.SyntaxValidityDiagnostics",
+        "Method": "Analyze",
+        "Signature": "class System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic>  (class Lokad.Lython.Frontend.ScriptSyntax,bool&,bool&,class System.Collections.Generic.Dictionary`2<class Lokad.Lython.Frontend.StatementSyntax,value class Lokad.Lython.Frontend.StatementFacts>&,class System.Collections.Generic.Dictionary`2<class System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,int32>&,bool&,value class System.Threading.CancellationToken)",
+        "IlBytes": 1607,
+        "Start": 390.336554,
+        "End": 402.199634
+      },
+      {
+        "Thread": 869,
+        "Namespace": "dynamicClass",
+        "Method": "InvokeStub_EventAttribute.set_Level",
+        "Signature": "class System.Object  (class System.Object,class System.Object,int*)",
+        "IlBytes": 0,
+        "Start": 43.538478,
+        "End": 53.129716
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 9428,
+        "Start": 476.955821,
+        "End": 485.009851
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Frontend.AssignmentTargetFacts",
+        "Method": "Reads",
+        "Signature": "class System.Collections.Generic.IEnumerable`1<class Lokad.Lython.Frontend.ExpressionSyntax>  (class Lokad.Lython.Frontend.AssignmentTargetSyntax)",
+        "IlBytes": 15,
+        "Start": 418.468346,
+        "End": 426.386501
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.ComparisonCatalogCommand",
+        "Method": "Run",
+        "Signature": "int32  (class System.String[])",
+        "IlBytes": 1357,
+        "Start": 93.842802,
+        "End": 101.367626
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.LythonEngine",
+        "Method": "Compile",
+        "Signature": "instance class Lokad.Lython.LythonCompiledScript  (class System.String,class Lokad.Lython.ILythonMemoryBudget,value class System.Threading.CancellationToken)",
+        "IlBytes": 481,
+        "Start": 311.325164,
+        "End": 318.174597
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.LythonOnceWorker+<RunAsync>d__0",
+        "Method": "MoveNext",
+        "Signature": "instance void  ()",
+        "IlBytes": 928,
+        "Start": 304.750028,
+        "End": 310.747399
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 8024,
+        "Start": 555.178897,
+        "End": 560.323811
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateDataCallableContracts",
+        "Signature": "value class Lokad.Lython.Frontend.StaticCallableContract[]  ()",
+        "IlBytes": 16573,
+        "Start": 513.744462,
+        "End": 518.26115
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.LythonMemoryBudget",
+        "Method": ".ctor",
+        "Signature": "instance void  (value class System.Nullable`1<int64>)",
+        "IlBytes": 68,
+        "Start": 318.184017,
+        "End": 321.838848
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.LythonMemoryBudget+State",
+        "Method": ".ctor",
+        "Signature": "instance void  (value class System.Nullable`1<int64>)",
+        "IlBytes": 25,
+        "Start": 326.866989,
+        "End": 330.408152
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol",
+        "Method": "Digest",
+        "Signature": "class System.String  (unsigned int8[])",
+        "IlBytes": 12,
+        "Start": 111.76414,
+        "End": 114.789078
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.LythonEngine",
+        "Method": "CompileCore",
+        "Signature": "class Lokad.Lython.LythonCompiledScript  (class System.String,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,value class System.Threading.CancellationToken,class Lokad.Lython.Frontend.CompiledRegexPrograms)",
+        "IlBytes": 221,
+        "Start": 345.210966,
+        "End": 347.318046
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Frontend.Parser",
+        "Method": "ParsePrimaryExpression",
+        "Signature": "instance class Lokad.Lython.Frontend.ExpressionSyntax  ()",
+        "IlBytes": 765,
+        "Start": 376.598771,
+        "End": 378.494789
+      },
+      {
+        "Thread": 880,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+        "Method": "ExecuteInstructionPrefix",
+        "Signature": "value class InstructionPause  (value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&,value class System.Threading.Tasks.ValueTask`1<class ExecutionContext>&,value class System.Span`1<value class ExecutableSlot>)",
+        "IlBytes": 4546,
+        "Start": 632.74966,
+        "End": 634.41675
+      },
+      {
+        "Thread": 869,
+        "Namespace": "Lokad.Lython.Runtime.Text.PyString",
+        "Method": ".ctor",
+        "Signature": "instance void  (unsigned int8[],int32,class Lokad.Lython.Runtime.MemoryGovernor)",
+        "IlBytes": 35,
+        "Start": 543.447545,
+        "End": 545.020159
+      }
+    ]
+  },
+  {
+    "trace": "startup-1.nettrace",
+    "counts": {
+      "Other": 761,
+      "Lokad.Lython.Benchmarks": 71,
+      "Lokad.Lython": 103,
+      "Lokad.Lython.Runtime": 961,
+      "Lokad.Lython.Frontend": 783
+    },
+    "milliseconds": {
+      "Other": 34.9630870000003,
+      "Lokad.Lython.Benchmarks": 49.23507099999984,
+      "Lokad.Lython": 16.98876099999987,
+      "Lokad.Lython.Runtime": 68.21054200000049,
+      "Lokad.Lython.Frontend": 78.30675499999874
+    },
+    "longest": [
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.LythonOnceWorker",
+        "Method": "RunAsync",
+        "Signature": "class System.Threading.Tasks.Task  (class Lokad.Lython.Benchmarks.Comparison.ComparisonManifest,class System.IO.Stream,value class System.Threading.CancellationToken,class Lokad.Lython.ILythonHost)",
+        "IlBytes": 79,
+        "Start": 50.364401,
+        "End": 87.565043
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.LythonEngine",
+        "Method": "Compile",
+        "Signature": "instance class Lokad.Lython.LythonCompiledScript  (class System.String,class Lokad.Lython.ILythonMemoryBudget,value class System.Threading.CancellationToken)",
+        "IlBytes": 481,
+        "Start": 93.123341,
+        "End": 98.901766
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateDataCallableContracts",
+        "Signature": "value class Lokad.Lython.Frontend.StaticCallableContract[]  ()",
+        "IlBytes": 16573,
+        "Start": 200.901511,
+        "End": 205.951125
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.LythonOnceWorker+<RunAsync>d__0",
+        "Method": "MoveNext",
+        "Signature": "instance void  ()",
+        "IlBytes": 928,
+        "Start": 87.726686,
+        "End": 92.617349
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 9428,
+        "Start": 171.688158,
+        "End": 175.855723
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.LythonEngine",
+        "Method": "CompileCore",
+        "Signature": "class Lokad.Lython.LythonCompiledScript  (class System.String,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,value class System.Threading.CancellationToken,class Lokad.Lython.Frontend.CompiledRegexPrograms)",
+        "IlBytes": 221,
+        "Start": 118.824475,
+        "End": 122.337729
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.SyntaxValidityDiagnostics",
+        "Method": "Analyze",
+        "Signature": "class System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic>  (class Lokad.Lython.Frontend.ScriptSyntax,bool&,bool&,class System.Collections.Generic.Dictionary`2<class Lokad.Lython.Frontend.StatementSyntax,value class Lokad.Lython.Frontend.StatementFacts>&,class System.Collections.Generic.Dictionary`2<class System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,int32>&,bool&,value class System.Threading.CancellationToken)",
+        "IlBytes": 1607,
+        "Start": 147.731735,
+        "End": 150.996049
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 8024,
+        "Start": 242.22287,
+        "End": 245.051671
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.LythonMemoryBudget+State",
+        "Method": ".ctor",
+        "Signature": "instance void  (value class System.Nullable`1<int64>)",
+        "IlBytes": 25,
+        "Start": 105.82708,
+        "End": 108.651405
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.LythonMemoryBudget",
+        "Method": ".ctor",
+        "Signature": "instance void  (value class System.Nullable`1<int64>)",
+        "IlBytes": 68,
+        "Start": 98.908443,
+        "End": 101.569853
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation",
+        "Method": "Grow",
+        "Signature": "instance void  (int64,class Lokad.Lython.LythonSourceSpan)",
+        "IlBytes": 89,
+        "Start": 164.097593,
+        "End": 166.085114
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.AssignmentTargetFacts",
+        "Method": "Reads",
+        "Signature": "class System.Collections.Generic.IEnumerable`1<class Lokad.Lython.Frontend.ExpressionSyntax>  (class Lokad.Lython.Frontend.AssignmentTargetSyntax)",
+        "IlBytes": 15,
+        "Start": 156.918199,
+        "End": 158.89185
+      },
+      {
+        "Thread": 903,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+        "Method": "ExecuteInstructionPrefix",
+        "Signature": "value class InstructionPause  (value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&,value class System.Threading.Tasks.ValueTask`1<class ExecutionContext>&,value class System.Span`1<value class ExecutableSlot>)",
+        "IlBytes": 4546,
+        "Start": 281.791956,
+        "End": 283.693829
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Benchmarks.Comparison.ComparisonCatalogCommand",
+        "Method": "Run",
+        "Signature": "int32  (class System.String[])",
+        "IlBytes": 1357,
+        "Start": 36.017984,
+        "End": 37.706107
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateCoreCallableContracts",
+        "Signature": "value class Lokad.Lython.Frontend.StaticCallableContract[]  ()",
+        "IlBytes": 7711,
+        "Start": 199.047093,
+        "End": 200.530167
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "<CreateCallableMemberIndex>g__AddStringCallableContracts|5_1",
+        "Signature": "void  (class System.Collections.Generic.List`1<value class Lokad.Lython.Frontend.StaticCallableContract>)",
+        "IlBytes": 7499,
+        "Start": 207.132367,
+        "End": 208.536195
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateMemberValueContracts",
+        "Signature": "value class Lokad.Lython.Frontend.StaticMemberValueContract[]  ()",
+        "IlBytes": 7496,
+        "Start": 222.38306,
+        "End": 223.635622
+      },
+      {
+        "Thread": 893,
+        "Namespace": "Lokad.Lython.Frontend.LexicalScopePreparation",
+        "Method": "Prepare",
+        "Signature": "void  (class Lokad.Lython.Frontend.ScriptSyntax,class System.String,bool,class System.Collections.Generic.Dictionary`2<class Lokad.Lython.Frontend.StatementSyntax,value class Lokad.Lython.Frontend.StatementFacts>,class Lokad.Lython.Runtime.MemoryGovernor,value class System.Threading.CancellationToken)",
+        "IlBytes": 2550,
+        "Start": 160.442257,
+        "End": 161.685166
+      }
+    ]
+  }
+]
