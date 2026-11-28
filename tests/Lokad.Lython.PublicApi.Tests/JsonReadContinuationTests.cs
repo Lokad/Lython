@@ -5,6 +5,47 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonReadContinuationTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ArrayBackingIsFundedWhileFirstParseHookRuns(bool asynchronous)
+    {
+        const string source = """
+            import json,time
+            now=time.time
+            def number(text):return now()
+            now()
+            print(json.loads(document,parse_int=number))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+
+        var scalarCharge = await Run("1", "0.0\n");
+        var arrayCharge = await Run("[1]", "[0.0]\n");
+        // The array needs its initial backing while the first hook is live.
+        // An empty shell contributes only a small fraction of this difference.
+        Assert.True(arrayCharge - scalarCharge >= 512, $"Scalar: {scalarCharge}; array: {arrayCharge}");
+
+        async Task<long> Run(string document, string expected)
+        {
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 1024 * 1024);
+            var options = new LythonRunOptions
+            {
+                MemoryBudget = budget,
+                Globals = new Dictionary<string, object?> { ["document"] = document },
+            };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.True(host.AtSecondGate > budget.AtGate);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+            return host.AtSecondGate - budget.AtGate;
+        }
+    }
+
+    [Theory]
     [InlineData(false, false, "success")]
     [InlineData(false, true, "success")]
     [InlineData(true, false, "success")]

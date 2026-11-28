@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1913 admit JSON list backing at container entry](results/2026-11-28-json-list-initial-admission/README.md)
+removes 4,096 initial growth requests from nested-array Lines in each API
+at unchanged peak admission. Local warm async elapsed falls 0.44–6.48%.
+CPU and both document and flat-script timing ranges include zero.
+
 [B1912 admit one computed positional default with its callable](results/2026-11-28-positional-default-prepayment/README.md)
 removes 1,536 growth requests from each positional factory in both APIs
 at identical measured allocation and peak admission. Local warm CPU falls

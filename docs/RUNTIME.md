@@ -2703,6 +2703,13 @@ storage while the original layout and values remain funded. Protocol-key mutatio
 conservatively makes metadata private before guest equality, so it may refuse
 earlier than an ordinary value update. Shared keys retain their funding after
 individual rows clear or change, until their execution/result owner ends.
+
+The JSON decoder admits an array's list shell and initial backing together
+when the opening is followed by content. The same rule applies to the list
+for `object_pairs_hook`. A combined request can be refused before the first
+value callback. Empty lists need no backing, and later growth admits the
+replacement before copying.
+
 Private-table middle deletion shifts the live suffix and adjusts its hash links;
 last deletion only unlinks its bucket chain. Repeated middle deletions can have quadratic cost.
 Collision scans and private growth observe cooperative cancellation. Structural

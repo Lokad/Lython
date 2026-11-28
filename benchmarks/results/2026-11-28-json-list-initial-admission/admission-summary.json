@@ -1,0 +1,74 @@
+[
+  {
+    "case": "diagnostic.json-lines-nested-arrays",
+    "asynchronous": false,
+    "requests": [
+      20540,
+      16444
+    ],
+    "peak": [
+      5952087,
+      5952087
+    ]
+  },
+  {
+    "case": "diagnostic.json-lines-nested-arrays",
+    "asynchronous": true,
+    "requests": [
+      20540,
+      16444
+    ],
+    "peak": [
+      5952087,
+      5952087
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "asynchronous": false,
+    "requests": [
+      12342,
+      12342
+    ],
+    "peak": [
+      3035454,
+      3035454
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "asynchronous": true,
+    "requests": [
+      12342,
+      12342
+    ],
+    "peak": [
+      3035454,
+      3035454
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "asynchronous": false,
+    "requests": [
+      7446,
+      7445
+    ],
+    "peak": [
+      2592718,
+      2592718
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "asynchronous": true,
+    "requests": [
+      7446,
+      7445
+    ],
+    "peak": [
+      2592718,
+      2592718
+    ]
+  }
+]
