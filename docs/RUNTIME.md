@@ -960,28 +960,28 @@ position and active exception. A pending pull keeps its frame and
 argument workspace admitted until their users and cleanup finish.
 
 A generator expression passed directly to the evaluated builtin `sum` can
-keep its admitted execution state in the call's operand storage. Instruction
-layout identifies eligible operand positions. The runtime checks the evaluated
-callable before acquiring the outer iterator. With an exact builtin list, tuple
-or range, eligible expressions can consume integer yields through the shared
-executable dispatcher. The operand keeps the integer subtotal. An operation
-that needs the full generator frame transfers the slots and instruction
-position into that frame. Exact lists and tuples keep their live position in
-the loop slot and materialize an iterator at that position before `.0` or the
-loop can expose it. Ranges transfer the acquired iterator. The general
-accumulator starts with the subtotal and uses capacity already admitted by
-the operand. The existing sum loop continues, including when addition or
+reduce in the instruction that acquires the generator's outer source.
+Instruction layout identifies the adjacent single consumer. The runtime checks
+the evaluated callable, admits and acquires the source, then enters the call
+with its usual cancellation and managed stack checks. An eligible expression
+over an exact list, tuple or range consumes integer yields through the shared
+executable dispatcher. The admitted execution state and subtotal stay local
+to that operation. An operation that needs the full generator frame transfers
+the slots and instruction position into that frame. Exact lists and tuples
+materialize an iterator at the live position before `.0` or the loop can expose
+it. Ranges transfer the acquired iterator. The existing sum loop continues
+from the subtotal and uses the prepaid capacity, including when addition or
 generator code can suspend.
 Other call targets and expressions that publish a generator use the ordinary
 iterator object.
 
-Construction of the private operand admits the context shell, exact builtin
-outer iterator and initial slots together. Refusal of that construction is
-attributed to the generator expression. The operand owns cleanup through
-return, refusal and cancellation. It releases the iterator and prepaid shell
-charges when the reduction completes within the private prefix. Promotion
-keeps both charges through the execution because the iterator, a yielded
-value or a closure can remain observable after the slots retire.
+Private generator construction admits the context shell, outer iterator and
+initial slots together. Refusal there is attributed to the generator
+expression. The reduction operation owns cleanup through return, refusal and
+cancellation. It releases its private charges before publishing a result
+from the prefix. Promotion keeps the shell and iterator charges through the
+execution because the iterator, a yielded value or a closure can remain
+observable after the slots retire.
 
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume

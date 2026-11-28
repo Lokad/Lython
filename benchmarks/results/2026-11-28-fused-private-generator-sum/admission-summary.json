@@ -1,0 +1,122 @@
+[
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      8221,
+      8221
+    ],
+    "peak": [
+      3517191,
+      3516935
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      8221,
+      8221
+    ],
+    "peak": [
+      3517191,
+      3516935
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      10269,
+      10269
+    ],
+    "peak": [
+      3975943,
+      3975687
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      10269,
+      10269
+    ],
+    "peak": [
+      3975943,
+      3975687
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      10269,
+      10269
+    ],
+    "peak": [
+      3648447,
+      3648191
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      10269,
+      10269
+    ],
+    "peak": [
+      3648447,
+      3648191
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "asynchronous": false,
+    "requests": [
+      657,
+      657
+    ],
+    "peak": [
+      280064,
+      280064
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "asynchronous": true,
+    "requests": [
+      657,
+      657
+    ],
+    "peak": [
+      280064,
+      280064
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "asynchronous": false,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270103,
+      2270103
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "asynchronous": true,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270103,
+      2270103
+    ]
+  }
+]

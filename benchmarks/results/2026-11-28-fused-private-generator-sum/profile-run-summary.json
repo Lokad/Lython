@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "3bc32973ac50ec9622c1c6b564afbb0b4ddd3348",
+  "inspectedHead": "3bc32973ac50ec9622c1c6b564afbb0b4ddd3348",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "catalogSha": "108954ed4eb256210291c9b5e0f3e80f5889741bff0b7b86a672a32d1fff325c",
+  "allProcessesJoined": true,
+  "totalVerifiedBatches": 97,
+  "timingQualification": false
+}

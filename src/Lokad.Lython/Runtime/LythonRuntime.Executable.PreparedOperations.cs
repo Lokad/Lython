@@ -79,7 +79,7 @@ internal sealed partial class LythonRuntime
 
         private static bool TryExecutePreparedOperation(ref ExecutableWorkState execution,
             ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction,
-            bool asynchronous, out ValueTask pending)
+            bool asynchronous, ref LythonSourceSpan operationSpan, out ValueTask pending)
         {
             pending = default;
             var context = invocation ?? scope;
@@ -151,10 +151,12 @@ internal sealed partial class LythonRuntime
                     invocation.StorePreparedDictionaryItem(instruction.InputStart, key, itemValue, span);
                     break;
                 }
+                case ExecutableCreateGeneratorExpression comprehension when invocation is not null:
+                    pending = invocation.ExecutePreparedGenerator(comprehension, instruction, asynchronous, ref operationSpan);
+                    break;
                 // Display and call operations with a suspension path.
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
-                    or ExecutableFinishCall or ExecutableCallWithKeywordMapping
-                    or ExecutableCreateGeneratorExpression when invocation is not null:
+                    or ExecutableFinishCall or ExecutableCallWithKeywordMapping when invocation is not null:
                     pending = invocation.ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
                     break;
                 case ExecutableBindTypeAlias alias when invocation is not null:
@@ -287,30 +289,6 @@ internal sealed partial class LythonRuntime
                     catch { _execution.Stack.RetireTo(first); throw; }
                     break;
                 }
-                case ExecutableCreateGeneratorExpression comprehension:
-                    var targetSlot = instruction.PrivateGeneratorCallTarget;
-                    var privateFrame = targetSlot != int.MaxValue &&
-                        _execution.Stack.Values[targetSlot].Reference is { } callTarget && IsSumBuiltin(callTarget);
-                    var lookupOwner = privateFrame && comprehension.SharedLookupStart >= 0 &&
-                        _execution.Stack.LookupOwner is { } definition && ReferenceEquals(definition.CodeObject, _execution.Code)
-                        ? definition : null;
-                    var outer = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    if (privateFrame && TryPrepareBorrowedGeneratorSum(comprehension, outer, span, lookupOwner) is { } reduction)
-                    {
-                        try { PublishInstructionResult(instruction, reduction); }
-                        catch { reduction.Dispose(); throw; }
-                        break;
-                    }
-                    var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, this,
-                        outer, comprehension.OuterSpan, span, asynchronous, privateFrame, lookupOwner,
-                        lookupOwner is null ? -1 : comprehension.SharedLookupStart).ConfigureAwait(false);
-                    try { PublishInstructionResult(instruction, generatorExpression); }
-                    catch
-                    {
-                        if (generatorExpression is ExecutionContext frame) PyGenerator.CompleteFrame(frame);
-                        throw;
-                    }
-                    break;
                 default: throw new InvalidOperationException("Unknown prepared suspension operation.");
             }
         }

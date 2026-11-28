@@ -118,8 +118,6 @@ internal sealed partial class LythonRuntime
 
     private static object Sum(object iterable, object total, LythonSourceSpan span, ExecutionContext context)
     {
-        if (iterable is ExecutionContext.BorrowedGeneratorSum reduction)
-            return reduction.Reduce(context, span, false).GetAwaiter().GetResult();
         if (TrySumExactBytes(iterable, total, span, context, out var byteResult)) return byteResult;
         var privateFrame = iterable as ExecutionContext;
         using var cursor = privateFrame is null ? PyIteration.Cursor.Create(iterable, span, context) : null;
@@ -139,8 +137,6 @@ internal sealed partial class LythonRuntime
     {
         var total = ReadSumStart(arguments, span);
         var iterable = arguments[0];
-        if (iterable is ExecutionContext.BorrowedGeneratorSum reduction)
-            return reduction.Reduce(context, span, true);
         // Exact range items and integer addition cannot invoke guest protocols.
         // Reuse checked synchronous iteration; other starts may suspend in __add__.
         if (iterable is PyRange && PyNumberOps.IsInteger(total)) return new(Sum(iterable, total, span, context));

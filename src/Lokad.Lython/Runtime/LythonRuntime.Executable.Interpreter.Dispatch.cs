@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
             out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default,
-            BorrowedGeneratorSum? reduction = null)
+            Span<PrivateGeneratorReduction> reduction = default)
         {
             pending = default;
             pendingSpan = default;
@@ -27,7 +27,8 @@ internal sealed partial class LythonRuntime
                 var jumped = false;
                 LythonRuntimeException returnedFailure;
                 ref readonly var instruction = ref instructions[execution.InstructionIndex];
-                scope.State.CheckExecution(instruction.Span);
+                var operationSpan = instruction.Span;
+                scope.State.CheckExecution(operationSpan);
                 try
                 {
                     switch (instruction.OpCode)
@@ -121,15 +122,15 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.ApplyDeferredDefinition:
                         case ExecutableOpCode.ApplyOperation:
-                            if (reduction is not null) return InstructionPause.ContextRequired;
-                            if (!TryExecutePreparedOperation(ref execution, scope, invocation, instruction, asynchronous, out var operationTask))
+                            if (!reduction.IsEmpty) return InstructionPause.ContextRequired;
+                            if (!TryExecutePreparedOperation(ref execution, scope, invocation, instruction, asynchronous, ref operationSpan, out var operationTask))
                                 return InstructionPause.ContextRequired;
                             if (!asynchronous)
                                 operationTask.GetAwaiter().GetResult();
                             else
                             {
                                 pending = WithoutJump(operationTask);
-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(operationSpan, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -137,8 +138,8 @@ internal sealed partial class LythonRuntime
                         {
                             if (invocation is null)
                             {
-                                if (reduction is null || !instruction.DiscardsYieldResult ||
-                                    !reduction.TryAddBorrowedInteger(execution.Stack.Values[instruction.InputStart]))
+                                if (reduction.IsEmpty || !instruction.DiscardsYieldResult ||
+                                    !reduction[0].TryAddBorrowedInteger(execution.Stack.Values[instruction.InputStart]))
                                     return InstructionPause.ContextRequired;
                                 execution.Stack.RetireTo(instruction.ResultSlot);
                                 break;
@@ -225,7 +226,7 @@ internal sealed partial class LythonRuntime
                                 RuntimeValue(execution.Code.Constants[instruction.ConstantIndex]));
                             break;
                         case ExecutableOpCode.LoadGlobalForArithmeticCall:
-                            if (reduction is not null) goto case ExecutableOpCode.LoadGlobal;
+                            if (!reduction.IsEmpty) goto case ExecutableOpCode.LoadGlobal;
                             if (TryCallWithArithmeticArgument(execution.Code, execution.Stack.Values,
                                 ref execution.InstructionIndex, execution.Stack.LiveExtent, scope, out var arithmeticCall))
                             {
@@ -334,7 +335,7 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.ForNext:
                             if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var hasNativeNext, out var nativeNext) ||
-                                reduction is not null && reduction.TryAdvanceOuter(ref execution, instruction,
+                                !reduction.IsEmpty && reduction[0].TryAdvanceOuter(ref execution, instruction,
                                     out hasNativeNext, out nativeNext))
                             {
                                 if (hasNativeNext) PublishInstructionResult(ref execution, invocation, instruction, nativeNext);
@@ -355,7 +356,7 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Call:
-                            if (reduction is not null) return InstructionPause.ContextRequired;
+                            if (!reduction.IsEmpty) return InstructionPause.ContextRequired;
                             var call = execution.Code.CallSites[instruction.CallSiteIndex];
                             var callStart = instruction.ResultSlot;
                             object target;
@@ -486,7 +487,7 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException error)
                 {
-                    if (!RouteInstructionFailure(error, scope, invocation, instruction.Span)) throw;
+                    if (!RouteInstructionFailure(error, scope, invocation, operationSpan)) throw;
                     jumped = true;
                 }
             FinishInstruction:

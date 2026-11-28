@@ -7,25 +7,45 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private BorrowedGeneratorSum? TryPrepareBorrowedGeneratorSum(ExecutableCreateGeneratorExpression expression,
-            object outer, LythonSourceSpan span, PyFunctionBase? lookupOwner)
+        private ValueTask ExecutePreparedGenerator(ExecutableCreateGeneratorExpression expression,
+            in ExecutableInstruction instruction, bool asynchronous, ref LythonSourceSpan operationSpan)
         {
+            var targetSlot = instruction.PrivateGeneratorCallTarget;
+            var privateFrame = targetSlot != int.MaxValue &&
+                _execution.Stack.Values[targetSlot].Reference is { } target && IsSumBuiltin(target);
+            var lookupOwner = privateFrame && expression.SharedLookupStart >= 0 &&
+                _execution.Stack.LookupOwner is { } definition && ReferenceEquals(definition.CodeObject, _execution.Code)
+                ? definition : null;
+            var outer = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
             var code = expression.CodeObject;
-            // This prefix can advance only an exact builtin outer iterator.
-            // General acquisition still runs at expression construction.
-            if (outer is not (PyList or PyTuple or PyRange) || IsClassBody ||
+            if (!privateFrame || outer is not (PyList or PyTuple or PyRange) || IsClassBody ||
                 code.RequiresLocalVariableMirroring ||
                 code.ScopeFacts.RequiresClassCell || code.ScopeFacts.NonlocalNames.Count != 0 ||
                 code.CapturedLocalSlots.Count != 0 || code.ExceptionRegions.Count != 0)
-                return null;
+                return CreatePreparedGeneratorAsync(expression, instruction, outer, lookupOwner, privateFrame, asynchronous);
 
+            ref readonly var call = ref _execution.Code.Instructions[_execution.InstructionIndex + 1];
             var promotionBytes = checked(PyGenerator.EstimateExpressionShell(code) + PyIteratorBase.IteratorValueBytes);
-            var totalBytes = checked(BorrowedGeneratorSum.StorageBytes + promotionBytes +
+            ExecutableWorkState work = default;
+            var acquired = PreparePrivateGenerator(ref work, expression, outer, lookupOwner, instruction.Span, promotionBytes);
+            var reduction = new PrivateGeneratorReduction(acquired);
+            _execution.InstructionIndex++;
+            operationSpan = call.Span;
+            return ExecutePreparedGeneratorSum(ref work, ref reduction, instruction.Span, operationSpan,
+                call.ResultSlot, promotionBytes, asynchronous);
+        }
+
+        private object PreparePrivateGenerator(ref ExecutableWorkState work, ExecutableCreateGeneratorExpression expression,
+            object outer, PyFunctionBase? lookupOwner, LythonSourceSpan span, long promotionBytes)
+        {
+            // The layout proves the adjacent sole consumer. Fund and acquire
+            // the generator at its expression before entering the sum call.
+            var code = expression.CodeObject;
+            var totalBytes = checked(promotionBytes +
                 ExecutableSlotsBytes(code.ValueStorageCapacity) + ExecutableFrameExtraBytes(code, 0));
             var governor = MemoryGovernor;
             governor.Reserve(totalBytes, span);
             governor.Commit(totalBytes);
-            ExecutableWorkState work = default;
             try
             {
                 var captures = CaptureExecutableClosures(code, this, span);
@@ -42,49 +62,162 @@ internal sealed partial class LythonRuntime
                     work.Stack.PublishSlot(slot, slot + 1, ExecutableSlot.PrepareNativeLoop(acquired));
                     SkipGeneratorIteratorEntry(ref work, slot);
                 }
-                return new BorrowedGeneratorSum(work, acquired, governor, promotionBytes);
+
+                return acquired;
             }
             catch
             {
                 if (work.Code is null) governor.Release(totalBytes);
-                else
-                {
-                    try { ReleaseBorrowedGeneratorWork(ref work); }
-                    finally { governor.Release(BorrowedGeneratorSum.StorageBytes + promotionBytes); }
-                }
+                else ReleaseBorrowedGeneratorWork(ref work, promotionBytes);
                 throw;
             }
         }
 
-        private static void ReleaseBorrowedGeneratorWork(ref ExecutableWorkState work)
+        private async ValueTask CreatePreparedGeneratorAsync(ExecutableCreateGeneratorExpression expression,
+            ExecutableInstruction instruction, object outer, PyFunctionBase? lookupOwner, bool privateFrame, bool asynchronous)
+        {
+            var generator = await PyGenerator.CreateExpressionAsync(expression.CodeObject, this,
+                outer, expression.OuterSpan, instruction.Span, asynchronous, privateFrame, lookupOwner,
+                lookupOwner is null ? -1 : expression.SharedLookupStart).ConfigureAwait(false);
+            try { PublishInstructionResult(instruction, generator); }
+            catch
+            {
+                if (generator is ExecutionContext frame) PyGenerator.CompleteFrame(frame);
+                throw;
+            }
+        }
+
+        private ValueTask ExecutePreparedGeneratorSum(ref ExecutableWorkState work, ref PrivateGeneratorReduction reduction,
+            LythonSourceSpan generatorSpan, LythonSourceSpan callSpan, int start, long promotionBytes, bool asynchronous)
+        {
+            var entered = false;
+            try
+            {
+                ValueTask<object> pending;
+                try
+                {
+                    EnterInterpreterFrame(callSpan);
+                    entered = true;
+                    var frame = RunPrivateGeneratorPrefix(ref work, ref reduction, generatorSpan);
+                    var subtotal = new BigInteger(reduction.Subtotal);
+                    pending = frame is null ? new(subtotal) : ReducePromoted(frame, subtotal, generatorSpan, callSpan, asynchronous);
+                    if (!pending.IsCompleted)
+                    {
+                        pending = AwaitBorrowedCall(pending, callSpan, this);
+                        entered = false;
+                    }
+                    else pending = new(RuntimeValue(pending.GetAwaiter().GetResult()));
+                }
+                catch (Exception error) when (TryTranslateCallableException(error, callSpan, out var translated)) { throw translated; }
+                finally
+                {
+                    if (entered) LeaveInterpreterFrame();
+                    reduction = default;
+                    if (work.Code is not null) ReleaseBorrowedGeneratorWork(ref work, promotionBytes);
+                }
+                return CompleteCallValue(pending, start);
+            }
+            catch
+            {
+                _execution.Stack.RetireTo(start);
+                throw;
+            }
+        }
+
+        private async ValueTask<object> ReducePromoted(ExecutionContext frame, BigInteger subtotal,
+            LythonSourceSpan generatorSpan, LythonSourceSpan callSpan, bool asynchronous)
+        {
+            try
+            {
+                var sum = new SumState(subtotal);
+                return asynchronous
+                    ? await ReduceSumAsync(sum, frame, null, generatorSpan, callSpan, this).ConfigureAwait(false)
+                    : ReduceSum(sum, frame, null, generatorSpan, callSpan, this);
+            }
+            finally { PyGenerator.CompleteFrame(frame); }
+        }
+
+        private ExecutionContext? RunPrivateGeneratorPrefix(ref ExecutableWorkState work,
+            ref PrivateGeneratorReduction reduction, LythonSourceSpan span)
+        {
+            var entryException = State.CurrentException;
+            var enteredFunction = false;
+            var enteredInterpreter = false;
+            try
+            {
+                EnterFunctionCall(span);
+                enteredFunction = true;
+                EnterInterpreterFrame(span);
+                enteredInterpreter = true;
+                // Keep the iterator's post-entry admission before the first pull.
+                if (reduction.Outer is PyList or PyTuple)
+                    State.CheckInterpreterStack(work.Code.Instructions[work.Code.EntryIndex].Span);
+                var pause = ExecuteInstructionPrefix(ref work, this, null, true, out _, out _, out _, reduction: new(ref reduction));
+                if (pause == InstructionPause.Boundary) return null;
+                if (pause != InstructionPause.ContextRequired)
+                    throw new InvalidOperationException("A borrowed generator cannot suspend.");
+
+                var frame = new ExecutionContext(FunctionClosureContext, work.Code.ScopeFacts)
+                { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
+                if (reduction.Outer is PyList or PyTuple) MaterializeSequenceOuter(ref work, reduction.Outer);
+                frame.AdoptExecutableExecution(ref work, entryException);
+                return frame;
+            }
+            catch (LythonRuntimeException exception)
+            {
+                PyFunctionBinding.AnnotateException(exception, this, "<genexpr>", span);
+                if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
+                    throw GeneratorRaisedStopIteration(exception, this, span);
+                throw;
+            }
+            finally
+            {
+                if (enteredInterpreter) LeaveInterpreterFrame();
+                if (enteredFunction) LeaveFunctionCall();
+                State.SetCurrentException(entryException);
+            }
+        }
+
+        private void MaterializeSequenceOuter(ref ExecutableWorkState work, object sequence)
+        {
+            var code = work.Code;
+            var slot = code.FirstTemporarySlot;
+            var exhausted = work.Stack.LiveExtent <= slot;
+            var position = exhausted ? 0 : work.Stack.Values[slot].NativeSequencePosition;
+            var iterator = PyEnumerableIterator.CreateSequenceAt(sequence, position, exhausted,
+                code.Instructions[code.EntryIndex].Span, this);
+            WriteLocalValue(work.Locals, code.LocalNameToSlot[".0"], iterator);
+            if (!exhausted) work.Stack[slot] = iterator;
+        }
+
+        private void ReleaseBorrowedGeneratorWork(ref ExecutableWorkState work, long promotionBytes)
         {
             var code = work.Code;
             try { work.Stack.UnwindTo(code.FirstTemporarySlot); }
             finally
             {
-                work.Stack.ReleaseStorage(code.LookupCacheCount);
-                work = default;
+                try { work.Stack.ReleaseStorage(code.LookupCacheCount); }
+                finally
+                {
+                    work = default;
+                    MemoryGovernor.Release(promotionBytes);
+                }
             }
         }
 
-        // The operand owns the initialized slots and prepaid promotion storage.
-        // An exact sequence keeps its position in the loop slot until .0 can
-        // be observed. After promotion the frame and iterator charges survive.
-        internal sealed class BorrowedGeneratorSum(ExecutableWorkState work, object outer,
-            MemoryGovernor governor, long promotionBytes) : ExecutableTemporaryValue
+        // The synchronous dispatcher mutates this stack local. Only a promoted
+        // frame and the subtotal cross a real suspension.
+        private struct PrivateGeneratorReduction(object outer)
         {
-            internal const long StorageBytes = 256;
-            private ExecutableWorkState _work = work;
-            private MemoryGovernor? _governor = governor;
-            private object? _outer = outer;
-            private long _subtotal;
+            internal readonly object Outer = outer;
+            internal long Subtotal;
 
             internal bool TryAdvanceOuter(ref ExecutableWorkState state, in ExecutableInstruction instruction,
                 out bool hasNext, out ExecutableSlot value)
             {
                 hasNext = false;
                 value = default;
-                if (_outer is not PyEnumerableIterator iterator || !ReferenceEquals(state.Stack.Values[instruction.InputStart].Reference, iterator))
+                if (Outer is not PyEnumerableIterator iterator || !ReferenceEquals(state.Stack.Values[instruction.InputStart].Reference, iterator))
                     return false;
                 state.Stack.State.CheckInterpreterStack(instruction.Span);
                 var next = iterator.TryMoveNext();
@@ -95,98 +228,7 @@ internal sealed partial class LythonRuntime
 
             internal bool TryAddBorrowedInteger(in ExecutableSlot value)
                 => (value.TryGetInteger(out var integer) || SumState.TryInt64(value.Object.RequireNotNull(), out integer))
-                    && TryAccumulateSumInteger(ref _subtotal, integer);
-
-            internal ValueTask<object> Reduce(ExecutionContext scope, LythonSourceSpan span, bool asynchronous)
-            {
-                var generatorSpan = scope.PrivateGeneratorSpan;
-                var frame = RunPrefix(scope, generatorSpan);
-                return frame is null
-                    ? new(new BigInteger(_subtotal))
-                    : ReducePromoted(frame, generatorSpan, span, scope, asynchronous);
-            }
-
-            private async ValueTask<object> ReducePromoted(ExecutionContext frame, LythonSourceSpan generatorSpan,
-                LythonSourceSpan span, ExecutionContext scope, bool asynchronous)
-            {
-                try
-                {
-                    var sum = new SumState(new BigInteger(_subtotal));
-                    return asynchronous
-                        ? await ReduceSumAsync(sum, frame, null, generatorSpan, span, scope).ConfigureAwait(false)
-                        : ReduceSum(sum, frame, null, generatorSpan, span, scope);
-                }
-                finally { PyGenerator.CompleteFrame(frame); }
-            }
-
-            private ExecutionContext? RunPrefix(ExecutionContext scope, LythonSourceSpan span)
-            {
-                var entryException = scope.State.CurrentException;
-                var enteredFunction = false;
-                var enteredInterpreter = false;
-                try
-                {
-                    scope.EnterFunctionCall(span);
-                    enteredFunction = true;
-                    scope.EnterInterpreterFrame(span);
-                    enteredInterpreter = true;
-                    // Inline advancement stays inside the entered frame. Keep
-                    // the iterator's post-entry admission before the first pull.
-                    if (_outer is PyList or PyTuple)
-                        scope.State.CheckInterpreterStack(_work.Code.Instructions[_work.Code.EntryIndex].Span);
-                    var pause = ExecuteInstructionPrefix(ref _work, scope, null, true, out _, out _, out _, reduction: this);
-                    if (pause == InstructionPause.Boundary) return null;
-                    if (pause != InstructionPause.ContextRequired)
-                        throw new InvalidOperationException("A borrowed generator cannot suspend.");
-
-                    var frame = new ExecutionContext(scope.FunctionClosureContext, _work.Code.ScopeFacts)
-                    { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
-                    if (_outer is PyList or PyTuple) MaterializeSequenceOuter(_outer, scope);
-                    frame.AdoptExecutableExecution(ref _work, entryException);
-                    _outer = null;
-                    return frame;
-                }
-                catch (LythonRuntimeException exception)
-                {
-                    PyFunctionBinding.AnnotateException(exception, scope, "<genexpr>", span);
-                    if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
-                        throw GeneratorRaisedStopIteration(exception, scope, span);
-                    throw;
-                }
-                finally
-                {
-                    if (enteredInterpreter) scope.LeaveInterpreterFrame();
-                    if (enteredFunction) scope.LeaveFunctionCall();
-                    scope.State.SetCurrentException(entryException);
-                }
-            }
-
-            private void MaterializeSequenceOuter(object sequence, ExecutionContext scope)
-            {
-                var code = _work.Code;
-                var slot = code.FirstTemporarySlot;
-                var exhausted = _work.Stack.LiveExtent <= slot;
-                var position = exhausted ? 0 : _work.Stack.Values[slot].NativeSequencePosition;
-                var iterator = PyEnumerableIterator.CreateSequenceAt(sequence, position, exhausted,
-                    code.Instructions[code.EntryIndex].Span, scope);
-                WriteLocalValue(_work.Locals, code.LocalNameToSlot[".0"], iterator);
-                if (!exhausted) _work.Stack[slot] = iterator;
-            }
-
-            public override void Dispose()
-            {
-                if (_governor is not { } owner) return;
-                _governor = null;
-                _outer = null;
-                var release = StorageBytes;
-                try
-                {
-                    if (_work.Code is null) return;
-                    release += promotionBytes;
-                    ReleaseBorrowedGeneratorWork(ref _work);
-                }
-                finally { owner.Release(release); }
-            }
+                    && TryAccumulateSumInteger(ref Subtotal, integer);
         }
     }
 }

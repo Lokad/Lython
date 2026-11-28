@@ -1,0 +1,162 @@
+[
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2457006,
+      2096558
+    ],
+    "admittedPeak": [
+      3517191,
+      3516935
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2653558,
+      2292936
+    ],
+    "admittedPeak": [
+      3975943,
+      3975687
+    ],
+    "compiled": [
+      59732,
+      59732
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      3161582,
+      2801190
+    ],
+    "admittedPeak": [
+      3648447,
+      3648191
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "sync",
+    "clr": [
+      279496,
+      256912
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "mode": "sync",
+    "clr": [
+      867392,
+      867392
+    ],
+    "admittedPeak": [
+      2270103,
+      2270103
+    ],
+    "compiled": [
+      61808,
+      61808
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2457166,
+      2096774
+    ],
+    "admittedPeak": [
+      3517191,
+      3516935
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2653774,
+      2293382
+    ],
+    "admittedPeak": [
+      3975943,
+      3975687
+    ],
+    "compiled": [
+      59732,
+      59732
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "async",
+    "clr": [
+      3161854,
+      2801350
+    ],
+    "admittedPeak": [
+      3648447,
+      3648191
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "async",
+    "clr": [
+      279688,
+      257160
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "mode": "async",
+    "clr": [
+      867608,
+      867620
+    ],
+    "admittedPeak": [
+      2270103,
+      2270103
+    ],
+    "compiled": [
+      61808,
+      61808
+    ]
+  }
+]
