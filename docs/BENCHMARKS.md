@@ -12,11 +12,12 @@
 | File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.42442–0.42651 ms | 1.36275–1.37681 ms | 0.308–0.313× | Quiet historical, B1963 |
 | File search, match at line 1 | 42,010 B | 0.06511–0.06544 ms | 0.05099–0.05152 ms | 1.264–1.283× | Quiet diagnostic, B1968 |
 | File search, match at line 1, Lython `RunAsync` | 42,010 B | 0.06725–0.06781 ms | 0.05090–0.05093 ms | 1.320–1.332× | Quiet diagnostic, B1978 |
-| Compiled-pattern regex log search | 3,072 lines / 86,954 B | 2.67783–2.71755 ms | 0.96541–0.97195 ms | 2.755–2.815× | Quiet historical, B1932 |
-| Module-level regex log search | 3,072 lines / 86,954 B | 3.04883–3.09664 ms | 1.54657–1.56180 ms | 1.952–2.002× | Quiet historical, B1932 |
+| Compiled-pattern regex log search | 3,072 lines / 86,954 B | 2.67503–2.80340 ms | 0.96782–1.02097 ms | 2.620–2.897× | Quiet diagnostic, 5.49% CPython worker spread, B1985 |
+| Module-level regex log search | 3,072 lines / 86,954 B | 2.94343–3.14617 ms | 1.58999–1.61443 ms | 1.823–1.979× | Quiet diagnostic, 6.89% Lython worker spread, B1985 |
 
-B1981 measures Lython `f231ce76a` against stock CPython 3.13.16 on
-November 28, 2026 UTC with two goldens and 56 timed batches. B1978
+B1981 measures `f231ce76a`. B1985 measures `a1a9ee4a4` with the same core.
+Both use stock CPython 3.13.16 on November 28, 2026 UTC and verify two
+goldens and 56 timed batches each. B1978
 measures `e78a95b1b` on the same day with four goldens and 112 batches.
 B1974 measures Lython `486bad1ee` against stock CPython 3.13.16 on
 November 28, 2026 UTC. The four-vCPU Azure F4as_v7 ran Ubuntu 24.04.4
@@ -27,6 +28,7 @@ On the same machine, B1963 measures `0b50e6fda` with five goldens and
 batches. Ratios divide Lython elapsed by CPython elapsed.
 Values above 1× mean Lython takes longer. Ranges span all pairings of
 medians from two workers per engine. [B1981](../benchmarks/results/2026-11-28-current-iterable-cpython/README.md) ·
+[B1985](../benchmarks/results/2026-11-28-current-regex-cpython/README.md) ·
 [B1978](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md) ·
 [B1974](../benchmarks/results/2026-11-28-post-record-comparison-cpython/README.md) ·
 [B1968](../benchmarks/results/2026-11-28-short-frontend-cpython/README.md) ·
@@ -42,7 +44,14 @@ adapter. [Current shipment CPU](../benchmarks/results/2026-11-28-current-iterabl
 [File-search and configuration CPU](../benchmarks/results/2026-11-28-current-mixed-cpython/README.md) ·
 [Earlier shipment CPU](../benchmarks/results/2026-11-28-post-record-comparison-cpython/README.md) ·
 [Earlier shipment and report CPU](../benchmarks/results/2026-11-28-ownership-cpython/README.md) ·
-[JSON and regex CPU](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md).
+[JSON CPU](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md) ·
+[Current regex CPU](../benchmarks/results/2026-11-28-current-regex-cpython/README.md).
+
+On the first-line workload, an instrumented worker with core
+`f231ce76a` spends about 27 µs in its file host and about 16 µs in
+file verification. These are parts of the Lython elapsed clock.
+The external comparison continues to use the native-file boundary.
+[Host phase diagnostic](../benchmarks/results/2026-11-28-first-line-host-boundary/README.md).
 
 ## Compilation and compile-to-result
 
@@ -94,6 +103,8 @@ benchmark reply work. [B1927](../benchmarks/results/2026-11-28-first-command-pha
 | File-fed CSV quantity map, Lython `Run` | `24218276c` | 2,048 records / 27,350 B | 0.293–0.299× | Quiet diagnostic. [B1914](../benchmarks/results/2026-11-28-current-cpython-24218276/README.md). |
 | CSV shipment re-export with `DictWriter` | `6e59cd41e` | 2,048 records / 27,350 B | 0.635–0.642× | Quiet diagnostic. [B1869](../benchmarks/results/2026-11-27-csv-dictwriter-cpython/README.md). |
 | Default JSON Lines export | `ab883268b` | 768 records / 47,361 B | 0.776–0.883× | Local WSL diagnostic. [B1880](../benchmarks/results/2026-11-27-wsl-current-cpython/README.md). |
+| Compiled-pattern regex log search | `2ef73bd71` | 3,072 lines / 86,954 B | 2.755–2.815× | Quiet diagnostic. [B1932](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md). |
+| Module-level regex log search | `2ef73bd71` | 3,072 lines / 86,954 B | 1.952–2.002× | Quiet diagnostic. [B1932](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md). |
 | CSV summary via line generator, Lython `RunAsync` | `a1b3a3325` | 4,096 records / 57,361 B | 0.966–1.001× | Elapsed spans parity. [B1844](../benchmarks/results/2026-11-27-post-csv-json-cpython/README.md). |
 | Compiled-pattern log search, PythonRe 0.5.0 | `4ab65dcc6` | 3,072 lines / 86,954 B | 2.576–2.629× | Local WSL diagnostic. [B1885](../benchmarks/results/2026-11-27-wsl-log-cpython/README.md). |
 | Module-level log search, PythonRe 0.5.0 | `4ab65dcc6` | 3,072 lines / 86,954 B | 1.900–1.961× | Local WSL diagnostic. [B1885](../benchmarks/results/2026-11-27-wsl-log-cpython/README.md). |

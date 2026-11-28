@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1984 locate the remaining log-search work](results/2026-11-28-current-regex-profile/README.md)
+verifies 62 sampled batches on `f231ce76a`. The funded producer covers
+35.2% of the compiled log scan and 32.0% of the module scan. Subject
+windows, validation and cache lookup are smaller regions.
+
+[B1983 isolate first-line comparison host costs](results/2026-11-28-first-line-host-boundary/README.md)
+verifies 56 quiet batches. The unchanged host takes about 27 µs inside
+the public run, and the separate file verification takes about 16 µs.
+The reference and observer process CPU ranges span zero in both APIs.
+
 [B1982 attribute first-line file search](results/2026-11-28-first-line-host-attribution/README.md)
 verifies 1,849 sampled batches at `f231ce76a`. Managed samples locate
 open, write and cleanup inside the comparison host and CLR file stack.

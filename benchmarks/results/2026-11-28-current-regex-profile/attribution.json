@@ -1,0 +1,327 @@
+[
+  {
+    "role": "compiled-log",
+    "runtimeThreadMilliseconds": 4223.202338467537,
+    "inclusiveRegionsMilliseconds": {
+      "instruction prefix": 4207.714137758254,
+      "producer matching": 1488.0798301833631,
+      "optional adapter": 1621.135994742775,
+      "subject window": 140.4571849145209,
+      "native arithmetic": 460.86491383236955,
+      "mediated text file": 246.44943723257649,
+      "subscript and dictionary": 141.24046869979162,
+      "group selection and materialization": 167.05452912303303,
+      "Lython match construction": 111.94394122627257,
+      "producer allowance": 182.68518480870807,
+      "memory reservation": 173.99620460258532,
+      "Lython match validation": 22.188684049614835,
+      "generator exception/stack entry": 3.516284742416701,
+      "pattern resolution and cache": 5.748318744339031
+    },
+    "nearestLythonMethods": [
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+        585.1139110288156
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+RePatternMembers.ExecutePrepared",
+        252.2900606296891
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.RunSegment",
+        243.18109078290175
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Match",
+        186.44500010690513
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteBuiltinArithmetic",
+        181.86999896780705
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SearchExecutor.TryFindLiteralFamilyCore",
+        181.70948284858963
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Reserve",
+        169.33082784292654
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchValueScalar",
+        168.32706437457722
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+RegexMatcher.ProjectSingleMatch",
+        150.1164901273832
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall",
+        138.5232195056726
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.PythonReScalarMatchState.MoveNextCore",
+        137.64108867778623
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteOrdinaryCall",
+        133.69438452127815
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider+RegexAllowance.TryReserveCore",
+        85.69730359192755
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider+Pattern.TryMatch",
+        83.17990849079227
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.PythonReScalarMatchState.Initialize",
+        82.90372561380944
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider+RegexAllowance.Release",
+        81.6367105117256
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteForNext",
+        78.20400867486018
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.RunClassRepeat",
+        76.91273663855668
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryEvaluateArithmeticInstruction",
+        69.10964254001848
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.CompleteResultConsumer",
+        56.80135453013645
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.PythonReScalarMatchState.SeekCandidate",
+        49.781946640907336
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.RetireTo",
+        48.617435635224226
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+BuiltinBindings.TryGetValue",
+        41.36455371362399
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider.Backend",
+        36.90928038372161
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+RegexMatcher.Match",
+        33.545528818840765
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.CreateWindowValue",
+        32.55856419377192
+      ],
+      [
+        "Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8",
+        32.39798217399618
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.IsUnchangedUtf8Text",
+        28.70704802403384
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.ResolveBuiltinReceiverMethod",
+        27.84163760895528
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+RegexMatcher.ProjectScalarBounds",
+        27.495455278030448
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryBeginExecutableCall",
+        23.633508371567586
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.TryMatchAt",
+        22.940211772453267
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ReMatchMembers+<>c.<.cctor>b__40_0",
+        22.342956952873976
+      ],
+      [
+        "Lokad.Lython.Runtime.Text.PyString.GetCharacterCount",
+        21.259618289917398
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.TryRentNonemptySlots",
+        21.14100205623606
+      ]
+    ],
+    "nearestIterableMethods": []
+  },
+  {
+    "role": "module-log",
+    "runtimeThreadMilliseconds": 4530.150542088,
+    "inclusiveRegionsMilliseconds": {
+      "instruction prefix": 4497.448544296311,
+      "producer matching": 1450.7163390536766,
+      "optional adapter": 1540.4690460286083,
+      "native arithmetic": 565.119542411318,
+      "producer allowance": 151.28886601591654,
+      "memory reservation": 211.54748084206915,
+      "mediated text file": 208.31678261742212,
+      "subject window": 87.6921044394409,
+      "pattern resolution and cache": 41.860340287291706,
+      "Lython match validation": 9.694754627250632,
+      "subscript and dictionary": 1.2060839742280223,
+      "executable frame construction": 1.29155695438385,
+      "generator exception/stack entry": 1.3003549199911504
+    },
+    "nearestLythonMethods": [
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+        732.2644987260194
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.RunSegment",
+        319.0821889085314
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync",
+        289.7897291282537
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+RePatternMembers.ExecutePrepared",
+        245.73847181426
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteBuiltinArithmetic",
+        233.42124359414285
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Reserve",
+        211.54748084206915
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SearchExecutor.TryFindLiteralFamilyCore",
+        197.70541517816253
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall",
+        181.77598389081993
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchValueScalar",
+        163.18495724321775
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Match",
+        157.055400296173
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteOrdinaryCall",
+        139.77227637418818
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+RegexMatcher.ProjectSingleMatch",
+        138.95059289477638
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.RunClassRepeat",
+        122.8879329067087
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.PythonReScalarMatchState.MoveNextCore",
+        120.34450363268172
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteForNext",
+        102.56947325945526
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryEvaluateArithmeticInstruction",
+        84.33761833956297
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider+RegexAllowance.TryReserveCore",
+        81.88993000864458
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.PythonReScalarMatchState.Initialize",
+        81.23258691520024
+      ],
+      [
+        "Lokad.Utf8Regex.PythonRe.PythonReScalarMatchState.SeekCandidate",
+        79.45390358272519
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+BuiltinBindings.TryGetValue",
+        74.0286332345745
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider+RegexAllowance.Release",
+        69.39893600727196
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider+Pattern.TryMatch",
+        56.16360936541912
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.RetireTo",
+        51.030507777579786
+      ],
+      [
+        "Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8",
+        45.56229705740316
+      ],
+      [
+        "Lokad.Lython.Runtime.RegexPatternCache.ProbeBucket",
+        39.49047929325786
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<ReadCore>d__14.MoveNext",
+        39.328772197488234
+      ],
+      [
+        "Lokad.Lython.Utf8Regex.Utf8RegexProvider.Backend",
+        33.58909760951263
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteSynchronousMemberLoad",
+        30.28870553439367
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.ResolveBuiltinReceiverMethod",
+        26.975484415000636
+      ],
+      [
+        "Lokad.Utf8Regex.Internal.Execution.Utf8SliceRunner.TryRentNonemptySlots",
+        26.818939023155224
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.IsUnchangedUtf8Text",
+        24.800142530898285
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionState+<>c__DisplayClass187_0.<OpenFileAsync>b__1",
+        21.320269421669863
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryBeginExecutableCall",
+        20.387143161131803
+      ],
+      [
+        "Lokad.Lython.Runtime.Text.TextLineScanning.FindLineEndByte",
+        19.87087367377444
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.CompleteResultConsumer",
+        19.805598545242674
+      ]
+    ],
+    "nearestIterableMethods": []
+  }
+]

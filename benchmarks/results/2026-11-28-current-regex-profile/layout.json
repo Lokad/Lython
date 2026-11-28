@@ -1,0 +1,286 @@
+{
+  "core": "33b4f0ad940888ccd24629bbd827529837e10bdff953ebc919a31271bef3712e",
+  "catalog": "34ba5c48a9e11599a5ca35d5bde2a316dc53851a6799508a425606d145f1cb1d",
+  "observations": [
+    {
+      "id": "scripts.regex-log-search.compiled",
+      "layouts": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "firstTemporary": 10,
+          "nativePrefixEnd": 40,
+          "entryIndex": 0,
+          "canRunNative": false,
+          "lookupCount": 3,
+          "recordLookupsOnly": false,
+          "lastOwnedTemporary": 11,
+          "capacity": 16,
+          "opcodes": [
+            "Import",
+            "StoreLocal",
+            "LoadCallMember",
+            "LoadLocal",
+            "Call",
+            "StoreLocal",
+            "StoreLocal",
+            "StoreLocal",
+            "LoadGlobal",
+            "LoadConst",
+            "LoadConst",
+            "Call",
+            "ResolveContextManager",
+            "Dup",
+            "StoreLocal",
+            "EnterContextManager",
+            "StoreLocal",
+            "Jump",
+            "StoreLocal",
+            "GetIter",
+            "Jump",
+            "ForNext",
+            "StoreLocal",
+            "LoadCallMember",
+            "LoadLocal",
+            "Call",
+            "StoreLocal",
+            "Binary",
+            "JumpIfFalse",
+            "Augmented",
+            "StoreLocal",
+            "LoadLocal",
+            "LoadGlobal",
+            "LoadCallMember",
+            "LoadConst",
+            "Call",
+            "Call",
+            "Augmented",
+            "StoreLocal",
+            "Jump",
+            "LoadLocal",
+            "ExitContextManager",
+            "EndFinally",
+            "LoadGlobal",
+            "LoadLocal",
+            "LoadLocal",
+            "Call",
+            "PopTop",
+            "Complete"
+          ],
+          "generatorOperands": [],
+          "callSites": [
+            {
+              "index": 4,
+              "hasReceiver": true,
+              "argumentCount": 1,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 63,
+                "Length": 10,
+                "Line": 3,
+                "Column": 11
+              }
+            },
+            {
+              "index": 11,
+              "hasReceiver": false,
+              "argumentCount": 2,
+              "isPositionalOnly": false,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 112,
+                "Length": 4,
+                "Line": 6,
+                "Column": 6
+              }
+            },
+            {
+              "index": 25,
+              "hasReceiver": true,
+              "argumentCount": 1,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 197,
+                "Length": 14,
+                "Line": 8,
+                "Column": 17
+              }
+            },
+            {
+              "index": 35,
+              "hasReceiver": true,
+              "argumentCount": 1,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 303,
+                "Length": 11,
+                "Line": 11,
+                "Column": 31
+              }
+            },
+            {
+              "index": 36,
+              "hasReceiver": false,
+              "argumentCount": 1,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 299,
+                "Length": 3,
+                "Line": 11,
+                "Column": 27
+              }
+            },
+            {
+              "index": 46,
+              "hasReceiver": false,
+              "argumentCount": 2,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 319,
+                "Length": 5,
+                "Line": 12,
+                "Column": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.regex-log-search.module",
+      "layouts": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "firstTemporary": 9,
+          "nativePrefixEnd": 37,
+          "entryIndex": 0,
+          "canRunNative": false,
+          "lookupCount": 2,
+          "recordLookupsOnly": false,
+          "lastOwnedTemporary": 10,
+          "capacity": 15,
+          "opcodes": [
+            "Import",
+            "StoreLocal",
+            "StoreLocal",
+            "StoreLocal",
+            "LoadGlobal",
+            "LoadConst",
+            "LoadConst",
+            "Call",
+            "ResolveContextManager",
+            "Dup",
+            "StoreLocal",
+            "EnterContextManager",
+            "StoreLocal",
+            "Jump",
+            "StoreLocal",
+            "GetIter",
+            "Jump",
+            "ForNext",
+            "StoreLocal",
+            "LoadCallMember",
+            "LoadLocal",
+            "LoadLocal",
+            "Call",
+            "StoreLocal",
+            "Binary",
+            "JumpIfFalse",
+            "Augmented",
+            "StoreLocal",
+            "LoadLocal",
+            "LoadGlobal",
+            "LoadCallMember",
+            "LoadConst",
+            "Call",
+            "Call",
+            "Augmented",
+            "StoreLocal",
+            "Jump",
+            "LoadLocal",
+            "ExitContextManager",
+            "EndFinally",
+            "LoadGlobal",
+            "LoadLocal",
+            "LoadLocal",
+            "Call",
+            "PopTop",
+            "Complete"
+          ],
+          "generatorOperands": [],
+          "callSites": [
+            {
+              "index": 7,
+              "hasReceiver": false,
+              "argumentCount": 2,
+              "isPositionalOnly": false,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 85,
+                "Length": 4,
+                "Line": 5,
+                "Column": 6
+              }
+            },
+            {
+              "index": 22,
+              "hasReceiver": true,
+              "argumentCount": 2,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 170,
+                "Length": 9,
+                "Line": 7,
+                "Column": 17
+              }
+            },
+            {
+              "index": 32,
+              "hasReceiver": true,
+              "argumentCount": 1,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 276,
+                "Length": 11,
+                "Line": 10,
+                "Column": 31
+              }
+            },
+            {
+              "index": 33,
+              "hasReceiver": false,
+              "argumentCount": 1,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 272,
+                "Length": 3,
+                "Line": 10,
+                "Column": 27
+              }
+            },
+            {
+              "index": 43,
+              "hasReceiver": false,
+              "argumentCount": 2,
+              "isPositionalOnly": true,
+              "forwardsOperands": false,
+              "target": {
+                "Start": 292,
+                "Length": 5,
+                "Line": 11,
+                "Column": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
