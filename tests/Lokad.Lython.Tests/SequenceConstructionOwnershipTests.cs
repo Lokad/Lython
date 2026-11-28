@@ -53,7 +53,7 @@ public sealed class SequenceConstructionOwnershipTests
         var script = LythonFrontend.Compile("def values():\n yield inspect('before')\n yield inspect('cancel')\n yield inspect('after')").Script!;
         var code = Assert.Single(ExecutableScript.Compile(script).EntryPoint.FunctionBindings()).CodeObject!;
         var span = new LythonSourceSpan(1, 1, 1, 1);
-        var generator = LythonRuntime.PyGenerator.Create(code, source, span);
+        var generator = SynchronousGeneratorAdvanceTests.CreateGenerator(code, source, span);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.StringMembers.JoinAsync(PyString.Empty, generator, span, consumer);

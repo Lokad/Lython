@@ -15,9 +15,36 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
         _closureCells = closureCells;
     }
 
-    protected override object ExecuteBody(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
-        => LythonRuntime.PyGenerator.Create(CodeObject, frame, span, _closureCells, arguments, this);
-
-    protected override ValueTask<object> ExecuteBodyAsync(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
-        => new(ExecuteBody(frame, arguments, span));
+    internal LythonRuntime.PyGenerator CreateBoundGenerator(BoundFunctionArguments arguments, LythonSourceSpan span)
+    {
+        LythonRuntime.ExecutionContext? frame = null;
+        var entered = false;
+        try
+        {
+            Closure.EnterFunctionCall(span);
+            entered = true;
+            var governor = Closure.MemoryGovernor;
+            var bytes = LythonRuntime.PyGenerator.EstimateStorage(CodeObject);
+            governor.Reserve(bytes, span);
+            try
+            {
+                Closure.CheckExecution(span);
+                frame = EnterInvocationFrame(arguments, span, enterFunctionCall: false);
+                var generator = new LythonRuntime.PyGenerator(CodeObject, frame, span, _closureCells, arguments, this);
+                governor.Commit(bytes);
+                return generator;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
+        }
+        catch (LythonRuntimeException error) when (entered)
+        {
+            PyFunctionBinding.AnnotateException(error, frame ?? Closure, Name, span);
+            throw;
+        }
+        finally
+        {
+            try { if (entered && frame is null) Closure.LeaveFunctionCall(); }
+            finally { ReleaseBoundInvocation(arguments, frame); }
+        }
+    }
 }

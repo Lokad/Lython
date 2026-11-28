@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1923 construct bound generators directly](results/2026-11-28-bound-generator-factory/README.md)
+moves generator admission ahead of frame construction and stops when the
+host allowance callback cancels. Both baseline cancellation cases fail.
+All 196 local timing batches verify. Iterable shipment CPU spans zero,
+and admission peaks and allocation match within the recorded variation.
+
 [B1922 profile shipment and JSON at the reader checkpoint](results/2026-11-28-reader-checkpoint-profile/README.md)
 locates generator advancement and outer row handoff in async shipment.
 Over 98% of the initially assigned async result-relay samples end in

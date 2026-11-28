@@ -10,6 +10,41 @@ namespace Lokad.Lython.Tests;
 public sealed class SynchronousGeneratorAdvanceTests
 {
     [Theory]
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public async Task FailedGeneratorConstructionReturnsItsInvocationWorkspace(bool asynchronous, bool cancel)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new Context(new MockLythonHost(), new LythonRunOptions
+        {
+            MemoryBudget = hook,
+            CancellationToken = cancellation.Token,
+        });
+        var span = new LythonSourceSpan(1, 1, 1, 1);
+        var function = new PyGeneratorFunction(FunctionParameterLayout.Create([]), GeneratorCode(" yield 1"), context, default);
+        var arguments = function.BindCallOperands([], span, context, null, null);
+        var held = budget.ReservedBytes;
+        if (cancel) hook.AfterGrowth = _ => cancellation.Cancel();
+        else hook.RefuseGrowth = _ => true;
+
+        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+        {
+            if (asynchronous) await function.InvokeBoundAsync(arguments, span);
+            else function.InvokeBound(arguments, span);
+        });
+        Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+        if (!cancel) Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(held, budget.ReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task YieldRestoresCallerStateAndEachPullObservesTheCurrentException(bool asynchronous)
@@ -20,7 +55,7 @@ public sealed class SynchronousGeneratorAdvanceTests
         var probe = new Probe();
         context.Variables["inspect"] = probe;
         var code = GeneratorCode(" yield inspect()\n yield inspect()");
-        var generator = LythonRuntime.PyGenerator.Create(code, context, new(1, 1, 1, 1));
+        var generator = CreateGenerator(code, context, new(1, 1, 1, 1));
         for (var i = 0; i < 2; i++)
         {
             var exception = new PyException("ValueError", $"caller {i}", PyNone.Instance);
@@ -57,7 +92,7 @@ public sealed class SynchronousGeneratorAdvanceTests
         }, regexProvider: Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(1, 1, 1, 1);
         var code = GeneratorCode(" def inner(value=(yield 17)):return value\n yield inner()");
-        var generator = LythonRuntime.PyGenerator.Create(code, context, span);
+        var generator = CreateGenerator(code, context, span);
         var beforeDefault = budget.ReservedBytes;
         var yielded = await Move(generator, asynchronous);
         Assert.True(yielded.HasValue);
@@ -107,7 +142,7 @@ public sealed class SynchronousGeneratorAdvanceTests
         { MemoryBudget = owner,           MaxRecursionDepth = 4, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(context.MemoryGovernor);
         context.Variables["source"] = source;
-        var generator = LythonRuntime.PyGenerator.Create(GeneratorCode(" for item in source:yield item"), context, new(1, 1, 1, 1));
+        var generator = CreateGenerator(GeneratorCode(" for item in source:yield item"), context, new(1, 1, 1, 1));
         Assert.True((await Move(generator, asynchronous)).HasValue);
         Assert.Equal(1, source.Moves);
         Assert.Equal(0, source.Disposals);
@@ -153,6 +188,12 @@ public sealed class SynchronousGeneratorAdvanceTests
     private static async ValueTask<PyIterationResult> Move(LythonRuntime.PyGenerator generator, bool asynchronous)
         => asynchronous ? await generator.TryMoveNextAsync()
             : generator.TryMoveNext();
+
+    internal static LythonRuntime.PyGenerator CreateGenerator(ExecutableCodeObject code, Context context, LythonSourceSpan span)
+    {
+        var function = new PyGeneratorFunction(FunctionParameterLayout.Create([]), code, context, default);
+        return Assert.IsType<LythonRuntime.PyGenerator>(function.Invoke([], span, context));
+    }
 
     private static ExecutableCodeObject GeneratorCode(string body)
     {

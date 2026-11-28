@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
         public MemoryGovernor? OwnerMemoryGovernor { get; }
         public LythonSourceSpan? AllocationSpan => _span;
 
-        private static long EstimateStorage(ExecutableCodeObject code)
+        internal static long EstimateStorage(ExecutableCodeObject code)
             => checked(512L + 96L * (code.LocalNames.Count + code.LookupCacheCount + code.ExceptionRegions.Count));
 
         internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
@@ -63,22 +63,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
-            ExecutableCaptures closureCells = default, BoundFunctionArguments arguments = default,
-            PyGeneratorFunction? lookupOwner = null)
-        {
-            // Fund locals, cells, caches and handler/delegation state. The fixed
-            // operand workspace is admitted separately before construction.
-            var bytes = EstimateStorage(code);
-            frame.MemoryGovernor.Reserve(bytes, span);
-            frame.MemoryGovernor.Commit(bytes);
-            PyGenerator generator;
-            try { generator = new PyGenerator(code, frame, span, closureCells, arguments, lookupOwner); }
-            catch { frame.MemoryGovernor.Release(bytes); throw; }
-            return generator;
-        }
-
-        private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
+        internal PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
             ExecutableCaptures closureCells, BoundFunctionArguments arguments, PyGeneratorFunction? lookupOwner = null)
         {
             _frame = frame;

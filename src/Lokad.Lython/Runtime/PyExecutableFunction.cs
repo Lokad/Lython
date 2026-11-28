@@ -448,7 +448,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return true;
     }
 
-    internal override bool TryStartBoundInvocation(in BoundFunctionArguments bound, LythonSourceSpan span,
+    internal bool TryStartBoundInvocation(in BoundFunctionArguments bound, LythonSourceSpan span,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
         => TryStartBoundInvocation(bound, span, false, default, out _, out result, out frame);
 
@@ -525,7 +525,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
     }
 
-    protected override object ExecuteBody(
+    internal object ExecuteBody(
         LythonRuntime.ExecutionContext frame,
         BoundFunctionArguments boundArguments,
         LythonSourceSpan span)
@@ -534,7 +534,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             ?? PyNone.Instance;
     }
 
-    protected override async ValueTask<object> ExecuteBodyAsync(
+    internal async ValueTask<object> ExecuteBodyAsync(
         LythonRuntime.ExecutionContext frame,
         BoundFunctionArguments boundArguments,
         LythonSourceSpan span)

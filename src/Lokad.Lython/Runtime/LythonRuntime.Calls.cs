@@ -609,7 +609,7 @@ internal sealed partial class LythonRuntime
         {
             if (function is PyExecutableFunction executable &&
                 executable.TryStartPositionalCallback(storage, argumentCount, borrowStorage, receiver, span, context, out var result, out var frame, out var owned))
-                return FinishIterationFunction(function, result, frame, owned, span, asynchronous, out pending);
+                return FinishIterationFunction(executable, result, frame, owned, span, asynchronous, out pending);
             else
             {
                 var operands = storage[..argumentCount];
@@ -671,7 +671,7 @@ internal sealed partial class LythonRuntime
         finally { if (!transferred) function.ReleaseBoundInvocation(owned, frame); }
     }
 
-    private static PyIterationResult FinishIterationFunction(PyFunctionBase function, ExecutableSlot result,
+    private static PyIterationResult FinishIterationFunction(PyExecutableFunction function, ExecutableSlot result,
         ExecutionContext? frame, BoundFunctionArguments owned, LythonSourceSpan span, bool asynchronous,
         out ValueTask<object> pending)
     {
