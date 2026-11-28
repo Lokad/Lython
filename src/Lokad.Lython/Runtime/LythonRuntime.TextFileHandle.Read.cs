@@ -95,12 +95,12 @@ internal sealed partial class LythonRuntime
                 finally { _gzipCaller = null; _gzipSpan = null; }
             }
 
-            private async ValueTask<bool> PullGzipAsync()
+            private async ValueTask PullGzipAsync()
             {
                 EnsureRaw();
                 EnsureNotReleased();
                 var bytes = await _gzip!.ReadTextChunkAsync(_gzipCaller!, _gzipSpan!, _gzipAsynchronous).ConfigureAwait(false);
-                try { EnsureNotReleased(); return AcceptGzipPayload(bytes.Memory); }
+                try { EnsureNotReleased(); AcceptGzipPayload(bytes.Memory); }
                 finally { _services.MemoryGovernor.RefundUnpublishedValue(bytes); }
             }
 
@@ -739,114 +739,51 @@ internal sealed partial class LythonRuntime
                 return offset;
             }
 
-            private void Refill()
+            private void Refill() => RefillCore(asynchronous: false).GetAwaiter().GetResult();
+
+            private ValueTask RefillAsync() => RefillCore(asynchronous: true);
+
+            private ValueTask RefillCore(bool asynchronous)
             {
                 EnsureNotReleased();
-                while (_windowConsumed >= _window.Length)
+                if (!PrepareNextWindow()) return default;
+                while (NeedsRawInput())
                 {
-                    ReleaseWindow();
-                    if (_eof && _rawLength == 0)
-                    {
-                        return;
-                    }
-
-                    DecodeNextWindow();
+                    var pull = PullCoreAsync(asynchronous);
+                    if (asynchronous && !pull.IsCompleted) return ResumeRefillAsync(pull);
+                    pull.GetAwaiter().GetResult();
                 }
+                return default;
             }
 
-            private async ValueTask RefillAsync()
+            private async ValueTask ResumeRefillAsync(ValueTask pull)
             {
-                EnsureNotReleased();
-                while (_windowConsumed >= _window.Length)
-                {
-                    ReleaseWindow();
-                    if (_eof && _rawLength == 0)
-                    {
-                        return;
-                    }
-
-                    await DecodeNextWindowAsync().ConfigureAwait(false);
-                }
+                await pull.ConfigureAwait(false);
+                while (NeedsRawInput())
+                    await PullCoreAsync(asynchronous: true).ConfigureAwait(false);
             }
 
-            private void DecodeNextWindow()
+            private bool PrepareNextWindow()
             {
+                if (_windowConsumed < _window.Length) return false;
+                ReleaseWindow();
+                if (_eof && _rawLength == 0) return false;
                 EnsureRaw();
-                while (true)
-                {
-                    if (!EnsureBomDecided())
-                    {
-                        Pull();
-                        continue;
-                    }
-
-                    if (_rawLength == 0)
-                    {
-                        if (_eof || !Pull())
-                        {
-                            InstallWindow(0);
-                            return;
-                        }
-
-                        continue;
-                    }
-
-                    var head = DecodeHeadLength();
-                    if (head == 0)
-                    {
-                        if (_eof || !Pull())
-                        {
-                            head = _rawLength;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                    InstallWindow(head);
-                    return;
-                }
+                return true;
             }
 
-            private async ValueTask DecodeNextWindowAsync()
+            private bool NeedsRawInput()
             {
-                EnsureRaw();
-                while (true)
+                do
                 {
-                    if (!EnsureBomDecided())
-                    {
-                        await PullAsync().ConfigureAwait(false);
-                        continue;
-                    }
-
-                    if (_rawLength == 0)
-                    {
-                        if (_eof || !await PullAsync().ConfigureAwait(false))
-                        {
-                            InstallWindow(0);
-                            return;
-                        }
-
-                        continue;
-                    }
-
-                    var head = DecodeHeadLength();
-                    if (head == 0)
-                    {
-                        if (_eof || !await PullAsync().ConfigureAwait(false))
-                        {
-                            head = _rawLength;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
+                    // Finish the current window after a pull, including at EOF.
+                    if (!EnsureBomDecided()) return true;
+                    var head = _rawLength == 0 ? 0 : DecodeHeadLength();
+                    if (head == 0 && !_eof) return true;
                     InstallWindow(head);
-                    return;
                 }
+                while (PrepareNextWindow());
+                return false;
             }
 
             // Wait for a complete preamble or EOF: three bytes for UTF-8-sig,
@@ -943,21 +880,20 @@ internal sealed partial class LythonRuntime
                 return head;
             }
 
-            private bool Pull() => PullCoreAsync(false).GetAwaiter().GetResult();
-
-            private ValueTask<bool> PullAsync() => PullCoreAsync(true);
-
-            private async ValueTask<bool> PullCoreAsync(bool asynchronous)
+            private async ValueTask PullCoreAsync(bool asynchronous)
             {
                 EnsureNotReleased();
-                if (_eof) return false;
-                if (_gzip is not null) return await PullGzipAsync().ConfigureAwait(false);
+                if (_gzip is not null)
+                {
+                    await PullGzipAsync().ConfigureAwait(false);
+                    return;
+                }
                 _services.CheckExecution(null);
                 EnsureRaw();
                 EnsureNotReleased();
                 var count = await _file!.ReadAsync(_raw!.AsMemory(_rawLength, _windowBytes), null, asynchronous).ConfigureAwait(false);
                 EnsureNotReleased();
-                return AcceptCount(count);
+                AcceptCount(count);
             }
 
             private void EnsureRaw()
@@ -988,19 +924,18 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            private bool AcceptGzipPayload(ReadOnlyMemory<byte> payload)
+            private void AcceptGzipPayload(ReadOnlyMemory<byte> payload)
             {
                 Debug.Assert(_raw is not null && _rawLength + _windowBytes <= _raw.Length, "chunked carry overflowed its window");
                 if (payload.Length > _windowBytes) throw RuntimeErrors.Runtime("gzip text chunk exceeded its window", _gzipSpan);
                 payload.Span.CopyTo(_raw!.AsSpan(_rawLength));
-                return AcceptCount(payload.Length);
+                AcceptCount(payload.Length);
             }
 
-            private bool AcceptCount(int count)
+            private void AcceptCount(int count)
             {
-                if (count == 0) { _eof = true; return false; }
-                _rawLength += count;
-                return true;
+                if (count == 0) _eof = true;
+                else _rawLength += count;
             }
 
             private void InstallWindow(int head)

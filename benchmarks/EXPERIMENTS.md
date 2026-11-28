@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1918 share text-window refill](results/2026-11-28-shared-text-refill/README.md)
+removes 65 lines and one continuation layer on a pending read. All measured
+admission peaks match. Local async text spans zero on repeat and dense sync
+CPU is within 0.44%. Dense async uses up to 3.09% more CPU on the repeat.
+Keep both runs and revisit that timing at the next quiet checkpoint.
+
 [B1917 batch converted record loops](results/2026-11-28-converted-record-loop/README.md)
 reuses the native dictionary loop for ordered shared-field reads and
 the converted update. Dense sync CPU falls 2.97–5.42% on the local repeat
