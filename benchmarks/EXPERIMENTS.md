@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1937 quiet shipment comparison](results/2026-11-28-current-cpython-shipment/README.md)
+verifies four goldens and 140 batches at `e036d6597`. Iterable async
+shipment remains about 1.13× CPython elapsed. Ordinary helper and
+generator reduction takes 1.584–1.619×, and the file-fed map takes
+0.312–0.318×. The first attempt's idle gate failure is preserved.
+
 [B1936 Hand the private generator frame to starmap](results/2026-11-28-staged-generator-activation/README.md)
 removes the inner generator wrapper on the private yield. The initial
 frame expansion adds about 82 KB to ordinary reduction. The refined
