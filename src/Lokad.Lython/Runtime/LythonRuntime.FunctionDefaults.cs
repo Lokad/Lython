@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
             var positional = positionalCount switch
             {
                 0 => default,
-                1 => ExecutableSlot.OwnPrivatePositionalDefault(ExecutableSlot.FromObject(PyNone.Instance)),
+                1 => ExecutableSlot.OwnPrivatePositionalDefault(ExecutableSlot.FromObject(PyNone.Instance), prepayCallable && keys is null),
                 _ => ExecutableSlot.OwnPrivateDefault(PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes)),
             };
             ExecutableSlot keyword = default;
@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
         if (positional)
         {
             if (defaults.InlinePositional)
-                defaults = defaults with { Positional = ExecutableSlot.OwnPrivatePositionalDefault(
+                defaults = defaults with { Positional = defaults.Positional.WithInlinePositionalDefault(
                     FunctionDefaults.PreparePositionalValue(value, state, span, out _)) };
             else ((PyTuple)defaults.Positional.Reference!).SetPrivateDefault(index, value, state, span);
         }

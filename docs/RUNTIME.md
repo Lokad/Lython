@@ -442,10 +442,11 @@ When all keyword defaults are scalar literals, the compiled declaration supplies
 their values directly to each function's private backing after admission. The
 keyword mapping remains independently mutable for each function. Each definition
 admits the backing for evaluated defaults before evaluation.
-An executable definition with keyword defaults can admit the
-fixed callable shell at the same preflight when it has no captures,
-decorators or annotations. This can refuse the definition before a default
-expression runs. Values complete into private storage that stays funded
+An executable definition with prepared keyword defaults or one computed
+positional default can admit its callable shell with the default storage
+when it has no captures, decorators or annotations. The combined request
+can refuse the definition earlier, before default-expression effects.
+Values complete into private storage that stays funded
 through suspension. Evaluated singleton positional and keyword integers
 stay in operand form through ordinary and prepared definitions. The slot
 carries the private charge until the callable takes it and refunds it on

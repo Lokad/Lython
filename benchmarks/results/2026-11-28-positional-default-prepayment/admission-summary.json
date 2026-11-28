@@ -1,0 +1,74 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions.positional",
+    "asynchronous": false,
+    "requests": [
+      3095,
+      1559
+    ],
+    "peak": [
+      484379,
+      484379
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions.positional",
+    "asynchronous": true,
+    "requests": [
+      3095,
+      1559
+    ],
+    "peak": [
+      484379,
+      484379
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions.positional",
+    "asynchronous": false,
+    "requests": [
+      3111,
+      1575
+    ],
+    "peak": [
+      511779,
+      511779
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions.positional",
+    "asynchronous": true,
+    "requests": [
+      3111,
+      1575
+    ],
+    "peak": [
+      511779,
+      511779
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions",
+    "asynchronous": false,
+    "requests": [
+      1573,
+      1573
+    ],
+    "peak": [
+      999082,
+      999082
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions",
+    "asynchronous": true,
+    "requests": [
+      1573,
+      1573
+    ],
+    "peak": [
+      999082,
+      999082
+    ]
+  }
+]

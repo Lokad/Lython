@@ -19,6 +19,7 @@ internal sealed partial class LythonRuntime
             internal readonly long Kind = kind;
         }
         private static readonly InlineDefaultInteger PrivatePositionalInteger = new(PrivatePositionalDefault);
+        private static readonly InlineDefaultInteger PrepaidPositionalInteger = new(PrepaidPositionalDefault);
         private static readonly InlineDefaultInteger PrivateKeywordInteger = new(PrivateKeywordDefault);
         private static readonly InlineDefaultInteger PrepaidKeywordInteger = new(PrepaidKeywordDefault);
         private object? _value;
@@ -29,6 +30,7 @@ internal sealed partial class LythonRuntime
         private const long PrivatePositionalDefault = -3;
         private const long PrepaidKeywordStorage = -4;
         private const long PrepaidKeywordDefault = -5;
+        private const long PrepaidPositionalDefault = -6;
         private long _integer;
 
         internal object? Object
@@ -54,12 +56,12 @@ internal sealed partial class LythonRuntime
             && _value is not (null or ExecutableTemporaryValue)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         private readonly long PrivateDefaultKind => _value is InlineDefaultInteger scalar ? scalar.Kind :
-            _integer is >= PrepaidKeywordDefault and <= PrivateDefaultContainer &&
+            _integer is >= PrepaidPositionalDefault and <= PrivateDefaultContainer &&
                 !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble) ? _integer : 0;
         private readonly bool HasPrivateDefault => PrivateDefaultKind != 0;
         internal readonly bool HasPrivateKeywordDefault => PrivateDefaultKind is PrivateKeywordDefault or PrepaidKeywordDefault;
-        internal readonly bool HasPrepaidCallable => PrivateDefaultKind is PrepaidKeywordDefault or PrepaidKeywordStorage;
-        internal readonly bool HasPrivatePositionalDefault => PrivateDefaultKind == PrivatePositionalDefault;
+        internal readonly bool HasPrepaidCallable => PrivateDefaultKind is PrepaidPositionalDefault or PrepaidKeywordDefault or PrepaidKeywordStorage;
+        internal readonly bool HasPrivatePositionalDefault => PrivateDefaultKind is PrivatePositionalDefault or PrepaidPositionalDefault;
         internal readonly bool RequiresRetirement => _value is ExecutableTemporaryValue || HasPrivateDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefaultContainer };
@@ -79,8 +81,11 @@ internal sealed partial class LythonRuntime
             => PrivateDefaultKind == PrepaidKeywordDefault
                 ? OwnPrivateKeywordDefault(ReadDefaultOperand()) : OwnPrivateDefault(_value.RequireNotNull());
 
-        internal static ExecutableSlot OwnPrivatePositionalDefault(ExecutableSlot value)
-            => OwnInlineDefault(value, PrivatePositionalInteger);
+        internal static ExecutableSlot OwnPrivatePositionalDefault(ExecutableSlot value, bool prepayCallable = false)
+            => OwnInlineDefault(value, prepayCallable ? PrepaidPositionalInteger : PrivatePositionalInteger);
+
+        internal readonly ExecutableSlot WithInlinePositionalDefault(ExecutableSlot value)
+            => OwnPrivatePositionalDefault(value, PrivateDefaultKind == PrepaidPositionalDefault);
 
         private static ExecutableSlot OwnInlineDefault(ExecutableSlot value, InlineDefaultInteger kind)
             => value.IsUnpublishedInteger
@@ -117,11 +122,12 @@ internal sealed partial class LythonRuntime
                 var kind = PrivateDefaultKind;
                 if (kind == 0) return;
                 var storage = _value;
-                if (kind == PrivatePositionalDefault)
+                if (kind is PrivatePositionalDefault or PrepaidPositionalDefault)
                 {
                     var positional = ReadDefaultOperand();
                     this = default;
-                    governor.Release(FunctionDefaults.InlinePositionalBytes(positional));
+                    governor.Release(FunctionDefaults.InlinePositionalBytes(positional) +
+                        (kind == PrepaidPositionalDefault ? FunctionValueBytes : 0));
                     return;
                 }
                 this = default;

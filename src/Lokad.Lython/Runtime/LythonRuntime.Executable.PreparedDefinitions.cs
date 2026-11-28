@@ -74,11 +74,11 @@ internal sealed partial class LythonRuntime
             bytes = checked(bytes + InlineCaptureBytes(captureByValue));
         }
         var governor = context.MemoryGovernor;
-        var prepaid = defaults.Keywords.HasPrepaidCallable;
+        var prepaid = defaults.HasPrepaidCallable;
         if (prepaid)
         {
             System.Diagnostics.Debug.Assert(bytes == FunctionValueBytes && preparedAnnotations.Values is null);
-            defaults = defaults with { Keywords = defaults.Keywords.ReadPrepaidKeywordStorage() };
+            defaults = defaults.WithoutCallablePrepayment();
         }
         else if (preparedAnnotations.Values is null) governor.Reserve(bytes, span);
         try
@@ -197,7 +197,7 @@ internal sealed partial class LythonRuntime
         try { defaults.RefundUnpublished(governor); }
         finally
         {
-            if (member is not null && !defaults.Keywords.HasPrepaidCallable)
+            if (member is not null && !defaults.HasPrepaidCallable)
                 governor.Release(member.CodeObject.DefinitionAnnotationKeys is { } keys
                     ? FunctionAndAnnotationBytes(keys.PreparedValueCapacity) : FunctionValueBytes);
         }

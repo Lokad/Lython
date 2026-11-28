@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.generated-ordinary-definitions.positional",
+    "mode": "sync",
+    "clr": [
+      200696,
+      200696
+    ],
+    "peak": [
+      484379,
+      484379
+    ],
+    "compiled": [
+      623569,
+      623569
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions.positional",
+    "mode": "sync",
+    "clr": [
+      215656,
+      215656
+    ],
+    "peak": [
+      511779,
+      511779
+    ],
+    "compiled": [
+      707409,
+      707409
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions",
+    "mode": "sync",
+    "clr": [
+      215272,
+      215272
+    ],
+    "peak": [
+      999082,
+      999082
+    ],
+    "compiled": [
+      970721,
+      970721
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions.positional",
+    "mode": "async",
+    "clr": [
+      200944,
+      200944
+    ],
+    "peak": [
+      484379,
+      484379
+    ],
+    "compiled": [
+      623569,
+      623569
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions.positional",
+    "mode": "async",
+    "clr": [
+      215904,
+      215904
+    ],
+    "peak": [
+      511779,
+      511779
+    ],
+    "compiled": [
+      707409,
+      707409
+    ]
+  },
+  {
+    "case": "diagnostic.generated-escaping-definitions",
+    "mode": "async",
+    "clr": [
+      215520,
+      215520
+    ],
+    "peak": [
+      999082,
+      999082
+    ],
+    "compiled": [
+      970721,
+      970721
+    ]
+  }
+]

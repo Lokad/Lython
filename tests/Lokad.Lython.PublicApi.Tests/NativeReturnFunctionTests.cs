@@ -7,6 +7,47 @@ public sealed class NativeReturnFunctionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RefusedCallableStoragePrecedesComputedPositionalDefaultEffects(bool asynchronous)
+    {
+        const string source = """
+            import time
+            now = time.time
+            now()
+            def target(value=now()):
+                return value
+            print(target(), target.__defaults__)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        foreach (var refuse in new[] { true, false })
+        {
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, refuse ? 192 : 1024 * 1024);
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(budget.AtGate > 0);
+                Assert.Equal(!refuse, result.Success);
+                if (refuse)
+                {
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.Equal(4, Assert.IsType<LythonRuntimeFailure>(result.Failure).Span?.Line);
+                    Assert.Equal(0, host.AtSecondGate);
+                    Assert.Empty(result.StandardOutput);
+                }
+                else
+                {
+                    Assert.True(host.AtSecondGate > budget.AtGate);
+                    Assert.Equal("0.0 (0.0,)\n", result.StandardOutput);
+                }
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ComputedDefinitionAdmitsDefaultsBeforeFailingArithmetic(bool asynchronous)
     {
         const string source = """

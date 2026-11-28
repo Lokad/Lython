@@ -8,6 +8,13 @@ internal readonly record struct FunctionDefaults(ExecutableSlot Positional, Exec
 {
     internal bool InlinePositional => Positional.HasPrivatePositionalDefault;
     internal bool InlineKeyword => Keywords.HasPrivateKeywordDefault;
+    internal bool HasPrepaidCallable => Keywords.HasPrepaidCallable || Positional.HasPrepaidCallable;
+
+    // The creation operand owns the prepayment until publication. The
+    // callable keeps ordinary defaults that can be exposed or replaced.
+    internal FunctionDefaults WithoutCallablePrepayment()
+        => Keywords.HasPrepaidCallable ? this with { Keywords = Keywords.ReadPrepaidKeywordStorage() }
+            : this with { Positional = ExecutableSlot.OwnPrivatePositionalDefault(Positional.ReadDefaultOperand()) };
 
     internal void RefundUnpublished(MemoryGovernor governor)
     {

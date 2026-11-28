@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1912 admit one computed positional default with its callable](results/2026-11-28-positional-default-prepayment/README.md)
+removes 1,536 growth requests from each positional factory in both APIs
+at identical measured allocation and peak admission. Local warm CPU falls
+6.54–14.27% across the affected lanes. The keyword and compile-to-result
+comparisons span zero.
+
 [B1911 reuse ordered names for small closure lookups](results/2026-11-28-small-closure-name-table/README.md)
 removes 7,920 B of compiler allocation from each generated-definition
 script at identical admission. Ordinary compile uses 0.43–1.43% less
