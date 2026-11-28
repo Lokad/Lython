@@ -965,6 +965,11 @@ callable before acquiring the outer iterator. The existing sum loop advances
 the frame and the operand owns cleanup through return, refusal or cancellation.
 Other call targets and expressions that publish a generator use the ordinary
 iterator object.
+Both routes admit the context shell and its initial executable slots together
+before acquiring the outer iterator. Refusal of that construction is attributed
+to the generator expression. Executable slots retire with the frame. The shell
+keeps its conservative execution-lifetime charge because a yielded value or
+closure can still retain the context after the frame is detached.
 
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume

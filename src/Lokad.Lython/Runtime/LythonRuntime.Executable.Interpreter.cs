@@ -41,10 +41,11 @@ internal sealed partial class LythonRuntime
         internal void InitializeExecutableFrame(
             ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
             PyFunctionBase? lookupOwner = null, bool returnConsumedByIteration = false, bool continuingNative = false,
-            int sharedLookupStart = -1)
+            int sharedLookupStart = -1, bool storagePrepaid = false)
         {
             InitializeExecutableWorkState(ref _execution, code, this, arguments, captures, lookupOwner,
-                returnConsumedByIteration, continuingNative: continuingNative, sharedLookupStart: sharedLookupStart);
+                returnConsumedByIteration, continuingNative: continuingNative, sharedLookupStart: sharedLookupStart,
+                storagePrepaid: storagePrepaid);
             _entryActiveException = State.CurrentException;
         }
 
@@ -57,11 +58,12 @@ internal sealed partial class LythonRuntime
 
         internal void InitializeGeneratorExecution(
             ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
-            PyFunctionBase? lookupOwner, int sharedLookupStart = -1)
+            PyFunctionBase? lookupOwner, int sharedLookupStart = -1, bool storagePrepaid = false)
         {
             // Mirrored namespaces remain authoritative while the frame is suspended.
             MirrorLocalStores |= code.RequiresLocalVariableMirroring;
-            InitializeExecutableFrame(code, arguments, captures, lookupOwner, sharedLookupStart: sharedLookupStart);
+            InitializeExecutableFrame(code, arguments, captures, lookupOwner,
+                sharedLookupStart: sharedLookupStart, storagePrepaid: storagePrepaid);
             _boundStorageOwner = arguments.StorageOwner;
         }
 

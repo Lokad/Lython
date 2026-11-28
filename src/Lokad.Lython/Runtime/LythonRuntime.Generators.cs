@@ -40,12 +40,15 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span,
             bool asynchronous, bool privateFrame = false, PyFunctionBase? lookupOwner = null, int sharedLookupStart = -1)
         {
-            // Fund the retained frame and any mirrored bindings
-            // before their allocation or the effectful outer __iter__ call.
-            var bytes = checked(EstimateStorage(code) + 256L + 96L * code.ScopeFacts.NonlocalNames.Count);
+            // Fund the shell and its executable slots together before either
+            // allocation or the effectful outer __iter__ call. Captures from
+            // the parent have their own owner and admission.
+            var shellBytes = checked(EstimateStorage(code) + 256L + 96L * code.ScopeFacts.NonlocalNames.Count);
+            var totalBytes = checked(shellBytes + ExecutableSlotsBytes(code.ValueStorageCapacity) +
+                ExecutableFrameExtraBytes(code, code.CapturedLocalSlots.Count));
             var governor = context.MemoryGovernor;
-            governor.Reserve(bytes, span);
-            governor.Commit(bytes);
+            governor.Reserve(totalBytes, span);
+            governor.Commit(totalBytes);
             ExecutionContext? initialized = null;
             try
             {
@@ -56,7 +59,7 @@ internal sealed partial class LythonRuntime
                 var cells = CaptureExecutableClosures(code, closure, span);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
-                frame.InitializeGeneratorExecution(code, default, cells, lookupOwner, sharedLookupStart);
+                frame.InitializeGeneratorExecution(code, default, cells, lookupOwner, sharedLookupStart, storagePrepaid: true);
                 initialized = frame;
                 var generator = privateFrame ? (object)frame : new PyGenerator(frame, span);
                 var outer = asynchronous
@@ -72,7 +75,9 @@ internal sealed partial class LythonRuntime
             catch
             {
                 try { CompleteFrame(initialized); }
-                finally { governor.Release(bytes); }
+                // The initialized frame refunds its slots during cleanup;
+                // a failed initializer leaves both charges with this factory.
+                finally { governor.Release(initialized is null ? totalBytes : shellBytes); }
                 throw;
             }
         }

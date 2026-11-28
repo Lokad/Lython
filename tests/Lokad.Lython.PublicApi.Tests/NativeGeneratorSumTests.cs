@@ -30,6 +30,23 @@ public sealed class NativeGeneratorSumTests
         return 'ok'
         """,
         """
+        from collections import ChainMap
+        kept = []
+        class Collector:
+            def __radd__(self, total): return self
+            def __add__(self, value):
+                kept.append(value)
+                return self
+        head = Collector()
+        def collect():
+            return sum(head if index == 0 else ChainMap({'value':index}) if index == 1
+                       else (lambda: index) for index in (0, 1, 2))
+        assert collect() is head
+        assert kept[0]['value'] == 1
+        assert kept[1]() == 2
+        return 'ok'
+        """,
+        """
         def values():
             yield from [1e16, 1.0, -1e16]
         assert sum(values()) == 1.0

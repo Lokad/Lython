@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      1973582,
+      1973582
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      3495846,
+      3495846
+    ],
+    "admittedPeak": [
+      5940647,
+      5940647
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808480,
+      808536
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      4085694,
+      4085694
+    ],
+    "admittedPeak": [
+      6268415,
+      6268415
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      1973710,
+      1973766
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      3496062,
+      3496062
+    ],
+    "admittedPeak": [
+      5940647,
+      5940647
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808696,
+      808696
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "async",
+    "clr": [
+      4085910,
+      4085910
+    ],
+    "admittedPeak": [
+      6268415,
+      6268415
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  }
+]

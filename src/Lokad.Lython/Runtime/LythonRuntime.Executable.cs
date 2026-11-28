@@ -401,7 +401,7 @@ internal sealed partial class LythonRuntime
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, ExecutableSlot[]? borrowedValues,
-            PyFunctionBase? lookupOwner, int sharedLookupStart = -1)
+            PyFunctionBase? lookupOwner, int sharedLookupStart = -1, bool storagePrepaid = false)
         {
             _state = context.State;
             _firstTemporarySlot = firstTemporarySlot;
@@ -411,9 +411,17 @@ internal sealed partial class LythonRuntime
             _sharedLookupStart = sharedLookupStart;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? ExecutableSlotsBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
-            governor.Reserve(bytes, allocationSpan);
-            try { _items = borrowedValues ?? new ExecutableSlot[capacity]; governor.Commit(bytes); }
-            catch { governor.ReleaseReserved(bytes); throw; }
+            if (!storagePrepaid) governor.Reserve(bytes, allocationSpan);
+            try
+            {
+                _items = borrowedValues ?? new ExecutableSlot[capacity];
+                if (!storagePrepaid) governor.Commit(bytes);
+            }
+            catch
+            {
+                if (!storagePrepaid) governor.ReleaseReserved(bytes);
+                throw;
+            }
             _ownedStorageBytes = bytes;
             LiveExtent = firstTemporarySlot;
         }
@@ -820,6 +828,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static long ExecutableFrameExtraBytes(ExecutableCodeObject code, int newCells)
+        => checked((long)code.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes + ExecutableCell.StorageBytes * newCells);
+
     private static void InitializeExecutableWorkState(
         ref ExecutableWorkState execution,
         ExecutableCodeObject codeObject,
@@ -828,24 +839,24 @@ internal sealed partial class LythonRuntime
         ExecutableCaptures closureCells,
         PyFunctionBase? lookupOwner = null,
         bool returnConsumedByIteration = false,
-        bool borrowedInvocation = false, bool continuingNative = false, int sharedLookupStart = -1)
+        bool borrowedInvocation = false, bool continuingNative = false, int sharedLookupStart = -1,
+        bool storagePrepaid = false)
     {
         // Binding already fills the final local slots. Borrow their storage
         // under the invocation owner, including while a generator is suspended.
         var entry = codeObject.Instructions;
         var span = entry.Length == 0 ? null : entry[0].Span;
-        long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
         var newCells = codeObject.CapturedLocalSlots.Count;
         if (continuingNative && newCells != 0)
         {
             foreach (var slot in codeObject.CapturedLocalSlots)
                 if (boundArguments.Values[slot].Reference is ExecutableCell) newCells--;
         }
-        bytes = checked(bytes + ExecutableCell.StorageBytes * newCells);
         // Admit private frame arrays and cells before allocating them. An
         // escaping cell keeps its original charge beyond this frame.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
-            context, span, bytes, boundArguments.Values, lookupOwner, sharedLookupStart);
+            context, span, ExecutableFrameExtraBytes(codeObject, newCells), boundArguments.Values,
+            lookupOwner, sharedLookupStart, storagePrepaid);
         try
         {
             var locals = stack.Values;
@@ -876,7 +887,7 @@ internal sealed partial class LythonRuntime
         }
         catch
         {
-            stack.ReleaseStorage();
+            if (!storagePrepaid) stack.ReleaseStorage();
             throw;
         }
     }
