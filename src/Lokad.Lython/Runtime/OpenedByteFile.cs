@@ -5,6 +5,7 @@ namespace Lokad.Lython.Runtime;
 // Guest buffers/codecs and execution registration remain with their file handle.
 internal sealed class OpenedByteFile(ExecutionState services)
 {
+    private const string ReadOperation = "read_file";
     private ILythonByteFile? _file;
     internal bool IsClosed { get; private set; }
 
@@ -35,35 +36,37 @@ internal sealed class OpenedByteFile(ExecutionState services)
             }, "file_metadata", span, services.MemoryGovernor)
             : null;
 
-    internal async ValueTask<int> ReadAtAsync(long offset, Memory<byte> buffer, LythonSourceSpan? span, bool asynchronous)
-    {
-        services.CheckExecution(span);
-        var file = (ILythonPositionalByteFile)_file!;
-        var count = asynchronous
-            ? await HostOperation.AwaitAsync(() => file.ReadAtAsync(offset, buffer, services.CancellationToken),
-                "read_file", span, services.MemoryGovernor).ConfigureAwait(false)
-            : HostOperation.Await(file, () => file.ReadAtAsync(offset, buffer, services.CancellationToken),
-                "read_file", span, services.MemoryGovernor);
-        services.CheckExecution(span);
-        if (count < 0 || count > buffer.Length)
-            HostOperation.Invoke<int>(static () => throw new LythonHostException(LythonHostFailureKind.Transport,
-                "host positional read exceeded its buffer"), "read_file", span, services.MemoryGovernor);
-        return count;
-    }
+    internal ValueTask<int> ReadAtAsync(long offset, Memory<byte> buffer, LythonSourceSpan? span, bool asynchronous)
+        => ReadCore(buffer, offset, span, asynchronous);
 
-    internal async ValueTask<int> ReadAsync(Memory<byte> buffer, LythonSourceSpan? span, bool asynchronous)
+    internal ValueTask<int> ReadAsync(Memory<byte> buffer, LythonSourceSpan? span, bool asynchronous)
+        => ReadCore(buffer, null, span, asynchronous);
+
+    private async ValueTask<int> ReadCore(Memory<byte> buffer, long? offset, LythonSourceSpan? span, bool asynchronous)
     {
         services.CheckExecution(span);
-        var count = asynchronous
-            ? await HostOperation.AwaitAsync(() => _file!.ReadAsync(buffer, services.CancellationToken),
-                "read_file", span, services.MemoryGovernor).ConfigureAwait(false)
-            : HostOperation.Await(_file!, () => _file!.ReadAsync(buffer, services.CancellationToken),
-                "read_file", span, services.MemoryGovernor);
+        var positional = offset.HasValue ? (ILythonPositionalByteFile)_file! : null;
+        if (!asynchronous) HostOperation.RequireSynchronousCapability(positional ?? _file!, ReadOperation, span);
+
+        int count;
+        try
+        {
+            var pending = offset is { } position
+                ? positional!.ReadAtAsync(position, buffer, services.CancellationToken)
+                : _file!.ReadAsync(buffer, services.CancellationToken);
+            count = asynchronous ? await pending.ConfigureAwait(false)
+                : HostOperation.CompleteSynchronously(pending, ReadOperation, span, services.MemoryGovernor);
+        }
+        catch (Exception exception) when (HostOperation.RequiresTranslation(exception))
+        {
+            return HostOperation.ThrowTranslated<int>(exception, ReadOperation, span, services.MemoryGovernor);
+        }
+
         services.CheckExecution(span);
-        if (count < 0 || count > buffer.Length)
-            HostOperation.Invoke<int>(static () => throw new LythonHostException(LythonHostFailureKind.Transport,
-                "host file read exceeded its buffer"), "read_file", span, services.MemoryGovernor);
-        return count;
+        if (count >= 0 && count <= buffer.Length) return count;
+        var message = offset.HasValue ? "host positional read exceeded its buffer" : "host file read exceeded its buffer";
+        return HostOperation.ThrowTranslated<int>(new LythonHostException(LythonHostFailureKind.Transport, message),
+            ReadOperation, span, services.MemoryGovernor);
     }
 
     internal async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, LythonSourceSpan? span, bool asynchronous)

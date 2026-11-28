@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1920 call owned byte-file reads directly](results/2026-11-28-direct-byte-file-read/README.md)
+removes captured call delegates and one async layer while preserving host
+ambient state. The affected scripts save 96–824 CLR bytes at equal peaks.
+Local CPU spans zero and dense async elapsed rises 2.45–4.74%. Keep the
+original ambient-state failure and the adverse elapsed observation.
+
 [B1919 share bounded and whole text reads](results/2026-11-28-shared-text-read/README.md)
 replaces four accumulation loops with one driver and one shared pending path.
 Peak admission matches. The same-image repeat finds under 3% lower async CPU

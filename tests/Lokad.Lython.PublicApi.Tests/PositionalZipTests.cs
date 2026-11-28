@@ -268,6 +268,33 @@ public sealed class PositionalZipTests
     }
 
     [Theory]
+    [InlineData(false, false), InlineData(false, true)]
+    [InlineData(true, false), InlineData(true, true)]
+    public async Task InvalidPositionalCountFailsBeforePublishingArchive(bool asynchronous, bool negative)
+    {
+        var emptyArchive = new byte[22];
+        BinaryPrimitives.WriteUInt32LittleEndian(emptyArchive, 0x06054b50);
+        var host = new ZipHost(emptyArchive)
+        {
+            PendingRead = (_, _, destination, _) => ValueTask.FromResult(negative ? -1 : destination.Length + 1)
+        };
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine().Compile("import zipfile\narchive=zipfile.ZipFile('t.zip')\nprint('published')", budget);
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("OSError", result.Failure?.ExceptionType);
+            Assert.Equal("host positional read exceeded its buffer", result.Failure?.Message);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(1, host.Reads);
+        Assert.Equal(0, host.SequentialReads);
+        Assert.Equal(1, host.Closed);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false), InlineData(true, false)]
     [InlineData(false, true), InlineData(true, true)]
     public async Task PendingReadAndCloseAreJoinedBeforeReturningAllowance(bool refuse, bool memberRead)

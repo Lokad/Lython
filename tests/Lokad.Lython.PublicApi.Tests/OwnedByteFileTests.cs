@@ -330,6 +330,29 @@ public sealed class OwnedByteFileTests
     }
 
     [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task AmbientHostReadStateStaysLocalToEachRead(bool asynchronous)
+    {
+        var host = new FileHost();
+        host.Inner.SeedBytes("/source", [42]);
+        var marker = new AsyncLocal<bool>();
+        var reads = 0;
+        host.Read = (file, buffer, token) =>
+        {
+            Assert.False(marker.Value);
+            marker.Value = true;
+            reads++;
+            return file.ReadAsync(buffer, token);
+        };
+        using var script = new LythonEngine().Compile("from pathlib import Path\nreturn Path('source').read_bytes()");
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(new byte[] { 42 }, Assert.IsType<byte[]>(result.ReturnValue));
+        Assert.True(reads >= 2);
+        Assert.Equal(1, host.Inner.ClosedFileCount);
+    }
+
+    [Theory]
     [InlineData(false, false), InlineData(true, false)]
     [InlineData(false, true), InlineData(true, true)]
     public async Task UnpublishedOpenIsClosedAfterItsActualCompletion(bool falseSynchronousPromise, bool text)

@@ -25,17 +25,22 @@ internal static class HostOperation
         RequireSynchronousCapability(capability, name, span);
         try
         {
-            var valueTask = operation();
-            // One observed completion state decides the promise. Do not accept
-            // pending work merely because it finishes while converting to Task.
-            if (!valueTask.IsCompleted)
-                throw SettleContractViolation(valueTask.AsTask(), name, span, governor);
-            return valueTask.GetAwaiter().GetResult();
+            return CompleteSynchronously(operation(), name, span, governor);
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
             return ThrowTranslated<T>(exception, name, span, governor);
         }
+    }
+
+    internal static T CompleteSynchronously<T>(ValueTask<T> operation, string name,
+        LythonSourceSpan? span, MemoryGovernor governor)
+    {
+        // One observed completion state decides the promise. The caller has
+        // already checked capability before starting the operation.
+        if (!operation.IsCompleted)
+            throw SettleContractViolation(operation.AsTask(), name, span, governor);
+        return operation.GetAwaiter().GetResult();
     }
 
     public static void Await(
@@ -129,11 +134,11 @@ internal static class HostOperation
         }
     }
 
-    private static bool RequiresTranslation(Exception exception)
+    internal static bool RequiresTranslation(Exception exception)
         => exception is not LythonRuntimeException and not OutOfMemoryException;
 
     [DoesNotReturn]
-    private static T ThrowTranslated<T>(
+    internal static T ThrowTranslated<T>(
         Exception exception,
         string name,
         LythonSourceSpan? span, MemoryGovernor governor)
