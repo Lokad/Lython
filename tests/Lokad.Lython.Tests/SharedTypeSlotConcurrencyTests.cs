@@ -4,8 +4,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// R21: shared __new__ slots for process-wide type singletons are published
-// once in LythonRuntime's static constructor. Simultaneous first access from
+// Shared __new__ slots for process-wide type singletons are published by the
+// owning type. Simultaneous access from
 // independent threads (and independent engines) must observe one identity per
 // owner and never throw. A run stays single-threaded; independent engines on
 // separate threads are the supported concurrency shape.

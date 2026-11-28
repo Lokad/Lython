@@ -1506,6 +1506,9 @@ after the initializer returns None. Default-key protocols may genuinely suspend;
 their owned input/local storage survives until completion and awaited cleanup.
 This includes the builtin `staticmethod` wrapper around `object.__new__`; checking
 that sealed wrapper does not invoke guest descriptor code.
+Builtin runtime types publish their own `__new__` descriptors on first lookup.
+Independent executions observe the same descriptor for each shared type. A type
+without its own descriptor uses the existing inheritance rules.
 Initializer selection observes metadata after allocation. If admission changed it
 to a dynamic hook, initialization continues on the existing instance through the
 general binder. Dynamic engine hooks receive admitted owned argument packets

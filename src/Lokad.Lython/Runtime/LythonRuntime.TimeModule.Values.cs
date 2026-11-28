@@ -49,7 +49,8 @@ internal sealed partial class LythonRuntime
 
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 
-        internal TypeNewMethod? NewSlot { get; set; }
+        private TypeNewMethod? _newSlot;
+        internal TypeNewMethod NewSlot => TypeNewMethod.GetShared(ref _newSlot, this, Name);
 
         // The struct_time name is fixed on the global singleton, so reads alias
         // stably like CPython instead of rebuilding per read.

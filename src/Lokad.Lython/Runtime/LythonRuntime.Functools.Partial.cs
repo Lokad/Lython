@@ -218,7 +218,8 @@ internal sealed partial class LythonRuntime
 
         public string Name => "functools.partial";
 
-        internal LythonRuntime.TypeNewMethod? NewSlot { get; set; }
+        private TypeNewMethod? _newSlot;
+        internal TypeNewMethod NewSlot => TypeNewMethod.GetShared(ref _newSlot, this, Name);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

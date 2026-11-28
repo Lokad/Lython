@@ -15,13 +15,13 @@ internal enum JsonBaseKind
 
 internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
-    internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
+    internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module", definesNewSlot: true);
     internal static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     internal static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
     internal static readonly PyBuiltinRuntimeType CallableIteratorType = CreateOpaqueRuntimeType("callable_iterator");
     internal static readonly PyBuiltinRuntimeType GeneratorType = CreateOpaqueRuntimeType("generator");
-    internal static readonly PyBuiltinRuntimeType FunctionType = CreateOpaqueRuntimeType("function");
-    internal static readonly PyBuiltinRuntimeType MethodType = CreateOpaqueRuntimeType("method");
+    internal static readonly PyBuiltinRuntimeType FunctionType = CreateOpaqueRuntimeType("function", definesNewSlot: true);
+    internal static readonly PyBuiltinRuntimeType MethodType = CreateOpaqueRuntimeType("method", definesNewSlot: true);
     internal static readonly PyBuiltinRuntimeType BuiltinFunctionType = CreateOpaqueRuntimeType("builtin_function_or_method");
     internal static readonly PyBuiltinRuntimeType WrapperDescriptorType = CreateOpaqueRuntimeType("wrapper_descriptor");
     internal static readonly PyBuiltinRuntimeType MethodWrapperType = CreateOpaqueRuntimeType("method-wrapper");
@@ -29,9 +29,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal static readonly PyBuiltinRuntimeType GetSetDescriptorType = CreateOpaqueRuntimeType("getset_descriptor");
     internal static readonly PyBuiltinRuntimeType MemberDescriptorType = CreateOpaqueRuntimeType("member_descriptor");
     internal static readonly PyBuiltinRuntimeType TupleGetterType = CreateOpaqueRuntimeType("collections._tuplegetter");
-    internal static readonly PyBuiltinRuntimeType NoneType = CreateOpaqueRuntimeType("NoneType");
-    internal static readonly PyBuiltinRuntimeType EllipsisType = CreateOpaqueRuntimeType("ellipsis");
-    internal static readonly PyBuiltinRuntimeType NotImplementedType = CreateOpaqueRuntimeType("NotImplementedType");
+    internal static readonly PyBuiltinRuntimeType NoneType = CreateOpaqueRuntimeType("NoneType", definesNewSlot: true);
+    internal static readonly PyBuiltinRuntimeType EllipsisType = CreateOpaqueRuntimeType("ellipsis", definesNewSlot: true);
+    internal static readonly PyBuiltinRuntimeType NotImplementedType = CreateOpaqueRuntimeType("NotImplementedType", definesNewSlot: true);
 
     private readonly Dictionary<string, object> _members;
     private PyDict? _namespace;
@@ -444,11 +444,11 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         };
     }
 
-    private static PyBuiltinRuntimeType CreateOpaqueRuntimeType(string name)
+    private static PyBuiltinRuntimeType CreateOpaqueRuntimeType(string name, bool definesNewSlot = false)
         => new(name, static (_, span, _) => throw new LythonRuntimeException(
             "TypeError",
             "Runtime type objects cannot be constructed directly in Lython.",
-            span));
+            span), definesNewSlot);
 
     private static object GetBuiltinTypeObject(LythonRuntime.ExecutionContext context, string name, LythonSourceSpan span)
     {

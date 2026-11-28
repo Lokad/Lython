@@ -8,23 +8,31 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
     private readonly Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _constructor;
     private readonly Func<string, object?>? _memberFactory;
     private readonly Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? _asyncConstructor;
+    private readonly bool _definesNewSlot;
+    private LythonRuntime.TypeNewMethod? _newSlot;
 
-    public PyBuiltinRuntimeType(string name, Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor) : this(name, constructor, null) { }
+    public PyBuiltinRuntimeType(string name, Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor,
+        bool definesNewSlot = false) : this(name, constructor, null, definesNewSlot: definesNewSlot) { }
 
     public PyBuiltinRuntimeType(
         string name,
         Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor,
         Func<string, object?>? memberFactory,
-        Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? asyncConstructor = null)
+        Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? asyncConstructor = null,
+        bool definesNewSlot = false)
     {
         Name = name;
         _constructor = constructor;
         _memberFactory = memberFactory;
         _asyncConstructor = asyncConstructor;
+        _definesNewSlot = definesNewSlot;
         _shortName = PyString.FromString(name.Substring(name.LastIndexOf((char)46) + 1));
     }
 
     public string Name { get; }
+
+    internal LythonRuntime.TypeNewMethod? ExplicitNewSlot
+        => _definesNewSlot ? LythonRuntime.TypeNewMethod.GetShared(ref _newSlot, this, Name) : null;
 
     // Short type names are fixed per runtime type object, so reads alias
     // stably like CPython instead of rebuilding per read.

@@ -144,7 +144,7 @@ internal static partial class PyDateTimeOps
             "max" => PyTimedelta.Max,
             "resolution" => PyTimedelta.Resolution,
             _ => null
-        });
+        }, definesNewSlot: true);
 
     public static readonly PyBuiltinRuntimeType DateType = new(
         "datetime.date",
@@ -160,7 +160,7 @@ internal static partial class PyDateTimeOps
             "fromtimestamp" => new TypeMemberCallable(DateType!, "datetime.date.fromtimestamp", DateFromTimestamp, ["timestamp"], asyncImplementation: DateFromTimestampAsync),
             "today" => new TypeMemberCallable(DateType!, "datetime.date.today", DateToday),
             _ => null
-        }, CreateDateAsync);
+        }, CreateDateAsync, definesNewSlot: true);
 
     public static readonly PyBuiltinRuntimeType TimeType = new(
         "datetime.time",
@@ -172,7 +172,7 @@ internal static partial class PyDateTimeOps
             "resolution" => PyTime.Resolution,
             "fromisoformat" => new TypeMemberCallable(TimeType!, "datetime.time.fromisoformat", TimeFromIsoFormat, ["time_string"]),
             _ => null
-        }, CreateTimeAsync);
+        }, CreateTimeAsync, definesNewSlot: true);
 
     public static readonly PyBuiltinRuntimeType DateTimeType = new(
         "datetime.datetime",
@@ -192,11 +192,12 @@ internal static partial class PyDateTimeOps
             "utcfromtimestamp" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.utcfromtimestamp", DateTimeUtcFromTimestamp, ["timestamp"], asyncImplementation: DateTimeUtcFromTimestampAsync),
             "utcnow" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.utcnow", DateTimeUtcNow),
             _ => null
-        }, CreateDateTimeAsync);
+        }, CreateDateTimeAsync, definesNewSlot: true);
 
     public static readonly PyBuiltinRuntimeType TzInfoType = new(
         "datetime.tzinfo",
-        CreateTzInfo);
+        CreateTzInfo,
+        definesNewSlot: true);
 
     public static readonly PyBuiltinRuntimeType TimezoneType = new(
         "datetime.timezone",
@@ -207,7 +208,7 @@ internal static partial class PyDateTimeOps
             "min" => PyTimezone.Min,
             "max" => PyTimezone.Max,
             _ => null
-        });
+        }, definesNewSlot: true);
 
     // isocalendar results share one opaque type object like the other
     // runtime types; construction stays unsupported, matching the opaque

@@ -1,6 +1,5 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
-using System.Collections.Frozen;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
@@ -2654,6 +2653,15 @@ internal sealed partial class LythonRuntime
             _qualNameValue = PyString.FromString(shortName + ".__new__");
         }
 
+        internal static TypeNewMethod GetShared(ref TypeNewMethod? slot, object owner, string name)
+            => Volatile.Read(ref slot) ?? PublishShared(ref slot, owner, name);
+
+        private static TypeNewMethod PublishShared(ref TypeNewMethod? slot, object owner, string name)
+        {
+            var descriptor = new TypeNewMethod(owner, BuiltinCallable.ShortCallableName(name));
+            return Interlocked.CompareExchange(ref slot, descriptor, null) ?? descriptor;
+        }
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name is "__name__")
@@ -2825,50 +2833,9 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        if (ReferenceEquals(classValue, PyType.FunctionType))
+        if (classValue is PyBuiltinRuntimeType { ExplicitNewSlot: { } nativeSlot })
         {
-            value = _functionTypeNewSlot;
-            return true;
-        }
-
-        if (ReferenceEquals(classValue, PyType.MethodType))
-        {
-            value = _methodTypeNewSlot;
-            return true;
-        }
-
-        if (ReferenceEquals(classValue, PyType.ModuleType))
-        {
-            value = _moduleTypeNewSlot;
-            return true;
-        }
-
-        if (ReferenceEquals(classValue, PyType.NoneType))
-        {
-            value = _noneTypeNewSlot;
-            return true;
-        }
-
-        if (ReferenceEquals(classValue, PyType.EllipsisType))
-        {
-            value = _ellipsisTypeNewSlot;
-            return true;
-        }
-
-        if (ReferenceEquals(classValue, PyType.NotImplementedType))
-        {
-            value = _notImplementedTypeNewSlot;
-            return true;
-        }
-
-        // Datetime, random and tzinfo runtime types own their slot too,
-        // qualified by the short type name like CPython. The table is frozen
-        // by the static constructor, so concurrent first access from
-        // independent runs performs a pure lookup with no shared mutation.
-        if (classValue is PyBuiltinRuntimeType datetimeType &&
-            _datetimeTypeNewSlots.TryGetValue(datetimeType, out var datetimeSlot))
-        {
-            value = datetimeSlot;
+            value = nativeSlot;
             return true;
         }
 
@@ -2881,13 +2848,9 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        // The partial factory owns its slot through its global singleton,
-        // like the builtin constructors above. The static constructor
-        // publishes it once (Instance is the only instance), so this is a
-        // pure read under concurrent first access.
         if (classValue is PartialFactory partialFactory)
         {
-            value = partialFactory.NewSlot!;
+            value = partialFactory.NewSlot;
             return true;
         }
 
@@ -2895,9 +2858,7 @@ internal sealed partial class LythonRuntime
         // the builtin constructors above.
         if (classValue is TimeStructTimeType structTimeType)
         {
-            // Published once by the static constructor (Instance is the only
-            // instance), so this is a pure read under concurrent first access.
-            value = structTimeType.NewSlot!;
+            value = structTimeType.NewSlot;
             return true;
         }
 
@@ -2914,49 +2875,6 @@ internal sealed partial class LythonRuntime
         value = typeValue.NewSlot;
         return true;
     }
-
-    // Shared __new__ slots for process-wide type singletons. Every owner
-    // below (PyType.*, PyDateTimeOps.*, RandomType, and the two singleton
-    // factories) is shared across independent runs, so the static constructor
-    // publishes each wrapper exactly once and the choke above only reads them
-    // afterwards. Per-run type constructors (BuiltinCallable, DictCallable,
-    // ZipCallable, per-access CollectionsCallable, per-run ExceptionTypeValue)
-    // and their per-instance unbound caches keep their lazy slot: those
-    // objects are confined to a single run's thread. A run stays
-    // single-threaded; independent engines on separate threads are the
-    // supported concurrency shape, sharing only this prebuilt metadata plus
-    // thread-safe interners, ThreadStatic scratch pools, and per-run state.
-    static LythonRuntime()
-    {
-        _functionTypeNewSlot = new TypeNewMethod(PyType.FunctionType, PyType.FunctionType.Name);
-        _methodTypeNewSlot = new TypeNewMethod(PyType.MethodType, PyType.MethodType.Name);
-        _moduleTypeNewSlot = new TypeNewMethod(PyType.ModuleType, PyType.ModuleType.Name);
-        _noneTypeNewSlot = new TypeNewMethod(PyType.NoneType, PyType.NoneType.Name);
-        _ellipsisTypeNewSlot = new TypeNewMethod(PyType.EllipsisType, PyType.EllipsisType.Name);
-        _notImplementedTypeNewSlot = new TypeNewMethod(PyType.NotImplementedType, PyType.NotImplementedType.Name);
-        _datetimeTypeNewSlots = new Dictionary<PyBuiltinRuntimeType, TypeNewMethod>(ReferenceEqualityComparer.Instance)
-        {
-            [PyDateTimeOps.TimedeltaType] = new TypeNewMethod(PyDateTimeOps.TimedeltaType, BuiltinCallable.ShortCallableName(PyDateTimeOps.TimedeltaType.Name)),
-            [PyDateTimeOps.DateType] = new TypeNewMethod(PyDateTimeOps.DateType, BuiltinCallable.ShortCallableName(PyDateTimeOps.DateType.Name)),
-            [PyDateTimeOps.TimeType] = new TypeNewMethod(PyDateTimeOps.TimeType, BuiltinCallable.ShortCallableName(PyDateTimeOps.TimeType.Name)),
-            [PyDateTimeOps.DateTimeType] = new TypeNewMethod(PyDateTimeOps.DateTimeType, BuiltinCallable.ShortCallableName(PyDateTimeOps.DateTimeType.Name)),
-            [PyDateTimeOps.TimezoneType] = new TypeNewMethod(PyDateTimeOps.TimezoneType, BuiltinCallable.ShortCallableName(PyDateTimeOps.TimezoneType.Name)),
-            [PyDateTimeOps.TzInfoType] = new TypeNewMethod(PyDateTimeOps.TzInfoType, BuiltinCallable.ShortCallableName(PyDateTimeOps.TzInfoType.Name)),
-            [RandomModule.RandomType] = new TypeNewMethod(RandomModule.RandomType, BuiltinCallable.ShortCallableName(RandomModule.RandomType.Name)),
-        }.ToFrozenDictionary(ReferenceEqualityComparer.Instance);
-        // Both singleton factories publish their slot here instead of lazily:
-        // each Instance is unique, so the choke only reads them afterwards.
-        PartialFactory.Instance.NewSlot = new TypeNewMethod(PartialFactory.Instance, "partial");
-        TimeStructTimeType.Instance.NewSlot = new TypeNewMethod(TimeStructTimeType.Instance, BuiltinCallable.ShortCallableName(TimeStructTimeType.Instance.Name));
-    }
-
-    private static readonly TypeNewMethod _functionTypeNewSlot;
-    private static readonly TypeNewMethod _methodTypeNewSlot;
-    private static readonly TypeNewMethod _moduleTypeNewSlot;
-    private static readonly TypeNewMethod _noneTypeNewSlot;
-    private static readonly TypeNewMethod _ellipsisTypeNewSlot;
-    private static readonly TypeNewMethod _notImplementedTypeNewSlot;
-    private static readonly FrozenDictionary<PyBuiltinRuntimeType, TypeNewMethod> _datetimeTypeNewSlots;
 
     private class BuiltinCallable : BoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {

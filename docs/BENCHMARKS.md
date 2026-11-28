@@ -123,6 +123,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Publish builtin `__new__` descriptors on demand | First compilation allocates 44–48 KB less at matching admission. Compile-only traces lose the eager runtime initializer and four unrelated owner initializers. Fresh-process timing and quiet warm timing span zero. [B1990](../benchmarks/results/2026-11-28-owner-local-type-new-slots/README.md). |
 | Borrow evaluated positional slots for fixed builtins | On the quiet repeat, warm sync CPU falls 10.08–14.11% in the fixed math diagnostic and 0.51–0.85% in module-level regex search. The compiled-search and configuration controls span zero on repeat. Allocation and admission are essentially flat. [B1986](../benchmarks/results/2026-11-28-borrow-fixed-positional-arguments/README.md). |
 | Defer private `starmap` generator frames | The 2,048-row iterable shipment allocates about 816 KiB less in each API at matching admission. Quiet warm async CPU falls 5.84–7.45%. The ordinary tuple and file-fed controls span zero. [B1980](../benchmarks/results/2026-11-28-deferred-starmap-argument-frame/README.md). |
 | Share builtin subscript reads across executable loops | The range-indexed 2,048-row CSV diagnostic allocates about 1.38 MiB less and uses about 2.50 MiB less peak admission in both APIs. Quiet warm async CPU falls 25.26–26.69%. Ordinary tuple CPU remains inconclusive. [B1977](../benchmarks/results/2026-11-28-shared-subscript-completion/README.md). |

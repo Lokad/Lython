@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         private static readonly PyString SharedStateTag = PyString.FromString(StateTag);
         private static readonly BigInteger MaxUInt64 = new(ulong.MaxValue);
 
-        public static readonly PyBuiltinRuntimeType RandomType = new("random.Random", CreateRandom);
+        public static readonly PyBuiltinRuntimeType RandomType = new("random.Random", CreateRandom, definesNewSlot: true);
 
         private readonly PyRandomState _state;
 

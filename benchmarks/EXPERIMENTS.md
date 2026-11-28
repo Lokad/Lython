@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1990 publish constructor descriptors on their owners](results/2026-11-28-owner-local-type-new-slots/README.md)
+removes the eager runtime initializer and saves 44–48 KB during first
+compilation at matching admission. Local configuration compile CPU rises
+1.62–2.23%, and all quiet timing ranges span zero. Preserve both disk
+reserve failures and the verified retry.
+
 [B1989 compact shared module index](results/2026-11-28-shared-builtin-module-index/README.md)
 saves about 15–16 KB during first compilation, with fresh timing spanning
 zero. Warm configuration and XML use more CPU locally. The earlier delegate
