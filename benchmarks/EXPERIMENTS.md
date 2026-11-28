@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1966 share bytes and list member facts](results/2026-11-28-shared-builtin-member-facts/README.md)
+removes 135 repeated callable and return rows. First compile allocates
+17.48% less for configuration and 56.00% less for the UTF-16 codec.
+The codec's initial 1.15–1.28% warm CPU increase spans zero on repeat.
+
 [B1965 consolidate frontend string member facts](results/2026-11-28-string-member-facts/README.md)
 removes duplicated instance, type, arity and return metadata. First compile
 allocates 8.50–11.46% less at matching admission. Both lookup surfaces and

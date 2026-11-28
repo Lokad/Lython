@@ -22,9 +22,9 @@ internal static partial class StaticContracts
 
     internal static bool TryGetMemberReturnShape(AbstractValueKind receiverKind, string memberName, out StaticReturnShape shape)
     {
-        if (receiverKind is AbstractValueKind.String or AbstractValueKind.StringType)
+        if (GetBuiltinMemberCatalog(receiverKind) is { } members)
         {
-            if (StringMemberCatalog.ByName.TryGetValue(memberName, out var member) && member.Return is { } returns)
+            if (members.TryGetValue(memberName, out var member) && member.Return is { } returns)
             {
                 shape = returns;
                 return true;
