@@ -6,6 +6,8 @@ public sealed class NativeCallbackUnwindTests
 {
     public static TheoryData<string, string> Boundaries => new()
     {
+        { "map-return", "def result(n):return n+read()\nlist(map(result,[500]))" },
+        { "starmap-return", "from itertools import starmap\ndef result(n):return n+read()\nlist(starmap(result,[(500,)]))" },
         { "spreadsheet-append", "from openpyxl import Workbook\ns=Workbook().active\ndef cells():\n read()\n yield 1\ns.append(cells())" },
         { "namedtuple-fields", "from typing import NamedTuple\ndef fields():\n read()\n yield ('x',int)\nNamedTuple('P',fields())" },
         { "typevar-variance", "from typing import TypeVar\nclass Flag:\n def __bool__(self):read();return True\nTypeVar('T',covariant=Flag())" },

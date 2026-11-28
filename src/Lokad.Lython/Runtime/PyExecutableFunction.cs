@@ -525,22 +525,19 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
     }
 
-    internal object ExecuteBody(
+    internal LythonRuntime.ExecutableSlot ExecuteBody(
         LythonRuntime.ExecutionContext frame,
         BoundFunctionArguments boundArguments,
         LythonSourceSpan span)
     {
-        return LythonRuntime.ExecuteExecutableCodeObject(CodeObject, frame, boundArguments, _closureCells, span, this)
-            ?? PyNone.Instance;
+        return LythonRuntime.ExecuteExecutableCodeObjectSlot(CodeObject, frame, boundArguments, _closureCells, span, this);
     }
 
-    internal async ValueTask<object> ExecuteBodyAsync(
+    internal ValueTask<LythonRuntime.ExecutableSlot> ExecuteBodyAsync(
         LythonRuntime.ExecutionContext frame,
         BoundFunctionArguments boundArguments,
         LythonSourceSpan span)
     {
-        return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            CodeObject, frame, boundArguments, _closureCells, span, this).ConfigureAwait(false)
-            ?? PyNone.Instance;
+        return LythonRuntime.ExecuteExecutableCodeObjectSlotAsync(CodeObject, frame, boundArguments, _closureCells, span, this);
     }
 }

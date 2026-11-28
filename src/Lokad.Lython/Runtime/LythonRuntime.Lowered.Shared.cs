@@ -543,7 +543,7 @@ internal sealed partial class LythonRuntime
             classContext.InitializeExecutableFrame(definition.Body, default, default);
             var returned = asynchronous ? await ExecuteInitializedFrameAsync(classContext).ConfigureAwait(false)
                 : ExecuteInitializedFrame(classContext);
-            if (returned is not null) throw new InvalidOperationException("A class suite returned a value.");
+            if (!returned.IsUnassigned) throw new InvalidOperationException("A class suite returned a value.");
 
             await AttachGenericClassMetadataAsync(definition, typeScope, classContext, asynchronous, baseTypes).ConfigureAwait(false);
             var type = await CreateClassType(definition, resolvedBases, baseTypes, keywords, classContext, context, asynchronous, definition.Body.Docstring)

@@ -38,8 +38,8 @@ public sealed class IterationWorkspaceLifetimeTests
             {
                 LythonRuntime.IterationOperands storage = default;
                 storage[0] = LythonRuntime.ExecutableSlot.FromObject(row);
-                LythonRuntime.StartIterationCallback(callback, storage, 1, borrowStorage: true, span, context,
-                    asynchronous: true, out _);
+                _ = LythonRuntime.StartIterationCallback(callback, storage, 1, borrowStorage: true, span, context,
+                    asynchronous: true).GetAwaiter().GetResult();
             });
             Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
             Assert.Equal(bytes, error.Attribution?.Requested);

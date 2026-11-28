@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1934 keep iterator callback returns in executable slots](results/2026-11-28-typed-iterator-callback-results/README.md)
+removes the frame callback's object round trip. Ordinary helper and
+generator reduction allocates about 65.5 KB less in both APIs and
+uses less async elapsed time in two local runs. The iterable async
+repeat runs slower. The file-fed control effect remains unresolved.
+
 [B1933 initialize fresh executable frames directly](results/2026-11-28-direct-executable-frame-initialization/README.md)
 removes the temporary state copy from fresh frame setup. Release IL keeps
 one whole-state move for borrowed-call promotion. Iterable shipment local

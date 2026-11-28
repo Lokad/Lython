@@ -707,6 +707,15 @@ internal sealed partial class LythonRuntime
         ExecutableCaptures? closureCells,
         LythonSourceSpan? entrySpan = null,
         PyExecutableFunction? lookupOwner = null)
+        => ExecuteExecutableCodeObjectSlot(codeObject, context, boundArguments, closureCells ?? default, entrySpan, lookupOwner).Object;
+
+    internal static ExecutableSlot ExecuteExecutableCodeObjectSlot(
+        ExecutableCodeObject codeObject,
+        ExecutionContext context,
+        BoundFunctionArguments boundArguments,
+        ExecutableCaptures closureCells,
+        LythonSourceSpan? entrySpan,
+        PyExecutableFunction? lookupOwner)
     {
         context.EnsureExecutableStateAvailable();
         // Bound function invocations already own their call admission. Raw
@@ -717,7 +726,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            context.InitializeExecutableFrame(codeObject, boundArguments, closureCells ?? default, lookupOwner);
+            context.InitializeExecutableFrame(codeObject, boundArguments, closureCells, lookupOwner);
             return ExecuteInitializedFrame(context);
         }
         finally
@@ -736,6 +745,16 @@ internal sealed partial class LythonRuntime
         ExecutableCaptures closureCells,
         LythonSourceSpan? entrySpan = null,
         PyExecutableFunction? lookupOwner = null)
+        => (await ExecuteExecutableCodeObjectSlotAsync(codeObject, context, boundArguments, closureCells,
+            entrySpan, lookupOwner).ConfigureAwait(false)).Object;
+
+    internal static async ValueTask<ExecutableSlot> ExecuteExecutableCodeObjectSlotAsync(
+        ExecutableCodeObject codeObject,
+        ExecutionContext context,
+        BoundFunctionArguments boundArguments,
+        ExecutableCaptures closureCells,
+        LythonSourceSpan? entrySpan,
+        PyExecutableFunction? lookupOwner)
     {
         context.EnsureExecutableStateAvailable();
         var ownsAdmission = boundArguments.Values is null;
@@ -752,13 +771,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static object? ExecuteInitializedFrame(ExecutionContext context)
+    internal static ExecutableSlot ExecuteInitializedFrame(ExecutionContext context)
     {
         try
         {
             context.EnterExecutableSlots();
             context.Execute();
-            return context.HasFrameReturn ? context.FrameReturnValue : null;
+            return context.FrameReturnSlot;
         }
         finally
         {
@@ -770,13 +789,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static async ValueTask<object?> ExecuteInitializedFrameAsync(ExecutionContext context)
+    internal static async ValueTask<ExecutableSlot> ExecuteInitializedFrameAsync(ExecutionContext context)
     {
         try
         {
             context.EnterExecutableSlots();
             await context.ExecuteAsync().ConfigureAwait(false);
-            return context.HasFrameReturn ? context.FrameReturnValue : null;
+            return context.FrameReturnSlot;
         }
         finally
         {

@@ -923,8 +923,11 @@ native frame slots directly, including the receiver. A pending callback
 transfers its live slots into the existing admitted continuation. Other
 exact rows use an admitted argument packet. A same-command generator row
 can fill a compatible executable callback's admitted workspace directly.
-Private scalar slots stay native through the ready callback and its result,
-while observable identities stay attached to their values. An exhausted
+An executable callback entered through operand or prepared frame binding
+carries its result in the existing slot through completion and cleanup.
+Both APIs yield that slot so a numeric consumer can take a fresh scalar
+directly. Object callables still normalize their results at the iterator
+boundary. Observable identities stay attached to their values. An exhausted
 source with the final positional slot filled enters the bound callback
 directly. A suspended pull keeps its workspace in the row continuation.
 A suspended callback owns that same workspace through cleanup. Generator

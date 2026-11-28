@@ -73,20 +73,20 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     // Lowered operand calls bind invocation-owned values. The executable
     // runner and exact positional callback entry can start in native slots.
-    internal object InvokeFromOperands(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
+    internal LythonRuntime.ExecutableSlot InvokeFromOperands(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
         var bound = BindCallOperands(arguments, span, context, receiver, callSite);
-        return InvokeBound(bound, span);
+        return InvokeBoundSlot(bound, span);
     }
 
-    internal ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
+    internal ValueTask<LythonRuntime.ExecutableSlot> InvokeFromOperandsAsync(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
         var binding = BindCallOperandsAsync(arguments, span, context, receiver, callSite);
-        return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
+        return binding.IsCompletedSuccessfully ? InvokeBoundSlotAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
     }
 
     public PyType? OwnerType { get; private set; }
@@ -160,20 +160,27 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     internal object InvokeBound(BoundFunctionArguments boundArguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext? initializedFrame = null)
+        => InvokeBoundSlot(boundArguments, span, initializedFrame).Object.RequireNotNull();
+
+    internal LythonRuntime.ExecutableSlot InvokeBoundSlot(BoundFunctionArguments boundArguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext? initializedFrame = null)
     {
         if (this is not PyExecutableFunction function)
-            return ((PyGeneratorFunction)this).CreateBoundGenerator(boundArguments, span);
+            return LythonRuntime.ExecutableSlot.FromObject(((PyGeneratorFunction)this).CreateBoundGenerator(boundArguments, span));
 
         var frame = initializedFrame;
         try
         {
             LythonRuntime.ExecutableSlot result = default;
             var prepared = frame is not null || function.TryStartBoundInvocation(boundArguments, span, out result, out frame);
-            if (prepared && frame is null) return result.Object.RequireNotNull();
+            if (prepared && frame is null) return result;
             frame ??= EnterInvocationFrame(boundArguments, span);
-            try { return prepared ? LythonRuntime.ExecuteInitializedFrame(frame) ?? PyNone.Instance
-                : function.ExecuteBody(frame, boundArguments, span); }
-            catch (LythonRuntime.ReturnSignal signal) { return signal.Value; }
+            try
+            {
+                result = prepared ? LythonRuntime.ExecuteInitializedFrame(frame) : function.ExecuteBody(frame, boundArguments, span);
+                return result.IsUnassigned ? LythonRuntime.ExecutableSlot.FromObject(PyNone.Instance) : result;
+            }
+            catch (LythonRuntime.ReturnSignal signal) { return LythonRuntime.ExecutableSlot.FromObject(signal.Value); }
             catch (LythonRuntimeException ex)
             {
                 PyFunctionBinding.AnnotateException(ex, frame, Name, span);
@@ -200,32 +207,47 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 return frame is null ? new(result.Object.RequireNotNull()) : InvokeBoundAsync(owned, span, frame);
 
             var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, this, context, receiver, storageCapacity: CodeObject.ValueStorageCapacity);
-            return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
+            return ReadInvocationObject(binding.IsCompletedSuccessfully
+                ? InvokeBoundSlotAsync(binding.Result, span) : BindAndInvokeAsync(binding, span));
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }
     }
 
-    private async ValueTask<object> BindAndInvokeAsync(ValueTask<BoundFunctionArguments> binding, LythonSourceSpan span)
-        => await InvokeBoundAsync(await binding.ConfigureAwait(false), span).ConfigureAwait(false);
+    private async ValueTask<LythonRuntime.ExecutableSlot> BindAndInvokeAsync(ValueTask<BoundFunctionArguments> binding, LythonSourceSpan span)
+        => await InvokeBoundSlotAsync(await binding.ConfigureAwait(false), span).ConfigureAwait(false);
 
-    internal async ValueTask<object> InvokeBoundAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span,
+    internal ValueTask<object> InvokeBoundAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext? initializedFrame = null)
+        => ReadInvocationObject(InvokeBoundSlotAsync(boundArguments, span, initializedFrame));
+
+    private static ValueTask<object> ReadInvocationObject(ValueTask<LythonRuntime.ExecutableSlot> pending)
+        => pending.IsCompletedSuccessfully ? new(pending.Result.Object.RequireNotNull()) : ObserveAfterCompletion(pending);
+
+    private static async ValueTask<object> ObserveAfterCompletion(ValueTask<LythonRuntime.ExecutableSlot> pending)
+        => (await pending.ConfigureAwait(false)).Object.RequireNotNull();
+
+    internal async ValueTask<LythonRuntime.ExecutableSlot> InvokeBoundSlotAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext? initializedFrame = null)
     {
         // Keep the per-call CLR async context for budget callbacks during
         // synchronous construction. The generator body begins at the first pull.
         if (this is not PyExecutableFunction function)
-            return ((PyGeneratorFunction)this).CreateBoundGenerator(boundArguments, span);
+            return LythonRuntime.ExecutableSlot.FromObject(((PyGeneratorFunction)this).CreateBoundGenerator(boundArguments, span));
 
         var frame = initializedFrame;
         try
         {
             LythonRuntime.ExecutableSlot result = default;
             var prepared = frame is not null || function.TryStartBoundInvocation(boundArguments, span, out result, out frame);
-            if (prepared && frame is null) return result.Object.RequireNotNull();
+            if (prepared && frame is null) return result;
             frame ??= EnterInvocationFrame(boundArguments, span);
-            try { return prepared ? await LythonRuntime.ExecuteInitializedFrameAsync(frame).ConfigureAwait(false) ?? PyNone.Instance
-                : await function.ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false); }
-            catch (LythonRuntime.ReturnSignal signal) { return signal.Value; }
+            try
+            {
+                result = prepared ? await LythonRuntime.ExecuteInitializedFrameAsync(frame).ConfigureAwait(false)
+                    : await function.ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false);
+                return result.IsUnassigned ? LythonRuntime.ExecutableSlot.FromObject(PyNone.Instance) : result;
+            }
+            catch (LythonRuntime.ReturnSignal signal) { return LythonRuntime.ExecutableSlot.FromObject(signal.Value); }
             catch (LythonRuntimeException ex)
             {
                 PyFunctionBinding.AnnotateException(ex, frame, Name, span);

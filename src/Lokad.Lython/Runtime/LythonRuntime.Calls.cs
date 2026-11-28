@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
         {
             if (TryConstructPositionalGenerator(function, arguments.Span, span, context, receiver, callSite) is { } generator)
                 return generator;
-            return RuntimeValue(function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite));
+            return RuntimeValue(function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite).Object);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
             // Remaining lowered/mirrored calls bind owned values.
             // The caller keeps its operand array alive until this call finishes.
             var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
-            return RuntimeValue(await pending.ConfigureAwait(false));
+            return RuntimeValue((await pending.ConfigureAwait(false)).Object);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -613,102 +613,92 @@ internal sealed partial class LythonRuntime
     [System.Runtime.CompilerServices.InlineArray(InlineIterationOperandCount)]
     internal struct IterationOperands { private ExecutableSlot _first; }
 
-    internal static PyIterationResult StartIterationCallback(object callable, Span<ExecutableSlot> storage, int argumentCount,
+    internal static ValueTask<PyIterationResult> StartIterationCallback(object callable, Span<ExecutableSlot> storage, int argumentCount,
         bool borrowStorage,
-        LythonSourceSpan span, ExecutionContext context, bool asynchronous, out ValueTask<object> pending)
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        pending = default;
+        var operands = storage[..argumentCount];
         if (callable is BoundArgumentsCallable builtin)
         {
-            var operands = storage[..argumentCount];
-            if (!asynchronous) return PyIterationResult.Yield(builtin.InvokeShortPositionalOperands(operands, span, context));
-            pending = builtin.InvokeShortPositionalOperandsAsync(operands, span, context);
+            return asynchronous ? CompleteObjectIterationCallback(builtin.InvokeShortPositionalOperandsAsync(operands, span, context))
+                : new(PyIterationResult.Yield(builtin.InvokeShortPositionalOperands(operands, span, context)));
         }
-        else if (IterationFunction(callable, out var receiver) is { } function)
+        if (IterationFunction(callable, out var receiver) is { } function)
         {
             if (function is PyExecutableFunction executable &&
                 executable.TryStartPositionalCallback(storage, argumentCount, borrowStorage, receiver, span, context, out var result, out var frame, out var owned))
-                return FinishIterationFunction(executable, result, frame, owned, span, asynchronous, out pending);
-            else
-            {
-                var operands = storage[..argumentCount];
-                if (!asynchronous) return PyIterationResult.Yield(function.InvokeFromOperands(operands, span, context, receiver));
-                pending = function.InvokeFromOperandsAsync(operands, span, context, receiver);
-            }
+                return frame is null ? new(PyIterationResult.Yield(result))
+                    : InvokeIterationFunction(executable, owned, frame, span, asynchronous);
+            return asynchronous ? CompleteIterationCallback(function.InvokeFromOperandsAsync(operands, span, context, receiver))
+                : new(PyIterationResult.Yield(function.InvokeFromOperands(operands, span, context, receiver)));
         }
-        else
-        {
-            var operands = storage[..argumentCount];
-            CallableInvocation.Arguments packet = default;
-            for (var i = 0; i < operands.Length; i++)
-                packet[i] = CallArgumentValue.Positional(RuntimeValue(operands[i].Object));
-            var arguments = packet[..operands.Length];
-            if (!asynchronous) return PyIterationResult.Yield(CallableInvocation.Invoke(callable, arguments, span, context));
-            pending = CallableInvocation.InvokeAsync(callable, arguments, span, context);
-        }
-        return TakeCompletedIterationCallback(ref pending);
+
+        CallableInvocation.Arguments packet = default;
+        for (var i = 0; i < operands.Length; i++)
+            packet[i] = CallArgumentValue.Positional(RuntimeValue(operands[i].Object));
+        var arguments = packet[..operands.Length];
+        return asynchronous ? CompleteObjectIterationCallback(CallableInvocation.InvokeAsync(callable, arguments, span, context))
+            : new(PyIterationResult.Yield(CallableInvocation.Invoke(callable, arguments, span, context)));
     }
 
     internal static bool TryStartIterationRow(object callable, IPySequenceValue row, int count, LythonSourceSpan span,
-        ExecutionContext context, bool asynchronous, out PyIterationResult result, out ValueTask<object> pending)
+        ExecutionContext context, bool asynchronous, out ValueTask<PyIterationResult> result)
     {
         if (IterationFunction(callable, out var receiver) is PyExecutableFunction function &&
             function.TryStartPositionalRow(row, count, receiver, context, span, out var immediate, out var frame, out var owned))
         {
-            result = FinishIterationFunction(function, immediate, frame, owned, span, asynchronous, out pending);
+            result = frame is null ? new(PyIterationResult.Yield(immediate))
+                : InvokeIterationFunction(function, owned, frame, span, asynchronous);
             return true;
         }
         result = default;
-        pending = default;
         return false;
     }
 
-    internal static PyIterationResult StartIterationListYield(PyExecutableFunction function, object? receiver, PyGenerator generator,
-        LythonSourceSpan span, ExecutionContext context, bool asynchronous, out ValueTask<object> pending)
+    internal static ValueTask<PyIterationResult> StartIterationListYield(PyExecutableFunction function, object? receiver, PyGenerator generator,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         function.StartStagedListYield(generator, receiver, context, span, out var result, out var frame, out var owned);
-        return FinishIterationFunction(function, result, frame, owned, span, asynchronous, out pending);
+        return frame is null ? new(PyIterationResult.Yield(result))
+            : InvokeIterationFunction(function, owned, frame, span, asynchronous);
     }
 
-    internal static PyIterationResult StartBoundIterationFunction(PyExecutableFunction function, BoundFunctionArguments owned,
-        LythonSourceSpan span, bool asynchronous, out ValueTask<object> pending)
+    internal static ValueTask<PyIterationResult> StartBoundIterationFunction(PyExecutableFunction function, BoundFunctionArguments owned,
+        LythonSourceSpan span, bool asynchronous)
     {
-        pending = default;
         ExecutionContext? frame = null;
         var transferred = false;
         try
         {
             if (function.TryStartBoundInvocation(owned, span, out var result, out frame) && frame is null)
-                return PyIterationResult.Yield(result);
+                return new(PyIterationResult.Yield(result));
 
             // The ordinary frame path owns the loan through execution and cleanup.
             transferred = true;
-            if (!asynchronous) return PyIterationResult.Yield(function.InvokeBound(owned, span, frame));
-            pending = function.InvokeBoundAsync(owned, span, frame);
-            return TakeCompletedIterationCallback(ref pending);
+            return InvokeIterationFunction(function, owned, frame, span, asynchronous);
         }
         finally { if (!transferred) function.ReleaseBoundInvocation(owned, frame); }
     }
 
-    private static PyIterationResult FinishIterationFunction(PyExecutableFunction function, ExecutableSlot result,
-        ExecutionContext? frame, BoundFunctionArguments owned, LythonSourceSpan span, bool asynchronous,
-        out ValueTask<object> pending)
+    private static ValueTask<PyIterationResult> InvokeIterationFunction(PyExecutableFunction function,
+        BoundFunctionArguments owned, ExecutionContext? frame, LythonSourceSpan span, bool asynchronous)
+        => asynchronous ? CompleteIterationCallback(function.InvokeBoundSlotAsync(owned, span, frame))
+            : new(PyIterationResult.Yield(function.InvokeBoundSlot(owned, span, frame)));
+
+    private static ValueTask<PyIterationResult> CompleteIterationCallback(ValueTask<ExecutableSlot> pending)
     {
-        pending = default;
-        if (frame is null) return PyIterationResult.Yield(result);
-        if (!asynchronous) return PyIterationResult.Yield(function.InvokeBound(owned, span, frame));
-        pending = function.InvokeBoundAsync(owned, span, frame);
-        return TakeCompletedIterationCallback(ref pending);
+        return pending.IsCompletedSuccessfully ? new(PyIterationResult.Yield(pending.Result)) : AwaitResult(pending);
+
+        static async ValueTask<PyIterationResult> AwaitResult(ValueTask<ExecutableSlot> pending)
+            => PyIterationResult.Yield(await pending.ConfigureAwait(false));
     }
 
-    private static PyIterationResult TakeCompletedIterationCallback(ref ValueTask<object> pending)
+    internal static ValueTask<PyIterationResult> CompleteObjectIterationCallback(ValueTask<object> pending)
     {
-        // An empty result hands the caller its existing pending operation.
-        // A successful callback always returns a value, including Python None.
-        if (!pending.IsCompletedSuccessfully) return default;
-        var value = pending.Result;
-        pending = default;
-        return PyIterationResult.Yield(value);
+        return pending.IsCompletedSuccessfully ? new(PyIterationResult.Yield(pending.Result)) : AwaitResult(pending);
+
+        static async ValueTask<PyIterationResult> AwaitResult(ValueTask<object> pending)
+            => PyIterationResult.Yield(await pending.ConfigureAwait(false));
     }
 
     internal static PyFunctionBase? IterationFunction(object callable, out object? receiver)

@@ -81,6 +81,46 @@ public sealed class NativeCallbackArgumentsTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FrameBackedCallbacksPreserveObservedReturnIdentity(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            saved = []
+            def result(value):
+                with open('factor.txt') as data:
+                    number = value * int(data.read())
+                    saved.append(number)
+                    return number
+            def implicit_none(value):
+                with open('factor.txt') as data:
+                    data.read()
+            first = next(map(result, [500]))
+            second = next(starmap(result, [(600,)]))
+            missing = next(map(implicit_none, [0]))
+            print(first is saved[0], second is saved[1], first, second, missing is None)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join('\n', script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var immediate = new MockLythonHost(); immediate.SeedFile("/factor.txt", "7");
+        var delayed = new DelayedLythonHost(); delayed.SeedFile("/factor.txt", "7");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(immediate))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True 3500 4200 True\n", result.StandardOutput);
+            if (asynchronous)
+            {
+                Assert.True(delayed.CompletedAsynchronously > 0);
+                Assert.Equal(3, delayed.ClosedFileCount);
+            }
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task CancelledDefaultLookupAwaitsCleanupBeforeReturningAllowance()
     {

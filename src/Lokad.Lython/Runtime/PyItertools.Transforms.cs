@@ -329,13 +329,11 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             ? _source.ListYieldGeneratorForPull(_context) : null;
     }
 
-    private bool TryStartSequenceCallback(object current, bool asynchronous, out PyIterationResult result,
-        out ValueTask<object> pending)
+    private bool TryStartSequenceCallback(object current, bool asynchronous, out ValueTask<PyIterationResult> result)
     {
         if (current is not (PyList or PyTuple))
         {
             result = default;
-            pending = default;
             return false;
         }
 
@@ -344,9 +342,9 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         if (count > LythonRuntime.InlineIterationOperandCount)
         {
             if (count <= LythonRuntime.NativeValueCapacity &&
-                LythonRuntime.TryStartIterationRow(_function, row, count, _span, _context, asynchronous, out result, out pending))
+                LythonRuntime.TryStartIterationRow(_function, row, count, _span, _context, asynchronous, out result))
                 return true;
-            return TryStartWideSequenceCallback(row, count, asynchronous, out result, out pending);
+            return TryStartWideSequenceCallback(row, count, asynchronous, out result);
         }
 
         // The exact row has no guest iteration protocol. Tuple loans preserve
@@ -360,15 +358,14 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         }
 
         result = LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
-            asynchronous, out pending);
+            asynchronous);
         return true;
     }
 
     private bool TryStartWideSequenceCallback(IPySequenceValue row, int count, bool asynchronous,
-        out PyIterationResult result, out ValueTask<object> pending)
+        out ValueTask<PyIterationResult> result)
     {
         result = default;
-        pending = default;
         var storage = LythonRuntime.ReserveCallArgumentStorage(count, _context, _span);
         CallArgumentValue[]? arguments = null;
         var transferred = false;
@@ -390,16 +387,17 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
                 ?? throw LythonRuntime.NotCallableError(_function, _context, _span);
             if (!asynchronous)
             {
-                result = PyIterationResult.Yield(callable.Invoke(arguments, _span, _context));
+                result = new(PyIterationResult.Yield(callable.Invoke(arguments, _span, _context)));
                 return true;
             }
 
             var invocation = callable.InvokeAsync(arguments, _span, _context);
             if (invocation.IsCompleted)
-                result = PyIterationResult.Yield(invocation.GetAwaiter().GetResult());
+                result = new(PyIterationResult.Yield(invocation.GetAwaiter().GetResult()));
             else
             {
-                pending = LythonRuntime.CompleteBorrowedArguments(invocation, arguments, storage);
+                result = LythonRuntime.CompleteObjectIterationCallback(
+                    LythonRuntime.CompleteBorrowedArguments(invocation, arguments, storage));
                 transferred = true;
             }
             return true;
@@ -422,17 +420,18 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             LythonRuntime.IterationOperands operands = default;
             zip.TryPullOperands(ref operands, asynchronous: false, out var hasRow, out _);
             return hasRow ? LythonRuntime.StartIterationCallback(_function, operands, zip.Arity, _borrowStorage,
-                _span, _context, asynchronous: false, out _) : PyIterationResult.End;
+                _span, _context, asynchronous: false).GetAwaiter().GetResult() : PyIterationResult.End;
         }
         var generator = ListYieldSource(out var function, out var receiver, out var arity);
         var next = generator is null ? _source.TryMoveNext() : generator.AdvanceListYield(arity);
         if (generator?.HasStagedListYield == true)
-            return LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context, asynchronous: false, out _);
+            return LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context, asynchronous: false)
+                .GetAwaiter().GetResult();
         if (!next.HasValue) return PyIterationResult.End;
         var current = next.Value;
 
-        if (TryStartSequenceCallback(current, asynchronous: false, out var rowResult, out _))
-            return rowResult;
+        if (TryStartSequenceCallback(current, asynchronous: false, out var rowResult))
+            return rowResult.GetAwaiter().GetResult();
 
         return InvokeIterableRowAsync(current, asynchronous: false).GetAwaiter().GetResult();
     }
@@ -447,30 +446,29 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         if (!next.IsCompleted) return FinishPullAsync(next, generator, function, receiver);
 
         if (TryStartPulledCallback(next.GetAwaiter().GetResult(), generator, function, receiver,
-            out var iterable, out var result, out var pending))
-            return result.HasValue ? new(result) : CompleteCallbackAsync(pending);
+            out var iterable, out var result))
+            return result;
         return iterable is null ? new(PyIterationResult.End) : FinishPullAsync(default, null, null, null, iterable);
     }
 
     private bool TryStartPulledCallback(PyIterationResult row, LythonRuntime.PyGenerator? generator,
         PyExecutableFunction? function, object? receiver, out object? iterable,
-        out PyIterationResult result, out ValueTask<object> pending)
+        out ValueTask<PyIterationResult> result)
     {
         iterable = null;
         if (generator?.HasStagedListYield == true)
         {
             result = LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context,
-                asynchronous: true, out pending);
+                asynchronous: true);
             return true;
         }
         if (row.HasValue)
         {
             iterable = row.Value;
-            return TryStartSequenceCallback(iterable, asynchronous: true, out result, out pending);
+            return TryStartSequenceCallback(iterable, asynchronous: true, out result);
         }
 
         result = default;
-        pending = default;
         return false;
     }
 
@@ -480,8 +478,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         if (iterable is null)
         {
             var row = await source.ConfigureAwait(false);
-            if (TryStartPulledCallback(row, generator, function, receiver, out iterable, out var result, out var pending))
-                return result.HasValue ? result : PyIterationResult.Yield(await pending.ConfigureAwait(false));
+            if (TryStartPulledCallback(row, generator, function, receiver, out iterable, out var result))
+                return await result.ConfigureAwait(false);
             if (iterable is null) return PyIterationResult.End;
         }
 
@@ -517,8 +515,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             if (pull.IsCompleted)
             {
                 var excess = pull.GetAwaiter().GetResult();
-                if (TryStartExactGeneratorRow(function, excess, ref workspace, asynchronous, out var result, out var pending))
-                    return result.HasValue ? new(result) : CompleteCallbackAsync(pending);
+                if (TryStartExactGeneratorRow(function, excess, ref workspace, asynchronous, out var result))
+                    return result;
                 // The original operation has been consumed. The ordinary
                 // binder needs only the outcome and the prefetched slots.
                 pull = new(excess);
@@ -529,19 +527,18 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     }
 
     private bool TryStartExactGeneratorRow(PyExecutableFunction function, PyIterationResult excess, ref BoundFunctionArguments workspace,
-        bool asynchronous, out PyIterationResult result, out ValueTask<object> pending)
+        bool asynchronous, out ValueTask<PyIterationResult> result)
     {
         // The drain fills consecutive slots in a cleared loan. The last slot
         // suffices to prove exact arity when there was no excess yield.
         if (excess.HasValue || workspace.Values[function.PositionalCount - 1].IsUnassigned)
         {
             result = default;
-            pending = default;
             return false;
         }
         _context.CheckExecution(_span);
         result = LythonRuntime.StartBoundIterationFunction(function, TakeGeneratorRowWorkspace(ref workspace),
-            _span, asynchronous, out pending);
+            _span, asynchronous);
         return true;
     }
 
@@ -552,8 +549,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         try
         {
             var excess = await pull.ConfigureAwait(false);
-            if (TryStartExactGeneratorRow(function, excess, ref workspace, asynchronous, out var result, out var pending))
-                return result.HasValue ? result : PyIterationResult.Yield(await pending.ConfigureAwait(false));
+            if (TryStartExactGeneratorRow(function, excess, ref workspace, asynchronous, out var result))
+                return await result.ConfigureAwait(false);
 
             // Preserve the first excess yield and every prefetched value.
             // The dynamic binder still handles defaults and arity errors.
@@ -624,14 +621,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
     }
 
     private ValueTask<PyIterationResult> InvokeZipRowAsync(Span<LythonRuntime.ExecutableSlot> operands, int count)
-    {
-        var result = LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
-            asynchronous: true, out var pending);
-        return result.HasValue ? new(result) : CompleteCallbackAsync(pending);
-    }
-
-    private static async ValueTask<PyIterationResult> CompleteCallbackAsync(ValueTask<object> pending)
-        => PyIterationResult.Yield(await pending.ConfigureAwait(false));
+        => LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
+            asynchronous: true);
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.starmap object>");
 }

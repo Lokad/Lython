@@ -197,7 +197,7 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
         if (arguments is null)
         {
             var result = LythonRuntime.StartIterationCallback(_function, inline, _iterators.Length, _borrowStorage, _span, _context,
-                asynchronous: false, out _);
+                asynchronous: false).GetAwaiter().GetResult();
             System.Diagnostics.Debug.Assert(result.HasValue);
             return result;
         }
@@ -256,14 +256,8 @@ internal sealed class PyMapIterator : PyIteratorBase, IPyAsyncIteratorValue
     }
 
     private ValueTask<PyIterationResult> InvokeShortRowAsync(Span<LythonRuntime.ExecutableSlot> operands, int count)
-    {
-        var result = LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
-            asynchronous: true, out var pending);
-        return result.HasValue ? new(result) : AwaitCallbackAsync(pending);
-
-        static async ValueTask<PyIterationResult> AwaitCallbackAsync(ValueTask<object> pending)
-            => PyIterationResult.Yield(await pending.ConfigureAwait(false));
-    }
+        => LythonRuntime.StartIterationCallback(_function, operands, count, _borrowStorage, _span, _context,
+            asynchronous: true);
 
     private async ValueTask<PyIterationResult> MoveWideRowAsync()
     {
