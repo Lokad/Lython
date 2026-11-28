@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1963 refresh the quiet CPython comparison](results/2026-11-28-ownership-cpython/README.md)
+measures `0b50e6fda` after generator ownership changes. Ordinary tuple
+reduction takes 1.156–1.181× sync and 1.219–1.236× async elapsed.
+Five goldens, both quiet checks and 196 batches verify.
+
 [B1962 own the private generator outer with its operand](results/2026-11-28-private-outer-ownership/README.md)
 removes 2,048 growth requests and about 256 KiB of peak admission per
 tuple or range script. The retained iterator witness keeps the same
