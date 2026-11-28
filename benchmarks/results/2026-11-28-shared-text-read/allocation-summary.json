@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "sync",
+    "clr": [
+      1028808,
+      1028808
+    ],
+    "peak": [
+      2592718,
+      2592718
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "scripts.text-uppercase.large",
+    "mode": "sync",
+    "clr": [
+      173392,
+      173392
+    ],
+    "peak": [
+      94982,
+      94982
+    ],
+    "compiled": [
+      50528,
+      50528
+    ]
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "mode": "sync",
+    "clr": [
+      322616,
+      322616
+    ],
+    "peak": [
+      603619,
+      603619
+    ],
+    "compiled": [
+      73664,
+      73664
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "sync",
+    "clr": [
+      22792,
+      22792
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  },
+  {
+    "case": "diagnostic.nested-json-document",
+    "mode": "async",
+    "clr": [
+      1029024,
+      1029024
+    ],
+    "peak": [
+      2592718,
+      2592718
+    ],
+    "compiled": [
+      69840,
+      69840
+    ]
+  },
+  {
+    "case": "scripts.text-uppercase.large",
+    "mode": "async",
+    "clr": [
+      173640,
+      173640
+    ],
+    "peak": [
+      94982,
+      94982
+    ],
+    "compiled": [
+      50528,
+      50528
+    ]
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "mode": "async",
+    "clr": [
+      322920,
+      322864
+    ],
+    "peak": [
+      603619,
+      603619
+    ],
+    "compiled": [
+      73664,
+      73664
+    ]
+  },
+  {
+    "case": "diagnostic.generated-ordinary-definitions",
+    "mode": "async",
+    "clr": [
+      23040,
+      23040
+    ],
+    "peak": [
+      92040,
+      92040
+    ],
+    "compiled": [
+      886881,
+      886881
+    ]
+  }
+]

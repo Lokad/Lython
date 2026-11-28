@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1919 share bounded and whole text reads](results/2026-11-28-shared-text-read/README.md)
+replaces four accumulation loops with one driver and one shared pending path.
+Peak admission matches. The same-image repeat finds under 3% lower async CPU
+for dense JSON and whole-file uppercase, with no clear elapsed gain. Preserve
+the large initial spread on the unchanged line-streaming workload.
+
 [B1918 share text-window refill](results/2026-11-28-shared-text-refill/README.md)
 removes 65 lines and one continuation layer on a pending read. All measured
 admission peaks match. Local async text spans zero on repeat and dense sync

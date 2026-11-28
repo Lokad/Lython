@@ -150,7 +150,7 @@ internal sealed partial class LythonRuntime
                 var failed = true;
                 try
                 {
-                    var result = size == 0 ? PyString.Empty : size < 0 ? ReadAll() : ReadBounded(size);
+                    var result = ReadCore(size, asynchronous: false).GetAwaiter().GetResult();
                     failed = false;
                     return result;
                 }
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
             {
                 BeginRead();
                 ValueTask<PyString> pending;
-                try { pending = size == 0 ? new(PyString.Empty) : size < 0 ? ReadAllAsync() : ReadBoundedAsync(size); }
+                try { pending = ReadCore(size, asynchronous: true); }
                 catch (Exception error) { pending = ValueTask.FromException<PyString>(error); }
                 return CompleteReadAsync(pending);
             }
@@ -498,132 +498,76 @@ internal sealed partial class LythonRuntime
 
             public void Dispose() => Release();
 
-            private PyString ReadBounded(int size)
+            private ValueTask<PyString> ReadCore(int remaining, bool asynchronous)
             {
+                if (remaining == 0) return new(PyString.Empty);
                 GovernedByteBuilder? builder = null;
+                var transferred = false;
                 try
                 {
-                    var remaining = size;
                     while (true)
                     {
-                        Refill();
-                        if (Drained())
+                        var refill = RefillCore(asynchronous);
+                        if (asynchronous && !refill.IsCompleted)
                         {
-                            return EmitAccumulated(builder);
+                            var pending = ReadAfterRefillAsync(refill, remaining, builder);
+                            transferred = true;
+                            return pending;
                         }
-
-                        var take = WindowEndAfterRunes(_window.Length, remaining, out var got);
-                        if (take < _window.Length)
-                        {
-                            if (builder is null)
-                            {
-                                var piece = CreateWindowValue(_windowConsumed, take);
-                                Advance(take);
-                                _services.CheckExecution(null);
-                                return piece;
-                            }
-
-                            AppendRange(builder, _windowConsumed, take);
-                            return EmitAccumulated(builder);
-                        }
-
-                        // Reaching the window end may mean an exact fit or a shortfall;
-                        // counting runes disambiguates without an extra pull.
-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        AppendRange(builder, _windowConsumed, take);
-                        if (got >= remaining)
-                        {
-                            return EmitAccumulated(builder);
-                        }
-
-                        remaining -= got;
+                        refill.GetAwaiter().GetResult();
+                        if (TryReadWindow(ref remaining, ref builder, out var result)) return new(result);
                     }
                 }
-                finally { builder?.Release(); }
+                finally { if (!transferred) builder?.Release(); }
             }
 
-            private async ValueTask<PyString> ReadBoundedAsync(int size)
+            private async ValueTask<PyString> ReadAfterRefillAsync(ValueTask refill, int remaining,
+                GovernedByteBuilder? builder)
             {
-                GovernedByteBuilder? builder = null;
                 try
                 {
-                    var remaining = size;
-                    while (true)
-                    {
+                    await refill.ConfigureAwait(false);
+                    PyString result;
+                    while (!TryReadWindow(ref remaining, ref builder, out result))
                         await RefillAsync().ConfigureAwait(false);
-                        if (Drained())
-                        {
-                            return EmitAccumulated(builder);
-                        }
-
-                        var take = WindowEndAfterRunes(_window.Length, remaining, out var got);
-                        if (take < _window.Length)
-                        {
-                            if (builder is null)
-                            {
-                                var piece = CreateWindowValue(_windowConsumed, take);
-                                Advance(take);
-                                _services.CheckExecution(null);
-                                return piece;
-                            }
-
-                            AppendRange(builder, _windowConsumed, take);
-                            return EmitAccumulated(builder);
-                        }
-
-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        AppendRange(builder, _windowConsumed, take);
-                        if (got >= remaining)
-                        {
-                            return EmitAccumulated(builder);
-                        }
-
-                        remaining -= got;
-                    }
+                    return result;
                 }
                 finally { builder?.Release(); }
             }
 
-            private PyString ReadAll()
+            private bool TryReadWindow(ref int remaining, ref GovernedByteBuilder? builder, out PyString result)
             {
-                GovernedByteBuilder? builder = null;
-                try
+                if (Drained())
                 {
-                    while (true)
-                    {
-                        Refill();
-                        if (Drained())
-                        {
-                            return EmitAccumulated(builder);
-                        }
+                    result = EmitAccumulated(builder);
+                    return true;
+                }
 
-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        var bytes = _window.Span;
-                        AppendRange(builder, _windowConsumed, bytes.Length);
+                var end = _window.Length;
+                var got = 0;
+                if (remaining > 0)
+                {
+                    end = WindowEndAfterRunes(end, remaining, out got);
+                    if (builder is null && end < _window.Length)
+                    {
+                        result = CreateWindowValue(_windowConsumed, end);
+                        Advance(end);
+                        _services.CheckExecution(null);
+                        return true;
                     }
                 }
-                finally { builder?.Release(); }
-            }
 
-            private async ValueTask<PyString> ReadAllAsync()
-            {
-                GovernedByteBuilder? builder = null;
-                try
+                builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+                AppendRange(builder, _windowConsumed, end);
+                // A bounded read at a window boundary can finish without another pull.
+                remaining -= got;
+                if (remaining == 0)
                 {
-                    while (true)
-                    {
-                        await RefillAsync().ConfigureAwait(false);
-                        if (Drained())
-                        {
-                            return EmitAccumulated(builder);
-                        }
-
-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        var bytes = _window.Span;
-                        AppendRange(builder, _windowConsumed, bytes.Length);
-                    }
+                    result = EmitAccumulated(builder);
+                    return true;
                 }
-                finally { builder?.Release(); }
+                result = PyString.Empty;
+                return false;
             }
 
             private PyString EmitAccumulated(GovernedByteBuilder? builder)
