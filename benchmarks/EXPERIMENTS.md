@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1935 direct ready iterator callback handoff](results/2026-11-28-ready-iterator-callback-abi/README.md)
+withdraws the separate ready and pending handoff. Iterable async elapsed
+and CPU span zero. File-fed map CPU falls and the unrelated first-line
+control uses more CPU. Allocation and admission match within witness
+variation. The B1934 typed return remains.
+
 [B1934 keep iterator callback returns in executable slots](results/2026-11-28-typed-iterator-callback-results/README.md)
 removes the frame callback's object round trip. Ordinary helper and
 generator reduction allocates about 65.5 KB less in both APIs and
