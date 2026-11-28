@@ -87,6 +87,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Share frontend member facts and resolve each receiver once | First compilation allocates 17.48% less for configuration and 56.00% less for a UTF-16 codec script against the preceding Lython revision. A separate change reduces local compile CPU by 4.66–5.23% on a generated 48-helper script. Configuration compile-to-result CPU remains inconclusive. [Metadata](../benchmarks/results/2026-11-28-shared-builtin-member-facts/README.md) · [Receiver inference](../benchmarks/results/2026-11-28-one-member-return-receiver/README.md). |
 | Bind fixed-width `sum` arguments on the stack | Ordinary tuple or range reductions each save about 64 KiB per script. Quiet async tuple CPU falls 2.16–3.65%. Range and file-fed CPU span zero. [B1959](../benchmarks/results/2026-11-28-fixed-sum-binding/README.md). |
 | Keep the integer subtotal in its generator operand | Ordinary tuple or range reductions each save about 160 KiB and 2,048 allowance growth requests at matching peaks. Local async tuple CPU falls 2.46–3.80%. [B1960](../benchmarks/results/2026-11-28-borrowed-sum-subtotal/README.md). |
 | Reduce private generator sums in admitted slots | Ordinary tuple and range reductions each save 480 KiB per script in both APIs. Local tuple CPU falls 8.17–14.88% sync and 16.18–20.12% async. [B1957](../benchmarks/results/2026-11-28-borrowed-generator-sum/README.md). |

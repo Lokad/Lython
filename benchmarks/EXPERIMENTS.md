@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1967 resolve a single receiver during return inference](results/2026-11-28-one-member-return-receiver/README.md)
+cuts local process CPU by 4.66–5.23% on a generated 48-helper compile.
+Configuration compile to result spans zero. The 90 scope and diagnostic
+observations agree with the reference.
+
 [B1966 share bytes and list member facts](results/2026-11-28-shared-builtin-member-facts/README.md)
 removes 135 repeated callable and return rows. First compile allocates
 17.48% less for configuration and 56.00% less for the UTF-16 codec.

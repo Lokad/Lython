@@ -110,27 +110,26 @@ internal static class StaticContractEngine
             return true;
         }
 
-        if (StaticRegexReturnResolver.TryResolvePatternMemberCallReturn(call, bindings, out value))
+        if (call.Target is not MemberExpressionSyntax { Target: var target, MemberName: var memberName } ||
+            !StaticAbstractValueResolver.TryResolve(target, bindings, out var receiver))
         {
-            return true;
+            value = default;
+            return false;
         }
 
-        if (StaticRegexReturnResolver.TryResolveMatchMemberCallReturn(call, bindings, out value))
+        switch (receiver.Kind)
         {
-            return true;
+            case AbstractValueKind.RegexPattern or AbstractValueKind.RegexMatch
+                when StaticRegexReturnResolver.TryResolveMemberCallReturn(call, receiver, memberName, bindings, out value):
+            case AbstractValueKind.Dict
+                when TryResolveDictionaryMemberCallReturn(call, receiver, memberName, bindings, out value):
+                return true;
         }
 
-        if (TryResolveDictionaryMemberCallReturn(call, bindings, out value))
-        {
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax { Target: var memberReceiver, MemberName: var memberName } &&
-            StaticAbstractValueResolver.TryResolve(memberReceiver, bindings, out var receiverValue) &&
-            StaticContracts.TryGetMemberReturn(receiverValue, memberName, call.Span, bindings.AnalysisContext, out value))
+        if (StaticContracts.TryGetMemberReturn(receiver, memberName, call.Span, bindings.AnalysisContext, out value))
         {
             if (StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) &&
-                StaticContracts.TryGetCallableContract(receiverValue, memberName, out var contract) &&
+                StaticContracts.TryGetCallableContract(receiver, memberName, out var contract) &&
                 !contract.AcceptsArgumentShape(arguments))
             {
                 value = default;
@@ -278,12 +277,10 @@ internal static class StaticContractEngine
             _ => false,
         };
 
-    private static bool TryResolveDictionaryMemberCallReturn(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
+    private static bool TryResolveDictionaryMemberCallReturn(CallExpressionSyntax call, AbstractValue receiver,
+        string memberName, AbstractState bindings, out AbstractValue value)
     {
-        if (call.Target is not MemberExpressionSyntax { Target: var receiverExpression, MemberName: var memberName } ||
-            memberName is not ("get" or "pop" or "setdefault") ||
-            !StaticAbstractValueResolver.TryResolve(receiverExpression, bindings, out var receiver) ||
-            receiver.Kind != AbstractValueKind.Dict ||
+        if (memberName is not ("get" or "pop" or "setdefault") ||
             !StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) ||
             !StaticContracts.TryGetCallableContract(receiver, memberName, out var contract) ||
             !contract.AcceptsArgumentShape(arguments) ||

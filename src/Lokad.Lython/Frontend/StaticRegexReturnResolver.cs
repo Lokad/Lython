@@ -40,12 +40,10 @@ internal static class StaticRegexReturnResolver
         return false;
     }
 
-    public static bool TryResolvePatternMemberCallReturn(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
+    public static bool TryResolveMemberCallReturn(CallExpressionSyntax call, AbstractValue receiver,
+        string memberName, AbstractState bindings, out AbstractValue value)
     {
-        if (call.Target is not MemberExpressionSyntax { Target: var receiverExpression, MemberName: var memberName } ||
-            !StaticAbstractValueResolver.TryResolve(receiverExpression, bindings, out var receiver) ||
-            receiver.Kind != AbstractValueKind.RegexPattern ||
-            !StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) ||
+        if (!StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) ||
             !StaticContracts.TryGetCallableContract(receiver, memberName, out var contract) ||
             !contract.AcceptsArgumentShape(arguments))
         {
@@ -53,43 +51,8 @@ internal static class StaticRegexReturnResolver
             return false;
         }
 
-        var summary = receiver.RequireRegexPatternSummary();
-        if (memberName is "search" or "match" or "fullmatch")
-        {
-            var operation = memberName switch
-            {
-                "match" => LythonRegexMatchMode.Match,
-                "fullmatch" => LythonRegexMatchMode.FullMatch,
-                _ => LythonRegexMatchMode.Search
-            };
-
-            value = ResolveRegexMatchLikeReturn(summary, arguments, 0, "string", 1, bindings, call.Span, operation);
-            return true;
-        }
-
-        value = memberName switch
-        {
-            "findall" => AbstractValue.ListOf(AbstractValue.Unknown(call.Span), call.Span),
-            "sub" => AbstractValue.StringType(call.Span),
-            "split" => AbstractValue.ListOf(AbstractValue.StringType(call.Span), call.Span),
-            _ => default
-        };
-
-        return value.Kind != default;
-    }
-
-    public static bool TryResolveMatchMemberCallReturn(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
-    {
-        if (call.Target is not MemberExpressionSyntax { Target: var receiverExpression, MemberName: var memberName } ||
-            !StaticAbstractValueResolver.TryResolve(receiverExpression, bindings, out var receiver) ||
-            receiver.Kind != AbstractValueKind.RegexMatch ||
-            !StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) ||
-            !StaticContracts.TryGetCallableContract(receiver, memberName, out var contract) ||
-            !contract.AcceptsArgumentShape(arguments))
-        {
-            value = default;
-            return false;
-        }
+        if (receiver.Kind == AbstractValueKind.RegexPattern)
+            return TryResolvePatternMemberCallReturn(receiver, memberName, arguments, bindings, call.Span, out value);
 
         value = memberName switch
         {
@@ -105,6 +68,34 @@ internal static class StaticRegexReturnResolver
             "span" => AbstractValue.Tuple(
                 new[] { AbstractValue.IntegerType(call.Span), AbstractValue.IntegerType(call.Span) },
                 call.Span),
+            _ => default
+        };
+
+        return value.Kind != default;
+    }
+
+    private static bool TryResolvePatternMemberCallReturn(AbstractValue receiver, string memberName,
+        ConcreteCallArguments arguments, AbstractState bindings, LythonSourceSpan span, out AbstractValue value)
+    {
+        var summary = receiver.RequireRegexPatternSummary();
+        if (memberName is "search" or "match" or "fullmatch")
+        {
+            var operation = memberName switch
+            {
+                "match" => LythonRegexMatchMode.Match,
+                "fullmatch" => LythonRegexMatchMode.FullMatch,
+                _ => LythonRegexMatchMode.Search
+            };
+
+            value = ResolveRegexMatchLikeReturn(summary, arguments, 0, "string", 1, bindings, span, operation);
+            return true;
+        }
+
+        value = memberName switch
+        {
+            "findall" => AbstractValue.ListOf(AbstractValue.Unknown(span), span),
+            "sub" => AbstractValue.StringType(span),
+            "split" => AbstractValue.ListOf(AbstractValue.StringType(span), span),
             _ => default
         };
 

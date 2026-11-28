@@ -51,10 +51,6 @@ internal static partial class StaticContracts
         return catalog.TryGetValue(new(kind, memberName), out contract);
     }
 
-    public static bool IsMutatingMember(AbstractValue receiver, string memberName)
-        => TryGetCallableContract(receiver, memberName, out var contract) &&
-           contract.Mutation == StaticMutationKind.MutatesReceiver;
-
     private static Dictionary<StaticMemberContractKey, StaticCallableContract> CreateCallableMemberIndex()
     {
         var core = CreateCoreCallableContracts();

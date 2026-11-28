@@ -59,10 +59,11 @@ internal static partial class StaticBindingEngine
             return itemReceiver.Name;
         }
 
-        if (!bindings.TryGet(receiver.Name, out var value) || !StaticContracts.IsMutatingMember(value, member))
+        if (!bindings.TryGet(receiver.Name, out var value) ||
+            !StaticContracts.TryGetCallableContract(value, member, out var contract) ||
+            contract.Mutation != StaticMutationKind.MutatesReceiver)
             return null;
         if (StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) &&
-            StaticContracts.TryGetCallableContract(value, member, out var contract) &&
             !contract.AcceptsArgumentShape(arguments))
         {
             return null;
