@@ -143,13 +143,8 @@ internal sealed partial class LythonRuntime
         var arguments = RentFunctionArgumentStorage(generator, span, context, generator.CodeObject.ValueStorageCapacity);
         try { CopyPositionalOperands(arguments.Values, operands, receiver); }
         catch { ReturnBoundArguments(arguments); throw; }
-        if (generator.SharesExecutionWith(context) && context.CanStageGeneratorYield())
-        {
-            var frame = (ExecutionContext)generator.CreateBoundGenerator(arguments, span, staged: true);
-            context.StageGeneratorYield(frame);
-            return PyNone.Instance;
-        }
-        return generator.CreateBoundGenerator(arguments, span);
+        var consumer = generator.SharesExecutionWith(context) ? context.StagedGeneratorConsumer() : null;
+        return generator.CreateBoundGenerator(arguments, span, consumer);
     }
 
     private static ValueTask<object> InvokeFormatFromOperands(StringMembers.MethodFormatCallable method,

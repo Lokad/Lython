@@ -11,35 +11,29 @@ public sealed class GeneratorExpressionAdmissionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task PrivateGeneratorYieldTransfersTheAdmittedFrame(bool asynchronous)
+    public async Task StarmapDrainsTheFirstRowAndLeavesOrdinaryGeneratorIterationIntact(bool asynchronous)
     {
         const string source = """
+            from itertools import starmap
             def inner(value):
                 yield value
-            return (inner(value) for value in (7, 8))
+            def consume(value):
+                return value + 1
+            rows = (inner(value) for value in (7, 8))
+            return starmap(consume, rows), rows
             """;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var script = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
-        var result = LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
-        var rows = Assert.IsType<LythonRuntime.PyGenerator>(result);
+        var pair = Assert.IsType<PyTuple>(LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null));
+        var mapped = Assert.IsType<PyStarmapIterator>(pair[0]);
+        var rows = Assert.IsType<LythonRuntime.PyGenerator>(pair[1]);
 
         try
         {
-            _ = asynchronous ? await rows.AdvanceListYieldAsync(1) : rows.AdvanceListYield(1);
-            var staged = rows.TakeStagedGeneratorYield();
-            Assert.NotNull(staged.Frame);
-            try
-            {
-                var values = new LythonRuntime.ExecutableSlot[1];
-                var end = asynchronous
-                    ? await LythonRuntime.PyGenerator.AdvanceFrameAsync(staged.Frame, staged.Span!, null, PyNone.Instance, null, values, 1, 0)
-                    : LythonRuntime.PyGenerator.AdvanceFrame(staged.Frame, staged.Span!, null, PyNone.Instance, null, values, 1, 0);
-                Assert.False(end.HasValue);
-                Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(values[0].Object));
-            }
-            finally { staged.Release(); }
+            var first = asynchronous ? await mapped.TryMoveNextAsync() : mapped.TryMoveNext();
+            Assert.Equal(new BigInteger(8), Assert.IsType<BigInteger>(first.Value));
 
             var next = asynchronous ? await rows.TryMoveNextAsync() : rows.TryMoveNext();
             var ordinary = Assert.IsType<LythonRuntime.PyGenerator>(next.Value);

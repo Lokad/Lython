@@ -106,6 +106,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Defer private `starmap` generator frames | The 2,048-row iterable shipment allocates about 816 KiB less in each API at matching admission. Quiet warm async CPU falls 5.84–7.45%. The ordinary tuple and file-fed controls span zero. [B1980](../benchmarks/results/2026-11-28-deferred-starmap-argument-frame/README.md). |
 | Share builtin subscript reads across executable loops | The range-indexed 2,048-row CSV diagnostic allocates about 1.38 MiB less and uses about 2.50 MiB less peak admission in both APIs. Quiet warm async CPU falls 25.26–26.69%. Ordinary tuple CPU remains inconclusive. [B1977](../benchmarks/results/2026-11-28-shared-subscript-completion/README.md). |
 | Share exact scalar arithmetic across both execution loops | Compact exponentiation over 2,048 CSV rows allocates about 272 KiB less in both APIs. Quiet warm async CPU falls 8.48–13.04% at matching admission. All three controls span zero. [B1976](../benchmarks/results/2026-11-28-shared-closed-arithmetic/README.md). |
 | Keep compact private generator frames in managed inline slots | The 2,048-row tuple and list shipments allocate about 272 KiB less in both APIs. Warm async tuple CPU falls 2.40–7.43% on the quiet VM at matching admission. The explicit-loop control remains inconclusive. [B1975](../benchmarks/results/2026-11-28-inline-private-generator-slots/README.md). |

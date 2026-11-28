@@ -196,6 +196,62 @@ public sealed class StarmapMaterializationParityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task StagedRowsKeepPrefetchedAliasesAcrossSuspensionAndExcessYield(bool asynchronous)
+    {
+        const string source = """
+            from itertools import starmap
+            marker = []
+            events = []
+            def read():
+                with open('input.txt') as source:
+                    text = source.read()
+                events.append(text)
+                return text
+            def row(mode):
+                yield marker
+                yield marker
+                if mode == 1:
+                    yield read()
+                if mode == 2:
+                    yield 'third'
+                    yield 'excess'
+            def consume(first, second, value='default'):
+                return (first is second and first is marker, value)
+            values = starmap(consume, (row(mode) for mode in (0, 1, 2, 0)))
+            print(next(values), events)
+            print(next(values), events)
+            try:
+                next(values)
+            except TypeError:
+                print('arity', events)
+            print(next(values), events)
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var budget = new LythonMemoryBudget(128 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        var ready = new MockLythonHost();
+        ready.SeedFile("/input.txt", "read");
+        var delayed = new DelayedLythonHost();
+        delayed.SeedFile("/input.txt", "read");
+
+        using (var result = asynchronous ? await script.RunAsync(delayed, options) : script.Run(ready, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("(True, 'default') []\n(True, 'read') ['read']\narity ['read']\n(True, 'default') ['read']\n",
+                result.StandardOutput);
+        }
+        if (asynchronous)
+        {
+            Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(1, delayed.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task GeneratorRowsPreservePublishedScalarAliases(bool asynchronous)
     {
         const string source = """

@@ -952,13 +952,14 @@ The source operands are retired before the callback runs, so the callback can
 resume the generator. Direct pulls and unmatched displays still yield Python
 objects normally.
 
-The same pull can take the frame of an adjacent positional call to a
-same-command generator function. Lython binds and admits the frame at
-the call, then transfers it at the usual yield boundary. The private
-frame uses ordinary generator advancement. If the consumer needs the
-general iterator path, it materializes the generator with its current
-position and active exception. A pending pull keeps its frame and
-argument workspace admitted until their users and cleanup finish.
+The same pull can take an adjacent positional call to a same-command
+generator function. Lython binds and admits the call before the source
+yields. For eligible lexical bodies, `starmap` keeps the admitted slots
+and runs completed instructions through the shared dispatcher. Their
+yields fill the callback's argument slots directly. A dynamic operation
+or excess yield transfers the live slots and instruction position to
+ordinary generator advancement. A pending pull keeps the generator
+and callback storage admitted until their users and cleanup finish.
 
 A generator expression passed directly to the evaluated builtin `sum` can
 reduce in the instruction that acquires the generator's outer source.

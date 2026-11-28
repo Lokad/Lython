@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
             out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default,
-            Span<PrivateGeneratorReduction> reduction = default)
+            Span<PrivateGeneratorReduction> reduction = default, Span<GeneratorRowBuffer> row = default)
         {
             pending = default;
             pendingSpan = default;
@@ -138,6 +138,8 @@ internal sealed partial class LythonRuntime
                         {
                             if (invocation is null)
                             {
+                                if (!row.IsEmpty && instruction.DiscardsYieldResult &&
+                                    row[0].TryAppend(ref execution, instruction)) break;
                                 if (reduction.IsEmpty || !instruction.DiscardsYieldResult ||
                                     !reduction[0].TryAddBorrowedInteger(execution.Stack.Values[instruction.InputStart]))
                                     return InstructionPause.ContextRequired;
@@ -398,7 +400,7 @@ internal sealed partial class LythonRuntime
                             }
                             if (invocation is null)
                             {
-                                if (!TryExecuteDeferredChild(ref execution, scope, call, callStart, target, out var child))
+                                if (!row.IsEmpty || !TryExecuteDeferredChild(ref execution, scope, call, callStart, target, out var child))
                                     return InstructionPause.ContextRequired;
                                 if (child is null) break;
                                 nextCall = new(child);

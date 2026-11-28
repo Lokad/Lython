@@ -12,15 +12,22 @@ internal sealed partial class LythonRuntime
         { PythonCause = cause, PythonContext = cause, SuppressPythonContext = true };
     }
 
-    // Only the source frame and starmap may hold this activation before it
-    // becomes a Python object. Both transfer the same admitted frame.
-    internal readonly record struct StagedGeneratorYield(ExecutionContext? Frame, LythonSourceSpan? Span)
+    // The starmap pull owns the admitted activation until it drains, transfers
+    // it to the frame driver or materializes a Python iterator.
+    internal readonly record struct StagedGeneratorYield(ExecutionContext? Frame, LythonSourceSpan? Span,
+        PyGeneratorFunction? Function = null, BoundFunctionArguments Arguments = default)
     {
+        internal bool HasValue => Frame is not null || Function is not null;
+
+        internal StagedGeneratorYield EnsureFrame()
+            => Function is null ? this : new(Function.CreateAdmittedFrame(Arguments, Span!), Span);
+
         internal PyGenerator Materialize(bool started = false) => new(Frame!, Span!, started);
 
         internal void Release()
         {
             if (Frame is not null) PyGenerator.CompleteFrame(Frame);
+            else if (Function is not null) ReturnBoundArguments(Arguments, Function.CodeObject.ValueStorageCapacity);
         }
     }
 
@@ -160,19 +167,16 @@ internal sealed partial class LythonRuntime
 
         // Private callers must transfer a staged yield before starting the
         // callback. The ordinary result remains empty until that transfer.
-        internal PyIterationResult AdvanceListYield(int arity)
-            => Advance(PyNone.Instance, null, startOrArity: arity);
+        internal PyIterationResult AdvanceListYield(PyStarmapIterator consumer, int arity)
+            => Advance(PyNone.Instance, null, destination: consumer, startOrArity: arity);
 
-        internal ValueTask<PyIterationResult> AdvanceListYieldAsync(int arity)
-            => AdvanceAsync(PyNone.Instance, null, startOrArity: arity);
+        internal ValueTask<PyIterationResult> AdvanceListYieldAsync(PyStarmapIterator consumer, int arity)
+            => AdvanceAsync(PyNone.Instance, null, destination: consumer, startOrArity: arity);
 
         internal bool HasStagedListYield => _frame?.HasStagedListYield == true;
 
         internal void TransferStagedListYield(Span<ExecutableSlot> destination)
             => _frame!.TransferStagedListYield(destination);
-
-        internal StagedGeneratorYield TakeStagedGeneratorYield()
-            => _frame?.TakeStagedGeneratorYield() ?? default;
 
         private PyIterationResult Advance(object sent, LythonRuntimeException? injected,
             object? destination = null, int limit = 0, int startOrArity = 0)
@@ -204,7 +208,7 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             catch { CompleteFrame(frame, owner); throw; }
-            finally { if (entered) LeaveFrame(frame, owner, previousException, destination is not null, startOrArity); }
+            finally { if (entered) LeaveFrame(frame, owner, previousException, destination is not null); }
         }
 
         private ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected,
@@ -238,7 +242,7 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             catch { CompleteFrame(frame, owner); throw; }
-            finally { if (entered) LeaveFrame(frame, owner, previousException, destination is not null, startOrArity); }
+            finally { if (entered) LeaveFrame(frame, owner, previousException, destination is not null); }
         }
 
         private bool CanAdvance(object sent, LythonRuntimeException? injected)
@@ -263,14 +267,12 @@ internal sealed partial class LythonRuntime
             // Reentry and stack admission have succeeded. A rejected nested
             // pull must never overwrite the current advance's destination.
             if (destination is not null) frame.BufferYields(destination, limit, startOrArity);
-            else if (startOrArity != 0) frame.RequestListYield(startOrArity);
         }
 
         private static void LeaveFrame(ExecutionContext frame, PyGenerator? owner, PyException? previousException,
-            bool buffered, int startOrArity)
+            bool buffered)
         {
             if (buffered) frame.StopBufferingYields();
-            else if (startOrArity != 0) frame.RequestListYield(0);
             if (owner is not null) owner._running = false;
             frame.State.SetCurrentException(previousException);
             frame.LeaveExecutableSlots();

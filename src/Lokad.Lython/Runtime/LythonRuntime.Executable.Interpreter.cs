@@ -175,11 +175,7 @@ internal sealed partial class LythonRuntime
             if (_execution.Code is null) return;
             try
             {
-                if (_yieldTarget is ExecutionContext staged)
-                {
-                    _yieldTarget = null;
-                    PyGenerator.CompleteFrame(staged);
-                }
+                if (_yieldTarget is PyStarmapIterator consumer) consumer.TakeStagedGenerator().Release();
             }
             finally
             {
@@ -213,46 +209,27 @@ internal sealed partial class LythonRuntime
         // A pull either borrows a buffer or stages a generator for its caller.
         // Both lifetimes end before another advance of this frame can start.
         private object? _yieldTarget;
-        private object? BufferedYieldDestination => _yieldTarget is ExecutionContext ? null : _yieldTarget;
+        private object? BufferedYieldDestination => _yieldTarget is PyStarmapIterator ? null : _yieldTarget;
         private int _yieldLimit;
         // A drain and a staged-list request are exclusive. With a slot
         // destination this is the next write position. With no destination
         // it is the list arity requested by the consumer.
         private int _yieldPositionOrListArity;
-        private bool RequestedListYield => _yieldPositionOrListArity > 0 && _yieldTarget is null;
+        private bool RequestedListYield => _yieldTarget is PyStarmapIterator;
         internal bool HasStagedListYield { get; private set; }
 
-        internal void RequestListYield(int arity) => _yieldPositionOrListArity = arity;
-
-        internal bool CanStageGeneratorYield()
+        internal PyStarmapIterator? StagedGeneratorConsumer()
         {
-            if (!RequestedListYield || MirrorsExecutableLocals || MirrorLocalStores) return false;
+            if (_yieldTarget is not PyStarmapIterator consumer || MirrorsExecutableLocals || MirrorLocalStores) return null;
             var index = _execution.InstructionIndex;
             var instructions = _execution.Code.Instructions;
-            if (index + 1 >= instructions.Length) return false;
+            if (index + 1 >= instructions.Length) return null;
             ref readonly var call = ref instructions[index];
             ref readonly var yield = ref instructions[index + 1];
             return call.OpCode == ExecutableOpCode.Call && !call.HasResultConsumer
                 && yield.OpCode == ExecutableOpCode.Yield
                 && yield.InputStart == call.ResultSlot && yield.ResultSlot == call.ResultSlot
-                && _execution.Stack.CanRetireWithoutCleanup(call.ResultSlot);
-        }
-
-        internal void StageGeneratorYield(ExecutionContext generator)
-        {
-            System.Diagnostics.Debug.Assert(_yieldTarget is null);
-            _yieldTarget = generator;
-        }
-
-        internal StagedGeneratorYield TakeStagedGeneratorYield()
-        {
-            if (_yieldTarget is not ExecutionContext generator) return default;
-            _yieldTarget = null;
-            System.Diagnostics.Debug.Assert(HasYield);
-            // Staging is limited to the adjacent call. The yield remains
-            // current until the next advance, so the call site owns the span.
-            ref readonly var call = ref _execution.Code.Instructions[_execution.InstructionIndex - 1];
-            return new(generator, _execution.Code.CallSites[call.CallSiteIndex].CallSpan);
+                && _execution.Stack.CanRetireWithoutCleanup(call.ResultSlot) ? consumer : null;
         }
 
         private bool TryStageListYield(in ExecutableInstruction display)
