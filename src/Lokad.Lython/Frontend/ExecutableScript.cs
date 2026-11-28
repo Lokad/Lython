@@ -580,6 +580,7 @@ internal sealed partial class ExecutableCodeObject
 {
     private const int CapturedDefinitionPair = -1;
     private readonly int _definitionPairFirstCreation;
+    private readonly IReadOnlyDictionary<string, int>? _closureNameToSlot;
     internal const int ClosedCaptureCapacity = 4;
     internal PyDict.RecordKeys? DefinitionAnnotationKeys { get; set; }
 
@@ -591,7 +592,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyDictionary<string, int> localNameToSlot,
         IReadOnlyList<int> capturedLocalSlots,
         IReadOnlyList<string> closureNames,
-        IReadOnlyDictionary<string, int> closureNameToSlot,
+        IReadOnlyDictionary<string, int>? closureNameToSlot,
         ScopeDirectiveFacts scopeFacts,
         List<List<ExecutableInstruction>> blocks,
         int entryBlockIndex,
@@ -620,7 +621,7 @@ internal sealed partial class ExecutableCodeObject
         LocalNameToSlot = localNameToSlot;
         CapturedLocalSlots = capturedLocalSlots;
         ClosureNames = closureNames;
-        ClosureNameToSlot = closureNameToSlot;
+        _closureNameToSlot = closureNameToSlot;
         ScopeFacts = scopeFacts;
         Imports = imports;
         CallSites = callSites;
@@ -772,8 +773,9 @@ internal sealed partial class ExecutableCodeObject
         GlobalModule = module;
     }
 
-    internal void PrepareCaptureSources(IReadOnlyDictionary<string, int> parentLocals,
-        IReadOnlyDictionary<string, int> parentClosures, bool canCaptureByValue, MemoryGovernor? governor, CancellationToken cancellationToken)
+    internal void PrepareCaptureSources(IReadOnlyDictionary<string, int> parentLocals, IReadOnlyList<string> parentClosures,
+        IReadOnlyDictionary<string, int>? parentClosureIndex, bool canCaptureByValue, MemoryGovernor? governor,
+        CancellationToken cancellationToken)
     {
         var span = Instructions[EntryIndex].Span;
         var bytes = checked(64L + sizeof(int) * (long)ClosureNames.Count);
@@ -784,7 +786,9 @@ internal sealed partial class ExecutableCodeObject
         {
             if ((i & 255) == 0) PythonTokenization.CheckCancellation(cancellationToken, span.Start);
             var name = ClosureNames[i];
-            slots[i] = parentLocals.TryGetValue(name, out var local) ? local : ~parentClosures[name];
+            if (parentLocals.TryGetValue(name, out var local)) slots[i] = local;
+            else if (TryGetClosureSlot(parentClosures, parentClosureIndex, name, out var closure)) slots[i] = ~closure;
+            else throw new KeyNotFoundException(name);
         }
         // The builder's local-slot map also belongs to the final parent code.
         var sources = new ExecutableCaptureSources(parentLocals, slots, canCaptureByValue);
@@ -800,7 +804,18 @@ internal sealed partial class ExecutableCodeObject
 
     public IReadOnlyList<string> ClosureNames { get; }
 
-    public IReadOnlyDictionary<string, int> ClosureNameToSlot { get; }
+    internal bool TryGetClosureSlot(string name, out int slot)
+        => TryGetClosureSlot(ClosureNames, _closureNameToSlot, name, out slot);
+
+    internal static bool TryGetClosureSlot(IReadOnlyList<string> names, IReadOnlyDictionary<string, int>? index,
+        string name, out int slot)
+    {
+        if (index is not null) return index.TryGetValue(name, out slot);
+        for (slot = 0; slot < names.Count; slot++)
+            if (string.Equals(names[slot], name, StringComparison.Ordinal)) return true;
+        slot = 0;
+        return false;
+    }
 
     public ScopeDirectiveFacts ScopeFacts { get; }
 

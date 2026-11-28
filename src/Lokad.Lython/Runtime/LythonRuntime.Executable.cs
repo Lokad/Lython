@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (!_execution.Captures.IsEmpty && _execution.Code.TryGetClosureSlot(name, out var closureSlot))
             {
                 if (_execution.Captures.TryRead(closureSlot, out var closure) && closure is not null)
                 {
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (!_execution.Captures.IsEmpty && _execution.Code.TryGetClosureSlot(name, out var closureSlot))
             {
                 cell = _execution.Captures.GetCell(closureSlot);
                 return cell is not null;
@@ -327,7 +327,7 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot) &&
+            if (!_execution.Captures.IsEmpty && _execution.Code.TryGetClosureSlot(name, out var closureSlot) &&
                 _execution.Captures.GetCell(closureSlot) is { } cell)
             {
                 cell.Value = value;
@@ -347,7 +347,7 @@ internal sealed partial class LythonRuntime
                 return removed;
             }
 
-            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot) &&
+            if (!_execution.Captures.IsEmpty && _execution.Code.TryGetClosureSlot(name, out var closureSlot) &&
                 _execution.Captures.GetCell(closureSlot) is { } cell)
             {
                 var removed = cell.Value is not null;

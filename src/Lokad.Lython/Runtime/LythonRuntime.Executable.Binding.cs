@@ -573,7 +573,7 @@ internal sealed partial class LythonRuntime
 
         if (codeObject.ScopeFacts.IsNonlocal(name))
         {
-            if (codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (codeObject.TryGetClosureSlot(name, out var closureSlot))
             {
                 StoreExecutableClosure(codeObject, context, closureSlot, value, span);
                 return;

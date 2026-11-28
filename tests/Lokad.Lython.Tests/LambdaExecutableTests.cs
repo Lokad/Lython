@@ -55,8 +55,10 @@ public sealed class LambdaExecutableTests
             else
             {
                 var captured = capture(lambda, context, span);
-                Assert.Same(first, captured.GetCell(lambda.ClosureNameToSlot["left"]));
-                Assert.Same(second, captured.GetCell(lambda.ClosureNameToSlot["right"]));
+                Assert.True(lambda.TryGetClosureSlot("left", out var leftSlot));
+                Assert.True(lambda.TryGetClosureSlot("right", out var rightSlot));
+                Assert.Same(first, captured.GetCell(leftSlot));
+                Assert.Same(second, captured.GetCell(rightSlot));
                 var arrayBytes = governor.CurrentAccountedBytes - baseline;
                 Assert.InRange(arrayBytes, 1, LythonRuntime.ExecutableCell.StorageBytes - 1);
                 context._execution.Stack.ReleaseStorage();

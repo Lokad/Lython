@@ -423,7 +423,9 @@ Evaluation order, partial stores, nested diagnostic spans and suspended setter
 ownership remain unchanged.
 Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
-remain function-owned. The shared parameter layout owns positional binding
+remain function-owned. A closure with up to four names uses its ordered name
+list for slot lookup. Wider closures also keep a name index.
+The shared parameter layout owns positional binding
 eligibility. The compiled code object owns checked work-buffer extents.
 Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.

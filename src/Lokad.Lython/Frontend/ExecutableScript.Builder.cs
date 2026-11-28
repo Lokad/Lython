@@ -144,7 +144,7 @@ internal sealed partial class ExecutableScript
         // select a prepared capture layout at execution.
         private Dictionary<string, int> _localIndexes;
         private readonly string[] _declaredLocalNames;
-        private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
+        private Dictionary<string, int>? _closureIndexes;
         private int _lookupCacheCount;
         private int _protectedDepth;
         private int _firstDefinitionIndex = int.MaxValue;
@@ -363,7 +363,7 @@ internal sealed partial class ExecutableScript
                     else
                     {
                         forwardsCaptures = true;
-                        if (!_closureIndexes.ContainsKey(name))
+                        if (!TryGetClosureSlot(name, out _))
                         {
                             if (HasEnclosingBinding(name)) InternClosure(name);
                             else resolved = false;
@@ -376,7 +376,7 @@ internal sealed partial class ExecutableScript
                     // be forwarded from the child to another binding owner.
                     var byValue = names.Count == 1 && !child.ForwardsCaptures &&
                         _localIndexes.ContainsKey(names[0]) && IsUnchangingParameter(names[0]);
-                    child.PrepareCaptureSources(_localIndexes, _closureIndexes, byValue,
+                    child.PrepareCaptureSources(_localIndexes, _buffers.Closures, _closureIndexes, byValue,
                         _compilation.Governor, _compilation.CancellationToken);
                 }
             }

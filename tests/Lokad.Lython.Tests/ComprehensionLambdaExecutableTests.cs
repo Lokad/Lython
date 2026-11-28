@@ -102,8 +102,10 @@ public sealed class ComprehensionLambdaExecutableTests
             else
             {
                 captured = capture(lambda, context, syntax.Statements[0].Span);
-                Assert.Same(parentCell, captured.GetCell(lambda.ClosureNameToSlot["offset"]));
-                Assert.Same(held, captured.GetCell(lambda.ClosureNameToSlot["value"])!.Value);
+                Assert.True(lambda.TryGetClosureSlot("offset", out var offsetSlot));
+                Assert.True(lambda.TryGetClosureSlot("value", out var valueSlot));
+                Assert.Same(parentCell, captured.GetCell(offsetSlot));
+                Assert.Same(held, captured.GetCell(valueSlot)!.Value);
                 Assert.True(parentCell.RetentionCharged);
                 Assert.True(scope.Bindings.MirrorLocalStores);
                 Assert.False(context.MirrorLocalStores);
@@ -124,7 +126,8 @@ public sealed class ComprehensionLambdaExecutableTests
         Assert.Null(context.CurrentExecutableFrame);
         if (!deny)
         {
-            Assert.Equal(new BigInteger(2), captured.GetCell(lambda.ClosureNameToSlot["value"])!.Value);
+            Assert.True(lambda.TryGetClosureSlot("value", out var valueSlot));
+            Assert.Equal(new BigInteger(2), captured.GetCell(valueSlot)!.Value);
             Assert.Equal(charged, governor.CurrentAccountedBytes);
         }
     }

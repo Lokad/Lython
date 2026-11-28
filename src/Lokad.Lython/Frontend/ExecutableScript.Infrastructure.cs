@@ -138,16 +138,27 @@ internal sealed partial class ExecutableScript
 
         private int InternClosure(string name)
         {
-            if (_closureIndexes.TryGetValue(name, out var index))
+            if (TryGetClosureSlot(name, out var index))
             {
                 return index;
             }
 
             index = _buffers.Closures.Count;
+            if (index == ExecutableCodeObject.ClosedCaptureCapacity)
+            {
+                // Small closures already have the complete ordered slot list.
+                // Wider closures keep an index for repeated name lookups.
+                _closureIndexes = new(index + 1, StringComparer.Ordinal);
+                for (var slot = 0; slot < index; slot++)
+                    _closureIndexes.Add(_buffers.Closures[slot], slot);
+            }
             _buffers.Closures.Add(name);
-            _closureIndexes.Add(name, index);
+            _closureIndexes?.Add(name, index);
             return index;
         }
+
+        private bool TryGetClosureSlot(string name, out int slot)
+            => ExecutableCodeObject.TryGetClosureSlot(_buffers.Closures, _closureIndexes, name, out slot);
 
         private int InternName(string name)
         {
@@ -270,7 +281,7 @@ internal sealed partial class ExecutableScript
                     if (names.Contains(name)) return true;
 
                 if (parent._parameterLayout is null || parent._scopeFacts.IsGlobal(name)) return false;
-                if (parent._localIndexes.ContainsKey(name) || parent._closureIndexes.ContainsKey(name)) return true;
+                if (parent._localIndexes.ContainsKey(name) || parent.TryGetClosureSlot(name, out _)) return true;
             }
             return false;
         }

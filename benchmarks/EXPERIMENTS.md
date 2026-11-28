@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1911 reuse ordered names for small closure lookups](results/2026-11-28-small-closure-name-table/README.md)
+removes 7,920 B of compiler allocation from each generated-definition
+script at identical admission. Ordinary compile uses 0.43–1.43% less
+CPU locally and guarded compile uses 0.34–0.71% more. All 140 timed
+batches verify, with wide variation in the nested JSON control.
+
 [B1910 preserve native slots across a generator row and ready callback](results/2026-11-27-private-generator-row-slots/README.md)
 removes 131,128 B of managed allocation per iterable shipment in both
 APIs at matching admission. On the same-image local repeat, async
