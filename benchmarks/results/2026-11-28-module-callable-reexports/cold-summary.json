@@ -1,0 +1,100 @@
+{
+  "candidatePatchSHA256": "dcda69f894ff336b6260f53af52bb32e8a7e89a4c6cc643b077f38639a3c1d4e",
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "elapsed": {
+        "median": {
+          "reference": 255.889951,
+          "candidate": 262.73771450000004
+        },
+        "iqr": {
+          "reference": [
+            245.043281,
+            259.88250925
+          ],
+          "candidate": [
+            240.34000799999998,
+            271.86821150000003
+          ]
+        },
+        "medianChange": 2.6760579980728005,
+        "pairedRange": [
+          -8.510835594695987,
+          19.20978574333394
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 219.32700000000023,
+          "candidate": 216.98949999999968
+        },
+        "iqr": {
+          "reference": [
+            217.60374999999996,
+            220.77999999999997
+          ],
+          "candidate": [
+            215.1410000000002,
+            219.78999999999962
+          ]
+        },
+        "medianChange": -1.0657602575152803,
+        "pairedRange": [
+          -2.9860427562492964,
+          3.166299049137433
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.workbook-reexports",
+      "elapsed": {
+        "median": {
+          "reference": 215.47593899999998,
+          "candidate": 224.03375
+        },
+        "iqr": {
+          "reference": [
+            206.552686,
+            231.52254974999997
+          ],
+          "candidate": [
+            206.02969275,
+            235.10232549999998
+          ]
+        },
+        "medianChange": 3.971585430705571,
+        "pairedRange": [
+          -13.531644398540566,
+          30.94608586833254
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 171.45600000000024,
+          "candidate": 169.46299999999985
+        },
+        "iqr": {
+          "reference": [
+            169.71650000000045,
+            176.42525000000046
+          ],
+          "candidate": [
+            168.8929999999997,
+            178.94799999999964
+          ]
+        },
+        "medianChange": -1.1623973497576046,
+        "pairedRange": [
+          -2.4976011900370465,
+          1.6275192523613091
+        ]
+      }
+    }
+  ],
+  "verifiedInvocations": 48,
+  "nativePersistentStage": "/home/vermorel/lython-bench-work/module-reexports-b1929-20261128",
+  "cpuAffinity": [
+    27
+  ]
+}

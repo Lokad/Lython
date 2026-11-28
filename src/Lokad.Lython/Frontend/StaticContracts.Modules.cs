@@ -431,13 +431,13 @@ internal static class StaticModuleCatalog
             "attrgetter",
             "methodcaller"),
         ["openpyxl"] = Members("Workbook", "load_workbook", "__version__", "utils", "workbook", "reader", "styles", "comments", "chart", "cell", "worksheet", "drawing"),
-        ["openpyxl.workbook"] = Members("Workbook"),
+        ["openpyxl.workbook"] = ReexportedMembers("openpyxl", "Workbook"),
         ["openpyxl.cell"] = Members("cell"),
         ["openpyxl.cell.cell"] = Members("Cell"),
         ["openpyxl.reader"] = Members("excel"),
-        ["openpyxl.reader.excel"] = Members("load_workbook"),
+        ["openpyxl.reader.excel"] = ReexportedMembers("openpyxl", "load_workbook"),
         ["openpyxl.utils"] = Members("get_column_letter", "column_index_from_string", "coordinate_from_string", "coordinate_to_tuple", "range_boundaries", "get_column_interval", "absolute_coordinate", "quote_sheetname", "rows_from_range", "cols_from_range", "cell", "exceptions"),
-        ["openpyxl.utils.cell"] = Members("get_column_letter", "column_index_from_string", "coordinate_from_string", "coordinate_to_tuple", "range_boundaries", "get_column_interval", "absolute_coordinate", "quote_sheetname", "rows_from_range", "cols_from_range"),
+        ["openpyxl.utils.cell"] = ReexportedMembers("openpyxl.utils", "get_column_letter", "column_index_from_string", "coordinate_from_string", "coordinate_to_tuple", "range_boundaries", "get_column_interval", "absolute_coordinate", "quote_sheetname", "rows_from_range", "cols_from_range"),
         ["openpyxl.utils.exceptions"] = Members("CellCoordinatesException", "IllegalCharacterError", "InvalidFileException", "NamedRangeException", "ReadOnlyWorkbookException", "SheetTitleException", "WorkbookAlreadySaved"),
         ["openpyxl.styles"] = Members("Font", "PatternFill", "GradientFill", "Alignment", "Border", "Side", "Protection", "NamedStyle", "colors"),
         ["openpyxl.styles.colors"] = Members("Color", "BLACK", "WHITE", "BLUE"),
@@ -506,45 +506,21 @@ internal static class StaticModuleCatalog
             [new("openpyxl.drawing", "image")] = "openpyxl.drawing.image",
         }.ToFrozenDictionary();
 
-    internal static readonly FrozenDictionary<ModuleMemberName, string> CallableAliases =
-        new Dictionary<ModuleMemberName, string>
-        {
-            [new("openpyxl.workbook", "Workbook")] = "openpyxl.Workbook",
-            [new("openpyxl.reader.excel", "load_workbook")] = "openpyxl.load_workbook",
-            [new("openpyxl.utils.cell", "get_column_letter")] = "openpyxl.utils.get_column_letter",
-            [new("openpyxl.utils.cell", "column_index_from_string")] = "openpyxl.utils.column_index_from_string",
-            [new("openpyxl.utils.cell", "coordinate_from_string")] = "openpyxl.utils.coordinate_from_string",
-            [new("openpyxl.utils.cell", "coordinate_to_tuple")] = "openpyxl.utils.coordinate_to_tuple",
-            [new("openpyxl.utils.cell", "range_boundaries")] = "openpyxl.utils.range_boundaries",
-            [new("openpyxl.utils.cell", "get_column_interval")] = "openpyxl.utils.get_column_interval",
-            [new("openpyxl.utils.cell", "absolute_coordinate")] = "openpyxl.utils.absolute_coordinate",
-            [new("openpyxl.utils.cell", "quote_sheetname")] = "openpyxl.utils.quote_sheetname",
-            [new("openpyxl.utils.cell", "rows_from_range")] = "openpyxl.utils.rows_from_range",
-            [new("openpyxl.utils.cell", "cols_from_range")] = "openpyxl.utils.cols_from_range",
-            [new("openpyxl.styles", "Font")] = "openpyxl.styles.Font",
-            [new("openpyxl.styles", "PatternFill")] = "openpyxl.styles.PatternFill",
-            [new("openpyxl.styles", "Border")] = "openpyxl.styles.Border",
-            [new("openpyxl.styles", "Side")] = "openpyxl.styles.Side",
-            [new("openpyxl.styles", "Alignment")] = "openpyxl.styles.Alignment",
-            [new("openpyxl.styles", "Protection")] = "openpyxl.styles.Protection",
-            [new("openpyxl.styles", "NamedStyle")] = "openpyxl.styles.NamedStyle",
-            [new("openpyxl.comments", "Comment")] = "openpyxl.comments.Comment",
-            [new("openpyxl.worksheet.table", "Table")] = "openpyxl.worksheet.table.Table",
-            [new("openpyxl.worksheet.table", "TableStyleInfo")] = "openpyxl.worksheet.table.TableStyleInfo",
-            [new("openpyxl.worksheet.datavalidation", "DataValidation")] = "openpyxl.worksheet.datavalidation.DataValidation",
-        }.ToFrozenDictionary();
-
     internal static readonly IReadOnlyList<string> Names = Surfaces.Keys.Order(StringComparer.Ordinal).ToArray();
 
     private static BuiltinModuleSurface Members(params string[] names)
         => new(names);
 
+    private static BuiltinModuleSurface ReexportedMembers(string callableModule, params string[] names)
+        => new(names, callableModule);
+
     internal sealed class BuiltinModuleSurface
     {
         private readonly FrozenSet<string> _memberLookup;
 
-        public BuiltinModuleSurface(IEnumerable<string> members)
+        public BuiltinModuleSurface(IEnumerable<string> members, string? callableModule = null)
         {
+            CallableModule = callableModule;
             _memberLookup = members.ToFrozenSet(StringComparer.Ordinal);
             MemberNames = _memberLookup.Order(StringComparer.Ordinal).ToArray();
             ExportedMemberNames = MemberNames
@@ -555,6 +531,8 @@ internal static class StaticModuleCatalog
         public IReadOnlyList<string> MemberNames { get; }
 
         public IReadOnlyList<string> ExportedMemberNames { get; }
+
+        public string? CallableModule { get; }
 
         public bool Contains(string memberName) => _memberLookup.Contains(memberName);
     }
@@ -568,7 +546,11 @@ internal static partial class StaticContracts
         => StaticModuleCatalog.Surfaces.ContainsKey(moduleName);
 
     public static bool IsKnownBuiltinModuleMember(string moduleName, string memberName)
-        => StaticModuleCatalog.Surfaces.TryGetValue(moduleName, out var surface) &&
+        => TryGetKnownBuiltinModuleMember(moduleName, memberName, out _);
+
+    private static bool TryGetKnownBuiltinModuleMember(string moduleName, string memberName,
+        [NotNullWhen(true)] out StaticModuleCatalog.BuiltinModuleSurface? surface)
+        => StaticModuleCatalog.Surfaces.TryGetValue(moduleName, out surface) &&
             (memberName is "__dict__" or "__name__" or "__spec__" or "__loader__" or "__package__" ||
              memberName == "__path__" && StaticModuleCatalog.Names.Any(name => name.StartsWith(moduleName + ".", StringComparison.Ordinal)) ||
              surface.Contains(memberName));
@@ -588,7 +570,7 @@ internal static partial class StaticContracts
 
     public static bool TryGetModuleMemberValue(string moduleName, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        if (!IsKnownBuiltinModuleMember(moduleName, memberName))
+        if (!TryGetKnownBuiltinModuleMember(moduleName, memberName, out var surface))
         {
             value = default;
             return false;
@@ -601,7 +583,10 @@ internal static partial class StaticContracts
             return true;
         }
 
-        var targetName = StaticModuleCatalog.CallableAliases.GetValueOrDefault(member) ?? $"{moduleName}.{memberName}";
+        // Reexports apply only to declared members. Standard module metadata
+        // still belongs to the accessed module.
+        var callableModule = surface.CallableModule is { } prefix && surface.Contains(memberName) ? prefix : moduleName;
+        var targetName = $"{callableModule}.{memberName}";
         if (TryGetKnownCallContract(targetName, out _))
         {
             value = AbstractValue.KnownCallable(targetName, span);

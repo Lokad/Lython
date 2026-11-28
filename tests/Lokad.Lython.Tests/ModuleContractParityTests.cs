@@ -25,7 +25,7 @@ public sealed class ModuleContractParityTests
     }
 
     [Fact]
-    public void ModuleCatalogAgreesWithRuntimeRegistrationsAndKnownContracts()
+    public void ModuleCatalogAgreesWithRuntimeRegistrations()
     {
         Assert.Equal(LythonRuntime.GetKnownBuiltinModuleNames(), StaticContracts.GetKnownBuiltinModuleNames());
         foreach (var (member, target) in StaticModuleCatalog.Submodules)
@@ -33,10 +33,21 @@ public sealed class ModuleContractParityTests
             Assert.True(StaticContracts.IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName), member.ToString());
             Assert.True(StaticContracts.IsKnownBuiltinModule(target), target);
         }
+    }
 
-        foreach (var (member, target) in StaticModuleCatalog.CallableAliases)
+    [Theory]
+    [InlineData("openpyxl.workbook", "openpyxl")]
+    [InlineData("openpyxl.reader.excel", "openpyxl")]
+    [InlineData("openpyxl.utils.cell", "openpyxl.utils")]
+    public void ReexportedMembersResolveToTheirCanonicalCallables(string moduleName, string callableModule)
+    {
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        foreach (var name in StaticContracts.GetModuleMemberNames(moduleName))
         {
-            Assert.True(StaticContracts.IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName), member.ToString());
+            Assert.True(StaticContracts.TryGetModuleMemberValue(moduleName, name, span, out var value), name);
+            Assert.Equal(AbstractValueKind.KnownCallable, value.Kind);
+            var target = $"{callableModule}.{name}";
+            Assert.Equal(target, value.RequireText());
             Assert.True(StaticContracts.TryGetKnownCallContract(target, out _), target);
         }
     }

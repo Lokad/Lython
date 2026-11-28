@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1929 resolve callable reexports from module declarations](results/2026-11-28-module-callable-reexports/README.md)
+removes the eager alias table, matching 1,342 member lookups and 13
+compiler cases. First configuration compile allocates 5,128 B less
+and workbook compile allocates 4,200 B less at matching admission.
+Cold timings span zero. Warm configuration elapsed rises
+0.73–3.41% locally with CPU inconclusive.
+
 [B1928 share and defer numeric callable contracts](results/2026-11-28-numeric-callable-catalog/README.md)
 deletes 81 duplicate rows. A cold configuration trace skips the numeric
 factory. A cold numeric methods trace skips the general data factory.
