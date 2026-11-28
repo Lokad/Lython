@@ -47,6 +47,21 @@ public sealed class NativeGeneratorSumTests
         return 'ok'
         """,
         """
+        observed = []
+        def take(value, outer):
+            observed.append(outer)
+            if value == 2:
+                assert next(outer) == 3
+            return value
+        def reduce(values):
+            return sum(take(value, locals()['.0']) for value in values)
+        assert reduce((2, 3, 5, 7)) == 14
+        assert len(observed) == 3
+        assert observed[0] is observed[1] is observed[2]
+        assert next(observed[0], 'end') == 'end'
+        return 'ok'
+        """,
+        """
         def values():
             yield from [1e16, 1.0, -1e16]
         assert sum(values()) == 1.0
