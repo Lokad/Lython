@@ -263,8 +263,8 @@ internal readonly record struct ExecutableInstruction
     public int TargetIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
         or ExecutableOpCode.ForNext or ExecutableOpCode.ForNextDictionaryAccumulation or ExecutableOpCode.ForNextUnpack or ExecutableOpCode.EndFinally
         ? _primaryOperand : throw InvalidOperand("BlockIndex");
-    internal int DictionaryLoopCallIndex => OpCode == ExecutableOpCode.ForNextDictionaryAccumulation
-        ? _secondaryOperand : throw InvalidOperand(nameof(DictionaryLoopCallIndex));
+    internal int DictionaryLoopEntryIndex => OpCode == ExecutableOpCode.ForNextDictionaryAccumulation
+        ? _secondaryOperand : throw InvalidOperand(nameof(DictionaryLoopEntryIndex));
     internal bool HasBufferedPrefixSearch => OpCode == ExecutableOpCode.ForNext && _secondaryOperand != int.MaxValue;
     internal int BufferedPrefixCounterSlot => _secondaryOperand;
     internal ExecutableInstruction WithBufferedPrefixSearch(int counterSlot)
@@ -444,9 +444,9 @@ internal readonly record struct ExecutableInstruction
 
     // Final-layout preparation changes no positions or storage capacity. The
     // ordinary body remains the continuation for protocols and admission.
-    internal ExecutableInstruction WithDictionaryLoop(int callIndex)
+    internal ExecutableInstruction WithDictionaryLoop(int entryIndex)
         => new(ExecutableOpCode.ForNextDictionaryAccumulation, Span, _primaryOperand,
-            callIndex, _inputStart, _resultSlot, _liveExtent);
+            entryIndex, _inputStart, _resultSlot, _liveExtent);
 
 
     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)

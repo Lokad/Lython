@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1917 batch converted record loops](results/2026-11-28-converted-record-loop/README.md)
+reuses the native dictionary loop for ordered shared-field reads and
+the converted update. Dense sync CPU falls 2.97–5.42% on the local repeat
+at unchanged allocation and peak. Dense async CPU spans zero on repeat.
+Keep the original sparse control movement and wide repeated text control.
+
 [B1916 enter a ready generator row directly](results/2026-11-28-ready-generator-row/README.md)
 removes the row driver and arity scan from the ready exact path.
 Local async iterable CPU falls 2.54–3.78% on the same-image repeat.

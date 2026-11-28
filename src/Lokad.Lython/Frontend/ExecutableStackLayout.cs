@@ -205,7 +205,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     case ExecutableOpCode.StoreSubscript:
                     case ExecutableOpCode.Jump:
                     case ExecutableOpCode.JumpIfFalse:
-                        code.PrepareNativeTail(position.Offset + j, sites);
+                        code.PrepareNativeTail(position.Offset + j, sites, token);
                         break;
                 }
             }

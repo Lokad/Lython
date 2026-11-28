@@ -965,6 +965,12 @@ arguments keep their ordinary evaluation. Cases that need admission,
 promotion or a user protocol continue through the ordinary instructions
 with their existing evaluation order.
 
+A native list or tuple loop can run ordered shared-record field reads
+and the converted update in one segment. It borrows established lookup
+storage and publishes each field binding in order. An unsupported field
+or update resumes at its original instruction with earlier bindings
+already visible.
+
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older

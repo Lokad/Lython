@@ -391,7 +391,7 @@ internal sealed partial class ExecutableCodeObject
 
     // Complete a native segment when emission reaches its store or loop
     // backedge. All earlier slots and protected-region offsets are final.
-    internal void PrepareNativeTail(int index, ExecutableCallSite[] sites)
+    internal void PrepareNativeTail(int index, ExecutableCallSite[] sites, CancellationToken token)
     {
         ref readonly var tail = ref Instructions[index];
         if (index < 2) return;
@@ -409,7 +409,7 @@ internal sealed partial class ExecutableCodeObject
                 PrepareDictionaryUpdate(index, tail, sites);
                 break;
             case ExecutableOpCode.Jump:
-                PrepareDictionaryLoop(index, tail.TargetIndex);
+                PrepareDictionaryLoop(index, tail.TargetIndex, token);
                 break;
             case ExecutableOpCode.JumpIfFalse:
                 PrepareBufferedPrefixSearch(index, tail, sites);
@@ -477,8 +477,9 @@ internal sealed partial class ExecutableCodeObject
         sites[call.CallSiteIndex] = site with { AccumulatesDictionary = true };
     }
 
-    private void PrepareDictionaryLoop(int tailIndex, int headIndex)
+    private void PrepareDictionaryLoop(int tailIndex, int headIndex, CancellationToken token)
     {
+        if (TryPrepareConvertedRecordLoop(tailIndex, headIndex, token)) return;
         // One complete histogram body, optionally followed by a total.
         // Other sources retain the general loop, including suspension.
         var callIndex = headIndex + 5;
@@ -527,6 +528,37 @@ internal sealed partial class ExecutableCodeObject
         }
         if (CrossesExceptionBoundary(headIndex, tailIndex)) return;
         Instructions[headIndex] = head.WithDictionaryLoop(callIndex);
+    }
+
+    private bool TryPrepareConvertedRecordLoop(int tailIndex, int headIndex, CancellationToken token)
+    {
+        // The prepared update occupies nine instructions from member load
+        // through assignment. Its inputs can come from ordered row fields.
+        var memberIndex = tailIndex - 9;
+        if (!IsFunctionScope || RequiresLocalVariableMirroring || headIndex < 0 || memberIndex < headIndex + 4 ||
+            (memberIndex - headIndex) % 2 != 0 || Instructions[memberIndex].OpCode != ExecutableOpCode.LoadConvertedDictionaryGet)
+            return false;
+
+        ref readonly var head = ref Instructions[headIndex];
+        ref readonly var binding = ref Instructions[headIndex + 1];
+        if (head.OpCode != ExecutableOpCode.ForNext || !head.HasResultConsumer ||
+            binding.OpCode != ExecutableOpCode.StoreLocal || !IsUncapturedLocal(binding.LocalSlot) ||
+            binding.InputStart != head.ResultSlot || binding.LiveExtent != head.ResultSlot ||
+            CrossesExceptionBoundary(headIndex, tailIndex)) return false;
+
+        for (var i = headIndex + 2; i < memberIndex; i += 2)
+        {
+            PythonTokenization.CheckCancellation(token, i - headIndex);
+            ref readonly var field = ref Instructions[i];
+            ref readonly var store = ref Instructions[i + 1];
+            if (field.OpCode != ExecutableOpCode.Subscript || !field.HasResultConsumer || field.LookupCacheIndex < 0 ||
+                field.InputStart != binding.LocalSlot || field.ResultSlot != head.ResultSlot ||
+                (uint)~field.SecondInput >= (uint)Constants.Length || Constants[~field.SecondInput] is not PyString ||
+                store.OpCode != ExecutableOpCode.StoreLocal || store.InputStart != field.ResultSlot ||
+                store.LiveExtent != head.ResultSlot || !IsUncapturedLocal(store.LocalSlot)) return false;
+        }
+        Instructions[headIndex] = head.WithDictionaryLoop(memberIndex);
+        return true;
     }
 
     private bool IsUncapturedLocal(int slot)

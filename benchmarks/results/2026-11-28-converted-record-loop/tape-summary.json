@@ -1,0 +1,148 @@
+[
+  {
+    "id": "diagnostic.nested-json-document",
+    "budgetLevels": 3,
+    "marked": [
+      {
+        "function": "tally",
+        "index": 7,
+        "before": {
+          "op": "ForNext",
+          "span": {
+            "Start": 63,
+            "Length": 17,
+            "Line": 5,
+            "Column": 16
+          },
+          "primary": 23,
+          "secondary": 2147483647,
+          "input": 5,
+          "result": 6,
+          "extent": -8
+        },
+        "after": {
+          "op": "ForNextDictionaryAccumulation",
+          "span": {
+            "Start": 63,
+            "Length": 17,
+            "Line": 5,
+            "Column": 16
+          },
+          "primary": 23,
+          "secondary": 13,
+          "input": 5,
+          "result": 6,
+          "extent": -8
+        }
+      }
+    ]
+  },
+  {
+    "id": "diagnostic.nested-json-lines.optional-details",
+    "budgetLevels": 3,
+    "marked": []
+  },
+  {
+    "id": "scripts.csv-invoice.method-policy.quoted-control",
+    "budgetLevels": 7,
+    "marked": []
+  },
+  {
+    "id": "scripts.text-summary-helpers.large",
+    "budgetLevels": 3,
+    "marked": []
+  },
+  {
+    "id": "mixed-rows",
+    "budgetLevels": 6,
+    "marked": [
+      {
+        "function": "tally",
+        "index": 5,
+        "before": {
+          "op": "ForNext",
+          "span": {
+            "Start": 301,
+            "Length": 4,
+            "Line": 13,
+            "Column": 20
+          },
+          "primary": 21,
+          "secondary": 2147483647,
+          "input": 5,
+          "result": 6,
+          "extent": -8
+        },
+        "after": {
+          "op": "ForNextDictionaryAccumulation",
+          "span": {
+            "Start": 301,
+            "Length": 4,
+            "Line": 13,
+            "Column": 20
+          },
+          "primary": 21,
+          "secondary": 11,
+          "input": 5,
+          "result": 6,
+          "extent": -8
+        }
+      }
+    ]
+  },
+  {
+    "id": "capture-after-literal",
+    "budgetLevels": 7,
+    "marked": []
+  },
+  {
+    "id": "capture-snapshot-overlap",
+    "budgetLevels": 7,
+    "marked": []
+  },
+  {
+    "id": "signed-constant-boundaries",
+    "budgetLevels": 4,
+    "marked": []
+  },
+  {
+    "id": "declaration-in-default",
+    "budgetLevels": 9,
+    "marked": []
+  },
+  {
+    "id": "declaration-kinds",
+    "budgetLevels": 9,
+    "marked": []
+  },
+  {
+    "id": "deferral-through-layout",
+    "budgetLevels": 8,
+    "marked": []
+  },
+  {
+    "id": "return-forwarded-local",
+    "budgetLevels": 9,
+    "marked": []
+  },
+  {
+    "id": "rebound-definition",
+    "budgetLevels": 8,
+    "marked": []
+  },
+  {
+    "id": "explicit-read-before-forwarding",
+    "budgetLevels": 8,
+    "marked": []
+  },
+  {
+    "id": "scope-not-eligible",
+    "budgetLevels": 8,
+    "marked": []
+  },
+  {
+    "id": "deferred-before-returned-pair",
+    "budgetLevels": 9,
+    "marked": []
+  }
+]

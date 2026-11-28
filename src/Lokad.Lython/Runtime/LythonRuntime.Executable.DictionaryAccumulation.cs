@@ -21,13 +21,16 @@ internal sealed partial class LythonRuntime
             if (execution.Stack.LiveExtent != head.ResultSlot) return false;
             var privateBindings = !execution.Code.RequiresLocalVariableMirroring &&
                 invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
+            var entry = head.DictionaryLoopEntryIndex;
+            if (execution.Code.Instructions[entry].OpCode == ExecutableOpCode.LoadConvertedDictionaryGet)
+                return privateBindings && TryExecuteConvertedRecordLoop(ref execution, scope, invocation, head, entry);
             if (!privateBindings ||
                 execution.Stack[head.InputStart] is not PyStringOps.CasedWhitespaceIteration cursor ||
                 !ReferenceEquals(cursor.MemoryGovernor, scope.MemoryGovernor))
                 return TryExecuteOrdinaryDictionaryLoop(ref execution, scope, invocation, head, privateBindings);
 
             var headIndex = execution.InstructionIndex;
-            var callIndex = head.DictionaryLoopCallIndex;
+            var callIndex = head.DictionaryLoopEntryIndex;
             var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
             ref readonly var member = ref execution.Code.Instructions[headIndex + 2];
             ref readonly var add = ref execution.Code.Instructions[callIndex + 1];
@@ -130,11 +133,59 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private static bool TryExecuteConvertedRecordLoop(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction head, int memberIndex)
+        {
+            if (execution.Stack.Values[head.InputStart].Reference is not (PyList or PyTuple) ||
+                execution.Stack.ExistingLookupCaches is not { } caches || invocation?._preparedCallValue is not null)
+                return false;
+
+            var headIndex = execution.InstructionIndex;
+            var code = execution.Code;
+            var instructions = code.Instructions;
+            var context = invocation ?? scope;
+            while (true)
+            {
+                execution.Stack.TryAdvanceNativeIteration(head.InputStart, out var hasRow, out var row);
+                if (!hasRow)
+                {
+                    execution.Stack.RetireTo(head.InputStart);
+                    execution.InstructionIndex = head.TargetIndex;
+                    return true;
+                }
+
+                PublishInstructionResult(ref execution, invocation, head, row);
+                if (++execution.InstructionIndex != headIndex + 2) return true;
+                for (var i = headIndex + 2; i < memberIndex; i += 2)
+                {
+                    ref readonly var field = ref instructions[i];
+                    scope.State.CheckExecution(field.Span);
+                    if (execution.Locals[field.InputStart].Reference is not PyDict { HasSharedRecordKeys: true } record ||
+                        !record.TryReadRecordValue((PyString)code.Constants[~field.SecondInput]!, ref caches[field.LookupCacheIndex],
+                            scope, field.Span, out var value))
+                        return true;
+
+                    // Publish each binding in order. An exception or a
+                    // dynamic field resumes at the exact unfinished step.
+                    PublishInstructionResult(ref execution, invocation, field, value);
+                    if (++execution.InstructionIndex != i + 2) return true;
+                }
+
+                ref readonly var member = ref instructions[memberIndex];
+                scope.State.CheckExecution(member.Span);
+                if (!TryExecuteConvertedDictionaryOperands(ref execution, context, member)) return true;
+                execution.InstructionIndex++;
+                scope.State.CheckExecution(instructions[execution.InstructionIndex].Span);
+                execution.InstructionIndex = headIndex;
+                scope.State.CheckExecution(head.Span);
+            }
+        }
+
         private static bool TryExecuteOrdinaryDictionaryLoop(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction head, bool privateBindings)
         {
             var headIndex = execution.InstructionIndex;
-            var callIndex = head.DictionaryLoopCallIndex;
+            var callIndex = head.DictionaryLoopEntryIndex;
             var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
             var memberSpan = execution.Code.Instructions[headIndex + 2].Span;
             ref readonly var add = ref execution.Code.Instructions[callIndex + 1];

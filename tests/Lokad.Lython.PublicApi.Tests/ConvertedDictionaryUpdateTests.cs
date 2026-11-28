@@ -5,6 +5,64 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ConvertedDictionaryUpdateTests
 {
     [Fact]
+    public async Task RecordLoopPreservesPartialBindingsAndResumesDynamicRows()
+    {
+        const string source = """
+            import json
+            class DynamicRow:
+                def __getitem__(self, key):
+                    print('read', key)
+                    if key == 'service':
+                        return 'dynamic'
+                    with open('quantity.txt') as stream:
+                        return {'quantity': stream.read()}
+
+            def tally(rows):
+                totals = {}
+                try:
+                    for row in rows:
+                        service = row['service']
+                        details = row['details']
+                        totals[service] = totals.get(service, 0) + int(details['quantity'])
+                except KeyError:
+                    return totals, service, details['quantity']
+                return totals, None, None
+
+            rows = json.loads('[{"service":"same","details":{"quantity":"2"}},'
+                              '{"service":"same","details":{"quantity":"3"}},'
+                              '{"service":"same","details":{"quantity":"4"}},'
+                              '{"service":"same","details":{"quantity":"5"}},'
+                              '{"service":"missing"}]')
+            rows[2] = DynamicRow()
+            print(tally(rows))
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var synchronous = new MockLythonHost();
+        synchronous.SeedFile("/quantity.txt", "7");
+        using (var result = script.Run(synchronous)) Check(result);
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        var delayed = new DelayedLythonHost();
+        delayed.SeedFile("/quantity.txt", "7");
+        using (var result = await script.RunAsync(delayed)) Check(result);
+        Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(1, delayed.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+
+        static void Check(LythonExecutionResult result)
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("read service\nread details\n({'same': 10, 'dynamic': 7}, 'missing', '5')\n",
+                result.StandardOutput);
+        }
+    }
+
+    [Fact]
     public async Task DynamicReceiverAndEvaluatedDefaultKeepTheirOriginalCalls()
     {
         const string source = """
