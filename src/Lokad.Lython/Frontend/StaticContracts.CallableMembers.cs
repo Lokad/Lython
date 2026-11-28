@@ -15,13 +15,27 @@ internal static partial class StaticContracts
             CreateOpenPyxlCallableContracts().ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
     }
 
+    private static class NumericCallableMemberCatalog
+    {
+        internal static readonly Dictionary<StaticMemberContractKey, StaticCallableContract> ByMember =
+            CreateNumericCallableContracts().ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
+    }
+
     public static bool TryGetCallableContract(AbstractValue receiver, string memberName, out StaticCallableContract contract)
     {
-        var kind = receiver.Kind == AbstractValueKind.DecimalTuple ? AbstractValueKind.Tuple : receiver.Kind;
-        // The OpenPyxl kinds form one contiguous family in AbstractValueKind.
-        var catalog = kind is >= AbstractValueKind.OpenPyxlWorkbook and <= AbstractValueKind.OpenPyxlMergedCellSet
-            ? WorkbookCallableMemberCatalog.ByMember
-            : CallableMemberCatalog.ByMember;
+        var kind = receiver.Kind switch
+        {
+            AbstractValueKind.IntegerType or AbstractValueKind.Boolean or AbstractValueKind.BooleanType => AbstractValueKind.Integer,
+            AbstractValueKind.FloatType => AbstractValueKind.Float,
+            AbstractValueKind.DecimalTuple => AbstractValueKind.Tuple,
+            _ => receiver.Kind
+        };
+        var catalog = kind switch
+        {
+            AbstractValueKind.Integer or AbstractValueKind.Float => NumericCallableMemberCatalog.ByMember,
+            >= AbstractValueKind.OpenPyxlWorkbook and <= AbstractValueKind.OpenPyxlMergedCellSet => WorkbookCallableMemberCatalog.ByMember,
+            _ => CallableMemberCatalog.ByMember
+        };
         return catalog.TryGetValue(new(kind, memberName), out contract);
     }
 

@@ -1,0 +1,100 @@
+{
+  "candidatePatchSHA256": "3f2d2f60434617e22f3d127ae87461b4d498bda04ca2bb4fc6bca661146f3bde",
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "elapsed": {
+        "median": {
+          "reference": 259.333785,
+          "candidate": 258.618881
+        },
+        "iqr": {
+          "reference": [
+            254.7599775,
+            265.92551125
+          ],
+          "candidate": [
+            243.4824395,
+            260.316191
+          ]
+        },
+        "medianChange": -0.2756694427607953,
+        "pairedRange": [
+          -11.338683181583164,
+          6.433004901055517
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 222.71350000000007,
+          "candidate": 220.33799999999997
+        },
+        "iqr": {
+          "reference": [
+            219.7722500000002,
+            230.18799999999993
+          ],
+          "candidate": [
+            214.82199999999898,
+            224.99675000000025
+          ]
+        },
+        "medianChange": -1.066616976519208,
+        "pairedRange": [
+          -8.602760207981664,
+          6.305435783369506
+        ]
+      }
+    },
+    {
+      "case": "diagnostic.numeric-members",
+      "elapsed": {
+        "median": {
+          "reference": 209.061047,
+          "candidate": 192.2865515
+        },
+        "iqr": {
+          "reference": [
+            201.20942275,
+            227.51041750000002
+          ],
+          "candidate": [
+            182.77614599999998,
+            201.79942949999997
+          ]
+        },
+        "medianChange": -8.023730743106816,
+        "pairedRange": [
+          -24.0872190035077,
+          14.835294315071202
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 162.85649999999987,
+          "candidate": 153.18300000000045
+        },
+        "iqr": {
+          "reference": [
+            158.13399999999888,
+            169.0772500000005
+          ],
+          "candidate": [
+            150.06650000000172,
+            155.69049999999993
+          ]
+        },
+        "medianChange": -5.939891867993863,
+        "pairedRange": [
+          -13.983006642014717,
+          -2.436113584268995
+        ]
+      }
+    }
+  ],
+  "verifiedInvocations": 48,
+  "nativePersistentStage": "/home/vermorel/lython-bench-work/numeric-catalog-b1928-20261128",
+  "cpuAffinity": [
+    27
+  ]
+}

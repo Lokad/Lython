@@ -1,0 +1,20 @@
+{
+  "config": {
+    "completedJitIntervals": 2679,
+    "reached": [
+      {
+        "method": "CreateDataCallableContracts",
+        "ilBytes": 11125
+      }
+    ]
+  },
+  "numeric": {
+    "completedJitIntervals": 1672,
+    "reached": [
+      {
+        "method": "CreateNumericCallableContracts",
+        "ilBytes": 1629
+      }
+    ]
+  }
+}

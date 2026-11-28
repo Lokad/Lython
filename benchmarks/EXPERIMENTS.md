@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1928 share and defer numeric callable contracts](results/2026-11-28-numeric-callable-catalog/README.md)
+deletes 81 duplicate rows. A cold configuration trace skips the numeric
+factory. A cold numeric methods trace skips the general data factory.
+Numeric median cold CPU falls 5.94%, with all 12 pairs favorable.
+Configuration startup and warm numeric timings span zero. Existing
+contract lookups and diagnostics match.
+
 [B1927 attribute configuration startup](results/2026-11-28-first-command-phases/README.md)
 splits launch, worker work, first compile and first run on the exact
 B1926 payload. The first compile and run have medians of 141.69 ms
