@@ -88,8 +88,8 @@ internal sealed partial class LythonRuntime
         private readonly record struct RegexGroupBounds(BigInteger Start, BigInteger End);
 
         private static readonly ReceiverMethod GroupMethod = new(LythonCallableSignature.Create("bound method"),
-            static (receiver, arguments, span, context) => GroupCoreAsync((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult(),
-            static (receiver, arguments, span, context) => GroupCoreAsync((ReMatchObject)receiver, arguments, context, span, true));
+            static (receiver, arguments, span, context) => Group((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult(),
+            static (receiver, arguments, span, context) => Group((ReMatchObject)receiver, arguments, context, span, true));
         private static readonly ReceiverMethod GetItemMethod = new(MatchGetItemSignature,
             static (receiver, arguments, span, context) => GetSubscript((ReMatchObject)receiver, arguments[0]!, span, context),
             static (receiver, arguments, span, context) => GetSubscriptAsync((ReMatchObject)receiver, arguments[0]!, span, context));
@@ -185,38 +185,43 @@ internal sealed partial class LythonRuntime
         }
 
         internal static object GetSubscript(ReMatchObject match, object key, LythonSourceSpan span, ExecutionContext? context)
-            => GetSubscriptCoreAsync(match, key, span, context, false).GetAwaiter().GetResult();
+            => ResolveIndexedGroup(match, ResolveGroupIndex(match, key, context, span, false).GetAwaiter().GetResult(), span, context);
 
         internal static ValueTask<object> GetSubscriptAsync(ReMatchObject match, object key, LythonSourceSpan span, ExecutionContext context)
-            => GetSubscriptCoreAsync(match, key, span, context, true);
-
-        private static async ValueTask<object> GetSubscriptCoreAsync(ReMatchObject match, object key, LythonSourceSpan span, ExecutionContext? context, bool asynchronous)
         {
-            var index = await ResolveGroupIndexAsync(match, key, context, span, asynchronous).ConfigureAwait(false);
-            return ResolveIndexedGroup(match, index, span, context);
+            var index = ResolveGroupIndex(match, key, context, span, true);
+            return index.IsCompletedSuccessfully ? new(ResolveIndexedGroup(match, index.Result, span, context))
+                : AwaitIndexedGroup(index, match, span, context);
+
+            static async ValueTask<object> AwaitIndexedGroup(ValueTask<int> index, ReMatchObject match,
+                LythonSourceSpan span, ExecutionContext context)
+                => ResolveIndexedGroup(match, await index.ConfigureAwait(false), span, context);
         }
 
-        private static async ValueTask<object> GroupCoreAsync(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static ValueTask<object> Group(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             if (arguments.Length == 0)
-            {
-                return match.MaterializeGroup(0, context, span);
-            }
+                return new(match.MaterializeGroup(0, context, span));
             if (arguments.Length == 1)
-            {
-                return await GetSubscriptCoreAsync(match, arguments[0]!, span, context, asynchronous).ConfigureAwait(false);
-            }
+                return asynchronous ? GetSubscriptAsync(match, arguments[0]!, span, context)
+                    : new(GetSubscript(match, arguments[0]!, span, context));
 
-            if (!asynchronous)
-                return CreateTuple(arguments.Length, i => GetSubscript(match, arguments[i]!, span, context), context, span);
-            return await CreateTupleAsync(arguments.Length,
-                i => GetSubscriptAsync(match, arguments[i]!, span, context), context, span).ConfigureAwait(false);
+            return GroupTupleAsync(match, arguments, context, span, asynchronous);
+
+            static async ValueTask<object> GroupTupleAsync(ReMatchObject match, ReceiverArguments arguments,
+                ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+            {
+                if (!asynchronous)
+                    return CreateTuple(arguments.Length, i => GetSubscript(match, arguments[i]!, span, context), context, span);
+                return await CreateTupleAsync(arguments.Length,
+                    i => GetSubscriptAsync(match, arguments[i]!, span, context), context, span).ConfigureAwait(false);
+            }
         }
 
         private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             var index = arguments.Length == 0 ? 0 :
-                await ResolveGroupIndexAsync(match, arguments[0]!, context, span, asynchronous).ConfigureAwait(false);
+                await ResolveGroupIndex(match, arguments[0]!, context, span, asynchronous).ConfigureAwait(false);
             var capture = match.Captures[index];
             return new(capture.Start, capture.End);
         }
@@ -232,51 +237,55 @@ internal sealed partial class LythonRuntime
             return match.Captures[index].StartByte < 0 ? defaultValue : match.MaterializeGroup(index, context, span);
         }
 
-        private static async ValueTask<int> ResolveGroupIndexAsync(ReMatchObject match, object key, ExecutionContext? context,
+        private static ValueTask<int> ResolveGroupIndex(ReMatchObject match, object key, ExecutionContext? context,
             LythonSourceSpan span, bool asynchronous)
         {
-            if (key is BigInteger integer) return ResolveIntegerGroupIndex(match, integer, span);
-            if (key is int small) return ResolveIntegerGroupIndex(match, small, span);
-            if (key is bool boolean) return ResolveIntegerGroupIndex(match, boolean ? BigInteger.One : BigInteger.Zero, span);
+            if (key is BigInteger integer) return new(ResolveIntegerGroupIndex(match, integer, span));
+            if (key is int small) return new(ResolveIntegerGroupIndex(match, small, span));
+            if (key is bool boolean) return new(ResolveIntegerGroupIndex(match, boolean ? BigInteger.One : BigInteger.Zero, span));
+            // The numeric protocol uses the type's slot before name lookup.
             if (context is not null && key is PyInstance instance &&
                 instance.Type.TryLookupInMro("__index__", 0, out var rawValue, out _))
-            {
-                // The numeric protocol uses the type's slot before name lookup.
-                var member = asynchronous
-                    ? await PyAttributeLookup.BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false)
-                    : PyAttributeLookup.BindForInstance(instance, rawValue, context, span);
-                if (member is not ICallable callable)
-                    throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
-                var converted = asynchronous
-                    ? await callable.InvokeAsync([], span, context).ConfigureAwait(false)
-                    : callable.Invoke([], span, context);
-                if (!PyNumberOps.TryAsInteger(converted, out var index))
-                    throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
-                return ResolveIntegerGroupIndex(match, index, span);
-            }
+                return ResolveIndexProtocol(match, instance, rawValue, context, span, asynchronous);
 
-            // Python uses its group dictionary for non-index keys when the
-            // pattern has names. Keep the existing dictionary protocol across
-            // suspension. A pattern without names never hashes the key.
+            // A pattern without names never hashes the key.
             var namedGroups = match.NamedGroups;
             if (namedGroups.Count != 0)
             {
                 if (PyStringOps.TryAsString(key, out var name))
                 {
-                    if (match.Pattern.TryGetNamedGroup(name, context, span, out var namedIndex)) return namedIndex;
+                    if (match.Pattern.TryGetNamedGroup(name, context, span, out var namedIndex)) return new(namedIndex);
                 }
                 else if (context is not null && asynchronous)
-                {
-                    var (found, value) = await namedGroups.TryGetKeyAsync(key, context, span).ConfigureAwait(false);
-                    if (found) return (int)(BigInteger)value;
-                }
+                    return AwaitNamedGroup(namedGroups, key, context, span);
                 else if (context is null ? namedGroups.TryGetValue(key, out var value)
                     : namedGroups.TryGetValue(key, out value, context, span))
-                {
-                    return (int)(BigInteger)value!;
-                }
+                    return new((int)(BigInteger)value!);
             }
             throw new LythonRuntimeException("IndexError", "no such group", span);
+
+            static async ValueTask<int> AwaitNamedGroup(PyDict groups, object key, ExecutionContext context, LythonSourceSpan span)
+            {
+                var (found, value) = await groups.TryGetKeyAsync(key, context, span).ConfigureAwait(false);
+                if (found) return (int)(BigInteger)value;
+                throw new LythonRuntimeException("IndexError", "no such group", span);
+            }
+        }
+
+        private static async ValueTask<int> ResolveIndexProtocol(ReMatchObject match, PyInstance instance, object rawValue,
+            ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            var member = asynchronous
+                ? await PyAttributeLookup.BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false)
+                : PyAttributeLookup.BindForInstance(instance, rawValue, context, span);
+            if (member is not ICallable callable)
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+            var converted = asynchronous
+                ? await callable.InvokeAsync([], span, context).ConfigureAwait(false)
+                : callable.Invoke([], span, context);
+            if (!PyNumberOps.TryAsInteger(converted, out var index))
+                throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+            return ResolveIntegerGroupIndex(match, index, span);
         }
 
         private static int ResolveIntegerGroupIndex(ReMatchObject match, BigInteger index, LythonSourceSpan span)

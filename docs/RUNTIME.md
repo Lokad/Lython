@@ -2816,6 +2816,10 @@ providers need no dense coordinate map or UTF-16 capture snapshot. The optional
 adapter may use those bridges while its backend evolves. Contract and semantic
 validation are separate from backend performance and released-adapter qualification.
 
+Numeric and native string group selectors resolve synchronously under either
+execution API. Guest index, hash and equality callbacks retain their original
+order and can suspend in `RunAsync`.
+
 Supply a borrowed [`ILythonRegexProvider`](../src/Lokad.Lython/Host/ILythonRegexProvider.cs)
 to `LythonEngine`. One provider handles frontend validation/capture analysis,
 runtime `re` and imports, and must outlive its users. Core exposes no backend
