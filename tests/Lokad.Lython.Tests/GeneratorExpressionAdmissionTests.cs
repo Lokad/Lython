@@ -11,6 +11,52 @@ public sealed class GeneratorExpressionAdmissionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PrivateGeneratorYieldTransfersTheAdmittedFrame(bool asynchronous)
+    {
+        const string source = """
+            def inner(value):
+                yield value
+            return (inner(value) for value in (7, 8))
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var script = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
+        var result = LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
+        var rows = Assert.IsType<LythonRuntime.PyGenerator>(result);
+
+        try
+        {
+            _ = asynchronous ? await rows.AdvanceListYieldAsync(1) : rows.AdvanceListYield(1);
+            var staged = rows.TakeStagedGeneratorYield();
+            Assert.NotNull(staged.Frame);
+            try
+            {
+                var values = new LythonRuntime.ExecutableSlot[1];
+                var end = asynchronous
+                    ? await LythonRuntime.PyGenerator.AdvanceFrameAsync(staged.Frame, staged.Span!, null, PyNone.Instance, null, values, 1, 0)
+                    : LythonRuntime.PyGenerator.AdvanceFrame(staged.Frame, staged.Span!, null, PyNone.Instance, null, values, 1, 0);
+                Assert.False(end.HasValue);
+                Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(values[0].Object));
+            }
+            finally { staged.Release(); }
+
+            var next = asynchronous ? await rows.TryMoveNextAsync() : rows.TryMoveNext();
+            var ordinary = Assert.IsType<LythonRuntime.PyGenerator>(next.Value);
+            Assert.Equal(new BigInteger(8), Assert.IsType<BigInteger>(ordinary.TryMoveNext().Value));
+            Assert.False(ordinary.TryMoveNext().HasValue);
+            Assert.False((await rows.TryMoveNextAsync()).HasValue);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+        }
+        finally { context.State.CloseResources(); }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task UnpackedGeneratorDisplayDenialUnwindsFrameBeforeReturning(bool asynchronous)
     {
         const long capacity = 1024 * 1024;

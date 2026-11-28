@@ -424,6 +424,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         }
         var generator = ListYieldSource(out var function, out var receiver, out var arity);
         var next = generator is null ? _source.TryMoveNext() : generator.AdvanceListYield(arity);
+        if (TryStartStagedGenerator(generator, function, receiver, asynchronous: false, out var staged))
+            return staged.GetAwaiter().GetResult();
         if (generator?.HasStagedListYield == true)
             return LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context, asynchronous: false)
                 .GetAwaiter().GetResult();
@@ -456,6 +458,8 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         out ValueTask<PyIterationResult> result)
     {
         iterable = null;
+        if (TryStartStagedGenerator(generator, function, receiver, asynchronous: true, out result))
+            return true;
         if (generator?.HasStagedListYield == true)
         {
             result = LythonRuntime.StartIterationListYield(function!, receiver, generator, _span, _context,
@@ -470,6 +474,30 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
 
         result = default;
         return false;
+    }
+
+    private bool TryStartStagedGenerator(LythonRuntime.PyGenerator? source, PyExecutableFunction? function,
+        object? receiver, bool asynchronous, out ValueTask<PyIterationResult> result)
+    {
+        var staged = source?.TakeStagedGeneratorYield() ?? default;
+        if (staged.Frame is null)
+        {
+            result = default;
+            return false;
+        }
+
+        var first = receiver is null ? 0 : 1;
+        if (!function!.CodeObject.HasDirectOperandReturn && function.SupportsPositionalBinding
+            && function.PositionalCount > first && ReferenceEquals(function.DefinitionContext.State, _context.State))
+        {
+            result = StartGeneratorRow(null, function, receiver, first, asynchronous, staged);
+            return true;
+        }
+        LythonRuntime.PyGenerator generator;
+        try { generator = staged.Materialize(); }
+        catch { staged.Release(); throw; }
+        result = InvokeGeneralIterableRowAsync(generator, asynchronous);
+        return true;
     }
 
     private async ValueTask<PyIterationResult> FinishPullAsync(ValueTask<PyIterationResult> source,
@@ -499,19 +527,26 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         return InvokeGeneralIterableRowAsync(iterable, asynchronous);
     }
 
-    private ValueTask<PyIterationResult> StartGeneratorRow(LythonRuntime.PyGenerator generator,
-        PyExecutableFunction function, object? receiver, int firstArgument, bool asynchronous)
+    private ValueTask<PyIterationResult> StartGeneratorRow(LythonRuntime.PyGenerator? generator,
+        PyExecutableFunction function, object? receiver, int firstArgument, bool asynchronous,
+        LythonRuntime.StagedGeneratorYield staged = default)
     {
-        var workspace = LythonRuntime.RentFunctionArgumentStorage(function, _span, _context, function.CodeObject.ValueStorageCapacity);
+        BoundFunctionArguments workspace = default;
         try
         {
+            workspace = LythonRuntime.RentFunctionArgumentStorage(function, _span, _context, function.CodeObject.ValueStorageCapacity);
             var values = workspace.Values;
             if (receiver is not null) values[0].Object = receiver;
             _context.CheckExecution(_span);
             _context.State.CheckInterpreterStack(_span);
             var end = function.PositionalCount;
-            var pull = asynchronous ? generator.AdvanceBufferedAsync(values, end, firstArgument)
-                : new ValueTask<PyIterationResult>(generator.AdvanceBuffered(values, end, firstArgument));
+            var pull = staged.Frame is { } frame
+                ? asynchronous
+                    ? LythonRuntime.PyGenerator.AdvanceFrameAsync(frame, staged.Span!, null, PyNone.Instance, null, values, end, firstArgument)
+                    : new(LythonRuntime.PyGenerator.AdvanceFrame(frame, staged.Span!, null, PyNone.Instance, null, values, end, firstArgument))
+                : asynchronous
+                    ? generator!.AdvanceBufferedAsync(values, end, firstArgument)
+                    : new ValueTask<PyIterationResult>(generator!.AdvanceBuffered(values, end, firstArgument));
             if (pull.IsCompleted)
             {
                 var excess = pull.GetAwaiter().GetResult();
@@ -521,9 +556,16 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
                 // binder needs only the outcome and the prefetched slots.
                 pull = new(excess);
             }
-            return FinishGeneratorRowAsync(generator, function, firstArgument, pull, TakeGeneratorRowWorkspace(ref workspace), asynchronous);
+            var transferred = staged;
+            staged = default;
+            return FinishGeneratorRowAsync(generator, function, firstArgument, pull,
+                TakeGeneratorRowWorkspace(ref workspace), asynchronous, transferred);
         }
-        finally { ReturnGeneratorRowWorkspace(ref workspace, function); }
+        finally
+        {
+            try { staged.Release(); }
+            finally { ReturnGeneratorRowWorkspace(ref workspace, function); }
+        }
     }
 
     private bool TryStartExactGeneratorRow(PyExecutableFunction function, PyIterationResult excess, ref BoundFunctionArguments workspace,
@@ -542,9 +584,9 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         return true;
     }
 
-    private async ValueTask<PyIterationResult> FinishGeneratorRowAsync(LythonRuntime.PyGenerator generator,
+    private async ValueTask<PyIterationResult> FinishGeneratorRowAsync(LythonRuntime.PyGenerator? generator,
         PyExecutableFunction function, int firstArgument, ValueTask<PyIterationResult> pull, BoundFunctionArguments workspace,
-        bool asynchronous)
+        bool asynchronous, LythonRuntime.StagedGeneratorYield staged)
     {
         try
         {
@@ -562,12 +604,17 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             if (excess.HasValue)
             {
                 arguments.Add(CallArgumentValue.Positional(excess.Value), _span);
-                await arguments.AppendPositionalIterableAsync(generator, _span, asynchronous).ConfigureAwait(false);
+                await arguments.AppendPositionalIterableAsync(generator ?? staged.Materialize(started: true),
+                    _span, asynchronous).ConfigureAwait(false);
             }
             var value = await InvokeCollectedRow(arguments, asynchronous).ConfigureAwait(false);
             return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
         }
-        finally { ReturnGeneratorRowWorkspace(ref workspace, function); }
+        finally
+        {
+            try { staged.Release(); }
+            finally { ReturnGeneratorRowWorkspace(ref workspace, function); }
+        }
     }
 
     private static BoundFunctionArguments TakeGeneratorRowWorkspace(ref BoundFunctionArguments workspace)

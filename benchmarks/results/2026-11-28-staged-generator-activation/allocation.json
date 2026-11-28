@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      2104606,
+      1973582
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      4069262,
+      4052878
+    ],
+    "admittedPeak": [
+      5940679,
+      5940679
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808536,
+      808480
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.file-search-first-line",
+    "mode": "sync",
+    "clr": [
+      39624,
+      39624
+    ],
+    "admittedPeak": [
+      19556,
+      19556
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      2104846,
+      1973766
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      4069478,
+      4053094
+    ],
+    "admittedPeak": [
+      5940679,
+      5940679
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808696,
+      808696
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.file-search-first-line",
+    "mode": "async",
+    "clr": [
+      39872,
+      39872
+    ],
+    "admittedPeak": [
+      19556,
+      19556
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  }
+]

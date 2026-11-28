@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static PyGenerator? TryConstructPositionalGenerator(PyFunctionBase function, ReadOnlySpan<ExecutableSlot> operands,
+    private static object? TryConstructPositionalGenerator(PyFunctionBase function, ReadOnlySpan<ExecutableSlot> operands,
         LythonSourceSpan span, ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
     {
         if (function is not PyGeneratorFunction generator || callSite is not { IsPositionalOnly: true } ||
@@ -143,6 +143,12 @@ internal sealed partial class LythonRuntime
         var arguments = RentFunctionArgumentStorage(generator, span, context, generator.CodeObject.ValueStorageCapacity);
         try { CopyPositionalOperands(arguments.Values, operands, receiver); }
         catch { ReturnBoundArguments(arguments); throw; }
+        if (generator.SharesExecutionWith(context) && context.CanStageGeneratorYield())
+        {
+            var frame = (ExecutionContext)generator.CreateBoundGenerator(arguments, span, staged: true);
+            context.StageGeneratorYield(frame);
+            return PyNone.Instance;
+        }
         return generator.CreateBoundGenerator(arguments, span);
     }
 

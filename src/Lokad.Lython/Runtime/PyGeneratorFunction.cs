@@ -15,7 +15,10 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
         _closureCells = closureCells;
     }
 
-    internal LythonRuntime.PyGenerator CreateBoundGenerator(BoundFunctionArguments arguments, LythonSourceSpan span)
+    internal bool SharesExecutionWith(LythonRuntime.ExecutionContext context)
+        => ReferenceEquals(Closure.State, context.State);
+
+    internal object CreateBoundGenerator(BoundFunctionArguments arguments, LythonSourceSpan span, bool staged = false)
     {
         LythonRuntime.ExecutionContext? frame = null;
         var entered = false;
@@ -30,7 +33,9 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
             {
                 Closure.CheckExecution(span);
                 frame = EnterInvocationFrame(arguments, span, enterFunctionCall: false);
-                var generator = new LythonRuntime.PyGenerator(CodeObject, frame, span, _closureCells, arguments, this);
+                var generator = staged
+                    ? InitializeStagedFrame(frame, arguments)
+                    : (object)new LythonRuntime.PyGenerator(CodeObject, frame, span, _closureCells, arguments, this);
                 governor.Commit(bytes);
                 return generator;
             }
@@ -46,5 +51,12 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
             try { if (entered && frame is null) Closure.LeaveFunctionCall(); }
             finally { ReleaseBoundInvocation(arguments, frame); }
         }
+    }
+
+    private LythonRuntime.ExecutionContext InitializeStagedFrame(
+        LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments)
+    {
+        frame.InitializeGeneratorExecution(CodeObject, arguments, _closureCells, this);
+        return frame;
     }
 }

@@ -12,12 +12,23 @@ internal sealed partial class LythonRuntime
         { PythonCause = cause, PythonContext = cause, SuppressPythonContext = true };
     }
 
+    // Only the source frame and starmap may hold this activation before it
+    // becomes a Python object. Both transfer the same admitted frame.
+    internal readonly record struct StagedGeneratorYield(ExecutionContext? Frame, LythonSourceSpan? Span)
+    {
+        internal PyGenerator Materialize(bool started = false) => new(Frame!, Span!, started);
+
+        internal void Release()
+        {
+            if (Frame is not null) PyGenerator.CompleteFrame(Frame);
+        }
+    }
+
     internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue
     {
         private ExecutionContext? _frame;
         private readonly LythonSourceSpan _span;
         private bool _started, _completed, _running;
-        private PyException? _suspendedException;
         public object ReturnValue { get; private set; } = PyNone.Instance;
         public MemoryGovernor? OwnerMemoryGovernor { get; }
         public LythonSourceSpan? AllocationSpan => _span;
@@ -65,14 +76,17 @@ internal sealed partial class LythonRuntime
 
         internal PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
             ExecutableCaptures closureCells, BoundFunctionArguments arguments, PyGeneratorFunction? lookupOwner = null)
+            : this(frame, span)
+        {
+            frame.InitializeGeneratorExecution(code, arguments, closureCells, lookupOwner);
+        }
+
+        internal PyGenerator(ExecutionContext frame, LythonSourceSpan span, bool started = false)
         {
             _frame = frame;
-            // Mirrored namespaces remain authoritative for retained cells while
-            // the executable frame is suspended, without retaining an active frame.
-            frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
-            frame.InitializeGeneratorExecution(code, arguments, closureCells, lookupOwner);
+            _started = started;
         }
 
         public bool IsTruthy() => true;
@@ -146,64 +160,74 @@ internal sealed partial class LythonRuntime
         internal void TransferStagedListYield(Span<ExecutableSlot> destination)
             => _frame!.TransferStagedListYield(destination);
 
+        internal StagedGeneratorYield TakeStagedGeneratorYield()
+            => _frame?.TakeStagedGeneratorYield() ?? default;
+
         private PyIterationResult Advance(object sent, LythonRuntimeException? injected,
             object? destination = null, int limit = 0, int startOrArity = 0)
         {
             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
             if (!_started && injected is not null) { Complete(); throw injected; }
-            var frame = _frame!;
+            return AdvanceFrame(_frame!, _span, this, sent, injected, destination, limit, startOrArity);
+        }
+
+        internal static PyIterationResult AdvanceFrame(ExecutionContext frame, LythonSourceSpan span,
+            PyGenerator? owner, object sent, LythonRuntimeException? injected, object? destination, int limit, int startOrArity)
+        {
             var previousException = frame.State.CurrentException;
             var entered = false;
             try
             {
-                EnterFrame(frame, previousException, destination, limit, startOrArity);
+                EnterFrame(frame, span, owner, previousException, destination, limit, startOrArity);
                 entered = true;
                 frame.Resume(sent, injected);
                 frame.Execute();
-                var result = ReadResult(frame);
-                if (!frame.HasYield) Complete();
-                return result;
+                return FinishAdvance(frame, owner);
             }
             catch (LythonRuntimeException exception)
             {
-                Complete();
-                PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
+                CompleteFrame(frame, owner);
+                PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", span);
                 if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
-                    throw GeneratorRaisedStopIteration(exception, frame, _span);
+                    throw GeneratorRaisedStopIteration(exception, frame, span);
                 throw;
             }
-            catch { Complete(); throw; }
-            finally { if (entered) LeaveFrame(frame, previousException, destination is not null, startOrArity); }
+            catch { CompleteFrame(frame, owner); throw; }
+            finally { if (entered) LeaveFrame(frame, owner, previousException, destination is not null, startOrArity); }
         }
 
-        private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected,
+        private ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected,
             object? destination = null, int limit = 0, int startOrArity = 0)
+            => AdvanceFrameAsync(_frame, _span, this, sent, injected, destination, limit, startOrArity);
+
+        internal static async ValueTask<PyIterationResult> AdvanceFrameAsync(ExecutionContext? frame, LythonSourceSpan span,
+            PyGenerator? owner, object sent, LythonRuntimeException? injected, object? destination, int limit, int startOrArity)
         {
-            if (!CanAdvance(sent, injected)) return PyIterationResult.End;
-            if (!_started && injected is not null) { Complete(); throw injected; }
-            var frame = _frame!;
-            var previousException = frame.State.CurrentException;
+            if (owner is not null)
+            {
+                if (!owner.CanAdvance(sent, injected)) return PyIterationResult.End;
+                if (!owner._started && injected is not null) { owner.Complete(); throw injected; }
+            }
+            var previousException = frame!.State.CurrentException;
             var entered = false;
             try
             {
-                EnterFrame(frame, previousException, destination, limit, startOrArity);
+                EnterFrame(frame, span, owner, previousException, destination, limit, startOrArity);
                 entered = true;
                 frame.Resume(sent, injected);
                 await frame.ExecuteAsync().ConfigureAwait(false);
-                var result = ReadResult(frame);
-                if (!frame.HasYield) Complete();
-                return result;
+                return FinishAdvance(frame, owner);
             }
             catch (LythonRuntimeException exception)
             {
-                Complete();
-                PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
+                CompleteFrame(frame, owner);
+                PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", span);
                 if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
-                    throw GeneratorRaisedStopIteration(exception, frame, _span);
+                    throw GeneratorRaisedStopIteration(exception, frame, span);
                 throw;
             }
-            catch { Complete(); throw; }
-            finally { if (entered) LeaveFrame(frame, previousException, destination is not null, startOrArity); }
+            catch { CompleteFrame(frame, owner); throw; }
+            finally { if (entered) LeaveFrame(frame, owner, previousException, destination is not null, startOrArity); }
         }
 
         private bool CanAdvance(object sent, LythonRuntimeException? injected)
@@ -215,51 +239,59 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private void EnterFrame(ExecutionContext frame, PyException? previousException, object? destination, int limit,
-            int startOrArity)
+        private static void EnterFrame(ExecutionContext frame, LythonSourceSpan span, PyGenerator? owner,
+            PyException? previousException, object? destination, int limit, int startOrArity)
         {
-            frame.EnterFunctionCall(_span);
-            try { frame.EnterInterpreterFrame(_span); }
+            frame.EnterFunctionCall(span);
+            try { frame.EnterInterpreterFrame(span); }
             catch { frame.LeaveFunctionCall(); throw; }
-            _running = true;
+            if (owner is not null) owner._running = true;
             frame.EnterExecutableSlots();
-            frame.SetCallerException(previousException);
-            frame.State.SetCurrentException(frame.HasActiveHandler ? _suspendedException : previousException);
-            _started = true;
+            frame.ResumeGeneratorException(previousException);
+            if (owner is not null) owner._started = true;
             // Reentry and stack admission have succeeded. A rejected nested
             // pull must never overwrite the current advance's destination.
             if (destination is not null) frame.BufferYields(destination, limit, startOrArity);
             else if (startOrArity != 0) frame.RequestListYield(startOrArity);
         }
 
-        private void LeaveFrame(ExecutionContext frame, PyException? previousException, bool buffered, int startOrArity)
+        private static void LeaveFrame(ExecutionContext frame, PyGenerator? owner, PyException? previousException,
+            bool buffered, int startOrArity)
         {
             if (buffered) frame.StopBufferingYields();
             else if (startOrArity != 0) frame.RequestListYield(0);
-            _running = false;
+            if (owner is not null) owner._running = false;
             frame.State.SetCurrentException(previousException);
             frame.LeaveExecutableSlots();
             frame.LeaveInterpreterFrame();
             frame.LeaveFunctionCall();
         }
 
-        private PyIterationResult ReadResult(ExecutionContext frame)
+        private static PyIterationResult FinishAdvance(ExecutionContext frame, PyGenerator? owner)
         {
-            _suspendedException = frame.State.CurrentException;
-            if (frame.HasYield) return PyIterationResult.Yield(frame.TakeYieldValue());
-            ReturnValue = frame.HasFrameReturn ? frame.FrameReturnValue : PyNone.Instance;
+            if (frame.HasYield)
+            {
+                frame.SuspendGeneratorException();
+                return PyIterationResult.Yield(frame.TakeYieldValue());
+            }
+            if (owner is not null)
+                owner.ReturnValue = frame.HasFrameReturn ? frame.FrameReturnValue : PyNone.Instance;
+            CompleteFrame(frame, owner);
             return PyIterationResult.End;
         }
 
-        private void Complete()
+        private void Complete() => CompleteFrame(_frame, this);
+
+        internal static void CompleteFrame(ExecutionContext? frame, PyGenerator? owner = null)
         {
-            try { _frame?.ReleaseGeneratorTemporaries(); }
+            try { frame?.ReleaseGeneratorTemporaries(); }
             finally
             {
-                _completed = true;
-                var frame = _frame;
-                _frame = null;
-                _suspendedException = null;
+                if (owner is not null)
+                {
+                    owner._completed = true;
+                    owner._frame = null;
+                }
                 frame?.DetachGeneratorExecution();
             }
         }

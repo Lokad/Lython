@@ -139,7 +139,7 @@ internal sealed partial class LythonRuntime
                             // A private funded consumer can take a discarded
                             // yield without entering the resume path. Mirrored
                             // namespaces still synchronize at each resume.
-                            var buffered = invocation._yieldDestination;
+                            var buffered = invocation.BufferedYieldDestination;
                             var directBuffer = instruction.DiscardsYieldResult
                                 && !invocation.MirrorsExecutableLocals && !invocation.MirrorLocalStores;
                             if (directBuffer && buffered is not null
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                             }
                             if (invocation!.HasYield)
                             {
-                                if (invocation._yieldDestination is { } delegatedDestination
+                                if (invocation.BufferedYieldDestination is { } delegatedDestination
                                     && invocation.TryBufferYield(delegatedDestination)) continue;
                                 return InstructionPause.Boundary;
                             }

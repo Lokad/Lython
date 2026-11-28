@@ -67,14 +67,17 @@ public sealed class StarmapMaterializationParityTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("/input.txt")]
-    [InlineData("/pause")]
-    public async Task IterableRowSurvivesPendingSourceAndCallback(string? cancelAt)
+    [InlineData(null, false)]
+    [InlineData("/input.txt", false)]
+    [InlineData("/pause", false)]
+    [InlineData(null, true)]
+    [InlineData("/input.txt", true)]
+    [InlineData("/pause", true)]
+    public async Task IterableRowSurvivesPendingSourceAndCallback(string? cancelAt, bool fromGenerator)
     {
         const string source = """
             from itertools import starmap
-            def arguments():
+            def arguments(marker):
                 yield marker
                 yield 2
                 yield 3
@@ -87,9 +90,11 @@ public sealed class StarmapMaterializationParityTests
                     source.read()
                 print(value is marker, two, three, four, first, second)
             marker = []
-            next(starmap(consume, [arguments()]))
+            next(starmap(consume, [arguments(marker)]))
             """;
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine().Compile(fromGenerator
+            ? source.Replace("[arguments(marker)]", "(arguments(value) for value in (marker,))", StringComparison.Ordinal)
+            : source);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
         var budget = new LythonMemoryBudget(1024 * 1024);
         var host = new DelayedLythonHost();
@@ -125,9 +130,11 @@ public sealed class StarmapMaterializationParityTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task GeneratorRowsDrainBeforeCallbackOrArityError(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task GeneratorRowsDrainBeforeCallbackOrArityError(bool asynchronous, bool fromGenerator)
     {
         const string source = """
             from itertools import starmap
@@ -156,7 +163,9 @@ public sealed class StarmapMaterializationParityTests
                 print('arity', events)
             print(next(batches), events)
             """;
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine().Compile(fromGenerator
+            ? source.Replace("[row(0), row(1), row(3), row(1)]", "(row(count) for count in (0, 1, 3, 1))", StringComparison.Ordinal)
+            : source);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
         var budget = new LythonMemoryBudget(1024 * 1024);
         var options = new LythonRunOptions { MemoryBudget = budget };

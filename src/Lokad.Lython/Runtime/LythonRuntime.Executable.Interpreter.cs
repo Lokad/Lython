@@ -58,6 +58,8 @@ internal sealed partial class LythonRuntime
             ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
             PyGeneratorFunction? lookupOwner)
         {
+            // Mirrored namespaces remain authoritative while the frame is suspended.
+            MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             InitializeExecutableFrame(code, arguments, captures, lookupOwner);
             _boundStorageOwner = arguments.StorageOwner;
         }
@@ -67,6 +69,7 @@ internal sealed partial class LythonRuntime
 
         internal void DetachGeneratorExecution()
         {
+            if (_execution.Code is null) return;
             var owner = _boundStorageOwner;
             var locals = _execution.Locals;
             var capacity = _execution.Code.ValueStorageCapacity;
@@ -160,8 +163,20 @@ internal sealed partial class LythonRuntime
 
         internal void ReleaseGeneratorTemporaries()
         {
-            try { _execution.Stack.UnwindTo(_execution.Code.FirstTemporarySlot); }
-            finally { _execution.Stack.ReleaseStorage(); }
+            if (_execution.Code is null) return;
+            try
+            {
+                if (_yieldTarget is ExecutionContext staged)
+                {
+                    _yieldTarget = null;
+                    PyGenerator.CompleteFrame(staged);
+                }
+            }
+            finally
+            {
+                try { _execution.Stack.UnwindTo(_execution.Code.FirstTemporarySlot); }
+                finally { _execution.Stack.ReleaseStorage(); }
+            }
         }
 
         internal void Resume(object sent, LythonRuntimeException? injected)
@@ -186,16 +201,50 @@ internal sealed partial class LythonRuntime
             _execution.InstructionIndex++;
         }
 
-        private object? _yieldDestination;
+        // A pull either borrows a buffer or stages a generator for its caller.
+        // Both lifetimes end before another advance of this frame can start.
+        private object? _yieldTarget;
+        private object? BufferedYieldDestination => _yieldTarget is ExecutionContext ? null : _yieldTarget;
         private int _yieldLimit;
         // A drain and a staged-list request are exclusive. With a slot
         // destination this is the next write position. With no destination
         // it is the list arity requested by the consumer.
         private int _yieldPositionOrListArity;
-        private bool RequestedListYield => _yieldPositionOrListArity > 0 && _yieldDestination is null;
+        private bool RequestedListYield => _yieldPositionOrListArity > 0 && _yieldTarget is null;
         internal bool HasStagedListYield { get; private set; }
 
         internal void RequestListYield(int arity) => _yieldPositionOrListArity = arity;
+
+        internal bool CanStageGeneratorYield()
+        {
+            if (!RequestedListYield || MirrorsExecutableLocals || MirrorLocalStores) return false;
+            var index = _execution.InstructionIndex;
+            var instructions = _execution.Code.Instructions;
+            if (index + 1 >= instructions.Length) return false;
+            ref readonly var call = ref instructions[index];
+            ref readonly var yield = ref instructions[index + 1];
+            return call.OpCode == ExecutableOpCode.Call && !call.HasResultConsumer
+                && yield.OpCode == ExecutableOpCode.Yield
+                && yield.InputStart == call.ResultSlot && yield.ResultSlot == call.ResultSlot
+                && _execution.Stack.CanRetireWithoutCleanup(call.ResultSlot);
+        }
+
+        internal void StageGeneratorYield(ExecutionContext generator)
+        {
+            System.Diagnostics.Debug.Assert(_yieldTarget is null);
+            _yieldTarget = generator;
+        }
+
+        internal StagedGeneratorYield TakeStagedGeneratorYield()
+        {
+            if (_yieldTarget is not ExecutionContext generator) return default;
+            _yieldTarget = null;
+            System.Diagnostics.Debug.Assert(HasYield);
+            // Staging is limited to the adjacent call. The yield remains
+            // current until the next advance, so the call site owns the span.
+            ref readonly var call = ref _execution.Code.Instructions[_execution.InstructionIndex - 1];
+            return new(generator, _execution.Code.CallSites[call.CallSiteIndex].CallSpan);
+        }
 
         private bool TryStageListYield(in ExecutableInstruction display)
         {
@@ -240,14 +289,14 @@ internal sealed partial class LythonRuntime
 
         internal void BufferYields(object destination, int limit, int start)
         {
-            _yieldDestination = destination;
+            _yieldTarget = destination;
             _yieldLimit = limit;
             _yieldPositionOrListArity = start;
         }
 
         internal void StopBufferingYields()
         {
-            _yieldDestination = null;
+            _yieldTarget = null;
             _yieldLimit = 0;
             _yieldPositionOrListArity = 0;
         }
@@ -316,8 +365,9 @@ internal sealed partial class LythonRuntime
         }
 
         internal bool HasActiveHandler => _savedActiveExceptions is { Count: > 0 };
-        internal void SetCallerException(PyException? exception)
+        internal void ResumeGeneratorException(PyException? exception)
         {
+            var active = HasActiveHandler ? _entryActiveException : exception;
             _entryActiveException = exception;
             if (_savedActiveExceptions is { Count: > 0 } saves)
             {
@@ -325,7 +375,13 @@ internal sealed partial class LythonRuntime
                 foreach (var save in saves) outermost = save;
                 outermost!.SavedException = exception;
             }
+            State.SetCurrentException(active);
         }
+
+        // Between advances the caller has already been restored. Reuse the
+        // entry slot to remember this generator's active handler, if any.
+        internal void SuspendGeneratorException()
+            => _entryActiveException = HasActiveHandler ? State.CurrentException : null;
 
         // Abandoning the frame drops its saved handler chain and restores the
         // active exception from frame entry, like CPython deleting handler
@@ -851,7 +907,7 @@ internal sealed partial class LythonRuntime
                     if (!_execution.ReturnValue.IsUnassigned) return null;
                     if (HasYield)
                     {
-                        if (_yieldDestination is { } destination && TryBufferYield(destination)) continue;
+                        if (BufferedYieldDestination is { } destination && TryBufferYield(destination)) continue;
                         return null;
                     }
                     if (!jumped) _execution.InstructionIndex++;

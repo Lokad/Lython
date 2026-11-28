@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1936 Hand the private generator frame to starmap](results/2026-11-28-staged-generator-activation/README.md)
+removes the inner generator wrapper on the private yield. The initial
+frame expansion adds about 82 KB to ordinary reduction. The refined
+design reuses existing storage and saves about 131 KB per iterable
+shipment. Local async shipment CPU falls 2.68–9.27%, sync CPU rises
+0.81–1.47%, and the first-line control is inconclusive.
+
 [B1935 direct ready iterator callback handoff](results/2026-11-28-ready-iterator-callback-abi/README.md)
 withdraws the separate ready and pending handoff. Iterable async elapsed
 and CPU span zero. File-fed map CPU falls and the unrelated first-line

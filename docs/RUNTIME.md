@@ -950,6 +950,14 @@ The source operands are retired before the callback runs, so the callback can
 resume the generator. Direct pulls and unmatched displays still yield Python
 objects normally.
 
+The same pull can take the frame of an adjacent positional call to a
+same-command generator function. Lython binds and admits the frame at
+the call, then transfers it at the usual yield boundary. The private
+frame uses ordinary generator advancement. If the consumer needs the
+general iterator path, it materializes the generator with its current
+position and active exception. A pending pull keeps its frame and
+argument workspace admitted until their users and cleanup finish.
+
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume
 path. The continuation consumes that pull once and resumes in source
