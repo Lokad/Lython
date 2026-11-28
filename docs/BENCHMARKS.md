@@ -86,6 +86,8 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Bind fixed-width `sum` arguments on the stack | Ordinary tuple or range reductions each save about 64 KiB per script. Quiet async tuple CPU falls 2.16–3.65%. Range and file-fed CPU span zero. [B1959](../benchmarks/results/2026-11-28-fixed-sum-binding/README.md). |
+| Keep the integer subtotal in its generator operand | Ordinary tuple or range reductions each save about 160 KiB and 2,048 allowance growth requests at matching peaks. Local async tuple CPU falls 2.46–3.80%. [B1960](../benchmarks/results/2026-11-28-borrowed-sum-subtotal/README.md). |
 | Reduce private generator sums in admitted slots | Ordinary tuple and range reductions each save 480 KiB per script in both APIs. Local tuple CPU falls 8.17–14.88% sync and 16.18–20.12% async. [B1957](../benchmarks/results/2026-11-28-borrowed-generator-sum/README.md). |
 | Select the `sum` pull before awaiting | Quiet warm file-fed async CPU falls 3.48–6.06% at matching admission. Ordinary reduction and sync timings remain inconclusive. [B1949](../benchmarks/results/2026-11-28-sum-source-selection/README.md). |
 | Share frontend module member storage | First compilation allocates about 167 KB less for configuration and XML at matching admission. Quiet warm XML compile-to-result uses 1.51–2.19% less CPU. Fresh-command timing remains inconclusive. [B1947 and B1948](../benchmarks/results/2026-11-28-module-surface-storage/README.md). |

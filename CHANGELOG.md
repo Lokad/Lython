@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep integer generator subtotals in their existing operand. Fund the
+  general accumulator under the same owner when a reduction can promote.
 - Bind ordinary `sum` arguments in the existing fixed-width buffer. Keep
   the iterable and start value through asynchronous reduction and cleanup.
 - Reduce eligible integer generator expressions passed to builtin `sum` in

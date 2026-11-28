@@ -60,53 +60,57 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static bool TryAdvanceReductionOuter(ref ExecutableWorkState work, ExecutionContext scope,
-            in ExecutableInstruction instruction, PyEnumerableIterator outer, out bool hasNext, out ExecutableSlot value)
-        {
-            if (!ReferenceEquals(work.Stack.Values[instruction.InputStart].Reference, outer))
-            {
-                hasNext = false;
-                value = default;
-                return false;
-            }
-            scope.State.CheckInterpreterStack(instruction.Span);
-            var next = outer.TryMoveNext();
-            hasNext = next.HasValue;
-            value = hasNext ? next.TakeSlotValue() : default;
-            return true;
-        }
-
         // The call operand owns initialized slots before and during the call.
-        // Promotion transfers the slots and their prepaid shell charge.
+        // It also funds the general accumulator if the prefix promotes.
+        // Promotion transfers the slots and their prepaid frame shell charge.
         internal sealed class BorrowedGeneratorSum(ExecutableWorkState work, PyEnumerableIterator outer,
             MemoryGovernor governor, long shellBytes) : ExecutableTemporaryValue
         {
-            internal const long StorageBytes = 192;
+            internal const long StorageBytes = 256;
             private ExecutableWorkState _work = work;
             private MemoryGovernor? _governor = governor;
+            private long _subtotal;
 
-            internal async ValueTask<object> Reduce(ExecutionContext scope, LythonSourceSpan span, bool asynchronous)
+            internal bool TryAdvanceOuter(ref ExecutableWorkState state, in ExecutableInstruction instruction,
+                out bool hasNext, out ExecutableSlot value)
+            {
+                hasNext = false;
+                value = default;
+                if (!ReferenceEquals(state.Stack.Values[instruction.InputStart].Reference, outer)) return false;
+                state.Stack.State.CheckInterpreterStack(instruction.Span);
+                var next = outer.TryMoveNext();
+                hasNext = next.HasValue;
+                if (hasNext) value = next.TakeSlotValue();
+                return true;
+            }
+
+            internal bool TryAddBorrowedInteger(in ExecutableSlot value)
+                => (value.TryGetInteger(out var integer) || SumState.TryInt64(value.Object.RequireNotNull(), out integer))
+                    && TryAccumulateSumInteger(ref _subtotal, integer);
+
+            internal ValueTask<object> Reduce(ExecutionContext scope, LythonSourceSpan span, bool asynchronous)
             {
                 var generatorSpan = scope.PrivateGeneratorSpan;
-                scope.MemoryGovernor.Reserve(64, span);
-                ExecutionContext? frame = null;
+                var frame = RunPrefix(scope, generatorSpan);
+                return frame is null
+                    ? new(new BigInteger(_subtotal))
+                    : ReducePromoted(frame, generatorSpan, span, scope, asynchronous);
+            }
+
+            private async ValueTask<object> ReducePromoted(ExecutionContext frame, LythonSourceSpan generatorSpan,
+                LythonSourceSpan span, ExecutionContext scope, bool asynchronous)
+            {
                 try
                 {
-                    var sum = new SumState(BigInteger.Zero);
-                    frame = RunPrefix(scope, sum, generatorSpan);
-                    if (frame is null) return sum.Result;
+                    var sum = new SumState(new BigInteger(_subtotal));
                     return asynchronous
                         ? await ReduceSumAsync(sum, frame, null, generatorSpan, span, scope).ConfigureAwait(false)
                         : ReduceSum(sum, frame, null, generatorSpan, span, scope);
                 }
-                finally
-                {
-                    try { PyGenerator.CompleteFrame(frame); }
-                    finally { scope.MemoryGovernor.ReleaseReserved(64); }
-                }
+                finally { PyGenerator.CompleteFrame(frame); }
             }
 
-            private ExecutionContext? RunPrefix(ExecutionContext scope, SumState sum, LythonSourceSpan span)
+            private ExecutionContext? RunPrefix(ExecutionContext scope, LythonSourceSpan span)
             {
                 var entryException = scope.State.CurrentException;
                 var enteredFunction = false;
@@ -117,8 +121,7 @@ internal sealed partial class LythonRuntime
                     enteredFunction = true;
                     scope.EnterInterpreterFrame(span);
                     enteredInterpreter = true;
-                    var pause = ExecuteInstructionPrefix(ref _work, scope, null, true, out _, out _, out _,
-                        reduction: sum, reductionOuter: outer);
+                    var pause = ExecuteInstructionPrefix(ref _work, scope, null, true, out _, out _, out _, reduction: this);
                     if (pause == InstructionPause.Boundary) return null;
                     if (pause != InstructionPause.ContextRequired)
                         throw new InvalidOperationException("A borrowed generator cannot suspend.");

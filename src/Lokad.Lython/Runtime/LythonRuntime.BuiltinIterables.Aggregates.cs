@@ -279,24 +279,15 @@ internal sealed partial class LythonRuntime
                 _numericAddition = true;
                 return true;
             }
-            if (TryAccumulateInteger(integer)) return true;
+            if (TryAccumulateSumInteger(ref _integer, integer))
+            {
+                _numericAddition = true;
+                return true;
+            }
             // Exact promotion uses the same guarded general addition.
             Total = Result;
             _numericAddition = false;
             return false;
-        }
-
-        internal bool TryAddBorrowedInteger(in ExecutableSlot value)
-            => (value.TryGetInteger(out var integer) || TryInt64(value.Object.RequireNotNull(), out integer))
-                && TryAccumulateInteger(integer);
-
-        private bool TryAccumulateInteger(long integer)
-        {
-            var next = unchecked(_integer + integer);
-            if (((_integer ^ next) & (integer ^ next)) < 0) return false;
-            _integer = next;
-            _numericAddition = true;
-            return true;
         }
 
         internal bool TryAddNumber(object item)
@@ -349,7 +340,7 @@ internal sealed partial class LythonRuntime
             _numericAddition = false;
         }
 
-        private static bool TryInt64(object value, out long result)
+        internal static bool TryInt64(object value, out long result)
         {
             if (PyNumberOps.TryAsInteger(value, out var integer) && integer >= long.MinValue && integer <= long.MaxValue)
             {
@@ -359,6 +350,15 @@ internal sealed partial class LythonRuntime
             result = 0;
             return false;
         }
+    }
+
+    private static bool TryAccumulateSumInteger(ref long subtotal, long integer)
+    {
+        var next = unchecked(subtotal + integer);
+        // Overflow changes the result's sign relative to both operands.
+        if (((subtotal ^ next) & (integer ^ next)) < 0) return false;
+        subtotal = next;
+        return true;
     }
 
     private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> SumBytesOperation

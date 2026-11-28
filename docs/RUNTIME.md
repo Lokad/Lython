@@ -964,11 +964,13 @@ keep its admitted execution state in the call's operand storage. Instruction
 layout identifies eligible operand positions. The runtime checks the evaluated
 callable before acquiring the outer iterator. With an exact builtin list, tuple
 or range, eligible expressions can consume integer yields through the shared
-executable dispatcher. An operation that needs the full generator frame
-transfers the same iterator, slots and instruction position into that frame.
-The existing sum loop continues with the accumulated value, including when
-addition or generator code can suspend. Other call targets and expressions
-that publish a generator use the ordinary iterator object.
+executable dispatcher. The operand keeps the integer subtotal. An operation
+that needs the full generator frame transfers the same iterator, slots and
+instruction position into that frame. The general accumulator starts with
+the subtotal and uses capacity already admitted by the operand. The existing
+sum loop continues, including when addition or generator code can suspend.
+Other call targets and expressions that publish a generator use the ordinary
+iterator object.
 
 Construction admits the context shell and its initial executable slots before
 acquiring the outer iterator. Refusal of that construction is attributed to the

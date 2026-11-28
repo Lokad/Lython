@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
             out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default,
-            SumState? reduction = null, PyEnumerableIterator? reductionOuter = null)
+            BorrowedGeneratorSum? reduction = null)
         {
             pending = default;
             pendingSpan = default;
@@ -334,8 +334,8 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.ForNext:
                             if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var hasNativeNext, out var nativeNext) ||
-                                reductionOuter is not null && TryAdvanceReductionOuter(ref execution, scope, instruction,
-                                    reductionOuter, out hasNativeNext, out nativeNext))
+                                reduction is not null && reduction.TryAdvanceOuter(ref execution, instruction,
+                                    out hasNativeNext, out nativeNext))
                             {
                                 if (hasNativeNext) PublishInstructionResult(ref execution, invocation, instruction, nativeNext);
                                 else
