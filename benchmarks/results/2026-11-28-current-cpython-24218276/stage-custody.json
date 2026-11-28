@@ -1,0 +1,19 @@
+{
+  "before": 15421440,
+  "afterReclaim": 21233664,
+  "afterStaging": 14761984,
+  "requiredBeforeStage": 19356473,
+  "deduplicated": [
+    {
+      "path": "/home/lokad/lython-bench-checks/generator-row-workspace-quiet-b1905-20261127/reference/Lokad.Lython.dll",
+      "sha256": "486dade6d7f80e1ba7bb379f694f80d4f57caa40a7163236e8d4a559d7926298",
+      "localImage": ".git\\agent-notes\\review-20261031\\generator-row-workspace-refined-20261127\\comparison\\reference",
+      "archiveSha": "de99f264c016b24614350d0aca8f442a10d996ce91a13c85fd2402da3b232d10"
+    }
+  ],
+  "expandedBytes": 6373561,
+  "reused": {
+    "donor": 31
+  },
+  "streamed": true
+}

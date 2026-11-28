@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1915 attribute current shipment, JSON and regex](results/2026-11-28-current-script-profile/README.md)
+uses the B1914 image in local WSL. Generator advancement accounts for 67.8%
+of eligible shipment thread time. Converted dictionary updates account for
+34.8% in dense JSON. The producer accounts for 34.5% in the compiled log
+search. Regions include work in callees and can overlap.
+
+[B1914 compare current scripts with CPython](results/2026-11-28-current-cpython-24218276/README.md)
+measures `24218276c` on the quiet VM. Sync shipment and dense JSON are
+1.040–1.071× CPython elapsed. Async shipment is 1.187–1.221×, and compiled
+and module regex scans are 2.792–3.002× and 1.883–1.951×. All 280 batches
+and both quiet gates pass. Startup remains at its B1906 revision.
+
 [B1913 admit JSON list backing at container entry](results/2026-11-28-json-list-initial-admission/README.md)
 removes 4,096 initial growth requests from nested-array Lines in each API
 at unchanged peak admission. Local warm async elapsed falls 0.44–6.48%.
