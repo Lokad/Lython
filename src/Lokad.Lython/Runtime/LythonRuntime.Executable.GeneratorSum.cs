@@ -41,16 +41,33 @@ internal sealed partial class LythonRuntime
             // The layout proves the adjacent sole consumer. Fund and acquire
             // the generator at its expression before entering the sum call.
             var code = expression.CodeObject;
-            var totalBytes = checked(promotionBytes +
-                ExecutableSlotsBytes(code.ValueStorageCapacity) + ExecutableFrameExtraBytes(code, 0));
+            var frameBytes = checked(ExecutableSlotsBytes(code.ValueStorageCapacity) + ExecutableFrameExtraBytes(code, 0));
+            var totalBytes = checked(promotionBytes + frameBytes);
             var governor = MemoryGovernor;
             governor.Reserve(totalBytes, span);
             governor.Commit(totalBytes);
             try
             {
                 var captures = CaptureExecutableClosures(code, this, span);
+                var sharedLookupStart = lookupOwner is null ? -1 : expression.SharedLookupStart;
+                if (outer is PyList or PyTuple && code.ValueStorageCapacity <= NativeValueCapacity &&
+                    (lookupOwner is not null || code.LookupCacheCount == 0))
+                {
+                    // Hold the eventual array charge at the original admission
+                    // boundary. Only the managed inline slots exist until transfer.
+                    work = new ExecutableWorkState
+                    {
+                        Code = code,
+                        Captures = captures,
+                        Stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot,
+                            code.LastOwnedTemporarySlot, this, span, frameBytes, [], lookupOwner, sharedLookupStart,
+                            storagePrepaid: true),
+                    };
+                    ChargeClosureRetention(FunctionClosureContext, governor, span);
+                    return outer;
+                }
                 InitializeExecutableWorkState(ref work, code, this, default, captures, lookupOwner,
-                    borrowedInvocation: true, sharedLookupStart: lookupOwner is null ? -1 : expression.SharedLookupStart,
+                    borrowedInvocation: true, sharedLookupStart: sharedLookupStart,
                     storagePrepaid: true);
                 var acquired = outer is PyList or PyTuple ? outer : PyEnumerableIterator.Create(outer, expression.OuterSpan, this);
                 ChargeClosureRetention(FunctionClosureContext, governor, span);
@@ -152,6 +169,10 @@ internal sealed partial class LythonRuntime
                 // Keep the iterator's post-entry admission before the first pull.
                 if (reduction.Outer is PyList or PyTuple)
                     State.CheckInterpreterStack(work.Code.Instructions[work.Code.EntryIndex].Span);
+                if (work.Stack.Values.Length == 0 && ReduceInlineGenerator(ref work, ref reduction, span))
+                    return null;
+                // A transferred array can still finish privately. Only the
+                // ordinary prefix knows when an invocation really is needed.
                 var pause = ExecuteInstructionPrefix(ref work, this, null, true, out _, out _, out _, reduction: new(ref reduction));
                 if (pause == InstructionPause.Boundary) return null;
                 if (pause != InstructionPause.ContextRequired)
@@ -178,6 +199,22 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private bool ReduceInlineGenerator(ref ExecutableWorkState work, ref PrivateGeneratorReduction reduction, LythonSourceSpan span)
+        {
+            var code = work.Code;
+            var slot = code.FirstTemporarySlot;
+            NativeValues buffer = default;
+            Span<ExecutableSlot> values = buffer;
+            values[slot] = ExecutableSlot.PrepareNativeLoop(reduction.Outer);
+            var native = new NativeExecution(code, this, work.Captures, values[..code.ValueStorageCapacity],
+                work.Stack.LookupOwner, sharedLookupStart: work.Stack.SharedLookupStart)
+            {
+                Index = code.EntryIndex + 1,
+                LiveExtent = slot + 1,
+            };
+            return native.ReducePrivateGenerator(ref work, ref reduction.Subtotal, span);
+        }
+
         private void MaterializeSequenceOuter(ref ExecutableWorkState work, object sequence)
         {
             var code = work.Code;
@@ -193,36 +230,18 @@ internal sealed partial class LythonRuntime
         private static bool TryReduceRecordComparison(ref ExecutableWorkState work, ExecutionContext scope,
             in ExecutableInstruction read, object fieldValue, ref PrivateGeneratorReduction reduction)
         {
+            if (!work.Stack.CanRetireWithoutCleanup(read.ResultSlot) ||
+                !TryReadPrivateRecordComparison(work.Code, work.InstructionIndex, read, fieldValue, scope, out var truth))
+                return false;
+
             var index = work.InstructionIndex + 1;
-            var code = work.Code;
-            var instructions = code.Instructions;
-            if (read.HasResultConsumer || index + 1 >= instructions.Length) return false;
-            ref readonly var compare = ref instructions[index];
-            ref readonly var yielded = ref instructions[index + 1];
-            var slot = read.ResultSlot;
-            if (compare.OpCode != ExecutableOpCode.Binary || compare.HasResultConsumer ||
-                compare.InputStart != slot || compare.ResultSlot != slot ||
-                (uint)~compare.SecondInput >= (uint)code.Constants.Length ||
-                !IsScalarComparison(compare.BinaryOperator) ||
-                yielded.OpCode != ExecutableOpCode.Yield || !yielded.DiscardsYieldResult ||
-                yielded.InputStart != slot || yielded.LiveExtent != slot ||
-                !work.Stack.CanRetireWithoutCleanup(slot))
-                return false;
-
-            // The literal and fetched field are the original operands.
-            // Declining a user comparison leaves the field for ordinary
-            // publication, so promotion resumes without another record read.
-            scope.State.CheckExecution(compare.Span);
-            if (!TryEvaluateScalarComparison(compare.BinaryOperator, fieldValue, RuntimeValue(code.Constants[~compare.SecondInput]),
-                scope, compare.Span, out var truth))
-                return false;
-
+            ref readonly var yielded = ref work.Code.Instructions[index + 1];
             scope.State.CheckExecution(yielded.Span);
             if (!TryAccumulateSumInteger(ref reduction.Subtotal, truth ? 1 : 0))
             {
                 // Widen at the existing yield with the completed Python bool.
                 work.InstructionIndex = index;
-                PublishInstructionResult(ref work, null, compare, RuntimeValue(truth));
+                PublishInstructionResult(ref work, null, work.Code.Instructions[index], RuntimeValue(truth));
                 return true;
             }
             work.Stack.RetireTo(yielded.LiveExtent);
@@ -267,8 +286,34 @@ internal sealed partial class LythonRuntime
             }
 
             internal bool TryAddBorrowedInteger(in ExecutableSlot value)
-                => (value.TryGetInteger(out var integer) || SumState.TryInt64(value.Object.RequireNotNull(), out integer))
-                    && TryAccumulateSumInteger(ref Subtotal, integer);
+                => TryAddPrivateInteger(ref Subtotal, value);
         }
+    }
+
+    private static bool TryAddPrivateInteger(ref long subtotal, in ExecutableSlot value)
+        => (value.TryGetInteger(out var integer) || SumState.TryInt64(value.Object.RequireNotNull(), out integer))
+            && TryAccumulateSumInteger(ref subtotal, integer);
+
+    private static bool TryReadPrivateRecordComparison(ExecutableCodeObject code, int readIndex,
+        in ExecutableInstruction read, object field, ExecutionContext scope, out bool truth)
+    {
+        truth = false;
+        var instructions = code.Instructions;
+        if (read.HasResultConsumer || readIndex + 2 >= instructions.Length) return false;
+        ref readonly var compare = ref instructions[readIndex + 1];
+        ref readonly var yielded = ref instructions[readIndex + 2];
+        var slot = read.ResultSlot;
+        if (compare.OpCode != ExecutableOpCode.Binary || compare.HasResultConsumer ||
+            compare.InputStart != slot || compare.ResultSlot != slot ||
+            (uint)~compare.SecondInput >= (uint)code.Constants.Length ||
+            !IsScalarComparison(compare.BinaryOperator) ||
+            yielded.OpCode != ExecutableOpCode.Yield || !yielded.DiscardsYieldResult ||
+            yielded.InputStart != slot || yielded.LiveExtent != slot)
+            return false;
+
+        // A dynamic comparison can use the already fetched field after transfer.
+        scope.State.CheckExecution(compare.Span);
+        return TryEvaluateScalarComparison(compare.BinaryOperator, field, RuntimeValue(code.Constants[~compare.SecondInput]),
+            scope, compare.Span, out truth);
     }
 }

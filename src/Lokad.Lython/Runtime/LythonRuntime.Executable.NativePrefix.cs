@@ -7,31 +7,47 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal const int NativeValueCapacity = 16;
+    [System.Runtime.CompilerServices.InlineArray(NativeValueCapacity)]
+    internal struct NativeValues { private ExecutableSlot _first; }
+
     // Eligibility only: deeper calls continue in the existing linear runner.
     // Use its logical depth, without a second counter or a guest recursion limit.
     private const int NativeCallDepth = 8;
 
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
-    internal ref partial struct NativeExecution(PyExecutableFunction function, Span<ExecutableSlot> values, bool consumedByIteration, int unpackedReturnCount)
+    internal ref partial struct NativeExecution(ExecutableCodeObject code, ExecutionContext scope, ExecutableCaptures captures,
+        Span<ExecutableSlot> values, PyFunctionBase? lookupOwner, bool consumedByIteration = false,
+        int unpackedReturnCount = 0, int sharedLookupStart = -1)
     {
-        private readonly PyExecutableFunction _function = function;
-        internal readonly ExecutableCodeObject Code = function.CodeObject;
+        private readonly PyFunctionBase? _lookupOwner = lookupOwner;
+        private readonly int _sharedLookupStart = sharedLookupStart;
+        internal readonly ExecutableCodeObject Code = code;
         internal readonly Span<ExecutableSlot> Values = values;
-        private readonly ExecutableCaptures _cells = function.Captures;
-        private readonly ExecutionContext _scope = function.DefinitionContext;
+        private readonly ExecutableCaptures _cells = captures;
+        private readonly ExecutionContext _scope = scope;
         private readonly bool _consumedByIteration = consumedByIteration;
         private readonly int _unpackedReturnCount = unpackedReturnCount;
         private int _unpackedTupleStart = -1;
         internal bool ReturnedUnpacked => _unpackedTupleStart >= 0;
-        internal int Index = function.CodeObject.EntryIndex;
-        internal int LiveExtent = function.CodeObject.FirstTemporarySlot;
+        internal int Index = code.EntryIndex;
+        internal int LiveExtent = code.FirstTemporarySlot;
         private bool _entered;
         private bool _hasDeferredDefinitions;
         internal bool OwnershipTransferred { get; private set; }
         private ExecutionContext? _preparedChild;
         private MemoryGovernor? _preparedChildOwner;
         internal LythonRuntimeException? Failure { get; private set; }
+
+        internal NativeExecution(PyExecutableFunction function, Span<ExecutableSlot> values, bool consumedByIteration, int unpackedReturnCount)
+            : this(function.CodeObject, function.DefinitionContext, function.Captures,
+                values, function, consumedByIteration, unpackedReturnCount) { }
+
+        private Span<ExecutableLookupCache> GetLookupCaches(LythonSourceSpan span)
+        {
+            var caches = _lookupOwner!.GetLookupCaches(span);
+            return _sharedLookupStart >= 0 ? caches.AsSpan(_sharedLookupStart, Code.LookupCacheCount) : caches;
+        }
 
         internal bool Run(LythonSourceSpan entrySpan, out ExecutableSlot result, Span<ExecutableSlot> unpackedReturn = default)
         {
@@ -78,7 +94,28 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private bool RunCore(out ExecutableSlot result)
+        internal bool ReducePrivateGenerator(ref ExecutableWorkState work, scoped ref long subtotal, LythonSourceSpan span)
+        {
+            try
+            {
+                if (RunCore(out _, new(ref subtotal))) return true;
+                _scope.CheckExecution(Code.Instructions[Index].Span);
+                PrepareTransfer();
+                work.Stack.MaterializePrepaidSlots(Values[..LiveExtent], Code.ValueStorageCapacity);
+                work.Locals = work.Stack.Values;
+                work.InstructionIndex = Index;
+                OwnershipTransferred = true;
+                return false;
+            }
+            catch (LythonRuntimeException error)
+            {
+                RecordFailure(error, _scope.State.CurrentException, span);
+                throw;
+            }
+            finally { Dispose(); }
+        }
+
+        private bool RunCore(out ExecutableSlot result, scoped Span<long> subtotal = default)
         {
             result = ExecutableSlot.FromObject(PyNone.Instance);
             while (Index < Code.NativePrefixEnd)
@@ -102,7 +139,7 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, RuntimeValue(Code.Constants[instruction.ConstantIndex]));
                         break;
                     case ExecutableOpCode.IntegerCallUpdate:
-                        if (instruction.IntegerUpdateCallIndex + 2 < Code.NativePrefixEnd &&
+                        if (subtotal.IsEmpty && instruction.IntegerUpdateCallIndex + 2 < Code.NativePrefixEnd &&
                             _scope.State.CurrentRecursionDepth < NativeCallDepth &&
                             TryEvaluateIntegerCallUpdate(Code, Values, ref Index, LiveExtent, _scope, out var updated))
                         {
@@ -129,7 +166,7 @@ internal sealed partial class LythonRuntime
                             throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[instruction.LocalSlot], instruction.Span);
                         break;
                     case ExecutableOpCode.LoadGlobalForArithmeticCall:
-                        if (Index + 2 < Code.NativePrefixEnd && _scope.State.CurrentRecursionDepth < NativeCallDepth &&
+                        if (subtotal.IsEmpty && Index + 2 < Code.NativePrefixEnd && _scope.State.CurrentRecursionDepth < NativeCallDepth &&
                             TryCallWithArithmeticArgument(Code, Values, ref Index, LiveExtent, _scope, out var arithmeticCall))
                         {
                             Publish(Code.Instructions[Index], arithmeticCall);
@@ -156,11 +193,13 @@ internal sealed partial class LythonRuntime
                         StoreLocal(instruction);
                         break;
                     case ExecutableOpCode.LoadCasedSplit:
+                        if (!subtotal.IsEmpty) return false;
                         if (TryExecuteCasedSplitMember(instruction)) break;
                         goto case ExecutableOpCode.LoadCallMember;
                     case ExecutableOpCode.LoadCallMember:
                     case ExecutableOpCode.LoadConvertedDictionaryGet:
                     {
+                        if (!subtotal.IsEmpty) return false;
                         var receiver = Read(instruction.InputStart, 0);
                         var name = Code.Names[instruction.NameIndex];
                         object? target = receiver is PyInstance instance &&
@@ -172,6 +211,7 @@ internal sealed partial class LythonRuntime
                         break;
                     }
                     case ExecutableOpCode.Call:
+                        if (!subtotal.IsEmpty) return false;
                         if (_hasDeferredDefinitions) MaterializeDeferredDefinitions();
                         if (!Call(instruction)) return false;
                         break;
@@ -190,10 +230,11 @@ internal sealed partial class LythonRuntime
                         StoreDefaultResult(Values, instruction, defaultValue, _scope.State);
                         break;
                     case ExecutableOpCode.ApplyDeferredDefinition:
+                        if (!subtotal.IsEmpty) return false;
                         if (TryDeferDefinition(instruction)) break;
                         goto case ExecutableOpCode.ApplyOperation;
                     case ExecutableOpCode.ApplyOperation:
-                        if (!ApplyDefinition(instruction)) return false;
+                        if (!subtotal.IsEmpty || !ApplyDefinition(instruction)) return false;
                         break;
                     case ExecutableOpCode.Subscript:
                     {
@@ -210,10 +251,14 @@ internal sealed partial class LythonRuntime
                         {
                             // Reuse the ordinary definition-owned cache. Admit its
                             // backing before proving the current live row layout.
-                            var caches = _function.GetLookupCaches(instruction.Span);
+                            var caches = GetLookupCaches(instruction.Span);
                             if (dictionary.TryReadRecordValue(field, ref caches[instruction.LookupCacheIndex], _scope,
                                 instruction.Span, out var cached))
-                            { Publish(instruction, cached); break; }
+                            {
+                                if (subtotal.IsEmpty || !FinishPrivateRecordComparison(instruction, cached, ref subtotal[0]))
+                                    Publish(instruction, cached);
+                                break;
+                            }
                         }
                         if (dictionary.HasProtocolKeys) return false;
                         Publish(instruction, ReadSubscriptValue(dictionary, field, instruction.Span, _scope));
@@ -286,6 +331,12 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, next.TakeSlotValue());
                         break;
                     }
+                    case ExecutableOpCode.Yield:
+                        if (subtotal.IsEmpty || !instruction.DiscardsYieldResult ||
+                            !TryAddPrivateInteger(ref subtotal[0], Values[instruction.InputStart]))
+                            return false;
+                        Trim(instruction.LiveExtent);
+                        break;
                     case ExecutableOpCode.ReverseAssignmentValues:
                         ReverseAssignmentValues(Values.Slice(instruction.InputStart, instruction.AssignmentValueCount), _scope.State, instruction.Span);
                         break;
@@ -329,6 +380,25 @@ internal sealed partial class LythonRuntime
             return Index >= Code.Instructions.Length;
         }
 
+        private bool FinishPrivateRecordComparison(in ExecutableInstruction read, object field, ref long subtotal)
+        {
+            for (var slot = Math.Min(LiveExtent - 1, Code.LastOwnedTemporarySlot); slot >= read.ResultSlot; slot--)
+                if (Values[slot].RequiresRetirement) return false;
+            if (!TryReadPrivateRecordComparison(Code, Index, read, field, _scope, out var truth)) return false;
+
+            Index++;
+            var yielded = Code.Instructions[Index + 1];
+            _scope.CheckExecution(yielded.Span);
+            if (!TryAccumulateSumInteger(ref subtotal, truth ? 1 : 0))
+            {
+                Publish(Code.Instructions[Index], RuntimeValue(truth));
+                return true;
+            }
+            Trim(yielded.LiveExtent);
+            Index++;
+            return true;
+        }
+
         // Keep new container construction and unpublished-result cleanup out
         // of the ordinary arithmetic/call loop. Unknown keys transfer before
         // traversing composites or invoking any Python callback.
@@ -349,7 +419,7 @@ internal sealed partial class LythonRuntime
             object value;
             if (!dictionary) value = CreateSlotSet(inputs, _scope, instruction.Span);
             else if (instruction.LookupCacheIndex >= 0 && inputs[0].Reference is PyString)
-                value = CreateSlotDictionary(inputs, ref _function.GetLookupCaches(instruction.Span)[instruction.LookupCacheIndex],
+                value = CreateSlotDictionary(inputs, ref GetLookupCaches(instruction.Span)[instruction.LookupCacheIndex],
                     _scope, instruction.Span);
             else value = CreateSlotDictionary(inputs, _scope, instruction.Span);
             try

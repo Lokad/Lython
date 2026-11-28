@@ -1,0 +1,194 @@
+[
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2096328,
+      1817800
+    ],
+    "admittedPeak": [
+      3516935,
+      3516935
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2292992,
+      2014582
+    ],
+    "admittedPeak": [
+      3975687,
+      3975687
+    ],
+    "compiled": [
+      59732,
+      59732
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2801190,
+      2801190
+    ],
+    "admittedPeak": [
+      3648191,
+      3648191
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "sync",
+    "clr": [
+      256912,
+      256912
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "mode": "sync",
+    "clr": [
+      867392,
+      867392
+    ],
+    "admittedPeak": [
+      2270103,
+      2270103
+    ],
+    "compiled": [
+      61808,
+      61808
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      1950272,
+      1950390
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2096544,
+      1818072
+    ],
+    "admittedPeak": [
+      3516935,
+      3516935
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2293326,
+      2014680
+    ],
+    "admittedPeak": [
+      3975687,
+      3975687
+    ],
+    "compiled": [
+      59732,
+      59732
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2801406,
+      2801406
+    ],
+    "admittedPeak": [
+      3648191,
+      3648191
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "async",
+    "clr": [
+      257160,
+      257160
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "mode": "async",
+    "clr": [
+      867608,
+      867614
+    ],
+    "admittedPeak": [
+      2270103,
+      2270103
+    ],
+    "compiled": [
+      61808,
+      61808
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      1950574,
+      1950456
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  }
+]

@@ -134,6 +134,25 @@ public sealed class NativeGeneratorSumTests
         return 'ok'
         """,
         """
+        def reduce(values):
+            return sum(7 // value for value in values)
+        try:
+            raise KeyError('outer')
+        except KeyError as original:
+            try:
+                reduce((2, 0, 3))
+            except ZeroDivisionError as error:
+                assert error.__context__ is original
+            else:
+                assert False
+            try:
+                raise
+            except KeyError as error:
+                assert error is original
+        assert reduce((2, 3)) == 5
+        return 'ok'
+        """,
+        """
         events = []
         def values():
             try:
@@ -214,11 +233,19 @@ public sealed class NativeGeneratorSumTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task PrivateOuterIteratorsReturnTheirAllowance(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PrivateOuterIteratorsReturnTheirAllowance(bool asynchronous, bool power)
     {
-        const string source = """
+        var source = power ? """
+            items = (2, 3)
+            total = 0
+            for index in range(256):
+                total += sum(item ** 2 for item in items)
+            return total
+            """ : """
             items = (2, 3)
             total = 0
             for index in range(256):
@@ -233,7 +260,7 @@ public sealed class NativeGeneratorSumTests
         using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new System.Numerics.BigInteger(1280), result.ReturnValue);
+            Assert.Equal(new System.Numerics.BigInteger(power ? 3328 : 1280), result.ReturnValue);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

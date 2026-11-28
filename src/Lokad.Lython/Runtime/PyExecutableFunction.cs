@@ -91,9 +91,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return TryReturnDefinition(definition, arguments[0], call.CallSpan, out result);
     }
 
-    [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
-    private struct NativeValues { private LythonRuntime.ExecutableSlot _first; }
-
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal void StartNativeCall(ExecutableCallSite call, Span<LythonRuntime.ExecutableSlot> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
@@ -134,7 +131,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // Both executable callers select eligibility before entry. Starting a
         // selected call completes or transfers its exact work; it never declines
         // after binding and asks the caller to try another execution route.
-        NativeValues buffer = default;
+        LythonRuntime.NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
         values = values[..CodeObject.ValueStorageCapacity];
         // This span is private to the synchronous prefix and cannot escape. Its
@@ -307,7 +304,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (!CanStartInline || !HasCompletePositionalSupply(count, receiver)) return false;
 
         context.CheckExecution(span);
-        NativeValues buffer = default;
+        LythonRuntime.NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
         var first = 0;
         if (receiver is not null) values[first++].Object = receiver;
@@ -329,7 +326,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span, out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame,
         out BoundFunctionArguments owned)
     {
-        NativeValues buffer = default;
+        LythonRuntime.NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
         var first = 0;
         if (receiver is not null) values[first++].Object = receiver;
@@ -434,7 +431,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         result = default;
         frame = null;
         owned = default;
-        NativeValues buffer = default;
+        LythonRuntime.NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
         var first = 0;
         if (receiver is not null) values[first++].Object = receiver;

@@ -423,7 +423,17 @@ internal sealed partial class LythonRuntime
         }
 
         internal readonly ExecutableSlot[] Values => _items;
+        internal readonly int SharedLookupStart => _sharedLookupStart;
         internal readonly ExecutionState State => _state;
+
+        internal void MaterializePrepaidSlots(ReadOnlySpan<ExecutableSlot> live, int capacity)
+        {
+            System.Diagnostics.Debug.Assert(_items.Length == 0);
+            var items = new ExecutableSlot[capacity];
+            live.CopyTo(items);
+            _items = items;
+            LiveExtent = live.Length;
+        }
 
         internal readonly void CheckExecution(LythonSourceSpan span) => _state.CheckExecution(span);
 

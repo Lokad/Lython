@@ -968,9 +968,12 @@ over an exact list, tuple or range consumes integer yields through the shared
 executable dispatcher. The admitted execution state and subtotal stay local
 to that operation. A cached record field can feed an adjacent scalar comparison
 and yield without publishing their intermediate operands. A guest comparison
-continues with the fetched value in its original slot. An operation that needs
-the full generator frame transfers
-the slots and instruction position into that frame. Exact lists and tuples
+continues with the fetched value in its original slot. Compact generators
+over lists and tuples can use the native loop's fixed managed inline slots
+when lookups have a shared definition owner or the code needs none. When
+native execution transfers, the prepaid array receives the live slots and
+instruction position. The ordinary prefix can finish from that array or
+move it into a full generator frame. Exact lists and tuples
 materialize an iterator at the live position before `.0` or the loop can expose
 it. Ranges transfer the acquired iterator. The existing sum loop continues
 from the subtotal and uses the prepaid capacity, including when addition or
