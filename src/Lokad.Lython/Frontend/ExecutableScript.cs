@@ -192,6 +192,9 @@ internal readonly record struct ExecutableInstruction
         or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
         or ExecutableOpCode.StartFunctionDefaults
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
+    internal int PrivateGeneratorCallTarget => _secondaryOperand;
+    internal ExecutableInstruction WithPrivateGeneratorCallTarget(int target)
+        => new(OpCode, Span, _primaryOperand, target, _inputStart, _resultSlot, _liveExtent);
     internal int ImmediatelyCalledDefinitionCapture => _secondaryOperand;
     internal ExecutableInstruction WithImmediatelyCalledDefinition(int capture)
         => new(OpCode, Span, _primaryOperand, capture, _inputStart, _resultSlot, _liveExtent);
@@ -640,7 +643,6 @@ internal sealed partial class ExecutableCodeObject
         OperandCapacity = operandLayout.MaximumDepth;
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
-        LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
         Instructions = new ExecutableInstruction[operandLayout.AssignInstructionOffsets(blocks, cancellationToken, out _operandReadSpans)];
         var positions = operandLayout.Blocks;
         EntryIndex = positions[entryBlockIndex].Offset;
@@ -668,7 +670,8 @@ internal sealed partial class ExecutableCodeObject
                 };
             }).ToArray();
         var deferredSites = operandLayout.Linearize(this, blocks, callSites, regionsByEntry.Length == 0,
-            deferredCandidates, cancellationToken, out var valueStorageCapacity);
+            deferredCandidates, cancellationToken, out var valueStorageCapacity, out var lastOwnedTemporarySlot);
+        LastOwnedTemporarySlot = lastOwnedTemporarySlot;
         // Native work can precede cleanup without owning its routing state.
         // A physical instruction frontier also covers normal fallthrough and
         // jumps: transfer once before entering any finally suite.

@@ -959,9 +959,10 @@ position and active exception. A pending pull keeps its frame and
 argument workspace admitted until their users and cleanup finish.
 
 A generator expression passed directly to the evaluated builtin `sum` can
-keep its admitted frame in the call's operand storage. The outer iterator
-is acquired during argument evaluation. The existing sum loop advances the
-frame and the operand owns cleanup through return, refusal or cancellation.
+keep its admitted frame in the call's operand storage. Instruction layout
+identifies eligible operand positions and the runtime checks the evaluated
+callable before acquiring the outer iterator. The existing sum loop advances
+the frame and the operand owns cleanup through return, refusal or cancellation.
 Other call targets and expressions that publish a generator use the ordinary
 iterator object.
 

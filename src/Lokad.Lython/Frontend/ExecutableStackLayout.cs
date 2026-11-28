@@ -124,11 +124,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
 
     internal int[]? Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
         ExecutableCallSite[] sites, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token,
-        out int valueStorageCapacity)
+        out int valueStorageCapacity, out int lastOwnedTemporarySlot)
     {
         var positions = Blocks;
         var instructions = code.Instructions;
         valueStorageCapacity = code.ValueStorageCapacity;
+        lastOwnedTemporarySlot = LastOwnedTemporarySlot;
         List<int>? deferredSites = null;
         for (var i = 0; i < blocks.Count; i++)
         {
@@ -192,8 +193,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 };
                 switch (instruction.OpCode)
                 {
-                    case ExecutableOpCode.Call when !code.RequiresLocalVariableMirroring:
-                        PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
+                    case ExecutableOpCode.Call:
+                        if (j != 0)
+                            PreparePrivateGeneratorOperand(code, position.Offset + j, instruction, ref lastOwnedTemporarySlot);
+                        if (!code.RequiresLocalVariableMirroring)
+                            PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
                         break;
                     case ExecutableOpCode.MakeTuple when hasNoExceptionRegions &&
                         code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring &&
@@ -273,6 +277,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     }
 
     private static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 || !block[^1].TerminatesBlock;
+
+    private static void PreparePrivateGeneratorOperand(ExecutableCodeObject code, int callIndex,
+        in ExecutableInstruction call, ref int lastOwnedTemporarySlot)
+    {
+        // The producer and consumer share one block and their final operand
+        // positions. The runtime still checks the already-evaluated callable.
+        ref var producer = ref code.Instructions[callIndex - 1];
+        if (producer is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: false } ||
+            code.Constants[producer.ConstantIndex] is not ExecutableCreateGeneratorExpression || call.HasForwardedCallOperands ||
+            code.CallSites[call.CallSiteIndex] is not { IsPositionalOnly: true, HasReceiver: false, ArgumentCount: 1 } site ||
+            call.ResultSlot + site.ArgumentOffset != producer.ResultSlot) return;
+
+        producer = producer.WithPrivateGeneratorCallTarget(call.ResultSlot + site.TargetOffset);
+        lastOwnedTemporarySlot = Math.Max(lastOwnedTemporarySlot, producer.ResultSlot);
+    }
 
     private static bool CanCallWithArithmeticArgument(ExecutableCodeObject code, in ExecutableInstruction target,
         in ExecutableInstruction argument, in ExecutableInstruction call)
@@ -565,8 +584,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,
                     ExecutableOpCode.StartFunctionDefaults => depth - 1,
-                    ExecutableOpCode.ApplyOperation or ExecutableOpCode.ApplyDeferredDefinition
-                        when constants[instruction.ConstantIndex] is ExecutableCreateGeneratorExpression => resultSlot,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
                         ExecutableStartComprehension or ExecutableStartCall or ExecutableStartClassHeader => resultSlot,
                     _ => -1

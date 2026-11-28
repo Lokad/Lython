@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1945 prepare private generator call shape in layout](results/2026-11-28-private-generator-layout/README.md)
+removes the runtime call-site lookup and returns iterable shipment's
+cleanup bound from slot 11 to slot 8. Admission and allocation match
+within witness variation. Ordinary sync CPU is favorable with moving
+reference workers. Async iterable and file-fed CPU rise slightly.
+The source simplification is retained, with the adverse results recorded.
+
 [B1943 quiet iterator checkpoint](results/2026-11-28-cpython-sequence-iterator-checkpoint/README.md)
 measures `bf10eeaea`. Ordinary async reduction takes 1.493–1.523× CPython
 elapsed, and iterable async shipment takes 1.109–1.149×. All 168 timed
