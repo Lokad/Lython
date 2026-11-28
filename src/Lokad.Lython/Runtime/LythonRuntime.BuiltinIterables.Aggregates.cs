@@ -110,14 +110,19 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object Sum(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
-        if (arguments[0] is ExecutionContext.BorrowedGeneratorSum reduction)
+        return Sum(arguments[0], total, span, context);
+    }
+
+    private static object Sum(object iterable, object total, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (iterable is ExecutionContext.BorrowedGeneratorSum reduction)
             return reduction.Reduce(context, span, false).GetAwaiter().GetResult();
-        if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
-        var privateFrame = arguments[0] as ExecutionContext;
-        using var cursor = privateFrame is null ? PyIteration.Cursor.Create(arguments[0], span, context) : null;
+        if (TrySumExactBytes(iterable, total, span, context, out var byteResult)) return byteResult;
+        var privateFrame = iterable as ExecutionContext;
+        using var cursor = privateFrame is null ? PyIteration.Cursor.Create(iterable, span, context) : null;
         var generatorSpan = privateFrame is null ? null : context.PrivateGeneratorSpan;
         ValidateSumStart(total, span);
         // The private accumulator is borrowed by this command's generator only
@@ -130,18 +135,24 @@ internal sealed partial class LythonRuntime
         finally { context.MemoryGovernor.ReleaseReserved(64); }
     }
 
-    private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static ValueTask<object> SumAsync(ReadOnlySpan<object> arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
-        if (arguments[0] is ExecutionContext.BorrowedGeneratorSum reduction)
-            return await reduction.Reduce(context, span, true).ConfigureAwait(false);
+        var iterable = arguments[0];
+        if (iterable is ExecutionContext.BorrowedGeneratorSum reduction)
+            return reduction.Reduce(context, span, true);
         // Exact range items and integer addition cannot invoke guest protocols.
         // Reuse checked synchronous iteration; other starts may suspend in __add__.
-        if (arguments[0] is PyRange && PyNumberOps.IsInteger(total)) return Sum(arguments, span, context);
-        if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
-        var privateFrame = arguments[0] as ExecutionContext;
+        if (iterable is PyRange && PyNumberOps.IsInteger(total)) return new(Sum(iterable, total, span, context));
+        if (TrySumExactBytes(iterable, total, span, context, out var byteResult)) return new(byteResult);
+        return SumAsync(iterable, total, span, context);
+    }
+
+    private static async ValueTask<object> SumAsync(object iterable, object total, LythonSourceSpan span, ExecutionContext context)
+    {
+        var privateFrame = iterable as ExecutionContext;
         var cursor = privateFrame is null
-            ? await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false) : null;
+            ? await PyIteration.Cursor.CreateAsync(iterable, span, context).ConfigureAwait(false) : null;
         var generatorSpan = privateFrame is null ? null : context.PrivateGeneratorSpan;
         try
         {
@@ -382,7 +393,7 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static object ReadSumStart(object[] arguments, LythonSourceSpan span)
+    private static object ReadSumStart(ReadOnlySpan<object> arguments, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2)
         {

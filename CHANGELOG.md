@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Bind ordinary `sum` arguments in the existing fixed-width buffer. Keep
+  the iterable and start value through asynchronous reduction and cleanup.
 - Reduce eligible integer generator expressions passed to builtin `sum` in
   their admitted operand slots. Preserve the iterator and current position when
   dynamic operations require a generator frame.

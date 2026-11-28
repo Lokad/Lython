@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1959 bind fixed-width sum arguments](results/2026-11-28-fixed-sum-binding/README.md)
+saves about 64 KiB per tuple or range script at matching admission. The
+quiet repeat finds 2.16–3.65% lower async tuple CPU. Range and file-fed
+CPU span zero. Preserve the unstable local async comparison.
+
 [B1958 quiet shipment and JSON comparison](results/2026-11-28-post-generator-cpython/README.md)
 measures `09cecc9ce`. The ordinary tuple-generator takes 1.323–1.355×
 CPython elapsed in async and 1.193–1.223× from compile to result in sync.

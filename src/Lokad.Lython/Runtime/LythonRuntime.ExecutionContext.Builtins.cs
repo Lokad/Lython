@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
         // active caller; mutable types and their caches are constructed per run.
         private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len, LenAsync);
         private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, AbsAsync, ["x"]);
-        private static readonly BuiltinCallable SharedSum = BuiltinCallable.Create(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync);
+        private static readonly BuiltinCallable SharedSum = BuiltinCallable.CreateBorrowed(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync);
 
         private static readonly (string Name, object Value)[] SharedFunctions =
         [

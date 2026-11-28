@@ -820,11 +820,12 @@ and other dynamic callables keep their owned packets.
 Live defaults and genuinely suspending default protocols use the same slots.
 Async binding checks the live default dictionary at lookup, after storage admission
 can reenter; it does not save an earlier decision about whether lookup may suspend.
-Ordinary calls to fixed-width synchronous math builtins place final arguments
-in a managed stack buffer and invoke the body with a read-only span. They share
-signature validation with owned binding. Dynamic calls and other builtin bodies
-use the existing object arrays. Receiver methods borrow their caller's existing
-array window.
+Ordinary calls to fixed-width math builtins and `sum` place final arguments
+in a managed stack buffer and share signature validation with owned binding.
+These bodies read the span during binding. An asynchronous `sum` keeps the
+bound iterable and start value through pending work and cleanup. Dynamic
+calls and other builtin bodies use the existing owned arguments. Receiver
+methods borrow their caller's existing array window.
 Calls that need private argument copies admit major copied capacity before
 allocation; small packets use the existing minor control headroom. Caller-owned
 scratch remains funded through pending invocation and awaited cleanup, then
