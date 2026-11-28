@@ -315,7 +315,7 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.StoreSubscript:
                         case ExecutableOpCode.StoreSubscriptLast:
                             var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
-                                out pending, out pendingSpan, out nextCall);
+                                out pending, out pendingSpan, out nextCall, reduction);
                             if (pause != InstructionPause.Continue) return pause;
                             break;
                         case ExecutableOpCode.ForNextDictionaryAccumulation:

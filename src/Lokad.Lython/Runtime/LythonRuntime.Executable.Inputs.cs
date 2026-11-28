@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
         private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
             out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
-            out ValueTask<ExecutionContext?> nextCall)
+            out ValueTask<ExecutionContext?> nextCall, Span<PrivateGeneratorReduction> reduction)
         {
             pending = default;
             pendingSpan = null;
@@ -105,7 +105,9 @@ internal sealed partial class LythonRuntime
                     if (record.TryReadRecordValue(field, ref caches[instruction.LookupCacheIndex], scope, instruction.Span,
                         out var fieldValue))
                     {
-                        PublishInstructionResult(ref execution, invocation, instruction, fieldValue);
+                        if (reduction.IsEmpty ||
+                            !TryReduceRecordComparison(ref execution, scope, instruction, fieldValue, ref reduction[0]))
+                            PublishInstructionResult(ref execution, invocation, instruction, fieldValue);
                         return InstructionPause.Continue;
                     }
                 }

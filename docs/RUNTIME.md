@@ -966,7 +966,10 @@ the evaluated callable, admits and acquires the source, then enters the call
 with its usual cancellation and managed stack checks. An eligible expression
 over an exact list, tuple or range consumes integer yields through the shared
 executable dispatcher. The admitted execution state and subtotal stay local
-to that operation. An operation that needs the full generator frame transfers
+to that operation. A cached record field can feed an adjacent scalar comparison
+and yield without publishing their intermediate operands. A guest comparison
+continues with the fetched value in its original slot. An operation that needs
+the full generator frame transfers
 the slots and instruction position into that frame. Exact lists and tuples
 materialize an iterator at the live position before `.0` or the loop can expose
 it. Ranges transfer the acquired iterator. The existing sum loop continues

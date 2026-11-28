@@ -109,6 +109,31 @@ public sealed class NativeGeneratorSumTests
         return 'ok'
         """,
         """
+        import csv
+        row = next(csv.DictReader(['a,b,c', 'yes,no,yes']))
+        comparisons = []
+        def reduce(record):
+            return sum(record[key] == 'yes' for key in ('a', 'b', 'c'))
+        class Field:
+            def __eq__(self, expected):
+                comparisons.append(expected)
+                row['c'] = 'no'
+                return True
+        assert reduce(row) == 2
+        row['b'] = Field()
+        assert reduce(row) == 2
+        assert comparisons == ['yes']
+        del row['a']
+        try:
+            reduce(row)
+        except KeyError as error:
+            assert error.args == ('a',)
+        else:
+            assert False
+        assert comparisons == ['yes']
+        return 'ok'
+        """,
+        """
         events = []
         def values():
             try:

@@ -190,6 +190,46 @@ internal sealed partial class LythonRuntime
             if (!exhausted) work.Stack[slot] = iterator;
         }
 
+        private static bool TryReduceRecordComparison(ref ExecutableWorkState work, ExecutionContext scope,
+            in ExecutableInstruction read, object fieldValue, ref PrivateGeneratorReduction reduction)
+        {
+            var index = work.InstructionIndex + 1;
+            var code = work.Code;
+            var instructions = code.Instructions;
+            if (read.HasResultConsumer || index + 1 >= instructions.Length) return false;
+            ref readonly var compare = ref instructions[index];
+            ref readonly var yielded = ref instructions[index + 1];
+            var slot = read.ResultSlot;
+            if (compare.OpCode != ExecutableOpCode.Binary || compare.HasResultConsumer ||
+                compare.InputStart != slot || compare.ResultSlot != slot ||
+                (uint)~compare.SecondInput >= (uint)code.Constants.Length ||
+                !IsScalarComparison(compare.BinaryOperator) ||
+                yielded.OpCode != ExecutableOpCode.Yield || !yielded.DiscardsYieldResult ||
+                yielded.InputStart != slot || yielded.LiveExtent != slot ||
+                !work.Stack.CanRetireWithoutCleanup(slot))
+                return false;
+
+            // The literal and fetched field are the original operands.
+            // Declining a user comparison leaves the field for ordinary
+            // publication, so promotion resumes without another record read.
+            scope.State.CheckExecution(compare.Span);
+            if (!TryEvaluateScalarComparison(compare.BinaryOperator, fieldValue, RuntimeValue(code.Constants[~compare.SecondInput]),
+                scope, compare.Span, out var truth))
+                return false;
+
+            scope.State.CheckExecution(yielded.Span);
+            if (!TryAccumulateSumInteger(ref reduction.Subtotal, truth ? 1 : 0))
+            {
+                // Widen at the existing yield with the completed Python bool.
+                work.InstructionIndex = index;
+                PublishInstructionResult(ref work, null, compare, RuntimeValue(truth));
+                return true;
+            }
+            work.Stack.RetireTo(yielded.LiveExtent);
+            work.InstructionIndex = index + 1;
+            return true;
+        }
+
         private void ReleaseBorrowedGeneratorWork(ref ExecutableWorkState work, long promotionBytes)
         {
             var code = work.Code;
