@@ -1191,14 +1191,12 @@ instruction through the same router. Completed returns use the return value
 itself as their marker. Ordinary instruction execution retains cancellation
 and admission checks without polling a separate pending-exception/return flag.
 
-Private loops over exact builtin lists and tuples keep the sequence in its operand
-slot and advance by index. One fixed-size position array is admitted on first use
-and shares the operand workspace's lifetime, including generator suspension;
-terminal frame cleanup releases it. List iteration observes live replacement,
-growth and removal. These private loop states never escape as Python iterators.
+Private loops over exact builtin lists and tuples keep the sequence and its
+live index in one admitted operand slot. The native prefix and full interpreter
+use the same operand through frame promotion, suspension and cleanup. List
+iteration observes live replacement, growth and removal.
 Exposed iterators, generator-expression outer acquisition, user protocols and
 resource-bearing/asynchronous iteration retain their ordinary cursors and cleanup.
-The additional workspace can reject a tighter allowance earlier.
 Native cursors pull from the acquired Python iterator directly, including
 generator-expression outers. Iterators that can suspend implement the async
 pull protocol. Synchronous iterators return a completed result through

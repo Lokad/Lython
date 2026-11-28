@@ -35,6 +35,47 @@ public sealed class NativeSequenceIterationTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LoopsResumeAtTheirOwnPositionsAfterHostReadAndListMutation(bool asynchronous)
+    {
+        const string source = """
+            def visit():
+                values = [1, 2]
+                alias = values
+                seen = []
+                for value in values:
+                    for offset in (10, 20):
+                        with open('ready.txt') as file: assert file.read() == 'ready'
+                        seen.append(value + offset)
+                        if value == 1 and offset == 10:
+                            alias[1] = 4
+                            alias.append(3)
+                return seen
+            assert visit() == [11, 21, 14, 24, 13, 23]
+            return 'ok'
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var immediate = new MockLythonHost();
+            var delayed = new DelayedLythonHost();
+            immediate.SeedFile("/ready.txt", "ready");
+            delayed.SeedFile("/ready.txt", "ready");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(immediate))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("ok", result.ReturnValue);
+            }
+            if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false)] [InlineData(true, false)]
     [InlineData(false, true)] [InlineData(true, true)]
     public async Task CancellationInterruptsRepeatedNonAllocatingLoops(bool asynchronous, bool tuple)

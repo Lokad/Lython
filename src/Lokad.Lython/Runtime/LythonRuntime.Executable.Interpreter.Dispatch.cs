@@ -416,7 +416,7 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.GetIter:
                             if (execution.Stack.TryPrepareNativeIteration(
                                 ReadOperand(ref execution, instruction.InputStart, scope, 0),
-                                instruction.ResultSlot, instruction.LiveExtent, instruction.Span)) break;
+                                instruction.ResultSlot, instruction.LiveExtent)) break;
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
                             else

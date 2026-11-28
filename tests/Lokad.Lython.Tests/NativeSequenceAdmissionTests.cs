@@ -41,7 +41,7 @@ public sealed class NativeSequenceAdmissionTests
     [Theory]
     [InlineData(false, false)] [InlineData(true, false)]
     [InlineData(false, true)] [InlineData(true, true)]
-    public async Task RefusedIterationStoragePreservesSourceAndPrecedesBodyEffects(bool asynchronous, bool tuple)
+    public async Task FundedSequenceLoopRunsWithNoUnallocatedHeadroom(bool asynchronous, bool tuple)
     {
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
@@ -57,16 +57,10 @@ public sealed class NativeSequenceAdmissionTests
             context.Variables["source"] = source;
             const string script = "arm()\nfor item in source:mark()";
             var code = ExecutableScript.Compile(LythonFrontend.Compile(script).Script!);
-            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-            {
-                if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
-                else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
-            });
-            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
-            Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
-            var origin = Assert.IsType<LythonSourceSpan>(failure.Span);
-            Assert.Equal("source", script.Substring(origin.Start, origin.Length));
-            Assert.Equal(0, mark.Calls);
+            if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+            else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+            Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            Assert.Equal(values.Length, mark.Calls);
             Assert.Equal(values, Assert.IsAssignableFrom<IEnumerable<object>>(source));
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Null(context.CurrentExecutableFrame);

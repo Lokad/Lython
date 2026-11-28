@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "mode": "sync",
+    "clr": [
+      1054264,
+      1054256
+    ],
+    "admittedPeak": [
+      2270103,
+      2270103
+    ],
+    "compiled": [
+      61808,
+      61808
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "mode": "sync",
+    "clr": [
+      2392416,
+      2390246
+    ],
+    "admittedPeak": [
+      3296529,
+      3296477
+    ],
+    "compiled": [
+      76512,
+      76512
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808480,
+      808472
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "mode": "async",
+    "clr": [
+      1054480,
+      1054472
+    ],
+    "admittedPeak": [
+      2270103,
+      2270103
+    ],
+    "compiled": [
+      61808,
+      61808
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "mode": "async",
+    "clr": [
+      2390556,
+      2390524
+    ],
+    "admittedPeak": [
+      3296529,
+      3296477
+    ],
+    "compiled": [
+      76512,
+      76512
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808696,
+      808918
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  }
+]

@@ -23,8 +23,9 @@ internal sealed partial class LythonRuntime
         private static readonly InlineDefaultInteger PrivateKeywordInteger = new(PrivateKeywordDefault);
         private static readonly InlineDefaultInteger PrepaidKeywordInteger = new(PrepaidKeywordDefault);
         private object? _value;
-        // An integer, double bits, short UTF-8 with its existing owner, a tuple
-        // item offset, or a private-default marker with its admitted storage.
+        // Scalar bits, short UTF-8, a deferred tuple item or private loop
+        // position, or a private-default marker with its admitted storage.
+        private const long FirstSequencePosition = -1L << 32;
         private const long PrivateDefaultContainer = -1;
         private const long PrivateKeywordDefault = -2;
         private const long PrivatePositionalDefault = -3;
@@ -32,6 +33,39 @@ internal sealed partial class LythonRuntime
         private const long PrepaidKeywordDefault = -5;
         private const long PrepaidPositionalDefault = -6;
         private long _integer;
+
+        internal static ExecutableSlot PrepareNativeLoop(object source) => source switch
+        {
+            // Keep the sequence and live position together through promotion.
+            PyList or PyTuple => new() { _value = source, _integer = FirstSequencePosition },
+            PyStringOps.CasedWhitespaceIteration => FromObject(source),
+            PyRange range => FromObject(range.GetEnumerator()),
+            _ => default,
+        };
+
+        internal bool TryAdvanceNativeLoop(out PyIterationResult result)
+        {
+            switch (_value)
+            {
+                case PyStringOps.CasedWhitespaceIteration words:
+                    result = words.MoveNext();
+                    return true;
+                case PyList or PyTuple:
+                    // The negative range leaves positive deferred tuple indices
+                    // and the small private default markers available.
+                    System.Diagnostics.Debug.Assert(_integer is >= FirstSequencePosition and <= FirstSequencePosition + int.MaxValue);
+                    var position = (int)(_integer - FirstSequencePosition);
+                    result = PyIteration.AdvanceBuiltinSequence(_value, ref position);
+                    _integer = FirstSequencePosition + position;
+                    return true;
+                case PyRange.Enumerator range:
+                    result = range.TryMoveNext();
+                    return true;
+                default:
+                    result = default;
+                    return false;
+            }
+        }
 
         internal object? Object
         {

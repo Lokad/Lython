@@ -388,14 +388,12 @@ internal sealed partial class LythonRuntime
     internal struct ExecutableValueStorage
     {
         private ExecutableSlot[] _items;
-        private int[]? _nativeIterationPositions;
         // One reference holds private invocation storage or the existing
         // function definition that owns shared facts. Do not widen every frame
         // with a second owner slot, including frames that never use a cache.
         private object? _lookupStorage;
         private readonly ExecutionState _state;
         private long _ownedStorageBytes;
-        private readonly int _firstTemporarySlot;
         private readonly int _lastOwnedTemporarySlot;
         private readonly int _sharedLookupStart;
 
@@ -404,9 +402,7 @@ internal sealed partial class LythonRuntime
             PyFunctionBase? lookupOwner, int sharedLookupStart = -1, bool storagePrepaid = false)
         {
             _state = context.State;
-            _firstTemporarySlot = firstTemporarySlot;
             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
-            _nativeIterationPositions = null;
             _lookupStorage = lookupOwner;
             _sharedLookupStart = sharedLookupStart;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? ExecutableSlotsBytes(capacity) : 0));
@@ -447,7 +443,6 @@ internal sealed partial class LythonRuntime
             if (_sharedLookupStart >= 0 && LookupOwner?.ExistingLookupCaches is { } caches)
                 Array.Clear(caches, _sharedLookupStart, lookupCount);
             _items = [];
-            _nativeIterationPositions = null;
             _lookupStorage = null;
             var bytes = _ownedStorageBytes;
             _ownedStorageBytes = 0;
@@ -539,61 +534,28 @@ internal sealed partial class LythonRuntime
             LiveExtent = resultSlot;
         }
 
-        internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
+        internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent)
         {
-            if (source is PyStringOps.CasedWhitespaceIteration ||
-                source is IPyIteratorValue && source is not (PyInstance or IPyProtocolIterator))
+            if (source is IPyIteratorValue and not IPyProtocolIterator)
             {
                 // These values already carry their iterator state. Only
                 // protocol acquisition and CLR enumerators need a cursor.
                 PublishValue(slot, liveExtent, source);
                 return true;
             }
-            if (source is PyRange range)
-            {
-                // Exact ranges have no user iteration protocol or async cleanup.
-                // ForNext already checks execution before advancing this operand.
-                PublishValue(slot, liveExtent, range.GetEnumerator());
-                return true;
-            }
-            if (source is not (PyList or PyTuple)) return false;
-            if (_nativeIterationPositions is null)
-            {
-                // The existing private operand keeps the source alive. One
-                // admitted position array replaces repeated native cursor and
-                // enumerator objects; it shares this frame's storage lifetime.
-                var bytes = checked(32L + 4L * (_items.Length - _firstTemporarySlot));
-                var frameBytes = checked(_ownedStorageBytes + bytes);
-                using var storage = _state.MemoryGovernor.ReserveTemporary(bytes, span);
-                var positions = new int[_items.Length - _firstTemporarySlot];
-                storage.Commit(bytes);
-                _nativeIterationPositions = positions;
-                _ownedStorageBytes = frameBytes;
-            }
-            _nativeIterationPositions[slot - _firstTemporarySlot] = 0;
-            PublishValue(slot, liveExtent, source);
+            var operand = ExecutableSlot.PrepareNativeLoop(source);
+            if (operand.IsUnassigned) return false;
+            PublishSlot(slot, liveExtent, operand);
             return true;
         }
 
         internal bool TryAdvanceNativeIteration(int slot, out bool hasValue, out ExecutableSlot next)
         {
-            var source = _items[slot].Object.RequireNotNull();
-            PyIterationResult result;
-            switch (source)
+            if (!_items[slot].TryAdvanceNativeLoop(out var result))
             {
-                case PyStringOps.CasedWhitespaceIteration words:
-                    result = words.MoveNext();
-                    break;
-                case PyList or PyTuple:
-                    result = PyIteration.AdvanceBuiltinSequence(source, ref _nativeIterationPositions![slot - _firstTemporarySlot]);
-                    break;
-                case PyRange.Enumerator range:
-                    result = range.TryMoveNext();
-                    break;
-                default:
-                    hasValue = false;
-                    next = default;
-                    return false;
+                hasValue = false;
+                next = default;
+                return false;
             }
             hasValue = result.HasValue;
             next = hasValue ? result.TakeSlotValue() : default;

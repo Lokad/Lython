@@ -1,0 +1,74 @@
+[
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "asynchronous": false,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270103,
+      2270103
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-explicit-reduction",
+    "asynchronous": true,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270103,
+      2270103
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "asynchronous": false,
+    "requests": [
+      14390,
+      14389
+    ],
+    "peak": [
+      3296529,
+      3296477
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "asynchronous": true,
+    "requests": [
+      14390,
+      14389
+    ],
+    "peak": [
+      3296529,
+      3296477
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": false,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  }
+]

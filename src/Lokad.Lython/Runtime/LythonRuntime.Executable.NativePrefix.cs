@@ -265,24 +265,18 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.GetIter:
                     {
                         var source = Read(instruction.InputStart, 0);
-                        if (source is PyStringOps.CasedWhitespaceIteration)
-                            Publish(instruction, source);
-                        else if (source is PyRange range)
-                            Publish(instruction, range.GetEnumerator());
-                        else if (source is PyList or PyTuple or PyBytes or PyString or PyDict or PySet)
+                        var operand = ExecutableSlot.PrepareNativeLoop(source);
+                        if (!operand.IsUnassigned) Publish(instruction, operand);
+                        else if (source is PyBytes or PyString or PyDict or PySet)
                             Publish(instruction, PyIteration.Cursor.Create(source, instruction.Span, _scope));
                         else return false; // Promote before any user iteration protocol.
                         break;
                     }
                     case ExecutableOpCode.ForNext or ExecutableOpCode.ForNextUnpack:
                     {
-                        var iterator = Values[instruction.InputStart].Object.RequireNotNull();
-                        var next = iterator switch
-                        {
-                            PyStringOps.CasedWhitespaceIteration words => words.MoveNext(),
-                            PyRange.Enumerator range => range.TryMoveNext(),
-                            _ => ((PyIteration.Cursor)iterator).TryMoveNext(),
-                        };
+                        ref var operand = ref Values[instruction.InputStart];
+                        if (!operand.TryAdvanceNativeLoop(out var next))
+                            next = ((PyIteration.Cursor)operand.Object.RequireNotNull()).TryMoveNext();
                         if (!next.HasValue)
                         {
                             Trim(instruction.InputStart);
