@@ -1,0 +1,67 @@
+{
+  "reference": "b2aed5489",
+  "candidate": "e0a0973091f1489daebec0a069617c2c2cbeb4b7",
+  "collectionSeconds": 98.87892992887646,
+  "verifiedTimedBatches": 56,
+  "quietGates": true,
+  "rows": [
+    {
+      "case": "xml.parse-select.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference": 0.0553256497269277,
+        "candidate-control": 0.055135731275909726,
+        "reference-control": 0.05508116225165563,
+        "candidate": 0.05493720197271386
+      },
+      "cpuMilliseconds": {
+        "reference": 0.053688790150884014,
+        "candidate-control": 0.0525103638876094,
+        "reference-control": 0.05334805003679176,
+        "candidate": 0.05254424778761062
+      },
+      "elapsedChangePercent": [
+        -0.7021115090940944,
+        0.09907021207138378
+      ],
+      "cpuChangePercent": [
+        -2.1949205038199415,
+        -1.5067134574305752
+      ],
+      "referenceElapsedSpreadPercent": 0.4438676768566685,
+      "candidateElapsedSpreadPercent": 0.361374981009166,
+      "referenceCpuSpreadPercent": 0.6387114690363793,
+      "candidateCpuSpreadPercent": 0.06452802359881993,
+      "maxElapsedIqrPercent": 0.8935382437288533
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.01660030107677248,
+        "reference-control": 0.017338845168767204,
+        "candidate-control": 0.016822158047679503,
+        "reference": 0.01692542734493634
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.016501188644944764,
+        "reference-control": 0.017383746197305518,
+        "candidate-control": 0.016927634363097757,
+        "reference": 0.01693727368298096
+      },
+      "elapsedChangePercent": [
+        -4.2594768267789735,
+        -0.6101429237338141
+      ],
+      "cpuChangePercent": [
+        -5.07691231995524,
+        -0.05691187415178822
+      ],
+      "referenceElapsedSpreadPercent": 2.4425842574341106,
+      "candidateElapsedSpreadPercent": 1.336463536902066,
+      "referenceCpuSpreadPercent": 2.6360353069879716,
+      "candidateCpuSpreadPercent": 2.584333330942412,
+      "maxElapsedIqrPercent": 0.9065842593278508
+    }
+  ]
+}

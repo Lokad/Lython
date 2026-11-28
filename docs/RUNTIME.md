@@ -1042,7 +1042,9 @@ remain. Unobserved native scalar results need no object materialization.
 
 Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
-nodes fail explicitly. Imports retain canonical module namespaces.
+nodes fail explicitly. Imports retain canonical module namespaces. Static
+builtin membership checks and member inventories share sorted ordinal storage.
+Export snapshots are prepared on first use and preserve sorted order.
 Eligible invocations begin with owned slot workstate. Native zero-argument string
 operations, exact positional split/replace/affix calls, dictionary views and exact
 list/tuple iteration run there without allocating a lexical context. Canonical

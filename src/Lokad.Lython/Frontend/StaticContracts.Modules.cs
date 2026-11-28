@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Threading;
 using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
@@ -9,7 +10,7 @@ internal static class StaticModuleCatalog
     internal static readonly Dictionary<string, BuiltinModuleSurface> Surfaces = new(StringComparer.Ordinal)
     {
         ["__future__"] = Members("annotations"),
-        ["builtins"] = new BuiltinModuleSurface(ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"])),
+        ["builtins"] = Members([.. ExecutionState.BuiltinNames, "__debug__", "__name__", "False", "None", "True"]),
         ["sys"] = Members(
             "argv",
             "stdin",
@@ -516,25 +517,39 @@ internal static class StaticModuleCatalog
 
     internal sealed class BuiltinModuleSurface
     {
-        private readonly FrozenSet<string> _memberLookup;
+        private readonly string[] _members;
+        private string[]? _exportedMembers;
 
-        public BuiltinModuleSurface(IEnumerable<string> members, string? callableModule = null)
+        public BuiltinModuleSurface(string[] members, string? callableModule = null)
         {
             CallableModule = callableModule;
-            _memberLookup = members.ToFrozenSet(StringComparer.Ordinal);
-            MemberNames = _memberLookup.Order(StringComparer.Ordinal).ToArray();
-            ExportedMemberNames = MemberNames
-                .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
-                .ToArray();
+            // Declarations supply fresh arrays. Keep the sorted storage for
+            // both lookup and enumeration, including the original deduplication.
+            Array.Sort(members, StringComparer.Ordinal);
+            var count = 0;
+            foreach (var name in members)
+            {
+                if (count == 0 || !string.Equals(members[count - 1], name, StringComparison.Ordinal))
+                    members[count++] = name;
+            }
+            _members = count == members.Length ? members : members[..count];
         }
 
-        public IReadOnlyList<string> MemberNames { get; }
+        public IReadOnlyList<string> MemberNames => _members;
 
-        public IReadOnlyList<string> ExportedMemberNames { get; }
+        public IReadOnlyList<string> ExportedMemberNames => Volatile.Read(ref _exportedMembers) ?? PrepareExports();
 
         public string? CallableModule { get; }
 
-        public bool Contains(string memberName) => _memberLookup.Contains(memberName);
+        public bool Contains(string memberName) => Array.BinarySearch(_members, memberName, StringComparer.Ordinal) >= 0;
+
+        private string[] PrepareExports()
+        {
+            var exports = Array.Exists(_members, static name => name.StartsWith('_'))
+                ? _members.Where(static name => !name.StartsWith('_')).ToArray()
+                : _members;
+            return Interlocked.CompareExchange(ref _exportedMembers, exports, null) ?? exports;
+        }
     }
 
     internal readonly record struct ModuleMemberName(string ModuleName, string MemberName);

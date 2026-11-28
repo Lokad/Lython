@@ -1,0 +1,100 @@
+{
+  "candidatePatchSHA256": "b443268e44334f5ff47d5fd73c8fd68493def02a2fccd13b8185c44fab57372b",
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "elapsed": {
+        "median": {
+          "reference": 278.01452,
+          "candidate": 272.1685835
+        },
+        "iqr": {
+          "reference": [
+            256.94573975000003,
+            290.8997455
+          ],
+          "candidate": [
+            260.96063375,
+            279.98522875000003
+          ]
+        },
+        "medianChange": -2.1027450292884,
+        "pairedRange": [
+          -12.86889182580394,
+          8.381113889908608
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 226.32749999999976,
+          "candidate": 223.20549999999957
+        },
+        "iqr": {
+          "reference": [
+            222.94025000000067,
+            230.82850000000008
+          ],
+          "candidate": [
+            221.69750000000045,
+            228.5069999999996
+          ]
+        },
+        "medianChange": -1.3794169952834667,
+        "pairedRange": [
+          -8.102004942740415,
+          3.7383303774790155
+        ]
+      }
+    },
+    {
+      "case": "xml.parse-select.small",
+      "elapsed": {
+        "median": {
+          "reference": 249.3422015,
+          "candidate": 240.3659135
+        },
+        "iqr": {
+          "reference": [
+            238.491022,
+            254.6341285
+          ],
+          "candidate": [
+            236.143239,
+            249.07212475
+          ]
+        },
+        "medianChange": -3.5999874654190744,
+        "pairedRange": [
+          -10.138607207209516,
+          8.449751482494584
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 198.29399999999987,
+          "candidate": 197.18999999999983
+        },
+        "iqr": {
+          "reference": [
+            194.6147500000003,
+            202.10924999999975
+          ],
+          "candidate": [
+            194.66749999999934,
+            201.88425000000035
+          ]
+        },
+        "medianChange": -0.5567490695634003,
+        "pairedRange": [
+          -3.1209571470115605,
+          3.1007831189803436
+        ]
+      }
+    }
+  ],
+  "verifiedInvocations": 48,
+  "nativePersistentStage": "/home/vermorel/lython-bench-work/module-surface-storage-b1947-20261128",
+  "cpuAffinity": [
+    27
+  ]
+}

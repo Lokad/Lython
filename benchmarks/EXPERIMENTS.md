@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1947 share frontend module member storage](results/2026-11-28-module-surface-storage/README.md)
+saves about 167 KB of CLR allocation on first configuration and XML
+compilation at matching admission. Full inventory and diagnostics agree.
+Fresh CPU is inconclusive. Local XML warm CPU rises with high candidate
+spread. [B1948 quiet confirmation](results/2026-11-28-module-surface-storage/quiet/README.md)
+finds 1.51–2.19% lower XML CPU and favorable configuration compile timing.
+Retain both runs and the consolidated representation.
+
 [B1946 locate eager module surfaces](results/2026-11-28-cold-module-surfaces/README.md)
 verifies two current first configuration commands. The frontend catalog's
 JIT intervals are 3.361–5.090 ms and runtime registration's are 0.594–0.670 ms.
