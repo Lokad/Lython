@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1989 compact shared module index](results/2026-11-28-shared-builtin-module-index/README.md)
+saves about 15–16 KB during first compilation, with fresh timing spanning
+zero. Warm configuration and XML use more CPU locally. The earlier delegate
+variant also increases configuration CPU and adds about 7 KB at first
+compile. Both are shelved. [B1988](results/2026-11-28-shared-module-catalog-trial/README.md).
+
 [B1984 locate the remaining log-search work](results/2026-11-28-current-regex-profile/README.md)
 verifies 62 sampled batches on `f231ce76a`. The funded producer covers
 35.2% of the compiled log scan and 32.0% of the module scan. Subject

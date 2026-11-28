@@ -1,0 +1,100 @@
+{
+  "candidatePatchSHA256": "a51983e4c6f3c0140ad4338ff704fe040aa7108e62c1d6d0a7648231999bb512",
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "elapsed": {
+        "median": {
+          "reference": 258.0757085,
+          "candidate": 263.876927
+        },
+        "iqr": {
+          "reference": [
+            250.31020225000003,
+            277.7453815
+          ],
+          "candidate": [
+            244.01086025,
+            280.34193825
+          ]
+        },
+        "medianChange": 2.2478746774417857,
+        "pairedRange": [
+          -11.452876533773992,
+          11.148871162000118
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 233.57300000000032,
+          "candidate": 228.21800000000007
+        },
+        "iqr": {
+          "reference": [
+            224.1819999999998,
+            237.18249999999966
+          ],
+          "candidate": [
+            218.22600000000148,
+            232.05574999999953
+          ]
+        },
+        "medianChange": -2.2926451259350333,
+        "pairedRange": [
+          -8.658469366122091,
+          4.37908050683633
+        ]
+      }
+    },
+    {
+      "case": "xml.parse-select.small",
+      "elapsed": {
+        "median": {
+          "reference": 232.0164855,
+          "candidate": 233.3553045
+        },
+        "iqr": {
+          "reference": [
+            220.15342175,
+            236.960429
+          ],
+          "candidate": [
+            222.31374375000001,
+            237.51449524999998
+          ]
+        },
+        "medianChange": 0.5770361520280876,
+        "pairedRange": [
+          -9.651069640601062,
+          7.941703032362191
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 195.89300000000048,
+          "candidate": 191.36900000000003
+        },
+        "iqr": {
+          "reference": [
+            193.53124999999955,
+            197.48549999999955
+          ],
+          "candidate": [
+            190.54600000000028,
+            199.93974999999932
+          ]
+        },
+        "medianChange": -2.309424022298112,
+        "pairedRange": [
+          -5.870731575135579,
+          4.4352947308064605
+        ]
+      }
+    }
+  ],
+  "verifiedInvocations": 48,
+  "nativePersistentStage": "/home/vermorel/lython-bench-work/shared-module-catalog-b1988-20261128",
+  "cpuAffinity": [
+    27
+  ]
+}

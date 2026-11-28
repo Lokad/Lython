@@ -1,0 +1,100 @@
+{
+  "candidatePatchSHA256": "bb3be101001e01bf1d1caf3ea6cd01786d4e405d7b4bc59da27083f7f5d7a91c",
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "elapsed": {
+        "median": {
+          "reference": 254.6358125,
+          "candidate": 259.7063965
+        },
+        "iqr": {
+          "reference": [
+            250.08257100000003,
+            259.88587
+          ],
+          "candidate": [
+            251.24786699999999,
+            263.82066149999997
+          ]
+        },
+        "medianChange": 1.9913082728691078,
+        "pairedRange": [
+          -6.594143908377658,
+          13.52919685720877
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 216.98499999999967,
+          "candidate": 216.59450000000015
+        },
+        "iqr": {
+          "reference": [
+            214.9752500000003,
+            219.71550000000002
+          ],
+          "candidate": [
+            213.02025000000003,
+            221.70349999999962
+          ]
+        },
+        "medianChange": -0.17996635712124176,
+        "pairedRange": [
+          -2.619984938468256,
+          6.685506311441336
+        ]
+      }
+    },
+    {
+      "case": "xml.parse-select.small",
+      "elapsed": {
+        "median": {
+          "reference": 227.86422249999998,
+          "candidate": 230.866266
+        },
+        "iqr": {
+          "reference": [
+            224.90650575,
+            230.94932975
+          ],
+          "candidate": [
+            222.6773265,
+            237.65971125
+          ]
+        },
+        "medianChange": 1.3174703194135828,
+        "pairedRange": [
+          -17.893108157950564,
+          12.802588112961931
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 188.7279999999996,
+          "candidate": 187.97250000000008
+        },
+        "iqr": {
+          "reference": [
+            185.80599999999964,
+            190.5547500000016
+          ],
+          "candidate": [
+            185.44124999999985,
+            190.01200000000063
+          ]
+        },
+        "medianChange": -0.4003115594927831,
+        "pairedRange": [
+          -2.841365943012941,
+          3.211885623929067
+        ]
+      }
+    }
+  ],
+  "verifiedInvocations": 48,
+  "nativePersistentStage": "/home/vermorel/lython-bench-work/shared-module-slots-b1989-20261128",
+  "cpuAffinity": [
+    27
+  ]
+}

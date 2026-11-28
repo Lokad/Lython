@@ -1,0 +1,334 @@
+{
+  "callerThreadClrBytes": {
+    "config.json": {
+      "reference": [
+        {
+          "allocated": 400000,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 181.7996
+        },
+        {
+          "allocated": 400992,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 167.3181
+        },
+        {
+          "allocated": 399904,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 122.4941
+        },
+        {
+          "allocated": 401248,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 139.8122
+        },
+        {
+          "allocated": 402880,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 123.6447
+        },
+        {
+          "allocated": 400992,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 182.7988
+        },
+        {
+          "allocated": 400144,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 113.0873
+        }
+      ],
+      "candidate": [
+        {
+          "allocated": 384984,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 175.495
+        },
+        {
+          "allocated": 384984,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 178.3092
+        },
+        {
+          "allocated": 386088,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 128.4724
+        },
+        {
+          "allocated": 386088,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 134.0008
+        },
+        {
+          "allocated": 384840,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 118.5508
+        },
+        {
+          "allocated": 384648,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 179.7821
+        },
+        {
+          "allocated": 385128,
+          "admitted": 67328,
+          "after": 0,
+          "elapsedMilliseconds": 111.0236
+        }
+      ]
+    },
+    "xml.json": {
+      "reference": [
+        {
+          "allocated": 337776,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 163.9687
+        },
+        {
+          "allocated": 336400,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 135.9493
+        },
+        {
+          "allocated": 336400,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 115.339
+        },
+        {
+          "allocated": 337248,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 144.5344
+        },
+        {
+          "allocated": 336256,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 143.2579
+        },
+        {
+          "allocated": 336400,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 178.3435
+        },
+        {
+          "allocated": 336064,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 102.5123
+        }
+      ],
+      "candidate": [
+        {
+          "allocated": 321480,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 167.1758
+        },
+        {
+          "allocated": 322184,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 159.4259
+        },
+        {
+          "allocated": 321336,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 121.0959
+        },
+        {
+          "allocated": 321336,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 158.4735
+        },
+        {
+          "allocated": 321336,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 161.686
+        },
+        {
+          "allocated": 321336,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 184.8778
+        },
+        {
+          "allocated": 321336,
+          "admitted": 85904,
+          "after": 0,
+          "elapsedMilliseconds": 105.049
+        }
+      ]
+    },
+    "generated.json": {
+      "reference": [
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 126.7289
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 108.5971
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 97.8353
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 99.3024
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 131.7751
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 113.2384
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 87.6755
+        }
+      ],
+      "candidate": [
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 123.9556
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 108.7621
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 95.3557
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 103.3969
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 132.3775
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 125.1239
+        },
+        {
+          "allocated": 1008824,
+          "admitted": 1108352,
+          "after": 0,
+          "elapsedMilliseconds": 105.4683
+        }
+      ]
+    }
+  },
+  "summary": [
+    {
+      "case": "config.json",
+      "allocated": [
+        400992,
+        384984
+      ],
+      "admitted": [
+        67328,
+        67328
+      ],
+      "after": [
+        0,
+        0
+      ],
+      "elapsedMilliseconds": [
+        139.8122,
+        134.0008
+      ]
+    },
+    {
+      "case": "xml.json",
+      "allocated": [
+        336400,
+        321336
+      ],
+      "admitted": [
+        85904,
+        85904
+      ],
+      "after": [
+        0,
+        0
+      ],
+      "elapsedMilliseconds": [
+        143.2579,
+        159.4259
+      ]
+    },
+    {
+      "case": "generated.json",
+      "allocated": [
+        1008824,
+        1008824
+      ],
+      "admitted": [
+        1108352,
+        1108352
+      ],
+      "after": [
+        0,
+        0
+      ],
+      "elapsedMilliseconds": [
+        108.5971,
+        108.7621
+      ]
+    }
+  ],
+  "verifiedCompilations": 42
+}
