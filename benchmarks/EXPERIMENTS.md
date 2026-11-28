@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1971 attribute the current generator reduction](results/2026-11-28-current-private-generator-profile/README.md)
+verifies two captures and 105 batches at `6ae6f2fa8`. The private
+prefix covers 24.9% of resolved generator samples and operand preparation
+7.4%. The explicit loop's native interpreter covers 37.8% nearest.
+
 [B1970 compare fresh processes](results/2026-11-28-fresh-command-cpython/README.md)
 uses the B1968 image and verifies fourteen launch pairs. First-line and
 configuration launch-to-drain elapsed are 7.18× and 7.83× CPython at
