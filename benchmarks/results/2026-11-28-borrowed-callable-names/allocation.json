@@ -1,0 +1,281 @@
+{
+  "callerThreadClrBytes": {
+    "config.json": {
+      "reference": [
+        {
+          "allocated": 717752,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717752,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 718200,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717752,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717608,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717464,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717944,
+          "admitted": 67328,
+          "after": 0
+        }
+      ],
+      "candidate": [
+        {
+          "allocated": 717672,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 718392,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717192,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717864,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717864,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 717384,
+          "admitted": 67328,
+          "after": 0
+        },
+        {
+          "allocated": 720800,
+          "admitted": 67328,
+          "after": 0
+        }
+      ]
+    },
+    "workbook.json": {
+      "reference": [
+        {
+          "allocated": 374320,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374608,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374608,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374224,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374464,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374800,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374800,
+          "admitted": 70848,
+          "after": 0
+        }
+      ],
+      "candidate": [
+        {
+          "allocated": 373920,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374160,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374304,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374016,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374496,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374304,
+          "admitted": 70848,
+          "after": 0
+        },
+        {
+          "allocated": 374160,
+          "admitted": 70848,
+          "after": 0
+        }
+      ]
+    },
+    "generated.json": {
+      "reference": [
+        {
+          "allocated": 1236728,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1237208,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1237736,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1237208,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1236536,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1236728,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1236536,
+          "admitted": 678752,
+          "after": 0
+        }
+      ],
+      "candidate": [
+        {
+          "allocated": 1229096,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1229240,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1228760,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1229096,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1228856,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1229688,
+          "admitted": 678752,
+          "after": 0
+        },
+        {
+          "allocated": 1229096,
+          "admitted": 678752,
+          "after": 0
+        }
+      ]
+    }
+  },
+  "summary": [
+    {
+      "case": "config.json",
+      "allocated": [
+        717752,
+        717864
+      ],
+      "admitted": [
+        67328,
+        67328
+      ],
+      "after": [
+        0,
+        0
+      ]
+    },
+    {
+      "case": "workbook.json",
+      "allocated": [
+        374608,
+        374160
+      ],
+      "admitted": [
+        70848,
+        70848
+      ],
+      "after": [
+        0,
+        0
+      ]
+    },
+    {
+      "case": "generated.json",
+      "allocated": [
+        1236728,
+        1229096
+      ],
+      "admitted": [
+        678752,
+        678752
+      ],
+      "after": [
+        0,
+        0
+      ]
+    }
+  ],
+  "verifiedCompilations": 42,
+  "probeSHA256": "5d9faa84f964b8a5e9033d0c4c2c7ca95dc71a46188faeec571cb3f8e9f73108"
+}

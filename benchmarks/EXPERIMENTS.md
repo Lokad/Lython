@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1930 borrow qualified callable names during module lookup](results/2026-11-28-borrowed-callable-names/README.md)
+withdraws the span trial after stable workbook CPU rises 2.17–4.29%.
+It saves 7,632 B during first compilation of the 48-rule validator
+and the small configuration compile uses slightly less CPU. Preserve
+both findings and keep the delivered B1929 code.
+
 [B1929 resolve callable reexports from module declarations](results/2026-11-28-module-callable-reexports/README.md)
 removes the eager alias table, matching 1,342 member lookups and 13
 compiler cases. First configuration compile allocates 5,128 B less
