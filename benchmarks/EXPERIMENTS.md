@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1938 remove the monitor from private match allowance](results/2026-11-28-private-regex-match-allowance/README.md)
+saves 73,728 B per compiled log scan in both APIs. Local warm CPU falls
+6.04–7.51% in the compiled log and 2.27–6.06% in the module log. The
+Unicode cursor's allocation matches and its CPU ranges from unchanged
+to 1.63% higher. Peak admission matches throughout.
+
 [B1937 quiet shipment comparison](results/2026-11-28-current-cpython-shipment/README.md)
 verifies four goldens and 140 batches at `e036d6597`. Iterable async
 shipment remains about 1.13× CPython elapsed. Ordinary helper and

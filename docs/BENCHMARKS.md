@@ -79,6 +79,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Remove the private regex allowance monitor | The compiled log scan allocates 73,728 B less in each API. Local warm CPU falls 6.04–7.51% for the compiled log and 2.27–6.06% for the module log at matching admission. [B1938](../benchmarks/results/2026-11-28-private-regex-match-allowance/README.md). |
 | Transfer the private generator frame to starmap | Iterable shipment allocates 6.2% less in both APIs at matching admission. Local warm CPU falls 2.68–9.27% async and rises 0.81–1.47% sync. The first-line control is inconclusive. [B1936](../benchmarks/results/2026-11-28-staged-generator-activation/README.md). |
 | Keep native slots across generator row callbacks | Iterable shipment allocates 131,128 B less per run. Local warm async CPU falls 3.33–5.76% on the same-image repeat. [B1910](../benchmarks/results/2026-11-27-private-generator-row-slots/README.md). |
 | Resolve scalar regex group selectors directly | Compiled log scans allocate 7.2% less and Unicode named-group scans allocate 22.6% less at the same peak admission. CPU gains remain inconclusive. [B1931](../benchmarks/results/2026-11-28-regex-group-resolution/README.md). |

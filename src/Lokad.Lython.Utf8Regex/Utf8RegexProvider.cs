@@ -115,9 +115,9 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
 
     // Aggregate the producer's live claims in one reservation. A partial
     // release leaves reusable capacity until the final release or owner close.
-    private sealed class RegexAllowance(ILythonMemoryBudget owner) : IUtf8MemoryAllowance, IDisposable
+    private sealed class RegexAllowance(ILythonMemoryBudget owner, bool privateCall = false) : IUtf8MemoryAllowance, IDisposable
     {
-        private readonly object _gate = new();
+        private readonly object? _gate = privateCall ? null : new();
         private ILythonMemoryBudget? _budget = owner;
         private ILythonMemoryReservation? _storage;
         private long _liveBytes;
@@ -125,43 +125,52 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         public bool TryReserve(ulong bytes)
         {
             if (bytes == 0) return true;
-            lock (_gate)
+            if (_gate is null) return TryReserveCore(bytes);
+            lock (_gate) return TryReserveCore(bytes);
+        }
+
+        private bool TryReserveCore(ulong bytes)
+        {
+            var budget = _budget ?? throw new ObjectDisposedException(nameof(RegexAllowance));
+            if (bytes > (ulong)(long.MaxValue - _liveBytes)) return false;
+            var total = _liveBytes + (long)bytes;
+            if (_storage is { } storage)
             {
-                var budget = _budget ?? throw new ObjectDisposedException(nameof(RegexAllowance));
-                if (bytes > (ulong)(long.MaxValue - _liveBytes)) return false;
-                var total = _liveBytes + (long)bytes;
-                if (_storage is { } storage)
-                {
-                    if (total > storage.Bytes && !storage.TryResize(total)) return false;
-                }
-                else
-                {
-                    if (!budget.TryReserve(total, out var admitted)) return false;
-                    _storage = admitted;
-                }
-                _liveBytes = total;
-                return true;
+                if (total > storage.Bytes && !storage.TryResize(total)) return false;
             }
+            else
+            {
+                if (!budget.TryReserve(total, out var admitted)) return false;
+                _storage = admitted;
+            }
+            _liveBytes = total;
+            return true;
         }
 
         public void Release(ulong bytes)
         {
-            lock (_gate)
-            {
-                System.Diagnostics.Debug.Assert(bytes <= (ulong)_liveBytes);
-                _liveBytes -= (long)bytes;
-                if (_liveBytes == 0) ReleaseStorage();
-            }
+            if (_gate is null) ReleaseCore(bytes);
+            else lock (_gate) ReleaseCore(bytes);
+        }
+
+        private void ReleaseCore(ulong bytes)
+        {
+            System.Diagnostics.Debug.Assert(bytes <= (ulong)_liveBytes);
+            _liveBytes -= (long)bytes;
+            if (_liveBytes == 0) ReleaseStorage();
         }
 
         public void Dispose()
         {
-            lock (_gate)
-            {
-                _budget = null;
-                _liveBytes = 0;
-                ReleaseStorage();
-            }
+            if (_gate is null) DisposeCore();
+            else lock (_gate) DisposeCore();
+        }
+
+        private void DisposeCore()
+        {
+            _budget = null;
+            _liveBytes = 0;
+            ReleaseStorage();
         }
 
         private void ReleaseStorage()
@@ -299,9 +308,9 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 LythonRegexMatchMode.FullMatch => Utf8PythonMatchMode.FullMatch,
                 _ => Utf8PythonMatchMode.Search,
             };
-            // All backend users and capture copies finish before this call
-            // returns. The aggregate reservation is its entire working owner.
-            using var allowance = new RegexAllowance(memoryOwner);
+            // PythonRe uses this working owner exclusively in the call.
+            // Even the cursor and retained snapshot below finish here.
+            using var allowance = new RegexAllowance(memoryOwner, privateCall: true);
             if (captures.Length <= 2)
             {
                 // With one subgroup, participation determines lastindex.
