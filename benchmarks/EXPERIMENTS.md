@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1961 attribute the combined reductions](results/2026-11-28-combined-reduction-profile/README.md)
+profiles `b663af554`. The borrowed prefix accounts for 23.3% of the
+generator script's resolved managed samples, and operand preparation
+accounts for 9.9%. Both traces and 102 sampled batches verify.
+
 [B1960 keep the integer subtotal in its generator operand](results/2026-11-28-borrowed-sum-subtotal/README.md)
 saves about 160 KiB and 2,048 allowance growth requests per tuple or range
 script. Local async tuple CPU falls 2.46–3.80%. The file-fed control
