@@ -19,8 +19,8 @@ internal sealed partial class LythonRuntime
                 code.CapturedLocalSlots.Count != 0 || code.ExceptionRegions.Count != 0)
                 return null;
 
-            var shellBytes = PyGenerator.EstimateExpressionShell(code);
-            var totalBytes = checked(BorrowedGeneratorSum.StorageBytes + shellBytes +
+            var promotionBytes = checked(PyGenerator.EstimateExpressionShell(code) + PyIteratorBase.IteratorValueBytes);
+            var totalBytes = checked(BorrowedGeneratorSum.StorageBytes + promotionBytes +
                 ExecutableSlotsBytes(code.ValueStorageCapacity) + ExecutableFrameExtraBytes(code, 0));
             var governor = MemoryGovernor;
             governor.Reserve(totalBytes, span);
@@ -32,10 +32,10 @@ internal sealed partial class LythonRuntime
                 InitializeExecutableWorkState(ref work, code, this, default, captures, lookupOwner,
                     borrowedInvocation: true, sharedLookupStart: lookupOwner is null ? -1 : expression.SharedLookupStart,
                     storagePrepaid: true);
-                var iterator = (PyEnumerableIterator)PyIteration.AcquireGeneratorOuter(outer, expression.OuterSpan, this);
+                var iterator = PyEnumerableIterator.Create(outer, expression.OuterSpan, this);
                 ChargeClosureRetention(FunctionClosureContext, governor, span);
                 SeedGeneratorOuter(ref work, iterator);
-                return new BorrowedGeneratorSum(work, iterator, governor, shellBytes);
+                return new BorrowedGeneratorSum(work, iterator, governor, promotionBytes);
             }
             catch
             {
@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
                 else
                 {
                     try { ReleaseBorrowedGeneratorWork(ref work); }
-                    finally { governor.Release(BorrowedGeneratorSum.StorageBytes + shellBytes); }
+                    finally { governor.Release(BorrowedGeneratorSum.StorageBytes + promotionBytes); }
                 }
                 throw;
             }
@@ -60,15 +60,16 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // The call operand owns initialized slots before and during the call.
-        // It also funds the general accumulator if the prefix promotes.
-        // Promotion transfers the slots and their prepaid frame shell charge.
+        // The operand owns the initialized slots, iterator, and prepaid
+        // promotion storage. Once promoted, .0 may escape with the frame's
+        // other values, so the iterator and frame charges outlive the operand.
         internal sealed class BorrowedGeneratorSum(ExecutableWorkState work, PyEnumerableIterator outer,
-            MemoryGovernor governor, long shellBytes) : ExecutableTemporaryValue
+            MemoryGovernor governor, long promotionBytes) : ExecutableTemporaryValue
         {
             internal const long StorageBytes = 256;
             private ExecutableWorkState _work = work;
             private MemoryGovernor? _governor = governor;
+            private PyEnumerableIterator? _outer = outer;
             private long _subtotal;
 
             internal bool TryAdvanceOuter(ref ExecutableWorkState state, in ExecutableInstruction instruction,
@@ -76,9 +77,10 @@ internal sealed partial class LythonRuntime
             {
                 hasNext = false;
                 value = default;
-                if (!ReferenceEquals(state.Stack.Values[instruction.InputStart].Reference, outer)) return false;
+                if (_outer is not { } iterator || !ReferenceEquals(state.Stack.Values[instruction.InputStart].Reference, iterator))
+                    return false;
                 state.Stack.State.CheckInterpreterStack(instruction.Span);
-                var next = outer.TryMoveNext();
+                var next = iterator.TryMoveNext();
                 hasNext = next.HasValue;
                 if (hasNext) value = next.TakeSlotValue();
                 return true;
@@ -129,6 +131,7 @@ internal sealed partial class LythonRuntime
                     var frame = new ExecutionContext(scope.FunctionClosureContext, _work.Code.ScopeFacts)
                     { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
                     frame.AdoptExecutableExecution(ref _work, entryException);
+                    _outer = null;
                     return frame;
                 }
                 catch (LythonRuntimeException exception)
@@ -150,11 +153,12 @@ internal sealed partial class LythonRuntime
             {
                 if (_governor is not { } owner) return;
                 _governor = null;
+                _outer = null;
                 var release = StorageBytes;
                 try
                 {
                     if (_work.Code is null) return;
-                    release += shellBytes;
+                    release += promotionBytes;
                     ReleaseBorrowedGeneratorWork(ref _work);
                 }
                 finally { owner.Release(release); }

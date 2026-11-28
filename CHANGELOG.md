@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit the private `sum` outer iterator with its operand. Reuse its
+  allowance after a completed prefix and keep promoted iterator aliases funded.
 - Keep integer generator subtotals in their existing operand. Fund the
   general accumulator under the same owner when a reduction can promote.
 - Bind ordinary `sum` arguments in the existing fixed-width buffer. Keep

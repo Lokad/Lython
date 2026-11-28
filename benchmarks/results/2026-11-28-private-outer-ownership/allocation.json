@@ -1,0 +1,162 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      1957150,
+      1956976
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2578246,
+      2578246
+    ],
+    "admittedPeak": [
+      3779207,
+      3517191
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "sync",
+    "clr": [
+      808440,
+      808440
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      3168150,
+      3168150
+    ],
+    "admittedPeak": [
+      3910463,
+      3648447
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "sync",
+    "clr": [
+      286144,
+      286144
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      1957334,
+      1957334
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2578462,
+      2578344
+    ],
+    "admittedPeak": [
+      3779207,
+      3517191
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "mode": "async",
+    "clr": [
+      808656,
+      808656
+    ],
+    "admittedPeak": [
+      2270071,
+      2270071
+    ],
+    "compiled": [
+      51392,
+      51392
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "async",
+    "clr": [
+      3168366,
+      3168366
+    ],
+    "admittedPeak": [
+      3910463,
+      3648447
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "async",
+    "clr": [
+      286392,
+      286392
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  }
+]

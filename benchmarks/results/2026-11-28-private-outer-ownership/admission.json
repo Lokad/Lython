@@ -1,0 +1,122 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "asynchronous": false,
+    "requests": [
+      6179,
+      6179
+    ],
+    "peak": [
+      4304384,
+      4304384
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "asynchronous": true,
+    "requests": [
+      6179,
+      6179
+    ],
+    "peak": [
+      4304384,
+      4304384
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      10269,
+      8221
+    ],
+    "peak": [
+      3779207,
+      3517191
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      10269,
+      8221
+    ],
+    "peak": [
+      3779207,
+      3517191
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": false,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      12317,
+      10269
+    ],
+    "peak": [
+      3910463,
+      3648447
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      12317,
+      10269
+    ],
+    "peak": [
+      3910463,
+      3648447
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "asynchronous": false,
+    "requests": [
+      785,
+      657
+    ],
+    "peak": [
+      280064,
+      280064
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "asynchronous": true,
+    "requests": [
+      785,
+      657
+    ],
+    "peak": [
+      280064,
+      280064
+    ]
+  }
+]

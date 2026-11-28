@@ -54,8 +54,8 @@ public sealed class NativeGeneratorSumTests
                 assert next(outer) == 3
             return value
         def reduce(values):
-            return sum(take(value, locals()['.0']) for value in values)
-        assert reduce((2, 3, 5, 7)) == 14
+            return sum(value if value == 1 else take(value, locals()['.0']) for value in values)
+        assert reduce((1, 2, 3, 5, 7)) == 15
         assert len(observed) == 3
         assert observed[0] is observed[1] is observed[2]
         assert next(observed[0], 'end') == 'end'
@@ -170,6 +170,64 @@ public sealed class NativeGeneratorSumTests
             }
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PrivateOuterIteratorsReturnTheirAllowance(bool asynchronous)
+    {
+        const string source = """
+            items = (2, 3)
+            total = 0
+            for index in range(256):
+                total += sum(item for item in items)
+            return total
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(16 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new System.Numerics.BigInteger(1280), result.ReturnValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RefusedPrivateIteratorAdmissionPrecedesGeneratorEffects(bool asynchronous)
+    {
+        const string source = """
+            import time
+            items = (2, 3)
+            def effect(item):
+                print('callback')
+                return item
+            time.time()
+            try:
+                sum(effect(item) for item in items)
+            except MemoryError:
+                print('caught')
+            print('continued')
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new AdmissionGateBudget();
+        var host = new AdmissionGateHost(budget, 0);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal(8, result.Failure?.Span?.Line);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
     }
 
     [Theory]

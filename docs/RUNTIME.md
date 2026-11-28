@@ -972,13 +972,13 @@ sum loop continues, including when addition or generator code can suspend.
 Other call targets and expressions that publish a generator use the ordinary
 iterator object.
 
-Construction admits the context shell and its initial executable slots before
-acquiring the outer iterator. Refusal of that construction is attributed to the
-generator expression. The private operand owns cleanup through return, refusal
-and cancellation. It refunds the prepaid shell if the reduction finishes without
-creating a frame. An instantiated shell keeps its conservative execution-lifetime
-charge because a yielded value or closure can retain the context after the
-executable slots retire.
+Construction of the private operand admits the context shell, exact builtin
+outer iterator and initial slots together. Refusal of that construction is
+attributed to the generator expression. The operand owns cleanup through
+return, refusal and cancellation. It releases the iterator and prepaid shell
+charges when the reduction completes within the private prefix. Promotion
+keeps both charges through the execution because the iterator, a yielded
+value or a closure can remain observable after the slots retire.
 
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1962 own the private generator outer with its operand](results/2026-11-28-private-outer-ownership/README.md)
+removes 2,048 growth requests and about 256 KiB of peak admission per
+tuple or range script. The retained iterator witness keeps the same
+peak. The local file-fed control uses 0.73–4.05% more CPU.
+
 [B1961 attribute the combined reductions](results/2026-11-28-combined-reduction-profile/README.md)
 profiles `b663af554`. The borrowed prefix accounts for 23.3% of the
 generator script's resolved managed samples, and operand preparation
