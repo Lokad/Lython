@@ -1,0 +1,338 @@
+[
+  {
+    "role": "generator-async",
+    "runtimeThreadMilliseconds": 3890.1561995148,
+    "inclusiveRegionsMilliseconds": {
+      "ordinary map": 3634.506944752814,
+      "callback entry": 707.5974349510955,
+      "sum calls": 3745.1154198709596,
+      "instruction prefix": 3858.636820160665,
+      "private sum slot reduction": 1114.1156449962255,
+      "executable frame construction": 153.78882490830705,
+      "CSV record": 485.54346177012445,
+      "mediated text file": 626.9600860012963,
+      "native arithmetic": 317.3899048262926,
+      "record cell reads": 7.3732350029372355,
+      "memory refund": 22.32082513686416,
+      "generator exception/stack entry": 7.079457910552037,
+      "memory reservation": 265.0637529717181,
+      "argument binding/storage": 18.415981771080396,
+      "closure charge": 56.858932273406595,
+      "numeric reduction": 1.1840188333740116,
+      "subscript and dictionary": 1.1859569549560547
+    },
+    "nearestLythonMethods": [
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+NativeExecution.RunCore",
+        494.12131478747955
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+        427.6083005440519
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Reserve",
+        265.0637529717181
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord",
+        232.29830799692544
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecutePreparedGeneratorSum",
+        207.63884661188283
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.TryDescribeLiteralRecord",
+        137.60258973217526
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryReadPrivateRecordComparison",
+        114.59667328024187
+      ],
+      [
+        "Lokad.Lython.Runtime.PyFunctionBase+<InvokeBoundSlotAsync>d__48.MoveNext",
+        103.91689854182846
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteBuiltinArithmetic",
+        100.0143875040975
+      ],
+      [
+        "Lokad.Lython.Runtime.PyMapIterator.TryMoveNextAsync",
+        97.6960122939519
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecutePreparedOperation",
+        95.24821120351416
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ReduceSumAsync>d__35.MoveNext",
+        89.37803225915279
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+NativeExecution.ReducePrivateGenerator",
+        83.25380431923622
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.ReadCsvLine",
+        67.61732720460509
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+<ExecuteAsync>d__26.MoveNext",
+        62.10747235515487
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ExecuteExecutableCodeObjectSlotAsync>d__769.MoveNext",
+        59.16986887872432
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall",
+        56.21509094598429
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.RunPrivateGeneratorPrefix",
+        50.911537549446564
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInputInstruction",
+        50.158128836540925
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ExecuteInitializedFrameAsync>d__771.MoveNext",
+        48.67933696443856
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.PreparePrivateGenerator",
+        48.568939158650835
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.InitializeExecutableWorkState",
+        48.179094586326286
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.RetireTo",
+        40.60865106433789
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot.RetireTemporary",
+        37.497443009863446
+      ],
+      [
+        "Lokad.Lython.Runtime.ExecutionState.TryGetBuiltinSlot",
+        29.59538830998241
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryEvaluateArithmeticInstruction",
+        28.646971548689635
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordSource.TryReadRecord",
+        27.248580307242605
+      ],
+      [
+        "Lokad.Lython.Runtime.Text.PyString.Equals",
+        24.813736231025587
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.BindOwnedFunctionArguments",
+        22.74862580635852
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Release",
+        22.32082513686416
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+<ExecuteUntilCallAsync>d__214.MoveNext",
+        21.426547075415712
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.InvokeNativeIntegerText",
+        19.987815014007538
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage..ctor",
+        16.994821558624608
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.CaptureExecutableCells",
+        16.686691314711936
+      ],
+      [
+        "Lokad.Lython.Runtime.OpenedByteFile+<ReadCore>d__14.MoveNext",
+        16.537794888877215
+      ]
+    ],
+    "nearestIterableMethods": []
+  },
+  {
+    "role": "iterable-async",
+    "runtimeThreadMilliseconds": 4249.830246709752,
+    "inclusiveRegionsMilliseconds": {
+      "callback entry": 482.27691867350063,
+      "sum calls": 4097.571248312558,
+      "starmap row": 3968.4622839651415,
+      "instruction prefix": 4227.011444445266,
+      "parent callback binding": 482.27691867350063,
+      "staged row source after pull": 2127.4143827976095,
+      "generator construction": 375.25146000054383,
+      "generator advancement": 3086.2892487602076,
+      "CSV record": 614.413826987329,
+      "mediated text file": 675.1385012771659,
+      "async iterator move": 782.1072625777336,
+      "CSV row construction": 244.82309871539317,
+      "memory reservation": 176.16232053889325,
+      "generator exception/stack entry": 34.13134171891643,
+      "native arithmetic": 309.7752198187243,
+      "executable frame construction": 52.900538598855206,
+      "memory refund": 83.49570406555816,
+      "generator frame setup": 21.315533749610495,
+      "numeric reduction": 2.3389229753493055,
+      "closure charge": 1.1633670105211422,
+      "subscript and dictionary": 1.164631962776184
+    },
+    "nearestLythonMethods": [
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+        676.0255949043067
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+NativeExecution.RunCore",
+        297.7069466164174
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord",
+        280.26366315744644
+      ],
+      [
+        "Lokad.Lython.Runtime.PyGeneratorFunction.CreateBoundGenerator",
+        277.7800388207708
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInputInstruction",
+        217.90373998017128
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Reserve",
+        175.00026051653913
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+PyGenerator+<AdvanceFrameAsync>d__41.MoveNext",
+        173.52685557409518
+      ],
+      [
+        "Lokad.Lython.Runtime.PyStarmapIterator.TryStartStagedGenerator",
+        147.8122724269711
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.TryDescribeLiteralRecord",
+        127.24140384707547
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryEvaluateArithmeticInstruction",
+        122.35470424945862
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+NativeExecution.Run",
+        109.33643571349333
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteBuiltinArithmetic",
+        108.0970483660202
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<ReduceSumAsync>d__35.MoveNext",
+        83.48815491616696
+      ],
+      [
+        "Lokad.Lython.Runtime.MemoryGovernor.Release",
+        82.33352900623962
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteOrdinaryCall",
+        81.69230333081401
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.ReadCsvLine",
+        73.86850488243266
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+<ExecuteAsync>d__26.MoveNext",
+        71.9329773432531
+      ],
+      [
+        "Lokad.Lython.Runtime.PyStarmapIterator.TryMoveNextAsync",
+        64.43223029621936
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall",
+        61.55235160162954
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+BuiltinBindings.TryGetValue",
+        58.73417327642076
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteComparisonInstruction",
+        51.77499241105534
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+<ExecuteUntilCallAsync>d__214.MoveNext",
+        51.29262665231602
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteForNextAsync",
+        47.74916987415486
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.RetireTo",
+        43.61348916870145
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.InitializeExecutableWorkState",
+        43.537547527016585
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryEvaluateClosedArithmetic",
+        38.54376293141124
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime.TryConstructPositionalGenerator",
+        37.584205579109046
+      ],
+      [
+        "Lokad.Lython.Runtime.PyIteration+Cursor.TryMoveNextAsync",
+        36.25824754238781
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordSource.TryReadRecord",
+        31.773900385193343
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+PyGenerator.EnterFrame",
+        30.612179698111234
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ReleaseGeneratorTemporaries",
+        20.152504846908414
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+<InvokeCallableFromOperandsAsync>d__375.MoveNext",
+        19.751700433311854
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.GetLookupCaches",
+        18.81984711163409
+      ],
+      [
+        "Lokad.Lython.Runtime.PyExecutableFunction.StartInline",
+        17.69959966040119
+      ],
+      [
+        "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.ConsumeBorrowedLine",
+        17.650788522674453
+      ]
+    ],
+    "nearestIterableMethods": []
+  }
+]

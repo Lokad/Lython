@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1979 locate iterable CSV reduction costs](results/2026-11-28-current-iterable-profile/README.md)
+verifies two captures and 98 batches at `e78a95b1b`. Iterable generator
+advancement covers 72.6% of resolved managed samples. Its staged
+dispatch includes several downstream operations. The nearest
+`CreateBoundGenerator` frame accounts for 6.5%.
+
 [B1971 attribute the current generator reduction](results/2026-11-28-current-private-generator-profile/README.md)
 verifies two captures and 105 batches at `6ae6f2fa8`. The private
 prefix covers 24.9% of resolved generator samples and operand preparation
