@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1946 locate eager module surfaces](results/2026-11-28-cold-module-surfaces/README.md)
+verifies two current first configuration commands. The frontend catalog's
+JIT intervals are 3.361–5.090 ms and runtime registration's are 0.594–0.670 ms.
+The frontend eagerly duplicates membership and enumeration data. The trace
+locates that stage and leaves its removable CPU share open.
+
 [B1945 prepare private generator call shape in layout](results/2026-11-28-private-generator-layout/README.md)
 removes the runtime call-site lookup and returns iterable shipment's
 cleanup bound from slot 11 to slot 8. Admission and allocation match

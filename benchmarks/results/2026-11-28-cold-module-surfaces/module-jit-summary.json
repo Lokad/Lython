@@ -1,0 +1,1054 @@
+[
+  {
+    "trace": "startup-0.nettrace",
+    "completed": 2680,
+    "methods": [
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 8741,
+        "Start": 177.385848,
+        "End": 182.475765,
+        "elapsedMilliseconds": 5.089916999999986
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": "Members",
+        "Signature": "class BuiltinModuleSurface  (class System.String[])",
+        "IlBytes": 8,
+        "Start": 182.497059,
+        "End": 182.557384,
+        "elapsedMilliseconds": 0.06032500000000596
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.IEnumerable`1<class System.String>,class System.String)",
+        "IlBytes": 111,
+        "Start": 182.563493,
+        "End": 182.816381,
+        "elapsedMilliseconds": 0.2528880000000129
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": "get_MemberNames",
+        "Signature": "instance class System.Collections.Generic.IReadOnlyList`1<class System.String>  ()",
+        "IlBytes": 7,
+        "Start": 184.148623,
+        "End": 184.197791,
+        "elapsedMilliseconds": 0.04916800000000876
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 186.657389,
+        "End": 186.746891,
+        "elapsedMilliseconds": 0.08950200000001018
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 186.754555,
+        "End": 186.779911,
+        "elapsedMilliseconds": 0.025355999999987944
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+        "Method": "<.ctor>b__1_0",
+        "Signature": "instance bool  (class System.String)",
+        "IlBytes": 16,
+        "Start": 186.920718,
+        "End": 186.954246,
+        "elapsedMilliseconds": 0.03352800000001821
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": "ReexportedMembers",
+        "Signature": "class BuiltinModuleSurface  (class System.String,class System.String[])",
+        "IlBytes": 8,
+        "Start": 188.156043,
+        "End": 188.196882,
+        "elapsedMilliseconds": 0.04083899999997698
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 9,
+        "Start": 188.262089,
+        "End": 188.285381,
+        "elapsedMilliseconds": 0.02329199999999787
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (int32,class System.Collections.Generic.IEqualityComparer`1<!0>)",
+        "IlBytes": 136,
+        "Start": 188.290977,
+        "End": 188.388986,
+        "elapsedMilliseconds": 0.09800899999999046
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.String,class System.String)",
+        "IlBytes": 15,
+        "Start": 188.394499,
+        "End": 188.410691,
+        "elapsedMilliseconds": 0.01619200000001797
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "set_Item",
+        "Signature": "instance void  (!0,!1)",
+        "IlBytes": 11,
+        "Start": 188.416707,
+        "End": 188.434129,
+        "elapsedMilliseconds": 0.017422000000010485
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "TryInsert",
+        "Signature": "instance bool  (!0,!1,value class System.Collections.Generic.InsertionBehavior)",
+        "IlBytes": 565,
+        "Start": 188.439725,
+        "End": 188.7417,
+        "elapsedMilliseconds": 0.30197499999999877
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "Initialize",
+        "Signature": "instance int32  (int32)",
+        "IlBytes": 56,
+        "Start": 188.752953,
+        "End": 188.828913,
+        "elapsedMilliseconds": 0.07596000000000913
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName",
+        "Method": "GetHashCode",
+        "Signature": "instance int32  ()",
+        "IlBytes": 40,
+        "Start": 188.847841,
+        "End": 188.890679,
+        "elapsedMilliseconds": 0.04283800000001747
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "GetBucket",
+        "Signature": "instance int32&  (unsigned int32)",
+        "IlBytes": 29,
+        "Start": 188.923098,
+        "End": 188.994133,
+        "elapsedMilliseconds": 0.07103499999999485
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "Resize",
+        "Signature": "instance void  ()",
+        "IlBytes": 19,
+        "Start": 189.001071,
+        "End": 189.019584,
+        "elapsedMilliseconds": 0.01851300000001288
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "Resize",
+        "Signature": "instance void  (int32,bool)",
+        "IlBytes": 254,
+        "Start": 189.024019,
+        "End": 189.203031,
+        "elapsedMilliseconds": 0.17901200000000017
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "get_Default",
+        "Signature": "class System.Collections.Generic.EqualityComparer`1<!0>  ()",
+        "IlBytes": 6,
+        "Start": 189.816042,
+        "End": 189.842215,
+        "elapsedMilliseconds": 0.026173000000000002
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 189.848872,
+        "End": 189.864059,
+        "elapsedMilliseconds": 0.015186999999997397
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "Create",
+        "Signature": "class System.Collections.Generic.EqualityComparer`1<!0>  ()",
+        "IlBytes": 21,
+        "Start": 189.868424,
+        "End": 189.885462,
+        "elapsedMilliseconds": 0.01703799999998523
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.GenericEqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 189.9185,
+        "End": 189.933617,
+        "elapsedMilliseconds": 0.0151170000000036
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 189.938309,
+        "End": 189.94625,
+        "elapsedMilliseconds": 0.007940999999988207
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Count",
+        "Signature": "instance int32  ()",
+        "IlBytes": 14,
+        "Start": 189.954013,
+        "End": 189.967047,
+        "elapsedMilliseconds": 0.013034000000004653
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Comparer",
+        "Signature": "instance class System.Collections.Generic.IEqualityComparer`1<!0>  ()",
+        "IlBytes": 65,
+        "Start": 189.97268,
+        "End": 189.999793,
+        "elapsedMilliseconds": 0.027113000000014154
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.GenericEqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "Equals",
+        "Signature": "instance bool  (class System.Object)",
+        "IlBytes": 23,
+        "Start": 190.004269,
+        "End": 190.024457,
+        "elapsedMilliseconds": 0.020188000000018747
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.ValueTypeDefaultComparerFrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.Dictionary`2<!0,!1>)",
+        "IlBytes": 13,
+        "Start": 191.202171,
+        "End": 191.24405,
+        "elapsedMilliseconds": 0.04187899999999445
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.KeysAndValuesFrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.Dictionary`2<!0,!1>,bool)",
+        "IlBytes": 243,
+        "Start": 191.279222,
+        "End": 191.5872,
+        "elapsedMilliseconds": 0.3079779999999914
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.IEqualityComparer`1<!0>)",
+        "IlBytes": 14,
+        "Start": 191.599438,
+        "End": 191.62463,
+        "elapsedMilliseconds": 0.0251920000000041
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey,TValue>>.CopyTo",
+        "Signature": "instance void  (value class System.Collections.Generic.KeyValuePair`2<!0,!1>[],int32)",
+        "IlBytes": 9,
+        "Start": 191.649427,
+        "End": 191.670766,
+        "elapsedMilliseconds": 0.021338999999983344
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "CopyTo",
+        "Signature": "instance void  (value class System.Collections.Generic.KeyValuePair`2<!0,!1>[],int32)",
+        "IlBytes": 122,
+        "Start": 191.676575,
+        "End": 191.782766,
+        "elapsedMilliseconds": 0.10619099999999548
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.KeyValuePair`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (!0,!1)",
+        "IlBytes": 15,
+        "Start": 191.789732,
+        "End": 191.810977,
+        "elapsedMilliseconds": 0.02124500000002172
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Comparer",
+        "Signature": "instance class System.Collections.Generic.IEqualityComparer`1<!0>  ()",
+        "IlBytes": 7,
+        "Start": 191.820408,
+        "End": 191.832093,
+        "elapsedMilliseconds": 0.011684999999999945
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.KeyValuePair`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Key",
+        "Signature": "instance !0  ()",
+        "IlBytes": 7,
+        "Start": 191.835981,
+        "End": 191.848689,
+        "elapsedMilliseconds": 0.012708000000003494
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.GenericEqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "GetHashCode",
+        "Signature": "instance int32  (!0)",
+        "IlBytes": 24,
+        "Start": 191.853875,
+        "End": 191.869017,
+        "elapsedMilliseconds": 0.015142000000025746
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Generic.KeyValuePair`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Value",
+        "Signature": "instance !1  ()",
+        "IlBytes": 7,
+        "Start": 191.890878,
+        "End": 191.901913,
+        "elapsedMilliseconds": 0.011035000000021
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": "Contains",
+        "Signature": "instance bool  (class System.String)",
+        "IlBytes": 13,
+        "Start": 200.959479,
+        "End": 200.976149,
+        "elapsedMilliseconds": 0.016670000000004848
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "TryGetValue",
+        "Signature": "instance bool  (!0,!1&)",
+        "IlBytes": 44,
+        "Start": 201.157319,
+        "End": 201.194372,
+        "elapsedMilliseconds": 0.037052999999986014
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "GetValueRefOrNullRef",
+        "Signature": "instance required_modifier System.Runtime.InteropServices.InAttribute !1&  (!0)",
+        "IlBytes": 26,
+        "Start": 201.200176,
+        "End": 201.227818,
+        "elapsedMilliseconds": 0.027642000000014377
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "System.Collections.Frozen.ValueTypeDefaultComparerFrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "GetValueRefOrNullRefCore",
+        "Signature": "instance required_modifier System.Runtime.InteropServices.InAttribute !1&  (!0)",
+        "IlBytes": 100,
+        "Start": 201.234007,
+        "End": 201.351177,
+        "elapsedMilliseconds": 0.11717000000001576
+      },
+      {
+        "Thread": 143593,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": "get_CallableModule",
+        "Signature": "instance class System.String  ()",
+        "IlBytes": 7,
+        "Start": 201.360551,
+        "End": 201.373322,
+        "elapsedMilliseconds": 0.012771000000014965
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "GetDeniedName",
+        "Signature": "class System.String  (class System.String,class ExecutionContext)",
+        "IlBytes": 93,
+        "Start": 286.379589,
+        "End": 286.464565,
+        "elapsedMilliseconds": 0.08497599999998329
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "Resolve",
+        "Signature": "class Lokad.Lython.Runtime.PyModule  (class System.String,class ExecutionContext)",
+        "IlBytes": 35,
+        "Start": 288.139125,
+        "End": 288.246039,
+        "elapsedMilliseconds": 0.1069140000000175
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "IsDiscoverable",
+        "Signature": "bool  (class System.String,class ExecutionContext)",
+        "IlBytes": 54,
+        "Start": 288.251609,
+        "End": 288.295839,
+        "elapsedMilliseconds": 0.0442300000000273
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 2210,
+        "Start": 288.303719,
+        "End": 288.973698,
+        "elapsedMilliseconds": 0.6699790000000121
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 288.991222,
+        "End": 289.021508,
+        "elapsedMilliseconds": 0.0302859999999896
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 289.026063,
+        "End": 289.050105,
+        "elapsedMilliseconds": 0.024041999999951713
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "Module",
+        "Signature": "class BuiltinModuleRegistration  (class System.Func`2<class ExecutionContext,class Lokad.Lython.Runtime.PyModule>)",
+        "IlBytes": 8,
+        "Start": 289.059998,
+        "End": 289.075862,
+        "elapsedMilliseconds": 0.015863999999965017
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "Module",
+        "Signature": "class BuiltinModuleRegistration  (class System.Func`2<class ExecutionContext,class Lokad.Lython.Runtime.PyModule>,value class BuiltinModuleCapability)",
+        "IlBytes": 8,
+        "Start": 289.080101,
+        "End": 289.095628,
+        "elapsedMilliseconds": 0.015526999999963209
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": "<.cctor>b__15_0",
+        "Signature": "instance bool  (class System.String)",
+        "IlBytes": 21,
+        "Start": 289.644372,
+        "End": 289.697004,
+        "elapsedMilliseconds": 0.05263200000001689
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "IsDenied",
+        "Signature": "bool  (class System.String,class ExecutionContext)",
+        "IlBytes": 14,
+        "Start": 289.753649,
+        "End": 289.76843,
+        "elapsedMilliseconds": 0.014781000000027689
+      },
+      {
+        "Thread": 143603,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": "<.cctor>b__15_63",
+        "Signature": "instance class Lokad.Lython.Runtime.PyModule  (class ExecutionContext)",
+        "IlBytes": 6,
+        "Start": 289.785637,
+        "End": 289.834811,
+        "elapsedMilliseconds": 0.04917399999999361
+      }
+    ]
+  },
+  {
+    "trace": "startup-1.nettrace",
+    "completed": 2680,
+    "methods": [
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 8741,
+        "Start": 162.776046,
+        "End": 166.137488,
+        "elapsedMilliseconds": 3.3614419999999825
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": "Members",
+        "Signature": "class BuiltinModuleSurface  (class System.String[])",
+        "IlBytes": 8,
+        "Start": 166.151011,
+        "End": 166.181764,
+        "elapsedMilliseconds": 0.030752999999975827
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.IEnumerable`1<class System.String>,class System.String)",
+        "IlBytes": 111,
+        "Start": 166.186647,
+        "End": 166.422072,
+        "elapsedMilliseconds": 0.23542499999999222
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": "get_MemberNames",
+        "Signature": "instance class System.Collections.Generic.IReadOnlyList`1<class System.String>  ()",
+        "IlBytes": 7,
+        "Start": 167.302739,
+        "End": 167.332378,
+        "elapsedMilliseconds": 0.02963900000000308
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 168.38805,
+        "End": 168.431442,
+        "elapsedMilliseconds": 0.04339200000001142
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 168.437411,
+        "End": 168.453741,
+        "elapsedMilliseconds": 0.016330000000010614
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+        "Method": "<.ctor>b__1_0",
+        "Signature": "instance bool  (class System.String)",
+        "IlBytes": 16,
+        "Start": 168.561362,
+        "End": 168.587274,
+        "elapsedMilliseconds": 0.025912000000005264
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog",
+        "Method": "ReexportedMembers",
+        "Signature": "class BuiltinModuleSurface  (class System.String,class System.String[])",
+        "IlBytes": 8,
+        "Start": 169.793655,
+        "End": 169.833025,
+        "elapsedMilliseconds": 0.03936999999999102
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 9,
+        "Start": 169.92435,
+        "End": 169.953049,
+        "elapsedMilliseconds": 0.028698999999988928
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (int32,class System.Collections.Generic.IEqualityComparer`1<!0>)",
+        "IlBytes": 136,
+        "Start": 169.959027,
+        "End": 170.255517,
+        "elapsedMilliseconds": 0.2964900000000057
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.String,class System.String)",
+        "IlBytes": 15,
+        "Start": 170.26329,
+        "End": 170.283882,
+        "elapsedMilliseconds": 0.020591999999993504
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "set_Item",
+        "Signature": "instance void  (!0,!1)",
+        "IlBytes": 11,
+        "Start": 170.29045,
+        "End": 170.313346,
+        "elapsedMilliseconds": 0.022896000000002914
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "TryInsert",
+        "Signature": "instance bool  (!0,!1,value class System.Collections.Generic.InsertionBehavior)",
+        "IlBytes": 565,
+        "Start": 170.319133,
+        "End": 170.64115,
+        "elapsedMilliseconds": 0.32201700000001665
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "Initialize",
+        "Signature": "instance int32  (int32)",
+        "IlBytes": 56,
+        "Start": 170.651495,
+        "End": 170.720668,
+        "elapsedMilliseconds": 0.06917299999997795
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName",
+        "Method": "GetHashCode",
+        "Signature": "instance int32  ()",
+        "IlBytes": 40,
+        "Start": 170.748734,
+        "End": 170.788328,
+        "elapsedMilliseconds": 0.03959399999999391
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "GetBucket",
+        "Signature": "instance int32&  (unsigned int32)",
+        "IlBytes": 29,
+        "Start": 170.820876,
+        "End": 170.859366,
+        "elapsedMilliseconds": 0.038489999999995916
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "Resize",
+        "Signature": "instance void  ()",
+        "IlBytes": 19,
+        "Start": 170.865524,
+        "End": 170.903472,
+        "elapsedMilliseconds": 0.03794800000000009
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "Resize",
+        "Signature": "instance void  (int32,bool)",
+        "IlBytes": 254,
+        "Start": 170.907763,
+        "End": 171.088807,
+        "elapsedMilliseconds": 0.1810440000000142
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "get_Default",
+        "Signature": "class System.Collections.Generic.EqualityComparer`1<!0>  ()",
+        "IlBytes": 6,
+        "Start": 171.750901,
+        "End": 171.77633,
+        "elapsedMilliseconds": 0.02542900000000259
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 171.783579,
+        "End": 171.79876,
+        "elapsedMilliseconds": 0.015180999999984124
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "Create",
+        "Signature": "class System.Collections.Generic.EqualityComparer`1<!0>  ()",
+        "IlBytes": 21,
+        "Start": 171.803298,
+        "End": 171.821203,
+        "elapsedMilliseconds": 0.01790499999998474
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.GenericEqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 171.851892,
+        "End": 171.865233,
+        "elapsedMilliseconds": 0.013340999999996939
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.EqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 171.86983,
+        "End": 171.877571,
+        "elapsedMilliseconds": 0.007740999999981568
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Count",
+        "Signature": "instance int32  ()",
+        "IlBytes": 14,
+        "Start": 171.884591,
+        "End": 171.898994,
+        "elapsedMilliseconds": 0.014402999999987287
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Comparer",
+        "Signature": "instance class System.Collections.Generic.IEqualityComparer`1<!0>  ()",
+        "IlBytes": 65,
+        "Start": 171.903774,
+        "End": 171.928415,
+        "elapsedMilliseconds": 0.024641000000002578
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.GenericEqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "Equals",
+        "Signature": "instance bool  (class System.Object)",
+        "IlBytes": 23,
+        "Start": 171.932534,
+        "End": 171.954992,
+        "elapsedMilliseconds": 0.02245800000000031
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.ValueTypeDefaultComparerFrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.Dictionary`2<!0,!1>)",
+        "IlBytes": 13,
+        "Start": 173.024952,
+        "End": 173.050106,
+        "elapsedMilliseconds": 0.025153999999986354
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.KeysAndValuesFrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.Dictionary`2<!0,!1>,bool)",
+        "IlBytes": 243,
+        "Start": 173.078879,
+        "End": 173.357715,
+        "elapsedMilliseconds": 0.2788360000000125
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (class System.Collections.Generic.IEqualityComparer`1<!0>)",
+        "IlBytes": 14,
+        "Start": 173.369134,
+        "End": 173.393955,
+        "elapsedMilliseconds": 0.02482100000000287
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey,TValue>>.CopyTo",
+        "Signature": "instance void  (value class System.Collections.Generic.KeyValuePair`2<!0,!1>[],int32)",
+        "IlBytes": 9,
+        "Start": 173.416012,
+        "End": 173.434389,
+        "elapsedMilliseconds": 0.018377000000015187
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "CopyTo",
+        "Signature": "instance void  (value class System.Collections.Generic.KeyValuePair`2<!0,!1>[],int32)",
+        "IlBytes": 122,
+        "Start": 173.440006,
+        "End": 173.543947,
+        "elapsedMilliseconds": 0.10394099999999185
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.KeyValuePair`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": ".ctor",
+        "Signature": "instance void  (!0,!1)",
+        "IlBytes": 15,
+        "Start": 173.553036,
+        "End": 173.575048,
+        "elapsedMilliseconds": 0.022012000000017906
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Comparer",
+        "Signature": "instance class System.Collections.Generic.IEqualityComparer`1<!0>  ()",
+        "IlBytes": 7,
+        "Start": 173.582787,
+        "End": 173.594349,
+        "elapsedMilliseconds": 0.011561999999997852
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.KeyValuePair`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Key",
+        "Signature": "instance !0  ()",
+        "IlBytes": 7,
+        "Start": 173.598521,
+        "End": 173.611964,
+        "elapsedMilliseconds": 0.013442999999995209
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.GenericEqualityComparer`1[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName]",
+        "Method": "GetHashCode",
+        "Signature": "instance int32  (!0)",
+        "IlBytes": 24,
+        "Start": 173.617416,
+        "End": 173.631293,
+        "elapsedMilliseconds": 0.01387700000000791
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Generic.KeyValuePair`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "get_Value",
+        "Signature": "instance !1  ()",
+        "IlBytes": 7,
+        "Start": 173.651664,
+        "End": 173.662649,
+        "elapsedMilliseconds": 0.010984999999976708
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": "Contains",
+        "Signature": "instance bool  (class System.String)",
+        "IlBytes": 13,
+        "Start": 182.484585,
+        "End": 182.49808,
+        "elapsedMilliseconds": 0.013494999999977608
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "TryGetValue",
+        "Signature": "instance bool  (!0,!1&)",
+        "IlBytes": 44,
+        "Start": 182.684305,
+        "End": 182.720887,
+        "elapsedMilliseconds": 0.036582000000009884
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.FrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "GetValueRefOrNullRef",
+        "Signature": "instance required_modifier System.Runtime.InteropServices.InAttribute !1&  (!0)",
+        "IlBytes": 26,
+        "Start": 182.728131,
+        "End": 182.754318,
+        "elapsedMilliseconds": 0.0261870000000215
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "System.Collections.Frozen.ValueTypeDefaultComparerFrozenDictionary`2[Lokad.Lython.Frontend.StaticModuleCatalog+ModuleMemberName,System.__Canon]",
+        "Method": "GetValueRefOrNullRefCore",
+        "Signature": "instance required_modifier System.Runtime.InteropServices.InAttribute !1&  (!0)",
+        "IlBytes": 100,
+        "Start": 182.760221,
+        "End": 182.870377,
+        "elapsedMilliseconds": 0.11015599999998926
+      },
+      {
+        "Thread": 144068,
+        "Namespace": "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface",
+        "Method": "get_CallableModule",
+        "Signature": "instance class System.String  ()",
+        "IlBytes": 7,
+        "Start": 182.877648,
+        "End": 182.890236,
+        "elapsedMilliseconds": 0.012587999999993826
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "GetDeniedName",
+        "Signature": "class System.String  (class System.String,class ExecutionContext)",
+        "IlBytes": 93,
+        "Start": 264.623363,
+        "End": 264.706634,
+        "elapsedMilliseconds": 0.08327100000002474
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "Resolve",
+        "Signature": "class Lokad.Lython.Runtime.PyModule  (class System.String,class ExecutionContext)",
+        "IlBytes": 35,
+        "Start": 266.176925,
+        "End": 266.273464,
+        "elapsedMilliseconds": 0.09653900000000704
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "IsDiscoverable",
+        "Signature": "bool  (class System.String,class ExecutionContext)",
+        "IlBytes": 54,
+        "Start": 266.277914,
+        "End": 266.31717,
+        "elapsedMilliseconds": 0.03925599999996621
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 2210,
+        "Start": 266.323714,
+        "End": 266.917836,
+        "elapsedMilliseconds": 0.5941220000000271
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 266.932532,
+        "End": 266.959519,
+        "elapsedMilliseconds": 0.026987000000019634
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": ".ctor",
+        "Signature": "instance void  ()",
+        "IlBytes": 7,
+        "Start": 266.964373,
+        "End": 266.976346,
+        "elapsedMilliseconds": 0.011972999999954936
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "Module",
+        "Signature": "class BuiltinModuleRegistration  (class System.Func`2<class ExecutionContext,class Lokad.Lython.Runtime.PyModule>)",
+        "IlBytes": 8,
+        "Start": 266.981911,
+        "End": 266.99289,
+        "elapsedMilliseconds": 0.010978999999963435
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "Module",
+        "Signature": "class BuiltinModuleRegistration  (class System.Func`2<class ExecutionContext,class Lokad.Lython.Runtime.PyModule>,value class BuiltinModuleCapability)",
+        "IlBytes": 8,
+        "Start": 266.996861,
+        "End": 267.010061,
+        "elapsedMilliseconds": 0.013199999999983447
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": "<.cctor>b__15_0",
+        "Signature": "instance bool  (class System.String)",
+        "IlBytes": 21,
+        "Start": 267.483638,
+        "End": 267.526978,
+        "elapsedMilliseconds": 0.0433400000000006
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog",
+        "Method": "IsDenied",
+        "Signature": "bool  (class System.String,class ExecutionContext)",
+        "IlBytes": 14,
+        "Start": 267.579544,
+        "End": 267.59299,
+        "elapsedMilliseconds": 0.013445999999987635
+      },
+      {
+        "Thread": 144083,
+        "Namespace": "Lokad.Lython.Runtime.LythonRuntime+BuiltinModuleCatalog+<>c",
+        "Method": "<.cctor>b__15_63",
+        "Signature": "instance class Lokad.Lython.Runtime.PyModule  (class ExecutionContext)",
+        "IlBytes": 6,
+        "Start": 267.609569,
+        "End": 267.758591,
+        "elapsedMilliseconds": 0.1490220000000022
+      }
+    ]
+  }
+]
