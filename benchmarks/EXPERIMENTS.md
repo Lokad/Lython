@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1958 quiet shipment and JSON comparison](results/2026-11-28-post-generator-cpython/README.md)
+measures `09cecc9ce`. The ordinary tuple-generator takes 1.323–1.355×
+CPython elapsed in async and 1.193–1.223× from compile to result in sync.
+The JSON report has 0.60% CPython worker spread. The paired local captures
+put 34.5% of generator-script samples in the borrowed reduction lifecycle.
+
 [B1957 reduce private generators in borrowed slots](results/2026-11-28-borrowed-generator-sum/README.md)
 removes the generator frame from eligible integer reductions. The tuple and
 range scripts each save 491,520 CLR bytes in both APIs. The local tuple uses
