@@ -4,6 +4,36 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class GeneratorFunctionScenarioTests
 {
+    [Fact]
+    public async Task PositionalGeneratorCallsRetainEvaluatedReceiverAndArguments()
+    {
+        using var script = Compile("""
+            class Rows:
+                def row(self, item, label='default'):
+                    yield self
+                    yield item
+                    yield label
+            rows=Rows()
+            bound=rows.row
+            shared=[]
+            direct=rows.row(shared, 'direct')
+            saved=bound(shared, 'saved')
+            fallback=rows.row(shared)
+            named=bound(label='named', item=shared)
+            shared.append(7)
+            for generator in (direct, saved, fallback, named):
+                owner, item, label = generator
+                print(owner is rows, item is shared, item, label)
+            """);
+        using var sync = script.Run(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
+        foreach (var result in new[] { sync, asyncResult })
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True [7] direct\nTrue True [7] saved\nTrue True [7] default\nTrue True [7] named\n", result.StandardOutput);
+        }
+    }
+
     [Theory]
     [InlineData("next(g)")]
     [InlineData("g.send(None)")]

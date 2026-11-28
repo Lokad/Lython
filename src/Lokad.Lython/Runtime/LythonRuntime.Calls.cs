@@ -105,6 +105,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
+            if (TryConstructPositionalGenerator(function, arguments.Span, span, context, receiver, callSite) is { } generator)
+                return generator;
             return RuntimeValue(function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -118,6 +120,10 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
+            // Construction has no guest body to suspend. The current async
+            // boundary already isolates ambient state from allowance callbacks.
+            if (TryConstructPositionalGenerator(function, arguments.Span, span, context, receiver, callSite) is { } generator)
+                return generator;
             // Remaining lowered/mirrored calls bind owned values.
             // The caller keeps its operand array alive until this call finishes.
             var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
@@ -125,6 +131,19 @@ internal sealed partial class LythonRuntime
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static PyGenerator? TryConstructPositionalGenerator(PyFunctionBase function, ReadOnlySpan<ExecutableSlot> operands,
+        LythonSourceSpan span, ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
+    {
+        if (function is not PyGeneratorFunction generator || callSite is not { IsPositionalOnly: true } ||
+            !generator.HasCompletePositionalSupply(operands.Length, receiver)) return null;
+
+        context.CheckExecution(span);
+        var arguments = RentFunctionArgumentStorage(generator, span, context, generator.CodeObject.ValueStorageCapacity);
+        try { CopyPositionalOperands(arguments.Values, operands, receiver); }
+        catch { ReturnBoundArguments(arguments); throw; }
+        return generator.CreateBoundGenerator(arguments, span);
     }
 
     private static ValueTask<object> InvokeFormatFromOperands(StringMembers.MethodFormatCallable method,

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1924 bind complete positional generator operands](results/2026-11-28-positional-generator-operands/README.md)
+skips general binding and the separate body invocation for exact calls.
+Async iterable shipment uses 2.63–6.49% less CPU and 4.25–4.64% less
+elapsed on the same-image local repeat, with the file-fed control spanning
+zero. Peak admission matches and allocation is effectively flat. Keep the
+adverse initial control and the mixed bound and ordinary script results.
+
 [B1923 construct bound generators directly](results/2026-11-28-bound-generator-factory/README.md)
 moves generator admission ahead of frame construction and stops when the
 host allowance callback cancels. Both baseline cancellation cases fail.

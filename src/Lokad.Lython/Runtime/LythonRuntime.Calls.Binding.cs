@@ -50,6 +50,19 @@ internal sealed partial class LythonRuntime
         => BindOwnedFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
             storageCapacity, deferProtocolDefaults: false, out _, out _);
 
+    private static int CopyPositionalOperands(Span<ExecutableSlot> values, ReadOnlySpan<ExecutableSlot> operands,
+        object? receiver)
+    {
+        var position = 0;
+        if (receiver is not null) values[position++].Object = receiver;
+        for (var i = 0; i < operands.Length; i++)
+        {
+            if (operands[i].IsUnassigned) _ = operands[i].Object.RequireNotNull();
+            values[position++] = operands[i];
+        }
+        return position;
+    }
+
     private static BoundFunctionArguments BindOwnedFunctionArguments(
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
@@ -161,12 +174,7 @@ internal sealed partial class LythonRuntime
                 var receiverCount = receiver is null ? 0 : 1;
                 if (operands.Length > plan.PositionalCount - receiverCount)
                     throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-                if (receiver is not null) values[positionalIndex++].Object = receiver;
-                for (var i = 0; i < operands.Length; i++)
-                {
-                    if (operands[i].IsUnassigned) _ = operands[i].Object.RequireNotNull();
-                    values[positionalIndex++] = operands[i];
-                }
+                positionalIndex = CopyPositionalOperands(values, operands, receiver);
             }
             else positionalIndex = BindSuppliedFunctionArguments(values, arguments, span, plan, context,
                 receiver, callSite, operands, out firstExtraPositional, out extraPositionalCount, ref extraKeywords, ref syntheticKeyBytes);
