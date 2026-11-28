@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1925 collect lexical bindings into their final slots](results/2026-11-28-direct-lexical-binding-slots/README.md)
+removes the transient binding list and shares unchanged signature tables.
+Ordinary and escaping definitions each allocate 36,672 B less to compile.
+Local ordinary compile CPU falls 2.65–4.54%, and escaping compile-to-result
+CPU falls 2.02–7.34%. The function-free control uses 0.63–2.11% more CPU.
+Guarded timings span zero, and admission peaks match.
+
 [B1924 bind complete positional generator operands](results/2026-11-28-positional-generator-operands/README.md)
 skips general binding and the separate body invocation for exact calls.
 Async iterable shipment uses 2.63–6.49% less CPU and 4.25–4.64% less

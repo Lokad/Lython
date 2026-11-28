@@ -134,12 +134,16 @@ internal sealed class FunctionParameterLayout
                 _ => throw new InvalidOperationException("Unknown function parameter kind."),
             };
             names[slot] = parameter.Name;
-            indices[parameter.Name] = slot;
+            if (slot < namedCount) indices[parameter.Name] = slot;
             if (!parameter.HasDefault) continue;
             if (parameter.Kind == FunctionParameterKind.KeywordOnly)
                 defaults[keywordDefaultIndex++] = new(i, slot - positionalCount);
             else defaults[positionalDefaultIndex++] = new(i, -1);
         }
+        // The lexical table uses the binding order, with variadic slots after
+        // named parameters even when *args precedes keyword-only syntax.
+        if (hasVariadicList) indices[names[variadicListIndex]] = variadicListIndex;
+        if (hasVariadicDictionary) indices[names[variadicDictionaryIndex]] = variadicDictionaryIndex;
         return new(names, indices, defaults, positionalDefaults, positionalCount, keywordOnlyCount, positionalOnlyCount,
             variadicListIndex, variadicDictionaryIndex, cancellationToken, span);
     }
@@ -194,8 +198,9 @@ internal sealed class FunctionParameterLayout
     public int KeywordOnlyCount { get; }
     public int ParameterCount => _names.Length;
     public string NameAt(int index) => _names[index];
-    public IReadOnlyList<string> LayoutParameterNames => _names;
-    public IReadOnlyDictionary<string, int> LayoutParameterIndex { get; }
+    // Lexical preparation may share these immutable tables with the code object.
+    internal string[] LayoutParameterNames => _names;
+    internal Dictionary<string, int> LayoutParameterIndex { get; }
     public int NamedLayoutCount { get; }
     public int PositionalOnlyCount { get; }
     public int VariadicListIndex { get; }

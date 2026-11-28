@@ -538,9 +538,11 @@ for later writes. Resetting `__doc__` or `__module__` to `None` needs no
 additional allowance. The guest-visible `__dict__` remains a separate mapping.
 A published dictionary admits replacement capacity before a mutation
 requiring private keys.
-One scope walk collects directives, local bindings
-and annotations, retaining explicit first-binding order. Function slots reuse these
-facts after the parameter prefix. Module function, import, class and type-alias
+One scope walk collects directives, annotations and first local bindings.
+Functions and lambdas reuse the signature's parameter slots. The first new
+body binding extends a separate map in source order. Global and nonlocal
+declarations exclude their names before the compiler uses the slots.
+Module function, import, class and type-alias
 declarations register slots when their statements are compiled; declarations after
 an unconditional exit create no slots. Live namespace writes and deletion update
 the same bindings. Module declarations also keep their backing namespace values

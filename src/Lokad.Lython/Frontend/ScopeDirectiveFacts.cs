@@ -60,10 +60,8 @@ internal static class ScopeDirectiveFactsCollector
         // Module and class suites have dynamic namespaces. Their executable
         // slots follow actual emission, so only membership survives this walk.
         var localNames = new HashSet<string>(StringComparer.Ordinal);
-        var globalNames = new HashSet<string>(StringComparer.Ordinal);
-        var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
-        var containsAnnotations = CollectScopeBindings(body, localNames, globalNames, nonlocalNames,
-            scheduleLexicalWork, cancellationToken);
+        var (globalNames, nonlocalNames, containsAnnotations) = CollectScopeBindings(body, localNames,
+            static (names, name) => names.Add(name), scheduleLexicalWork, cancellationToken);
         localNames.ExceptWith(globalNames);
         localNames.ExceptWith(nonlocalNames);
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, [])
@@ -76,14 +74,10 @@ internal static class ScopeDirectiveFactsCollector
         IReadOnlyList<StatementSyntax> body, Func<StatementSyntax, bool>? scheduleLexicalWork,
         CancellationToken cancellationToken)
     {
-        var globalNames = new HashSet<string>(StringComparer.Ordinal);
-        var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
-
-        var bindings = new List<string>(parameters.LayoutParameterNames);
-        var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames, scheduleLexicalWork,
-            cancellationToken);
-        return CompactLocalBindings(bindings, globalNames, nonlocalNames,
-            parameters.LayoutParameterIndex, parameters.LayoutParameterNames.Count, cancellationToken, containsAnnotations);
+        var bindings = new LocalBindings(parameters, trackParameterWrites: true);
+        var (globalNames, nonlocalNames, containsAnnotations) = CollectScopeBindings(body, bindings,
+            static (slots, name) => slots.Add(name), scheduleLexicalWork, cancellationToken);
+        return bindings.Complete(globalNames, nonlocalNames, cancellationToken, containsAnnotations);
     }
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
@@ -112,9 +106,9 @@ internal static class ScopeDirectiveFactsCollector
     private static ScopeDirectiveFacts CollectLambdaBindings(FunctionParameterLayout parameters, ExpressionSyntax body,
         CancellationToken cancellationToken)
     {
-        var bindings = new List<string>(parameters.LayoutParameterNames);
-        CollectExpressionBindings(body, bindings);
-        return CompactLocalBindings(bindings, EmptyNames, EmptyNames, null, 0, cancellationToken);
+        var bindings = new LocalBindings(parameters, trackParameterWrites: false);
+        CollectExpressionBindings(body, bindings, static (slots, name) => slots.Add(name));
+        return bindings.Complete(EmptyNames, EmptyNames, cancellationToken, containsAnnotations: false);
     }
 
     public static ScopeDirectiveFacts ForLambda(LambdaExpressionSyntax lambda)
@@ -128,45 +122,91 @@ internal static class ScopeDirectiveFactsCollector
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
 
-    private static ScopeDirectiveFacts CompactLocalBindings(List<string> bindings,
-        IReadOnlySet<string> globalNames, IReadOnlySet<string> nonlocalNames,
-        IReadOnlyDictionary<string, int>? parameterSlots, int parameterCount, CancellationToken cancellationToken,
-        bool containsAnnotations = false)
+    private sealed class LocalBindings(FunctionParameterLayout parameters, bool trackParameterWrites)
     {
-        var writesParameter = false;
-        var slots = new Dictionary<string, int>(StringComparer.Ordinal);
-        var written = 0;
-        for (var scan = 0; scan < bindings.Count; scan++)
+        private Dictionary<string, int>? _slots;
+        private bool _writesParameter;
+
+        internal void Add(string name)
         {
-            PythonTokenization.CheckCancellation(cancellationToken, scan);
-            var name = bindings[scan];
-            if (globalNames.Contains(name) || nonlocalNames.Contains(name)) continue;
-            if (!slots.TryAdd(name, written))
+            if (_slots is null)
             {
-                if (!writesParameter && scan >= parameterCount && parameterSlots?.ContainsKey(name) == true)
-                    writesParameter = true;
-                continue;
+                // The parameter prefix already has its final slot numbers.
+                if (parameters.LayoutParameterIndex.ContainsKey(name))
+                {
+                    _writesParameter = trackParameterWrites;
+                    return;
+                }
+                _slots = new(parameters.LayoutParameterIndex, StringComparer.Ordinal);
             }
-            bindings[written++] = name;
+            if (!_slots.TryAdd(name, _slots.Count) && trackParameterWrites && !_writesParameter)
+                _writesParameter = parameters.LayoutParameterIndex.ContainsKey(name);
         }
-        // Preserve the binder's parameter prefix and the first occurrence of
-        // each body name. Scope membership uses the same map's key collection.
-        bindings.RemoveRange(written, bindings.Count - written);
-        return new ScopeDirectiveFacts(globalNames, nonlocalNames, slots.Keys, bindings.ToArray())
+
+        internal ScopeDirectiveFacts Complete(IReadOnlySet<string> globalNames, IReadOnlySet<string> nonlocalNames,
+            CancellationToken cancellationToken, bool containsAnnotations)
         {
-            PreparedLocalSlots = slots,
-            WritesParameter = writesParameter,
-            ContainsVariableAnnotations = containsAnnotations
-        };
+            PythonTokenization.CheckCancellation(cancellationToken, 0);
+            var slots = _slots ?? parameters.LayoutParameterIndex;
+            var names = parameters.LayoutParameterNames;
+            if (_slots is not null)
+            {
+                names = new string[slots.Count];
+                var checkedSlots = 0;
+                foreach (var (name, slot) in slots)
+                {
+                    PythonTokenization.CheckCancellation(cancellationToken, checkedSlots++);
+                    names[slot] = name;
+                }
+            }
+
+            if (globalNames.Count != 0 || nonlocalNames.Count != 0)
+            {
+                // Later directives can exclude a name already seen in the body.
+                // In valid scopes these directives never exclude a parameter.
+                var retained = 0;
+                for (var slot = 0; slot < names.Length; slot++)
+                {
+                    PythonTokenization.CheckCancellation(cancellationToken, slot);
+                    var name = names[slot];
+                    if (globalNames.Contains(name) || nonlocalNames.Contains(name))
+                    {
+                        if (_slots is null)
+                        {
+                            slots = _slots = new(slots, StringComparer.Ordinal);
+                            names = (string[])names.Clone();
+                        }
+                        slots.Remove(name);
+                        continue;
+                    }
+                    if (retained != slot)
+                    {
+                        names[retained] = name;
+                        slots[name] = retained;
+                    }
+                    retained++;
+                }
+                if (retained != names.Length) Array.Resize(ref names, retained);
+            }
+
+            return new ScopeDirectiveFacts(globalNames, nonlocalNames, slots.Keys, names)
+            {
+                PreparedLocalSlots = slots,
+                WritesParameter = _writesParameter,
+                ContainsVariableAnnotations = containsAnnotations
+            };
+        }
     }
 
-    private static bool CollectScopeBindings(IReadOnlyList<StatementSyntax> statements, ICollection<string> names,
-        HashSet<string> globalNames, HashSet<string> nonlocalNames, Func<StatementSyntax, bool>? scheduleLexicalWork,
+    private static (IReadOnlySet<string> Globals, IReadOnlySet<string> Nonlocals, bool ContainsAnnotations)
+        CollectScopeBindings<T>(IReadOnlyList<StatementSyntax> statements, T names, Action<T, string> add,
+        Func<StatementSyntax, bool>? scheduleLexicalWork,
         CancellationToken cancellationToken)
     {
+        HashSet<string>? globalNames = null, nonlocalNames = null;
         var containsAnnotations = false;
         CollectSuite(statements);
-        return containsAnnotations;
+        return (globalNames ?? EmptyNames, nonlocalNames ?? EmptyNames, containsAnnotations);
 
         void CollectSuite(IReadOnlyList<StatementSyntax> suite)
         {
@@ -177,50 +217,53 @@ internal static class ScopeDirectiveFactsCollector
                 switch (statement)
                 {
                     case ScopeDirectiveStatementSyntax directive:
-                        (directive.Kind == ScopeDirectiveKind.Global ? globalNames : nonlocalNames).UnionWith(directive.Names);
+                        var directives = directive.Kind == ScopeDirectiveKind.Global
+                            ? globalNames ??= new(StringComparer.Ordinal)
+                            : nonlocalNames ??= new(StringComparer.Ordinal);
+                        directives.UnionWith(directive.Names);
                         break;
                     case ImportStatementSyntax importStatement:
                         foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                         {
-                            names.Add(memberName);
+                            add(names, memberName);
                         }
                         break;
 
                     case TypeAliasStatementSyntax alias:
-                        names.Add(alias.Name);
+                        add(names, alias.Name);
                         break;
                     case AssignmentStatementSyntax assignment:
-                        names.Add(assignment.Name);
+                        add(names, assignment.Name);
                         break;
 
                     case ChainedAssignmentStatementSyntax chained:
-                        foreach (var target in chained.Targets) CollectAssignmentTargetBindings(target, names);
+                        foreach (var target in chained.Targets) CollectAssignmentTargetBindings(target);
                         break;
 
                     case AnnotatedAssignmentStatementSyntax annotated:
                         containsAnnotations = true;
                         if (annotated.Target is NameAssignmentTargetSyntax name)
                         {
-                            names.Add(name.Name);
+                            add(names, name.Name);
                         }
 
                         break;
 
                     case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
-                        names.Add(nameTarget.Name);
+                        add(names, nameTarget.Name);
                         break;
 
                     case UnpackingAssignmentStatementSyntax unpacking:
-                        foreach (var target in unpacking.Targets) CollectAssignmentTargetBindings(target, names);
+                        foreach (var target in unpacking.Targets) CollectAssignmentTargetBindings(target);
                         break;
 
                     case ForStatementSyntax forStatement:
-                        CollectLoopTargetBindings(forStatement.Target, names);
+                        CollectLoopTargetBindings(forStatement.Target, names, add);
                         break;
 
                     case WithStatementSyntax withStatement:
                         CollectDirectBindings(withStatement, collectExpressionBindings);
-                        foreach (var boundName in withStatement.BoundNames) names.Add(boundName);
+                        foreach (var boundName in withStatement.BoundNames) add(names, boundName);
                         CollectSuite(withStatement.Body);
                         continue;
 
@@ -229,8 +272,8 @@ internal static class ScopeDirectiveFactsCollector
                         foreach (var exceptClause in tryStatement.ExceptClauses)
                         {
                             if (collectExpressionBindings && exceptClause.ExceptionTypeExpression is not null)
-                                CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names);
-                            if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
+                                CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names, add);
+                            if (exceptClause.ExceptionVariableName is not null) add(names, exceptClause.ExceptionVariableName);
                             CollectSuite(exceptClause.Body);
                         }
                         if (tryStatement.ElseBody is not null)
@@ -240,30 +283,30 @@ internal static class ScopeDirectiveFactsCollector
                         continue;
 
                     case MatchStatementSyntax matchStatement:
-                        CollectExpressionBindings(matchStatement.Subject, names);
+                        CollectExpressionBindings(matchStatement.Subject, names, add);
                         foreach (var matchCase in matchStatement.Cases)
                         {
                             if (matchCase.PreparedBindings is { } bindings)
-                                foreach (var entry in bindings) names.Add(entry.Value);
-                            if (matchCase.Guard is not null) CollectExpressionBindings(matchCase.Guard, names);
+                                foreach (var entry in bindings) add(names, entry.Value);
+                            if (matchCase.Guard is not null) CollectExpressionBindings(matchCase.Guard, names, add);
                             CollectSuite(matchCase.Body);
                         }
                         continue;
 
                     case DeleteStatementSyntax deletion:
-                        StatementSyntaxTraversal.VisitDeletionTargets(deletion.Target, names, static (bindings, target) =>
+                        StatementSyntaxTraversal.VisitDeletionTargets(deletion.Target, (names, add), static (bindings, target) =>
                         {
-                            if (target is IdentifierExpressionSyntax name) bindings.Add(name.Name);
+                            if (target is IdentifierExpressionSyntax name) bindings.add(bindings.names, name.Name);
                         });
                         break;
 
                     case FunctionDefinitionStatementSyntax functionDefinition:
-                        names.Add(functionDefinition.Name);
+                        add(names, functionDefinition.Name);
                         CollectDirectBindings(functionDefinition, collectExpressionBindings);
                         continue;
 
                     case ClassDefinitionStatementSyntax classDefinition:
-                        names.Add(classDefinition.Name);
+                        add(names, classDefinition.Name);
                         CollectDirectBindings(classDefinition, collectExpressionBindings);
                         continue;
                 }
@@ -282,38 +325,38 @@ internal static class ScopeDirectiveFactsCollector
         {
             if (!collectExpressionBindings) return;
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-                CollectExpressionBindings(expression, names);
+                CollectExpressionBindings(expression, names, add);
         }
 
-        static void CollectAssignmentTargetBindings(AssignmentTargetSyntax target, ICollection<string> names)
+        void CollectAssignmentTargetBindings(AssignmentTargetSyntax target)
         {
             switch (target)
             {
                 case NameAssignmentTargetSyntax name:
-                    names.Add(name.Name);
+                    add(names, name.Name);
                     break;
                 case UnpackingAssignmentTargetGroupSyntax unpacking:
-                    foreach (var nestedTarget in unpacking.Targets) CollectAssignmentTargetBindings(nestedTarget, names);
+                    foreach (var nestedTarget in unpacking.Targets) CollectAssignmentTargetBindings(nestedTarget);
                     break;
             }
         }
     }
 
-    private static void CollectLoopTargetBindings(LoopTargetSyntax target, ICollection<string> names)
+    private static void CollectLoopTargetBindings<T>(LoopTargetSyntax target, T names, Action<T, string> add)
     {
         switch (target)
         {
             case LoopStoreTargetSyntax store:
-                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) names.Add(binding);
+                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) add(names, binding);
                 break;
             case LoopNameTargetSyntax name:
-                names.Add(name.Name);
+                add(names, name.Name);
                 break;
             case LoopStarredTargetSyntax starred:
-                names.Add(starred.Name);
+                add(names, starred.Name);
                 break;
             case LoopTupleTargetSyntax tuple:
-                foreach (var item in tuple.Items) CollectLoopTargetBindings(item, names);
+                foreach (var item in tuple.Items) CollectLoopTargetBindings(item, names, add);
                 break;
         }
     }
