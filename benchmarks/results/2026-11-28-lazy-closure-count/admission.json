@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "asynchronous": false,
+    "requests": [
+      6179,
+      6179
+    ],
+    "peak": [
+      4304384,
+      4304384
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "asynchronous": true,
+    "requests": [
+      6179,
+      6179
+    ],
+    "peak": [
+      4304384,
+      4304384
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      12317,
+      12317
+    ],
+    "peak": [
+      5940647,
+      5940647
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      12317,
+      12317
+    ],
+    "peak": [
+      5940647,
+      5940647
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": false,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-file-fed-map",
+    "asynchronous": true,
+    "requests": [
+      2075,
+      2075
+    ],
+    "peak": [
+      2270071,
+      2270071
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "asynchronous": false,
+    "requests": [
+      14365,
+      14365
+    ],
+    "peak": [
+      6268415,
+      6268415
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "asynchronous": true,
+    "requests": [
+      14365,
+      14365
+    ],
+    "peak": [
+      6268415,
+      6268415
+    ]
+  }
+]

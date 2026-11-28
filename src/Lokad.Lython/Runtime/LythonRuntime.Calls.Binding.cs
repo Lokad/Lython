@@ -381,10 +381,9 @@ internal sealed partial class LythonRuntime
 
         for (var current = closure; current is not null; current = current.ParentContext)
         {
-            var isModuleFrame = current.Frame.Parent is null;
-            var owned = isModuleFrame
+            var owned = current.Parent is null
                 ? CountOwnedModuleVariables(current)
-                : current.Frame.Variables.Count;
+                : current.VariableCount;
 
             if (!current.ClosureRetentionCharged)
             {
@@ -417,7 +416,7 @@ internal sealed partial class LythonRuntime
     // builtin still occupies a retained module slot, like any other binding.
     private static int CountOwnedModuleVariables(ExecutionContext context)
     {
-        var owned = context.Frame.Variables.Count;
+        var owned = context.VariableCount;
 
         // An unmirrored frame's namespace may be retained by a closure. Admit
         // its whole slot capacity before copying those bindings into Variables;

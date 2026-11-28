@@ -25,6 +25,7 @@ internal class ExecutionFrame
     public ExecutionFrame? Parent { get; }
 
     public Dictionary<string, object> Variables => _variables ?? InitializeVariables();
+    internal int VariableCount => _variables?.Count ?? 0;
 
     internal bool ContainsVariable(string name) => _variables?.ContainsKey(name) == true;
 

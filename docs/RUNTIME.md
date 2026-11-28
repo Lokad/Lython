@@ -1406,10 +1406,10 @@ generator expressions release their own backing at cleanup.
 Formatting still reads each actual field in order and supports protocols that
 suspend after earlier formatting changes later fields. Native helpers use the same
 definition-owned record-key cache and recheck protocol eligibility after admission.
-Read-only lexical misses leave unused
-namespace dictionaries unmaterialized; explicit namespace consumers retain the
-same stable dictionary. Arrays do not
-grow. Temporary retirement never clears the local prefix. The compiler's owned-slot
+Read-only lexical misses and closure-accounting counts leave unused namespace
+dictionaries unmaterialized. Explicit namespace consumers share the same stable
+dictionary. Operand arrays have fixed capacity. Temporary retirement preserves
+the local prefix. The compiler's owned-slot
 bound includes private iteration loans from forwarded calls, even without a
 `GetIter` in the callee. Native and array-backed cleanup use that bound when
 publication is interrupted. Terminal cleanup refunds private working storage;
