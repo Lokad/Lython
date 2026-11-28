@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1965 consolidate frontend string member facts](results/2026-11-28-string-member-facts/README.md)
+removes duplicated instance, type, arity and return metadata. First compile
+allocates 8.50–11.46% less at matching admission. Both lookup surfaces and
+compiler diagnostics match. Warm CPU spans zero across all three lanes.
+
 [B1964 create run-local builtin bindings on lookup](results/2026-11-28-lazy-builtin-bindings/README.md)
 removes 7,656 CLR bytes per short search or configuration edit. File-search
 CPU falls in both local collections. The shipment control's initial elapsed

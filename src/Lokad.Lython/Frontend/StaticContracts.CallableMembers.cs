@@ -30,6 +30,9 @@ internal static partial class StaticContracts
             AbstractValueKind.DecimalTuple => AbstractValueKind.Tuple,
             _ => receiver.Kind
         };
+        if (kind is AbstractValueKind.String or AbstractValueKind.StringType)
+            return TryGetStringCallableContract(kind, memberName, out contract);
+
         var catalog = kind switch
         {
             AbstractValueKind.Integer or AbstractValueKind.Float => NumericCallableMemberCatalog.ByMember,
@@ -48,16 +51,16 @@ internal static partial class StaticContracts
         var core = CreateCoreCallableContracts();
         var data = CreateDataCallableContracts();
         var library = CreateLibraryCallableContracts();
-        var stringsAndLists = new List<StaticCallableContract>();
-        AddStringCallableContracts(stringsAndLists);
-        AddListCallableContracts(stringsAndLists);
+        var bytesAndLists = new List<StaticCallableContract>();
+        AddBytesCallableContracts(bytesAndLists);
+        AddListCallableContracts(bytesAndLists);
 
         var contracts = new Dictionary<StaticMemberContractKey, StaticCallableContract>(
-            core.Length + data.Length + library.Length + stringsAndLists.Count);
+            core.Length + data.Length + library.Length + bytesAndLists.Count);
         AddContracts(core);
         AddContracts(data);
         AddContracts(library);
-        foreach (var member in stringsAndLists)
+        foreach (var member in bytesAndLists)
             contracts.Add(new(member.ReceiverKind, member.MemberName), member);
         return contracts;
 
@@ -67,68 +70,8 @@ internal static partial class StaticContracts
                 contracts.Add(new(member.ReceiverKind, member.MemberName), member);
         }
 
-        static void AddStringCallableContracts(List<StaticCallableContract> contracts)
+        static void AddBytesCallableContracts(List<StaticCallableContract> contracts)
         {
-            AddStringCallableContract(contracts, "lower", 0, 0, "str.lower() expects no arguments.");
-            AddStringCallableContract(contracts, "__iter__", 0, 0, "str.__iter__() expects no arguments.");
-            AddStringCallableContract(contracts, "__len__", 0, 0, "str.__len__() expects no arguments.");
-            AddStringCallableContract(contracts, "__contains__", 1, 1, "str.__contains__(item) expects one argument.", "item");
-            AddStringCallableContract(contracts, "__getitem__", 1, 1, "str.__getitem__(index) expects one argument.", "index");
-            AddStringCallableContract(contracts, "__add__", 1, 1, "str.__add__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__mul__", 1, 1, "str.__mul__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__rmul__", 1, 1, "str.__rmul__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__eq__", 1, 1, "str.__eq__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__ne__", 1, 1, "str.__ne__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__lt__", 1, 1, "str.__lt__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__le__", 1, 1, "str.__le__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__gt__", 1, 1, "str.__gt__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__ge__", 1, 1, "str.__ge__(value) expects one argument.", "value");
-            AddStringCallableContract(contracts, "__hash__", 0, 0, "str.__hash__() expects no arguments.");
-            AddStringCallableContract(contracts, "capitalize", 0, 0, "str.capitalize() expects no arguments.");
-            AddStringCallableContract(contracts, "islower", 0, 0, "str.islower() expects no arguments.");
-            AddStringCallableContract(contracts, "upper", 0, 0, "str.upper() expects no arguments.");
-            AddStringCallableContract(contracts, "swapcase", 0, 0, "str.swapcase() expects no arguments.");
-            AddStringCallableContract(contracts, "title", 0, 0, "str.title() expects no arguments.");
-            AddStringCallableContract(contracts, "casefold", 0, 0, "str.casefold() expects no arguments.");
-            AddStringCallableContract(contracts, "isupper", 0, 0, "str.isupper() expects no arguments.");
-            AddStringCallableContract(contracts, "isalpha", 0, 0, "str.isalpha() expects no arguments.");
-            AddStringCallableContract(contracts, "isdigit", 0, 0, "str.isdigit() expects no arguments.");
-            AddStringCallableContract(contracts, "isalnum", 0, 0, "str.isalnum() expects no arguments.");
-            AddStringCallableContract(contracts, "isspace", 0, 0, "str.isspace() expects no arguments.");
-            AddStringCallableContract(contracts, "strip", 0, 1, "str.strip([chars]) expects zero or one argument.", "chars");
-            AddStringCallableContract(contracts, "lstrip", 0, 1, "str.lstrip([chars]) expects zero or one argument.", "chars");
-            AddStringCallableContract(contracts, "rstrip", 0, 1, "str.rstrip([chars]) expects zero or one argument.", "chars");
-            AddStringCallableContract(contracts, "center", 1, 2, "str.center(width[, fillchar]) expects one or two arguments.", "width", "fillchar");
-            AddStringCallableContract(contracts, "ljust", 1, 2, "str.ljust(width[, fillchar]) expects one or two arguments.", "width", "fillchar");
-            AddStringCallableContract(contracts, "rjust", 1, 2, "str.rjust(width[, fillchar]) expects one or two arguments.", "width", "fillchar");
-            AddStringCallableContract(contracts, "zfill", 1, 1, "str.zfill(width) expects one argument.", "width");
-            AddStringCallableContract(contracts, "expandtabs", 0, 1, "str.expandtabs([tabsize]) expects zero or one argument.", "tabsize");
-            AddStringCallableContract(contracts, "replace", 2, 3, "str.replace(old, new[, count]) expects two or three arguments.", "old", "new", "count");
-            AddStringCallableContract(contracts, "removeprefix", 1, 1, "str.removeprefix(prefix) expects one argument.", "prefix");
-            AddStringCallableContract(contracts, "removesuffix", 1, 1, "str.removesuffix(suffix) expects one argument.", "suffix");
-            AddStringCallableContract(contracts, "split", 0, 2, "str.split([sep[, maxsplit]]) expects zero to two arguments.", "sep", "maxsplit");
-            AddStringCallableContract(contracts, "rsplit", 0, 2, "str.rsplit([sep[, maxsplit]]) expects zero to two arguments.", "sep", "maxsplit");
-            AddStringCallableContract(contracts, "splitlines", 0, 1, "str.splitlines([keepends]) expects zero or one argument.", "keepends");
-            AddStringCallableContract(contracts, "startswith", 1, 3, "str.startswith(prefix[, start[, end]]) expects one to three arguments.", "prefix", "start", "end");
-            AddStringCallableContract(contracts, "endswith", 1, 3, "str.endswith(suffix[, start[, end]]) expects one to three arguments.", "suffix", "start", "end");
-            AddStringCallableContract(contracts, "find", 1, 3, "str.find(sub[, start[, end]]) expects one to three arguments.", "sub", "start", "end");
-            AddStringCallableContract(contracts, "index", 1, 3, "str.index(sub[, start[, end]]) expects one to three arguments.", "sub", "start", "end");
-            AddStringCallableContract(contracts, "rfind", 1, 3, "str.rfind(sub[, start[, end]]) expects one to three arguments.", "sub", "start", "end");
-            AddStringCallableContract(contracts, "rindex", 1, 3, "str.rindex(sub[, start[, end]]) expects one to three arguments.", "sub", "start", "end");
-            AddStringCallableContract(contracts, "count", 1, 3, "str.count(sub[, start[, end]]) expects one to three arguments.", "sub", "start", "end");
-            AddStringCallableContract(contracts, "partition", 1, 1, "str.partition(sep) expects one argument.", "sep");
-            AddStringCallableContract(contracts, "rpartition", 1, 1, "str.rpartition(sep) expects one argument.", "sep");
-            AddStringCallableContract(contracts, "join", 1, 1, "str.join(iterable) expects one argument.", "iterable");
-            AddStringCallableContract(contracts, "format_map", 1, 1, "str.format_map(mapping) expects one argument.", "mapping");
-            AddStringCallableContract(contracts, "isascii", 0, 0, "str.isascii() expects no arguments.");
-            AddStringCallableContract(contracts, "isdecimal", 0, 0, "str.isdecimal() expects no arguments.");
-            AddStringCallableContract(contracts, "isidentifier", 0, 0, "str.isidentifier() expects no arguments.");
-            AddStringCallableContract(contracts, "isnumeric", 0, 0, "str.isnumeric() expects no arguments.");
-            AddStringCallableContract(contracts, "isprintable", 0, 0, "str.isprintable() expects no arguments.");
-            AddStringCallableContract(contracts, "istitle", 0, 0, "str.istitle() expects no arguments.");
-            AddStringCallableContract(contracts, "translate", 1, 1, "str.translate(table) expects one argument.", "table");
-            AddStringCallableContract(contracts, "maketrans", 1, 3, "str.maketrans(x[, y[, z]]) expects one to three arguments.");
-            AddStringCallableContract(contracts, "encode", 0, 2, "str.encode([encoding][, errors]) expects zero to two arguments.", "encoding", "errors");
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "fromhex", 1, 1, "LA3166", "bytes.fromhex(string) expects one argument."));
@@ -241,25 +184,6 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__ge__", 1, 1, "LA3179", "bytes.__ge__(value) expects one argument.", parameterNames: ["value"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__hash__", 0, 0, "LA3179", "bytes.__hash__() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__hash__", 0, 0, "LA3179", "bytes.__hash__() expects no arguments."));
-        }
-
-        static void AddStringCallableContract(
-        List<StaticCallableContract> contracts,
-        string memberName,
-        int minimumArgumentCount,
-        ArgumentCountLimit maximumArgumentCount,
-        string message,
-        params string[] parameterNames)
-        {
-            if (parameterNames.Length == 0)
-            {
-                contracts.Add(new StaticCallableContract(AbstractValueKind.String, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message));
-                contracts.Add(new StaticCallableContract(AbstractValueKind.StringType, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message));
-                return;
-            }
-
-            contracts.Add(new StaticCallableContract(AbstractValueKind.String, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message, parameterNames: parameterNames));
-            contracts.Add(new StaticCallableContract(AbstractValueKind.StringType, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message, parameterNames: parameterNames));
         }
 
         static void AddListCallableContracts(List<StaticCallableContract> contracts)
