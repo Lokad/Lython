@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.generator-call-defaults",
+    "mode": "sync",
+    "clr": [
+      1621120,
+      1621120
+    ],
+    "admittedPeak": [
+      1993517,
+      1993517
+    ],
+    "compiled": [
+      64113,
+      64113
+    ]
+  },
+  {
+    "case": "diagnostic.generator-call-positional",
+    "mode": "sync",
+    "clr": [
+      789616,
+      789616
+    ],
+    "admittedPeak": [
+      874549,
+      874549
+    ],
+    "compiled": [
+      52849,
+      52849
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "sync",
+    "clr": [
+      1114680,
+      1114680
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "sync",
+    "clr": [
+      25984,
+      25984
+    ],
+    "admittedPeak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.generator-call-defaults",
+    "mode": "async",
+    "clr": [
+      1621368,
+      1621368
+    ],
+    "admittedPeak": [
+      1993517,
+      1993517
+    ],
+    "compiled": [
+      64113,
+      64113
+    ]
+  },
+  {
+    "case": "diagnostic.generator-call-positional",
+    "mode": "async",
+    "clr": [
+      789864,
+      789864
+    ],
+    "admittedPeak": [
+      874549,
+      874549
+    ],
+    "compiled": [
+      52849,
+      52849
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "mode": "async",
+    "clr": [
+      1114864,
+      1114864
+    ],
+    "admittedPeak": [
+      4304384,
+      4304384
+    ],
+    "compiled": [
+      80016,
+      80016
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "async",
+    "clr": [
+      26200,
+      26200
+    ],
+    "admittedPeak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  }
+]

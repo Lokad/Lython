@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1992 refresh process startup against CPython](results/2026-11-28-current-fresh-command-cpython/README.md)
+verifies fourteen quiet launch pairs at `04159957a`. First-line search
+and configuration are 7.24× and 7.83× CPython elapsed. Preserve the
+launch-through-drain boundary and the earlier B1970 endpoint.
+
+[B1991 construct generators directly from their bound arguments](results/2026-11-28-direct-generator-construction/README.md)
+keeps admission and CLR allocation identical. Configuration CPU rises
+1.34–3.22% on repeat, and async default-generator CPU spans zero. The
+trial is shelved while generator construction is tested with the original
+ordinary-call selection shape.
+
 [B1990 publish constructor descriptors on their owners](results/2026-11-28-owner-local-type-new-slots/README.md)
 removes the eager runtime initializer and saves 44–48 KB during first
 compilation at matching admission. Local configuration compile CPU rises

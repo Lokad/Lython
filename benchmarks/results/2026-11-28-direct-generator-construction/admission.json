@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.generator-call-defaults",
+    "asynchronous": false,
+    "requests": [
+      4111,
+      4111
+    ],
+    "peak": [
+      1993517,
+      1993517
+    ]
+  },
+  {
+    "case": "diagnostic.generator-call-defaults",
+    "asynchronous": true,
+    "requests": [
+      4111,
+      4111
+    ],
+    "peak": [
+      1993517,
+      1993517
+    ]
+  },
+  {
+    "case": "diagnostic.generator-call-positional",
+    "asynchronous": false,
+    "requests": [
+      2063,
+      2063
+    ],
+    "peak": [
+      874549,
+      874549
+    ]
+  },
+  {
+    "case": "diagnostic.generator-call-positional",
+    "asynchronous": true,
+    "requests": [
+      2063,
+      2063
+    ],
+    "peak": [
+      874549,
+      874549
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "asynchronous": false,
+    "requests": [
+      6179,
+      6179
+    ],
+    "peak": [
+      4304384,
+      4304384
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-starmap-iterable-rows",
+    "asynchronous": true,
+    "requests": [
+      6179,
+      6179
+    ],
+    "peak": [
+      4304384,
+      4304384
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "asynchronous": false,
+    "requests": [
+      69,
+      69
+    ],
+    "peak": [
+      15472,
+      15472
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "asynchronous": true,
+    "requests": [
+      69,
+      69
+    ],
+    "peak": [
+      15472,
+      15472
+    ]
+  }
+]

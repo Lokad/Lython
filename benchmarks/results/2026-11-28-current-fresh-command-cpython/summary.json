@@ -1,0 +1,93 @@
+{
+  "sourceRevision": "04159957a23b6852086f8f775c4135c9c35fbe21",
+  "launches": 28,
+  "pairs": 14,
+  "cpythonVersion": "3.13.16",
+  "budgetBoundary": "process launch through exit and pipe drain",
+  "rows": [
+    {
+      "case": "diagnostic.file-search-first-line",
+      "elapsedMilliseconds": {
+        "Lython": 237.195547,
+        "CPython": 32.751846
+      },
+      "medianRatio": 7.242203905086755,
+      "pairedRatioRange": [
+        7.097698464707906,
+        7.467460173420664
+      ],
+      "pairs": [
+        {
+          "Lython": 238.093583,
+          "CPython": 32.872798
+        },
+        {
+          "Lython": 236.500341,
+          "CPython": 32.751846
+        },
+        {
+          "Lython": 243.868455,
+          "CPython": 32.982846
+        },
+        {
+          "Lython": 242.551582,
+          "CPython": 32.481135
+        },
+        {
+          "Lython": 233.904075,
+          "CPython": 32.737896
+        },
+        {
+          "Lython": 237.195547,
+          "CPython": 32.634348
+        },
+        {
+          "Lython": 234.001501,
+          "CPython": 32.968645
+        }
+      ]
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "elapsedMilliseconds": {
+        "Lython": 251.912528,
+        "CPython": 32.153801
+      },
+      "medianRatio": 7.834611155303225,
+      "pairedRatioRange": [
+        7.695154277449561,
+        7.925655528951261
+      ],
+      "pairs": [
+        {
+          "Lython": 250.800932,
+          "CPython": 32.005386
+        },
+        {
+          "Lython": 255.85407,
+          "CPython": 32.281755
+        },
+        {
+          "Lython": 250.469945,
+          "CPython": 32.002742
+        },
+        {
+          "Lython": 247.934408,
+          "CPython": 32.21955
+        },
+        {
+          "Lython": 251.912528,
+          "CPython": 32.153801
+        },
+        {
+          "Lython": 254.055713,
+          "CPython": 32.205208
+        },
+        {
+          "Lython": 252.475038,
+          "CPython": 32.111056
+        }
+      ]
+    }
+  ]
+}

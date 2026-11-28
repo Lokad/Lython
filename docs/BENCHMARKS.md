@@ -75,15 +75,16 @@ cleanup. Both use an already-running process. [B1978](../benchmarks/results/2026
 
 | Workload | Input | Lython median | CPython median | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| First-line file search | 42,010 B input | 235.08 ms | 32.76 ms | 7.18× | `83042273c`, seven quiet launch pairs, B1970 |
-| Configuration edit | 181 B input | 251.07 ms | 32.06 ms | 7.83× | `83042273c`, seven quiet launch pairs, B1970 |
+| First-line file search | 42,010 B input | 237.20 ms | 32.75 ms | 7.24× | `04159957a`, seven quiet launch pairs, B1992 |
+| Configuration edit | 181 B input | 251.91 ms | 32.15 ms | 7.83× | `04159957a`, seven quiet launch pairs, B1992 |
 
 The fresh worker clock spans launch through process exit and pipe drain,
 including runtime initialization, compilation, one run, I/O and
 in-process cleanup. OS caches stay warm. Lython runs first in every pair.
 The supervisor validates each decoded reply after the timer stops.
 Embedded use in an already-running process is covered by the warm and
-compile-to-result rows. [B1970](../benchmarks/results/2026-11-28-fresh-command-cpython/README.md) ·
+compile-to-result rows. [B1992](../benchmarks/results/2026-11-28-current-fresh-command-cpython/README.md) ·
+[Historical B1970](../benchmarks/results/2026-11-28-fresh-command-cpython/README.md) ·
 [Historical B1906](../benchmarks/results/2026-11-27-current-cpython-a159f24/README.md).
 The local B1987 diagnostic at `5d1cbb1f3` separates first compilation,
 execution and benchmark reply work. Timing differences against its older
