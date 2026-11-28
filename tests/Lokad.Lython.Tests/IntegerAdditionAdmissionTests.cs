@@ -12,13 +12,13 @@ namespace Lokad.Lython.Tests;
 public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
 {
     private static readonly LythonSourceSpan SumSpan = new(2, 3, 4, 5);
-    private static readonly Type[] SumParameterTypes = [typeof(ReadOnlySpan<object>), typeof(LythonSourceSpan), typeof(Context)];
-    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object> Sum = typeof(LythonRuntime)
+    private static readonly Type[] SumParameterTypes = [typeof(BorrowedBuiltinArguments), typeof(LythonSourceSpan), typeof(Context)];
+    private static readonly Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, object> Sum = typeof(LythonRuntime)
         .GetMethod("Sum", BindingFlags.Static | BindingFlags.NonPublic, SumParameterTypes)!
-        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object>>();
-    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, ValueTask<object>> SumAsync = typeof(LythonRuntime)
+        .CreateDelegate<Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, object>>();
+    private static readonly Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, ValueTask<object>> SumAsync = typeof(LythonRuntime)
         .GetMethod("SumAsync", BindingFlags.Static | BindingFlags.NonPublic, SumParameterTypes)!
-        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, ValueTask<object>>>();
+        .CreateDelegate<Func<BorrowedBuiltinArguments, LythonSourceSpan, Context, ValueTask<object>>>();
     private static readonly ExecutableCodeObject Add = ExecutableScript.Compile(
         LythonFrontend.Compile("return left + right",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
@@ -152,7 +152,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
 
     private static async ValueTask<object?> Invoke(int route, bool asynchronous, object[] arguments, Context context)
         => route is 0 or 3
-            ? asynchronous ? await SumAsync(arguments, SumSpan, context) : Sum(arguments, SumSpan, context)
+            ? asynchronous ? await SumAsync(new(arguments), SumSpan, context) : Sum(new(arguments), SumSpan, context)
             : asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(Add, context)
                 : LythonRuntime.ExecuteExecutableCodeObject(Add, context, default, null);
 }
