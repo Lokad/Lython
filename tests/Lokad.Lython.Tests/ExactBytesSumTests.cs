@@ -10,12 +10,13 @@ namespace Lokad.Lython.Tests;
 public sealed class ExactBytesSumTests
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
-    private static readonly Func<object[], LythonSourceSpan, Context, object> Sum = typeof(LythonRuntime)
-        .GetMethod("Sum", BindingFlags.Static | BindingFlags.NonPublic)!
-        .CreateDelegate<Func<object[], LythonSourceSpan, Context, object>>();
-    private static readonly Func<object[], LythonSourceSpan, Context, ValueTask<object>> SumAsync = typeof(LythonRuntime)
-        .GetMethod("SumAsync", BindingFlags.Static | BindingFlags.NonPublic)!
-        .CreateDelegate<Func<object[], LythonSourceSpan, Context, ValueTask<object>>>();
+    private static readonly Type[] SumParameterTypes = [typeof(ReadOnlySpan<object>), typeof(LythonSourceSpan), typeof(Context)];
+    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object> Sum = typeof(LythonRuntime)
+        .GetMethod("Sum", BindingFlags.Static | BindingFlags.NonPublic, SumParameterTypes)!
+        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, object>>();
+    private static readonly Func<ReadOnlySpan<object>, LythonSourceSpan, Context, ValueTask<object>> SumAsync = typeof(LythonRuntime)
+        .GetMethod("SumAsync", BindingFlags.Static | BindingFlags.NonPublic, SumParameterTypes)!
+        .CreateDelegate<Func<ReadOnlySpan<object>, LythonSourceSpan, Context, ValueTask<object>>>();
 
     public static IEnumerable<object[]> Checkpoints()
     {
