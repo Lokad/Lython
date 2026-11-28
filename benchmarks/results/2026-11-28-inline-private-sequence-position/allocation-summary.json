@@ -1,0 +1,130 @@
+[
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2571638,
+      2457006
+    ],
+    "admittedPeak": [
+      3517191,
+      3517191
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2768246,
+      2653558
+    ],
+    "admittedPeak": [
+      3975943,
+      3975943
+    ],
+    "compiled": [
+      59732,
+      59732
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      3161582,
+      3161638
+    ],
+    "admittedPeak": [
+      3648447,
+      3648447
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "sync",
+    "clr": [
+      279440,
+      279440
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2571854,
+      2457166
+    ],
+    "admittedPeak": [
+      3517191,
+      3517191
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-list-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2768462,
+      2653830
+    ],
+    "admittedPeak": [
+      3975943,
+      3975943
+    ],
+    "compiled": [
+      59732,
+      59732
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-range-generator-reduction",
+    "mode": "async",
+    "clr": [
+      3161798,
+      3161854
+    ],
+    "admittedPeak": [
+      3648447,
+      3648447
+    ],
+    "compiled": [
+      61060,
+      61060
+    ]
+  },
+  {
+    "case": "diagnostic.sum-retained-outer-aliases",
+    "mode": "async",
+    "clr": [
+      279688,
+      279688
+    ],
+    "admittedPeak": [
+      280064,
+      280064
+    ],
+    "compiled": [
+      68784,
+      68784
+    ]
+  }
+]

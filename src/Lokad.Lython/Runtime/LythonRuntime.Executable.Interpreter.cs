@@ -159,12 +159,15 @@ internal sealed partial class LythonRuntime
             work.Stack.PublishValue(slot, slot + 1, iterator);
             // Native iterators already satisfy GetIter without guest work.
             if (iterator is IPyIteratorValue and not IPyProtocolIterator)
-            {
-                System.Diagnostics.Debug.Assert(work.Code.Instructions[work.InstructionIndex] is
-                    { OpCode: ExecutableOpCode.GetIter } entry &&
-                    entry.InputStart == slot && entry.ResultSlot == slot && entry.LiveExtent == slot + 1);
-                work.InstructionIndex++;
-            }
+                SkipGeneratorIteratorEntry(ref work, slot);
+        }
+
+        private static void SkipGeneratorIteratorEntry(ref ExecutableWorkState work, int slot)
+        {
+            System.Diagnostics.Debug.Assert(work.Code.Instructions[work.InstructionIndex] is
+                { OpCode: ExecutableOpCode.GetIter } entry &&
+                entry.InputStart == slot && entry.ResultSlot == slot && entry.LiveExtent == slot + 1);
+            work.InstructionIndex++;
         }
 
         internal void ReleaseGeneratorTemporaries()

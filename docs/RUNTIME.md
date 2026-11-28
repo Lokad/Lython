@@ -965,10 +965,13 @@ layout identifies eligible operand positions. The runtime checks the evaluated
 callable before acquiring the outer iterator. With an exact builtin list, tuple
 or range, eligible expressions can consume integer yields through the shared
 executable dispatcher. The operand keeps the integer subtotal. An operation
-that needs the full generator frame transfers the same iterator, slots and
-instruction position into that frame. The general accumulator starts with
-the subtotal and uses capacity already admitted by the operand. The existing
-sum loop continues, including when addition or generator code can suspend.
+that needs the full generator frame transfers the slots and instruction
+position into that frame. Exact lists and tuples keep their live position in
+the loop slot and materialize an iterator at that position before `.0` or the
+loop can expose it. Ranges transfer the acquired iterator. The general
+accumulator starts with the subtotal and uses capacity already admitted by
+the operand. The existing sum loop continues, including when addition or
+generator code can suspend.
 Other call targets and expressions that publish a generator use the ordinary
 iterator object.
 

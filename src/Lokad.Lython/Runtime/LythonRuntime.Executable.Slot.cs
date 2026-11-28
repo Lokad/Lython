@@ -53,8 +53,7 @@ internal sealed partial class LythonRuntime
                 case PyList or PyTuple:
                     // The negative range leaves positive deferred tuple indices
                     // and the small private default markers available.
-                    System.Diagnostics.Debug.Assert(_integer is >= FirstSequencePosition and <= FirstSequencePosition + int.MaxValue);
-                    var position = (int)(_integer - FirstSequencePosition);
+                    var position = NativeSequencePosition;
                     result = PyIteration.AdvanceBuiltinSequence(_value, ref position);
                     _integer = FirstSequencePosition + position;
                     return true;
@@ -64,6 +63,15 @@ internal sealed partial class LythonRuntime
                 default:
                     result = default;
                     return false;
+            }
+        }
+
+        internal readonly int NativeSequencePosition
+        {
+            get
+            {
+                System.Diagnostics.Debug.Assert(_integer is >= FirstSequencePosition and <= FirstSequencePosition + int.MaxValue);
+                return (int)(_integer - FirstSequencePosition);
             }
         }
 

@@ -22,6 +22,10 @@ internal abstract class PyEnumerableIterator : PyIteratorBase
             ? new SequenceIterator(source, span, context, displayName)
             : new CursorIterator(source, span, context, displayName);
 
+    internal static PyEnumerableIterator CreateSequenceAt(object source, int position, bool exhausted,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => new SequenceIterator(source, span, context, "iterator") { Position = position, Exhausted = exhausted };
+
     private PyEnumerableIterator(object source, string displayName)
     {
         _displayName = displayName;

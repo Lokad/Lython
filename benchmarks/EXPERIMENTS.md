@@ -11,6 +11,11 @@ uses the B1968 image and verifies fourteen launch pairs. First-line and
 configuration launch-to-drain elapsed are 7.18× and 7.83× CPython at
 their medians. Embedded timings keep their separate execution boundary.
 
+[B1969 keep the private sequence position in the loop slot](results/2026-11-28-inline-private-sequence-position/README.md)
+saves about 112 KiB of CLR allocation on tuple and list shipments in both
+APIs. Peak admission, growth requests and retained aliases match.
+The matched repeat leaves CPU inconclusive.
+
 [B1968 compare short scripts with CPython](results/2026-11-28-short-frontend-cpython/README.md)
 verifies 112 quiet batches on `83042273c`. First-line warm elapsed is
 1.264–1.283× CPython, with CPU near parity. File and configuration compile
