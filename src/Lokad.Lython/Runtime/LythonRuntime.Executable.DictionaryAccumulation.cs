@@ -137,8 +137,10 @@ internal sealed partial class LythonRuntime
             ExecutionContext? invocation, in ExecutableInstruction head, int memberIndex)
         {
             if (execution.Stack.Values[head.InputStart].Reference is not (PyList or PyTuple) ||
-                execution.Stack.ExistingLookupCaches is not { } caches || invocation?._preparedCallValue is not null)
+                invocation?._preparedCallValue is not null)
                 return false;
+            var caches = execution.Stack.GetExistingLookupCaches(execution.Code.LookupCacheCount);
+            if (caches.IsEmpty) return false;
 
             var headIndex = execution.InstructionIndex;
             var code = execution.Code;
@@ -363,7 +365,8 @@ internal sealed partial class LythonRuntime
             {
                 // The ordinary instruction owns first admission and any
                 // reentry. Only borrow its already established backing.
-                if (execution.Stack.ExistingLookupCaches is not { } caches ||
+                var caches = execution.Stack.GetExistingLookupCaches(execution.Code.LookupCacheCount);
+                if (caches.IsEmpty ||
                     !record.TryReadRecordValue(fieldName, ref caches[field.LookupCacheIndex], context, field.Span,
                         out var cached)) return false;
                 value = cached as PyString;

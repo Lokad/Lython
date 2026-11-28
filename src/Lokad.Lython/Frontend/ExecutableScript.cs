@@ -603,6 +603,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<ImportStatementSyntax> imports,
         ExecutableCallSite[] callSites,
         int lookupCacheCount,
+        bool recordLookupsOnly,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         bool requiresLocalVariableMirroring,
         bool usesOnlyLexicalSlots,
@@ -629,6 +630,7 @@ internal sealed partial class ExecutableCodeObject
         Imports = imports;
         CallSites = callSites;
         LookupCacheCount = lookupCacheCount;
+        RecordLookupsOnly = recordLookupsOnly;
         MatchCases = matchCases;
         PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
@@ -670,7 +672,8 @@ internal sealed partial class ExecutableCodeObject
                 };
             }).ToArray();
         var deferredSites = operandLayout.Linearize(this, blocks, callSites, regionsByEntry.Length == 0,
-            deferredCandidates, cancellationToken, out var valueStorageCapacity, out var lastOwnedTemporarySlot);
+            deferredCandidates, cancellationToken, out var valueStorageCapacity, out var lastOwnedTemporarySlot,
+            ownsDefinitionLookups: isFunctionScope && initialOperandDepth == 0);
         LastOwnedTemporarySlot = lastOwnedTemporarySlot;
         // Native work can precede cleanup without owning its routing state.
         // A physical instruction frontier also covers normal fallthrough and
@@ -832,7 +835,15 @@ internal sealed partial class ExecutableCodeObject
 
     public IReadOnlyList<ExecutableCallSite> CallSites { get; }
 
-    public int LookupCacheCount { get; }
+    public int LookupCacheCount { get; private set; }
+    internal bool RecordLookupsOnly { get; }
+
+    internal int IncludeGeneratorLookups(int count)
+    {
+        var start = LookupCacheCount;
+        LookupCacheCount = checked(start + count);
+        return start;
+    }
 
 
     public IReadOnlyList<ExecutableMatchCaseBinding> MatchCases { get; }

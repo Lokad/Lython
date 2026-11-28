@@ -291,9 +291,13 @@ internal sealed partial class LythonRuntime
                     var targetSlot = instruction.PrivateGeneratorCallTarget;
                     var privateFrame = targetSlot != int.MaxValue &&
                         _execution.Stack.Values[targetSlot].Reference is { } callTarget && IsSumBuiltin(callTarget);
+                    var lookupOwner = privateFrame && comprehension.SharedLookupStart >= 0 &&
+                        _execution.Stack.LookupOwner is { } definition && ReferenceEquals(definition.CodeObject, _execution.Code)
+                        ? definition : null;
                     var outer = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, this,
-                        outer, comprehension.OuterSpan, span, asynchronous, privateFrame).ConfigureAwait(false);
+                        outer, comprehension.OuterSpan, span, asynchronous, privateFrame, lookupOwner,
+                        lookupOwner is null ? -1 : comprehension.SharedLookupStart).ConfigureAwait(false);
                     try { PublishInstructionResult(instruction, generatorExpression); }
                     catch
                     {

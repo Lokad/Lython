@@ -207,7 +207,11 @@ internal sealed partial class ExecutableScript
             return _buffers.Imports.Count - 1;
         }
 
-        private int AllocateLookupCache() => _lookupCacheCount++;
+        private int AllocateLookupCache(bool recordRead = false)
+        {
+            _hasNonRecordLookup |= !recordRead;
+            return _lookupCacheCount++;
+        }
 
         private int InternCallSite(CallExpressionSyntax call, bool hasReceiver)
         {

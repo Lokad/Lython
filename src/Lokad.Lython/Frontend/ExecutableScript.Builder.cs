@@ -146,6 +146,7 @@ internal sealed partial class ExecutableScript
         private readonly string[] _declaredLocalNames;
         private Dictionary<string, int>? _closureIndexes;
         private int _lookupCacheCount;
+        private bool _hasNonRecordLookup;
         private int _protectedDepth;
         private int _firstDefinitionIndex = int.MaxValue;
         private readonly bool _generator;
@@ -286,6 +287,7 @@ internal sealed partial class ExecutableScript
                 _buffers.Imports.ToArray(),
                 _buffers.CallSites.ToArray(),
                 _lookupCacheCount,
+                recordLookupsOnly: _lookupCacheCount != 0 && !_hasNonRecordLookup,
                 _buffers.MatchCases.ToArray(),
                 requiresLocalVariableMirroring,
                 usesOnlyLexicalSlots,

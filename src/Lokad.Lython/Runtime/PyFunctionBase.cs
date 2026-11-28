@@ -66,11 +66,6 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         return _lookupCaches = caches;
     }
 
-    internal void ClearLookupCache(int index)
-    {
-        if (_lookupCaches is { } caches) caches[index] = default;
-    }
-
     // Lowered operand calls bind invocation-owned values. The executable
     // runner and exact positional callback entry can start in native slots.
     internal LythonRuntime.ExecutableSlot InvokeFromOperands(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,

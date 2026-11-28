@@ -397,16 +397,18 @@ internal sealed partial class LythonRuntime
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
         private readonly int _lastOwnedTemporarySlot;
+        private readonly int _sharedLookupStart;
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, ExecutableSlot[]? borrowedValues,
-            PyFunctionBase? lookupOwner)
+            PyFunctionBase? lookupOwner, int sharedLookupStart = -1)
         {
             _state = context.State;
             _firstTemporarySlot = firstTemporarySlot;
             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
             _nativeIterationPositions = null;
             _lookupStorage = lookupOwner;
+            _sharedLookupStart = sharedLookupStart;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? ExecutableSlotsBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, allocationSpan);
@@ -432,8 +434,10 @@ internal sealed partial class LythonRuntime
             _ownedStorageBytes -= bytes;
         }
 
-        internal void ReleaseStorage()
+        internal void ReleaseStorage(int lookupCount = 0)
         {
+            if (_sharedLookupStart >= 0 && LookupOwner?.ExistingLookupCaches is { } caches)
+                Array.Clear(caches, _sharedLookupStart, lookupCount);
             _items = [];
             _nativeIterationPositions = null;
             _lookupStorage = null;
@@ -442,12 +446,21 @@ internal sealed partial class LythonRuntime
             _state.MemoryGovernor.Release(bytes);
         }
 
-        internal readonly ExecutableLookupCache[]? ExistingLookupCaches
-            => _lookupStorage is PyFunctionBase owner ? owner.ExistingLookupCaches : _lookupStorage as ExecutableLookupCache[];
+        internal readonly PyFunctionBase? LookupOwner => _lookupStorage as PyFunctionBase;
 
-        internal ExecutableLookupCache[] GetLookupCaches(int count, LythonSourceSpan span)
+        internal readonly Span<ExecutableLookupCache> GetExistingLookupCaches(int count)
         {
-            if (_lookupStorage is PyFunctionBase owner) return owner.GetLookupCaches(span);
+            var caches = LookupOwner?.ExistingLookupCaches ?? _lookupStorage as ExecutableLookupCache[];
+            return caches is not null && _sharedLookupStart >= 0 ? caches.AsSpan(_sharedLookupStart, count) : caches;
+        }
+
+        internal Span<ExecutableLookupCache> GetLookupCaches(int count, LythonSourceSpan span)
+        {
+            if (LookupOwner is { } owner)
+            {
+                var caches = owner.GetLookupCaches(span);
+                return _sharedLookupStart >= 0 ? caches.AsSpan(_sharedLookupStart, count) : caches;
+            }
             if (_lookupStorage is ExecutableLookupCache[] existing) return existing;
             var bytes = LookupCacheBytes(count);
             var ownedBytes = checked(_ownedStorageBytes + bytes);
@@ -465,10 +478,10 @@ internal sealed partial class LythonRuntime
             catch { governor.ReleaseReserved(bytes); throw; }
         }
 
-        internal void ClearLookupCache(int index)
+        internal void ClearLookupCache(int index, int count)
         {
-            if (_lookupStorage is PyFunctionBase owner) owner.ClearLookupCache(index);
-            else if (_lookupStorage is ExecutableLookupCache[] caches) caches[index] = default;
+            var caches = GetExistingLookupCaches(count);
+            if (!caches.IsEmpty) caches[index] = default;
         }
 
         public int LiveExtent { get; private set; }
@@ -815,7 +828,7 @@ internal sealed partial class LythonRuntime
         ExecutableCaptures closureCells,
         PyFunctionBase? lookupOwner = null,
         bool returnConsumedByIteration = false,
-        bool borrowedInvocation = false, bool continuingNative = false)
+        bool borrowedInvocation = false, bool continuingNative = false, int sharedLookupStart = -1)
     {
         // Binding already fills the final local slots. Borrow their storage
         // under the invocation owner, including while a generator is suspended.
@@ -832,7 +845,7 @@ internal sealed partial class LythonRuntime
         // Admit private frame arrays and cells before allocating them. An
         // escaping cell keeps its original charge beyond this frame.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
-            context, span, bytes, boundArguments.Values, lookupOwner);
+            context, span, bytes, boundArguments.Values, lookupOwner, sharedLookupStart);
         try
         {
             var locals = stack.Values;

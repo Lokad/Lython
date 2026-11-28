@@ -124,7 +124,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
 
     internal int[]? Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
         ExecutableCallSite[] sites, bool hasNoExceptionRegions, int[]? deferredCandidates, CancellationToken token,
-        out int valueStorageCapacity, out int lastOwnedTemporarySlot)
+        out int valueStorageCapacity, out int lastOwnedTemporarySlot, bool ownsDefinitionLookups)
     {
         var positions = Blocks;
         var instructions = code.Instructions;
@@ -195,7 +195,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 {
                     case ExecutableOpCode.Call:
                         if (j != 0)
-                            PreparePrivateGeneratorOperand(code, position.Offset + j, instruction, ref lastOwnedTemporarySlot);
+                            PreparePrivateGeneratorOperand(code, position.Offset + j, instruction, ref lastOwnedTemporarySlot, ownsDefinitionLookups);
                         if (!code.RequiresLocalVariableMirroring)
                             PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
                         break;
@@ -279,18 +279,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     private static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 || !block[^1].TerminatesBlock;
 
     private static void PreparePrivateGeneratorOperand(ExecutableCodeObject code, int callIndex,
-        in ExecutableInstruction call, ref int lastOwnedTemporarySlot)
+        in ExecutableInstruction call, ref int lastOwnedTemporarySlot, bool ownsDefinitionLookups)
     {
         // The producer and consumer share one block and their final operand
         // positions. The runtime still checks the already-evaluated callable.
         ref var producer = ref code.Instructions[callIndex - 1];
         if (producer is not { OpCode: ExecutableOpCode.ApplyOperation, HasResultConsumer: false } ||
-            code.Constants[producer.ConstantIndex] is not ExecutableCreateGeneratorExpression || call.HasForwardedCallOperands ||
+            code.Constants[producer.ConstantIndex] is not ExecutableCreateGeneratorExpression expression || call.HasForwardedCallOperands ||
             code.CallSites[call.CallSiteIndex] is not { IsPositionalOnly: true, HasReceiver: false, ArgumentCount: 1 } site ||
             call.ResultSlot + site.ArgumentOffset != producer.ResultSlot) return;
 
         producer = producer.WithPrivateGeneratorCallTarget(call.ResultSlot + site.TargetOffset);
         lastOwnedTemporarySlot = Math.Max(lastOwnedTemporarySlot, producer.ResultSlot);
+        if (ownsDefinitionLookups && expression.CodeObject.RecordLookupsOnly)
+            code.Constants[producer.ConstantIndex] = expression with
+            { SharedLookupStart = code.IncludeGeneratorLookups(expression.CodeObject.LookupCacheCount) };
     }
 
     private static bool CanCallWithArithmeticArgument(ExecutableCodeObject code, in ExecutableInstruction target,

@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
 
         internal static async ValueTask<object> CreateExpressionAsync(ExecutableCodeObject code,
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span,
-            bool asynchronous, bool privateFrame = false)
+            bool asynchronous, bool privateFrame = false, PyFunctionBase? lookupOwner = null, int sharedLookupStart = -1)
         {
             // Fund the retained frame and any mirrored bindings
             // before their allocation or the effectful outer __iter__ call.
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
                 var cells = CaptureExecutableClosures(code, closure, span);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
-                frame.InitializeGeneratorExecution(code, default, cells, null);
+                frame.InitializeGeneratorExecution(code, default, cells, lookupOwner, sharedLookupStart);
                 initialized = frame;
                 var generator = privateFrame ? (object)frame : new PyGenerator(frame, span);
                 var outer = asynchronous

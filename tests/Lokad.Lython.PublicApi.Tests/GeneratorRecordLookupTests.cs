@@ -7,6 +7,50 @@ public sealed class GeneratorRecordLookupTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PrivateReductionReadsCurrentLayoutsAfterReentry(bool asynchronous)
+    {
+        const string source = """
+            def record(value): return {'value':value,'other':4}
+            def reordered(value): return {'other':6,'value':value}
+            def total(rows):
+                values = sum(row['value'] for row in rows)
+                return values + sum(row['other'] for row in rows)
+            class Reenter:
+                def __radd__(self, left):
+                    with open('check.txt') as source: assert source.read() == 'ready'
+                    assert total([reordered(5)]) == 11
+                    rows[1]['inserted']=True
+                    del rows[1]['value']
+                    rows[1]['value']=7
+                    return left + 3
+            rows=[record(Reenter()),record(2)]
+            assert total(rows) == 18
+            assert total([reordered(8),record(9)]) == 27
+            return 'ok'
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var immediate = new MockLythonHost();
+            var delayed = new DelayedLythonHost();
+            immediate.SeedFile("/check.txt", "ready");
+            delayed.SeedFile("/check.txt", "ready");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(immediate))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("ok", result.ReturnValue);
+            }
+            if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task SuspendedFieldsUseCurrentRowsAndReturnFunding(bool asynchronous)
     {
         const string source = """

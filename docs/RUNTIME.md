@@ -1382,7 +1382,7 @@ types, super objects, functions and contextual dynamic receivers keep uncached
 lookup and acquire no unused table; direct builtin receiver paths also need none.
 Refusal remains terminal, including this
 later admission after earlier body effects. Lookup facts occupy a flat admitted
-array. Modules and generator expressions own their invocation's table.
+array. Modules and ordinary generator expressions own their invocation's table.
 Ordinary calls and instances of a generator function borrow their definition's
 table. Each generator still owns its suspended frame. Function tables stay
 charged to the execution owner until cleanup,
@@ -1394,9 +1394,12 @@ layouts across rows and helper calls. Those entries retain layout and key, never
 a previous row or its value; every hit reads the current live slot. Deleted or
 detached fields and general Python mappings keep ordinary lookup. Backing
 admission precedes the layout check because a host callback can mutate the row.
-Generator expressions use these same facts in their existing invocation-owned
-table. Newly enabled sites require admitted cache capacity and may reject tighter
-allowances earlier; awaited generator cleanup releases that private backing.
+When builtin `sum` consumes a private generator expression inside a function,
+record-only lookup sites can borrow a prepared range of that function's table.
+The first lookup that uses the definition's table admits all of its prepared
+ranges. Generator cleanup clears the borrowed range, and any reentrant use
+validates the current layout and key before reading its live slot. Other
+generator expressions release their own backing at cleanup.
 Formatting still reads each actual field in order and supports protocols that
 suspend after earlier formatting changes later fields. Native helpers use the same
 definition-owned record-key cache and recheck protocol eligibility after admission.

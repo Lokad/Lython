@@ -21,7 +21,7 @@ internal sealed record ExecutableCallWithKeywordMapping(int PositionalCount, Lyt
 internal sealed record ExecutableFormatField(PyString? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat);
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan,
-    bool JoinedTrimmedSplit = false) : ExecutableOperation;
+    bool JoinedTrimmedSplit = false, int SharedLookupStart = -1) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
 {

@@ -180,7 +180,7 @@ internal sealed partial class ExecutableScript
                     // modules need facts only where their body can repeat.
                     AddInstruction(currentBlock, ExecutableInstruction.Subscript(subscript.Span,
                         _parameterLayout is not null || _buffers.Loops.Count != 0 || _buffers.ComprehensionNames.Count != 0
-                            ? AllocateLookupCache() : -1));
+                            ? AllocateLookupCache(recordRead: true) : -1));
                     return currentBlock;
 
                 case SliceExpressionSyntax slice:

@@ -40,10 +40,11 @@ internal sealed partial class LythonRuntime
 
         internal void InitializeExecutableFrame(
             ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
-            PyFunctionBase? lookupOwner = null, bool returnConsumedByIteration = false, bool continuingNative = false)
+            PyFunctionBase? lookupOwner = null, bool returnConsumedByIteration = false, bool continuingNative = false,
+            int sharedLookupStart = -1)
         {
             InitializeExecutableWorkState(ref _execution, code, this, arguments, captures, lookupOwner,
-                returnConsumedByIteration, continuingNative: continuingNative);
+                returnConsumedByIteration, continuingNative: continuingNative, sharedLookupStart: sharedLookupStart);
             _entryActiveException = State.CurrentException;
         }
 
@@ -56,11 +57,11 @@ internal sealed partial class LythonRuntime
 
         internal void InitializeGeneratorExecution(
             ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
-            PyGeneratorFunction? lookupOwner)
+            PyFunctionBase? lookupOwner, int sharedLookupStart = -1)
         {
             // Mirrored namespaces remain authoritative while the frame is suspended.
             MirrorLocalStores |= code.RequiresLocalVariableMirroring;
-            InitializeExecutableFrame(code, arguments, captures, lookupOwner);
+            InitializeExecutableFrame(code, arguments, captures, lookupOwner, sharedLookupStart: sharedLookupStart);
             _boundStorageOwner = arguments.StorageOwner;
         }
 
@@ -175,7 +176,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 try { _execution.Stack.UnwindTo(_execution.Code.FirstTemporarySlot); }
-                finally { _execution.Stack.ReleaseStorage(); }
+                finally { _execution.Stack.ReleaseStorage(_execution.Code.LookupCacheCount); }
             }
         }
 
@@ -528,7 +529,7 @@ internal sealed partial class LythonRuntime
             if (CanCacheRuntimeMemberValue(target, value, instruction.OpCode != ExecutableOpCode.LoadMember))
                 _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, instruction.Span)[instruction.LookupCacheIndex]
                     = new(target, value);
-            else _execution.Stack.ClearLookupCache(instruction.LookupCacheIndex);
+            else _execution.Stack.ClearLookupCache(instruction.LookupCacheIndex, _execution.Code.LookupCacheCount);
         }
 
         private static void ExecuteSynchronousMemberLoad(ref ExecutableWorkState execution, ExecutionContext scope,
@@ -867,7 +868,7 @@ internal sealed partial class LythonRuntime
             if (HasYield || HasPendingCall) return;
             _preparedCallValue = null;
             try { AbandonFrame(); }
-            finally { if (!OwnsModuleNamespace) _execution.Stack.ReleaseStorage(); }
+            finally { if (!OwnsModuleNamespace) _execution.Stack.ReleaseStorage(_execution.Code.LookupCacheCount); }
         }
 
         private async ValueTask<ExecutionContext?> ExecuteUntilCallAsync()
