@@ -1,0 +1,7 @@
+{
+  "baselineAdoptionCallSites": 3,
+  "candidateAdoptionCallSites": 1,
+  "retainedMove": "PromoteBorrowedInvocation",
+  "directInitialization": "InitializeExecutableWorkState",
+  "lastPublication": "ExecutableWorkState.Code"
+}

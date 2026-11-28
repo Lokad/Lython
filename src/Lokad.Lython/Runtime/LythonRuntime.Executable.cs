@@ -717,7 +717,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells ?? default, lookupOwner);
+            context.InitializeExecutableFrame(codeObject, boundArguments, closureCells ?? default, lookupOwner);
             return ExecuteInitializedFrame(context);
         }
         finally
@@ -743,7 +743,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, lookupOwner);
+            context.InitializeExecutableFrame(codeObject, boundArguments, closureCells, lookupOwner);
             return await ExecuteInitializedFrameAsync(context).ConfigureAwait(false);
         }
         finally
@@ -788,20 +788,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void InitializeExecutableFrame(
-        ExecutableCodeObject codeObject,
-        ExecutionContext context,
-        BoundFunctionArguments boundArguments,
-        ExecutableCaptures closureCells,
-        PyExecutableFunction? lookupOwner = null,
-        bool returnConsumedByIteration = false, bool continuingNative = false)
-    {
-        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, lookupOwner,
-            returnConsumedByIteration, continuingNative: continuingNative);
-        context.AdoptExecutableExecution(ref execution, context.State.CurrentException);
-    }
-
-    private static ExecutableWorkState CreateExecutableWorkState(
+    private static void InitializeExecutableWorkState(
+        ref ExecutableWorkState execution,
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
@@ -844,15 +832,15 @@ internal sealed partial class LythonRuntime
                     : new ExecutableCell(locals[slot].Object, context, codeObject.LocalNames[slot]);
             }
 
-            return new ExecutableWorkState
-            {
-                Code = codeObject,
-                Locals = locals,
-                Captures = closureCells,
-                Stack = stack,
-                ReturnConsumedByIteration = returnConsumedByIteration,
-                InstructionIndex = codeObject.EntryIndex
-            };
+            // Publish the live state only after admission and cell construction.
+            // A fresh frame can use its final storage from the start.
+            execution.Locals = locals;
+            execution.Captures = closureCells;
+            execution.Stack = stack;
+            execution.ReturnConsumedByIteration = returnConsumedByIteration;
+            execution.InstructionIndex = codeObject.EntryIndex;
+            execution.ReturnValue = default;
+            execution.Code = codeObject;
         }
         catch
         {

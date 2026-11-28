@@ -1,0 +1,44 @@
+{
+  "source": "2ef73bd71",
+  "profileArchiveSHA256": "0c1dc516a80e30b5707149acd7c07391e33ccfaa5a2d6ff6adccd403e1a81894",
+  "rows": [
+    {
+      "role": "iterable-async",
+      "managedMilliseconds": 3881.1725909770494,
+      "nearestCallers": {
+        "Reserve": {
+          "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord": 63.84656361400568,
+          "Lokad.Lython.Runtime.PyGeneratorFunction.CreateBoundGenerator": 34.33197466604574,
+          "Lokad.Lython.Runtime.MemoryGovernor+WorkspaceCache.Rent": 37.27140335099148
+        },
+        "BoundGenerator": {
+          "Lokad.Lython.Runtime.LythonRuntime.TryConstructPositionalGenerator": 119.21610239178673
+        },
+        "OuterPull": {
+          "Lokad.Lython.Runtime.PyStarmapIterator.TryMoveNextAsync": 124.26402361869135
+        },
+        "ApplyCall": {
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix": 38.83737411620399
+        }
+      }
+    },
+    {
+      "role": "iterable-sync",
+      "managedMilliseconds": 4086.418747912545,
+      "nearestCallers": {
+        "Reserve": {
+          "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord": 75.52523879645435,
+          "Lokad.Lython.Runtime.PyGeneratorFunction.CreateBoundGenerator": 75.27409962389265,
+          "Lokad.Lython.Runtime.MemoryGovernor+WorkspaceCache.Rent": 65.51296064688711
+        },
+        "BoundGenerator": {
+          "Lokad.Lython.Runtime.LythonRuntime.TryConstructPositionalGenerator": 331.8408813310736
+        },
+        "OuterPull": {},
+        "ApplyCall": {
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix": 36.22953428568434
+        }
+      }
+    }
+  ]
+}

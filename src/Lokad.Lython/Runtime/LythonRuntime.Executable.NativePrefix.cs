@@ -782,7 +782,7 @@ internal sealed partial class LythonRuntime
         LythonRuntimeException? failure)
     {
         var frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);
-        InitializeExecutableFrame(function.CodeObject, frame, bound, function.Captures,
+        frame.InitializeExecutableFrame(function.CodeObject, bound, function.Captures,
             lookupOwner: function, returnConsumedByIteration: consumedByIteration, continuingNative: true);
         frame.RestoreNativePosition(index, liveExtent, failure);
         return frame;

@@ -540,7 +540,7 @@ internal sealed partial class LythonRuntime
 
             var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, definition.Syntax);
             ExecutionState.EnsureInterpreterStack(span);
-            InitializeExecutableFrame(definition.Body, classContext, default, default);
+            classContext.InitializeExecutableFrame(definition.Body, default, default);
             var returned = asynchronous ? await ExecuteInitializedFrameAsync(classContext).ConfigureAwait(false)
                 : ExecuteInitializedFrame(classContext);
             if (returned is not null) throw new InvalidOperationException("A class suite returned a value.");

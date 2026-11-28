@@ -38,17 +38,28 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        internal void AdoptExecutableExecution(ref ExecutableWorkState execution, PyException? entryException)
+        internal void InitializeExecutableFrame(
+            ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
+            PyFunctionBase? lookupOwner = null, bool returnConsumedByIteration = false, bool continuingNative = false)
+        {
+            InitializeExecutableWorkState(ref _execution, code, this, arguments, captures, lookupOwner,
+                returnConsumedByIteration, continuingNative: continuingNative);
+            _entryActiveException = State.CurrentException;
+        }
+
+        private void AdoptExecutableExecution(ref ExecutableWorkState execution, PyException? entryException)
         {
             _execution = execution;
             _entryActiveException = entryException;
             execution = default;
         }
 
-        internal void AdoptGeneratorExecution(ref ExecutableWorkState execution, MemoryGovernor? storageOwner)
+        internal void InitializeGeneratorExecution(
+            ExecutableCodeObject code, BoundFunctionArguments arguments, ExecutableCaptures captures,
+            PyGeneratorFunction? lookupOwner)
         {
-            AdoptExecutableExecution(ref execution, State.CurrentException);
-            _boundStorageOwner = storageOwner;
+            InitializeExecutableFrame(code, arguments, captures, lookupOwner);
+            _boundStorageOwner = arguments.StorageOwner;
         }
 
         internal bool RetainsBoundWorkspace(ExecutableSlot[] workspace)

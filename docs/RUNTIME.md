@@ -885,6 +885,9 @@ canonical operators and
 receiver declarations; dynamic protocols stop before their operation and transfer
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
+Fresh frames initialize their executable state directly after storage
+admission and cell construction. A borrowed call moves its live state
+into the frame only when the existing promotion path needs that frame.
 
 When a positional call reads an adjacent local target and argument, the
 executable instruction can carry those reads into the call. An eligible native

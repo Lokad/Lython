@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1933 initialize fresh executable frames directly](results/2026-11-28-direct-executable-frame-initialization/README.md)
+removes the temporary state copy from fresh frame setup. Release IL keeps
+one whole-state move for borrowed-call promotion. Iterable shipment local
+elapsed falls in both APIs, with CPU spanning zero. Peak admission matches.
+
 [B1932 compare the current checkpoint with CPython](results/2026-11-28-current-cpython-regex-checkpoint/README.md)
 verifies seven scripts and 224 timed batches at `2ef73bd71`. Async iterable
 shipment remains 1.125–1.136× CPython elapsed. Compiled and module regex

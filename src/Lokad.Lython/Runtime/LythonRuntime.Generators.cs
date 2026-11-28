@@ -72,8 +72,7 @@ internal sealed partial class LythonRuntime
             frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
-            var execution = CreateExecutableWorkState(code, frame, arguments, closureCells, lookupOwner);
-            frame.AdoptGeneratorExecution(ref execution, arguments.StorageOwner);
+            frame.InitializeGeneratorExecution(code, arguments, closureCells, lookupOwner);
         }
 
         public bool IsTruthy() => true;
