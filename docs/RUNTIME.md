@@ -669,11 +669,12 @@ argument directly. Other callees keep the evaluated pair in the call workspace
 through promotion, suspension and cleanup.
 Handlers read those positions directly into references; synchronous type
 subscription borrows immutable instruction metadata.
-Ordinary instructions and synchronous helpers share completed numeric, boolean,
-string-addition, unary and scalar-comparison selection over their final slots.
-Eligible ordinary operations bypass generic asynchronous input handling; operand
-retirement and publication retain their existing cleanup and admission order.
-Other values and guest protocols keep the general path, including actual suspension.
+The ordinary prefix and the native loop use one arithmetic evaluator over
+their final slots. Exact numeric and text pairs complete through builtin
+operations, including exponentiation and unsupported-operand errors.
+Integer chains and inline doubles use the same evaluator entry.
+Operand retirement and publication retain their cleanup and admission
+order. Guest protocols keep the general path, including actual suspension.
 Both forms share operand reads and Python-shaped missing-local diagnostics.
 Linked executable code prepares module-name slot locations during compilation.
 An exact module-code identity check reads the current slot without repeating

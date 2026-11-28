@@ -234,14 +234,6 @@ internal sealed partial class LythonRuntime
 
     internal ref partial struct NativeExecution
     {
-        private bool TryIntegerOperation()
-        {
-            if (!TryEvaluateIntegerInstruction(Code, Values, Index, _scope, out var end, out var result, _cells)) return false;
-            Index = end;
-            Publish(Code.Instructions[end], result);
-            return true;
-        }
-
         private bool TryIntegerComparison(in ExecutableInstruction instruction, out bool result)
         {
             result = false;

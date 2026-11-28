@@ -98,6 +98,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Share exact scalar arithmetic across both execution loops | Compact exponentiation over 2,048 CSV rows allocates about 272 KiB less in both APIs. Quiet warm async CPU falls 8.48–13.04% at matching admission. All three controls span zero. [B1976](../benchmarks/results/2026-11-28-shared-closed-arithmetic/README.md). |
 | Keep compact private generator frames in managed inline slots | The 2,048-row tuple and list shipments allocate about 272 KiB less in both APIs. Warm async tuple CPU falls 2.40–7.43% on the quiet VM at matching admission. The explicit-loop control remains inconclusive. [B1975](../benchmarks/results/2026-11-28-inline-private-generator-slots/README.md). |
 | Pass cached record comparisons directly into a private sum | Quiet warm async tuple shipment uses 5.44–6.57% less CPU on repeat at matching admission. The explicit-loop control's initial CPU increase spans zero on repeat. [B1973](../benchmarks/results/2026-11-28-private-record-comparison-yield/README.md). |
 | Reduce adjacent private generators directly into `sum` | Each 2,048-row tuple, list or range shipment allocates about 352 KiB less in both APIs. On the quiet VM, warm async CPU falls 10.37–14.80% for tuples and 8.99–13.34% for lists. The explicit-loop control is inconclusive on repeat. [B1972](../benchmarks/results/2026-11-28-fused-private-generator-sum/README.md). |

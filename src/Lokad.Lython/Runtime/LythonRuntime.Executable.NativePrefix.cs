@@ -267,13 +267,11 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
                         if (!StoreSubscript(instruction)) return false;
                         break;
-                    case ExecutableOpCode.Binary:
-                    case ExecutableOpCode.Augmented:
-                        if (TryIntegerOperation()) break;
-                        goto case ExecutableOpCode.Unary;
-                    case ExecutableOpCode.Unary:
-                        if (!TryEvaluateBuiltinArithmetic(Code, Values, Index, _scope, out var arithmetic, _cells)) return false;
-                        Publish(instruction, arithmetic);
+                    case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary:
+                        if (!TryEvaluateArithmeticInstruction(Code, Values, Index, _scope, out var arithmeticEnd, out var arithmetic, _cells))
+                            return false;
+                        Index = arithmeticEnd;
+                        Publish(Code.Instructions[Index], arithmetic);
                         break;
                     case ExecutableOpCode.CompareJumpIfFalse:
                     {

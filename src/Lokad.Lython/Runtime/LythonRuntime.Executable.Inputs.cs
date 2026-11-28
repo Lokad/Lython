@@ -96,6 +96,12 @@ internal sealed partial class LythonRuntime
                 : ReadOperand(ref execution, instruction.SecondInput, scope, 1);
             try
             {
+                if (instruction.OpCode != ExecutableOpCode.Subscript &&
+                    TryEvaluateClosedArithmetic(instruction, first, second, scope, out var arithmetic))
+                {
+                    PublishInstructionResult(ref execution, invocation, instruction, arithmetic);
+                    return InstructionPause.Continue;
+                }
                 if (instruction.OpCode == ExecutableOpCode.Subscript && instruction.LookupCacheIndex >= 0 &&
                     first is PyDict { HasSharedRecordKeys: true } record && second is PyString field)
                 {
@@ -112,17 +118,10 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                var immediate = (!asynchronous && invocation is not null) || (instruction.OpCode switch
-                {
-                    ExecutableOpCode.Binary or ExecutableOpCode.Augmented =>
-                        first is BigInteger or double or bool && second is BigInteger or double or bool ||
-                        first is PyString && second is PyString,
-                    ExecutableOpCode.Unary => first is BigInteger or double or bool
-                        || instruction.UnaryOperator == ExecutableUnaryOperator.Not && CanUseNativeTruth(first),
-                    ExecutableOpCode.Subscript => second is BigInteger && first is PyList or PyTuple or PyBytes or PyString or PyRange ||
-                        first is PyDict dictionary && dictionary.CanReadKeySynchronously(second!),
-                    _ => throw new InvalidOperationException("Unexpected direct input instruction."),
-                });
+                var immediate = !asynchronous && invocation is not null ||
+                    instruction.OpCode == ExecutableOpCode.Subscript &&
+                    (second is BigInteger && first is PyList or PyTuple or PyBytes or PyString or PyRange ||
+                     first is PyDict dictionary && dictionary.CanReadKeySynchronously(second!));
                 if (!immediate && invocation is null)
                 {
                     return InstructionPause.ContextRequired;
