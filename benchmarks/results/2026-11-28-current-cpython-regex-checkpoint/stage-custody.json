@@ -1,0 +1,25 @@
+{
+  "before": 5419008,
+  "afterReclaim": 17059840,
+  "afterStaging": 10633216,
+  "requiredBeforeStage": 11974719,
+  "deduplicated": [
+    {
+      "path": "/home/lokad/lython-bench-checks/script-cpython-quiet-b1921-20261128/candidate/Lokad.Lython.dll",
+      "sha256": "36857a78efd47c366d01d04ca6af0a4061b224a6f7da897dff658c3f816822c4",
+      "localImage": ".git\\agent-notes\\review-20261031\\current-checkpoint-b1921-20261128\\comparison\\quiet\\local-image",
+      "archiveSha": "d8705b769ba990d2a1dfbfc8af01233e316499e739cadb7e07581a5075b29320"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/script-cpython-quiet-b1926-20261128/candidate/Lokad.Lython.dll",
+      "sha256": "6c20d79d7c75916fd132308796774dcba953995b401e5338ee9e10389a0573e2",
+      "localImage": ".git\\agent-notes\\review-20261031\\compiler-checkpoint-b1926-20261128\\comparison\\quiet\\local-image",
+      "archiveSha": "cdadae55072268de7c93d3193563683f6c481e1bb5614f07fde6e89ae3fdafb6"
+    }
+  ],
+  "expandedBytes": 6331839,
+  "reused": {
+    "donor": 31
+  },
+  "streamed": true
+}

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1932 compare the current checkpoint with CPython](results/2026-11-28-current-cpython-regex-checkpoint/README.md)
+verifies seven scripts and 224 timed batches at `2ef73bd71`. Async iterable
+shipment remains 1.125–1.136× CPython elapsed. Compiled and module regex
+logs take 2.755–2.815× and 1.952–2.002×. The attached current profile
+separates generator factory, continuation and guest work and locates
+byte-builder growth under the whole-file text reader.
+
 [B1931 complete ordinary regex group selection directly](results/2026-11-28-regex-group-resolution/README.md)
 removes the scalar group binding and projection states and the scalar
 tuple closure. The compiled log and Unicode named-group scripts allocate
