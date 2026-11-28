@@ -85,8 +85,10 @@ The supervisor validates each decoded reply after the timer stops.
 Embedded use in an already-running process is covered by the warm and
 compile-to-result rows. [B1970](../benchmarks/results/2026-11-28-fresh-command-cpython/README.md) ·
 [Historical B1906](../benchmarks/results/2026-11-27-current-cpython-a159f24/README.md).
-A local phase diagnostic separates first compilation, execution and
-benchmark reply work. [B1927](../benchmarks/results/2026-11-28-first-command-phases/README.md).
+The local B1987 diagnostic at `5d1cbb1f3` separates first compilation,
+execution and benchmark reply work. Timing differences against its older
+Lython control remain inconclusive. [B1987](../benchmarks/results/2026-11-28-current-first-command-phases/README.md) ·
+[B1927](../benchmarks/results/2026-11-28-first-command-phases/README.md).
 
 ## Earlier measurements
 

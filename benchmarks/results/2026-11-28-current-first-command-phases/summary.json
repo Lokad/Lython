@@ -1,0 +1,484 @@
+{
+  "productionSource": "5d1cbb1f37bf60480a85b6132e5ab34340807789",
+  "reference": {
+    "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+    "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+    "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+    "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+    "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+    "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+    "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+    "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+    "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+    "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+    "Lokad.Lython.Benchmarks.dll": "b38a5b47054599a10aabff546475478654fdc829e25c757fe3e4f48c2cc1e7ac",
+    "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "d18b82bd6884b2761309f4181d6ded84e53d0c08e537cb621da9860f27c7e756",
+    "Lokad.Lython.Utf8Regex.dll": "010b7fc87f63c9f0072bc8340325747f23fdd6d66fa9cef43754daf767818c0b",
+    "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+    "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+    "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+    "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+    "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+    "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+    "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+    "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+    "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+    "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+    "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+    "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+    "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+    "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+    "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+    "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+    "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+    "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+  },
+  "instrumented": {
+    "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+    "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+    "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+    "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+    "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+    "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+    "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+    "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+    "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+    "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+    "Lokad.Lython.Benchmarks.dll": "f4d90c3dfcafeba32adb200f61b0d5bcecc4e3a8289cf53eaf392e2044aa6560",
+    "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "d18b82bd6884b2761309f4181d6ded84e53d0c08e537cb621da9860f27c7e756",
+    "Lokad.Lython.Utf8Regex.dll": "010b7fc87f63c9f0072bc8340325747f23fdd6d66fa9cef43754daf767818c0b",
+    "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+    "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+    "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+    "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+    "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+    "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+    "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+    "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+    "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+    "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+    "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+    "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+    "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+    "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+    "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+    "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+    "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+    "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+  },
+  "case": "scripts.config-edit.small",
+  "payloadSHA256": "38affb73788c6b44b060eb67b7a9895037dfe8a4c2d166242da3dbc9e04bb02d",
+  "verifiedInvocations": 48,
+  "machine": {
+    "system": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "kernel": "5.15.167.4-microsoft-standard-WSL2",
+    "cpuAffinity": [
+      4
+    ]
+  },
+  "measurements": {
+    "frozen": {
+      "elapsed": {
+        "count": 12,
+        "min": 368.078717,
+        "median": 411.8777655,
+        "q1": 397.95390050000003,
+        "q3": 415.53618175,
+        "max": 571.828423
+      },
+      "cpu": {
+        "count": 12,
+        "min": 223.487,
+        "median": 229.90500000000026,
+        "q1": 226.97100000000015,
+        "q3": 236.5412499999997,
+        "max": 241.55699999999936
+      }
+    },
+    "instrumented": {
+      "elapsed": {
+        "count": 12,
+        "min": 369.759465,
+        "median": 404.633341,
+        "q1": 394.4080575,
+        "q3": 415.56997775,
+        "max": 752.663925
+      },
+      "cpu": {
+        "count": 12,
+        "min": 220.0890000000002,
+        "median": 233.49600000000015,
+        "q1": 227.94124999999948,
+        "q3": 236.67249999999996,
+        "max": 241.9800000000003
+      }
+    },
+    "historical": {
+      "elapsed": {
+        "count": 12,
+        "min": 385.723913,
+        "median": 420.681115,
+        "q1": 407.4285565,
+        "q3": 489.95392975000004,
+        "max": 1348.491865
+      },
+      "cpu": {
+        "count": 12,
+        "min": 225.86799999999974,
+        "median": 236.23050000000012,
+        "q1": 229.78250000000023,
+        "q3": 247.92124999999967,
+        "max": 260.30699999999916
+      }
+    },
+    "CPython": {
+      "elapsed": {
+        "count": 12,
+        "min": 202.389258,
+        "median": 234.1627465,
+        "q1": 220.9588885,
+        "q3": 239.55842925000002,
+        "max": 1950.920955
+      },
+      "cpu": {
+        "count": 12,
+        "min": 29.908999999999963,
+        "median": 31.398999999999955,
+        "q1": 30.69800000000017,
+        "q3": 33.07100000000018,
+        "max": 37.647999999999904
+      }
+    }
+  },
+  "phases": {
+    "instrumented": {
+      "dispatch": {
+        "count": 12,
+        "min": 1.492789,
+        "median": 1.6966809999999999,
+        "q1": 1.58024375,
+        "q3": 1.7267287500000001,
+        "max": 1.836629
+      },
+      "consoleSetup": {
+        "count": 12,
+        "min": 0.082525,
+        "median": 0.091114,
+        "q1": 0.08654300000000001,
+        "q3": 0.0938455,
+        "max": 0.096047
+      },
+      "catalog": {
+        "count": 12,
+        "min": 11.506968,
+        "median": 13.09293,
+        "q1": 12.79591225,
+        "q3": 14.485528250000002,
+        "max": 16.876311
+      },
+      "onceEntry": {
+        "count": 12,
+        "min": 30.568945,
+        "median": 35.821792,
+        "q1": 34.674471499999996,
+        "q3": 40.71650625,
+        "max": 50.579616
+      },
+      "hostSetup": {
+        "count": 12,
+        "min": 0.373102,
+        "median": 0.42648149999999996,
+        "q1": 0.41288674999999997,
+        "q3": 0.4591315,
+        "max": 0.481166
+      },
+      "compile": {
+        "count": 12,
+        "min": 121.283614,
+        "median": 139.7019945,
+        "q1": 130.82533025,
+        "q3": 142.672495,
+        "max": 154.691453
+      },
+      "fixtureReset": {
+        "count": 12,
+        "min": 0.443973,
+        "median": 0.49846650000000003,
+        "q1": 0.48685150000000005,
+        "q3": 0.50528975,
+        "max": 0.720325
+      },
+      "run": {
+        "count": 12,
+        "min": 73.202765,
+        "median": 82.1253995,
+        "q1": 77.67332025,
+        "q3": 83.500646,
+        "max": 465.885543
+      },
+      "verify": {
+        "count": 12,
+        "min": 0.772175,
+        "median": 0.8436895,
+        "q1": 0.81729875,
+        "q3": 0.86838625,
+        "max": 0.942914
+      },
+      "protocol": {
+        "count": 12,
+        "min": 65.920691,
+        "median": 78.866923,
+        "q1": 76.984713,
+        "q3": 82.24863125,
+        "max": 95.732392
+      },
+      "cleanup": {
+        "count": 12,
+        "min": 0.087261,
+        "median": 0.1964635,
+        "q1": 0.18538975,
+        "q3": 0.20421325,
+        "max": 0.300475
+      },
+      "launchAndExitResidual": {
+        "count": 12,
+        "min": 42.90757199999996,
+        "median": 45.74307999999999,
+        "q1": 43.68844724999997,
+        "q3": 46.85841924999998,
+        "max": 49.19377000000003
+      }
+    },
+    "historical": {
+      "dispatch": {
+        "count": 12,
+        "min": 1.573964,
+        "median": 1.6623635,
+        "q1": 1.59598575,
+        "q3": 1.70270775,
+        "max": 1.825733
+      },
+      "consoleSetup": {
+        "count": 12,
+        "min": 0.085693,
+        "median": 0.089799,
+        "q1": 0.08826975000000001,
+        "q3": 0.09197150000000001,
+        "max": 0.105541
+      },
+      "catalog": {
+        "count": 12,
+        "min": 11.732583,
+        "median": 12.444843500000001,
+        "q1": 12.371044,
+        "q3": 13.765087999999999,
+        "max": 50.853571
+      },
+      "onceEntry": {
+        "count": 12,
+        "min": 31.307281,
+        "median": 37.9948445,
+        "q1": 35.01752425,
+        "q3": 46.102743,
+        "max": 224.761403
+      },
+      "hostSetup": {
+        "count": 12,
+        "min": 0.378411,
+        "median": 0.44720899999999997,
+        "q1": 0.43667,
+        "q3": 0.46056675,
+        "max": 0.479069
+      },
+      "compile": {
+        "count": 12,
+        "min": 136.012191,
+        "median": 141.9754,
+        "q1": 140.49648374999998,
+        "q3": 152.4313505,
+        "max": 394.263923
+      },
+      "fixtureReset": {
+        "count": 12,
+        "min": 0.44105,
+        "median": 0.489286,
+        "q1": 0.46949025,
+        "q3": 0.513154,
+        "max": 0.565228
+      },
+      "run": {
+        "count": 12,
+        "min": 70.146303,
+        "median": 79.136232,
+        "q1": 74.99487075,
+        "q3": 86.3410095,
+        "max": 92.554593
+      },
+      "verify": {
+        "count": 12,
+        "min": 0.778331,
+        "median": 0.83516,
+        "q1": 0.8134935,
+        "q3": 0.8521265,
+        "max": 0.902618
+      },
+      "protocol": {
+        "count": 12,
+        "min": 57.788668,
+        "median": 78.600195,
+        "q1": 74.13956225,
+        "q3": 93.16544375,
+        "max": 111.671937
+      },
+      "cleanup": {
+        "count": 12,
+        "min": 0.086021,
+        "median": 0.1932875,
+        "q1": 0.16026225,
+        "q3": 0.2107095,
+        "max": 0.228056
+      },
+      "launchAndExitResidual": {
+        "count": 12,
+        "min": 43.007502999999986,
+        "median": 48.10571349999998,
+        "q1": 45.23517549999998,
+        "q3": 51.124833249999995,
+        "max": 852.296225
+      }
+    }
+  },
+  "historicalSource": "486b6bb6089635332bc798aaab8e659182bfa4f4",
+  "historicalImage": {
+    "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+    "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+    "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+    "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+    "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+    "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+    "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+    "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+    "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+    "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+    "Lokad.Lython.Benchmarks.dll": "b38a5b47054599a10aabff546475478654fdc829e25c757fe3e4f48c2cc1e7ac",
+    "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "6c20d79d7c75916fd132308796774dcba953995b401e5338ee9e10389a0573e2",
+    "Lokad.Lython.Utf8Regex.dll": "f24371ab69e3a773ebf00bf87390553b5a8ccbb76803e5e5b663d546d0c4dc8d",
+    "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+    "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+    "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+    "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+    "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+    "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+    "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+    "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+    "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+    "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+    "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+    "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+    "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+    "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+    "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+    "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+    "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+    "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+  },
+  "historicalTimedImage": {
+    "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+    "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+    "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+    "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+    "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+    "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+    "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+    "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+    "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+    "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+    "Lokad.Lython.Benchmarks.dll": "f4d90c3dfcafeba32adb200f61b0d5bcecc4e3a8289cf53eaf392e2044aa6560",
+    "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "6c20d79d7c75916fd132308796774dcba953995b401e5338ee9e10389a0573e2",
+    "Lokad.Lython.Utf8Regex.dll": "f24371ab69e3a773ebf00bf87390553b5a8ccbb76803e5e5b663d546d0c4dc8d",
+    "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+    "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+    "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+    "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+    "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+    "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+    "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+    "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+    "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+    "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+    "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+    "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+    "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+    "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+    "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+    "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+    "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+    "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+  },
+  "pairedCurrentMinusHistoricalMilliseconds": {
+    "dispatch": {
+      "minimum": -0.18117500000000009,
+      "median": 0.01153649999999995,
+      "maximum": 0.09378700000000006
+    },
+    "consoleSetup": {
+      "minimum": -0.018375000000000002,
+      "median": -0.0010235000000000036,
+      "maximum": 0.007652999999999993
+    },
+    "catalog": {
+      "minimum": -37.939404,
+      "median": 0.14245850000000004,
+      "maximum": 4.4164650000000005
+    },
+    "onceEntry": {
+      "minimum": -189.91243400000002,
+      "median": -2.343980999999996,
+      "maximum": 7.347795999999995
+    },
+    "hostSetup": {
+      "minimum": -0.05524699999999999,
+      "median": -0.025316499999999992,
+      "maximum": 0.036409000000000025
+    },
+    "compile": {
+      "minimum": -259.352541,
+      "median": -7.631949500000005,
+      "maximum": 5.651085999999992
+    },
+    "fixtureReset": {
+      "minimum": -0.12125499999999995,
+      "median": 0.021422999999999998,
+      "maximum": 0.19875299999999996
+    },
+    "run": {
+      "minimum": -19.351827999999998,
+      "median": 3.811878499999999,
+      "maximum": 377.668053
+    },
+    "verify": {
+      "minimum": -0.06037800000000004,
+      "median": 0.00877949999999994,
+      "maximum": 0.11373
+    },
+    "protocol": {
+      "minimum": -30.417862,
+      "median": -5.237249499999997,
+      "maximum": 26.506777
+    },
+    "cleanup": {
+      "minimum": -0.140795,
+      "median": -0.0006239999999999996,
+      "maximum": 0.126944
+    },
+    "launchAndExitResidual": {
+      "minimum": -804.523181,
+      "median": -1.8785619999999597,
+      "maximum": 3.344611999999927
+    }
+  }
+}
