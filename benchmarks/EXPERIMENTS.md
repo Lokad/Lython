@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1926 compare the compiler checkpoint with CPython](results/2026-11-28-current-cpython-compiler-checkpoint/README.md)
+measures `486b6bb60` on the quiet VM. Iterable shipment takes 1.011–1.023×
+CPython elapsed sync and 1.118–1.149× async. Ordinary definitions compile
+in 0.451–0.459× CPython elapsed. Async dense JSON takes 0.945–0.956×.
+All 168 batches pass. A separate local repeat of B1925 places function-free
+and both definition-workload CPU differences on either side of zero.
+
 [B1925 collect lexical bindings into their final slots](results/2026-11-28-direct-lexical-binding-slots/README.md)
 removes the transient binding list and shares unchanged signature tables.
 Ordinary and escaping definitions each allocate 36,672 B less to compile.

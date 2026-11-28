@@ -2,39 +2,39 @@
 
 | Workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Iterable-row shipment | 2,048 records / 27,350 B | 2.01259–2.03177 ms | 1.95870–1.95885 ms | 1.027–1.037× | Quiet diagnostic |
-| Iterable-row shipment, Lython `RunAsync` | 2,048 records / 27,350 B | 2.26645–2.35056 ms | 1.94349–1.96357 ms | 1.154–1.209× | Quiet diagnostic |
-| Nested JSON document summary | 2,048 records / 103,331 B | 0.64000–0.65729 ms | 0.67334–0.68318 ms | 0.937–0.976× | Quiet diagnostic |
-| Nested JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 0.65244–0.65863 ms | 0.67966–0.69197 ms | 0.943–0.969× | Quiet diagnostic, CPU spans parity |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40809–0.43424 ms | 1.37398–1.37725 ms | 0.296–0.316× | Quiet diagnostic, 6.41% Lython elapsed spread |
-| File search, match at line 1 | 42,010 B | 0.06673–0.06707 ms | 0.05071–0.05124 ms | 1.302–1.322× | Quiet diagnostic, about 16 µs elapsed gap |
+| Iterable-row shipment | 2,048 records / 27,350 B | 1.98382–1.98854 ms | 1.94462–1.96143 ms | 1.011–1.023× | Quiet diagnostic |
+| Iterable-row shipment, Lython `RunAsync` | 2,048 records / 27,350 B | 2.19451–2.24686 ms | 1.95501–1.96270 ms | 1.118–1.149× | Quiet diagnostic |
+| Nested JSON document summary | 2,048 records / 103,331 B | 0.64000–0.65729 ms | 0.67334–0.68318 ms | 0.937–0.976× | Quiet historical, `bfde55b6b`. [B1921](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md). |
+| Nested JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 0.64055–0.64199 ms | 0.67123–0.67802 ms | 0.945–0.956× | Quiet diagnostic |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.40809–0.43424 ms | 1.37398–1.37725 ms | 0.296–0.316× | Quiet historical, `bfde55b6b`, 6.41% Lython elapsed spread. [B1921](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md). |
+| File search, match at line 1 | 42,010 B | 0.06664–0.06685 ms | 0.05021–0.05086 ms | 1.310–1.331× | Quiet diagnostic |
 | Compiled-pattern regex log search | 3,072 lines / 86,954 B | 2.78428–2.85304 ms | 0.95047–0.99712 ms | 2.792–3.002× | Quiet historical, `24218276c`. [B1914](../benchmarks/results/2026-11-28-current-cpython-24218276/README.md). |
 | Module-level regex log search | 3,072 lines / 86,954 B | 3.08377–3.11461 ms | 1.59613–1.63767 ms | 1.883–1.951× | Quiet historical, `24218276c`. [B1914](../benchmarks/results/2026-11-28-current-cpython-24218276/README.md). |
 
-B1921 measures Lython `bfde55b6b` against stock CPython 3.13.16 on
+B1926 measures Lython `486b6bb60` against stock CPython 3.13.16 on
 November 28, 2026 UTC. The four-vCPU Azure F4as_v7 ran Ubuntu 24.04.4
 and .NET 11 RC3. Ratios divide Lython elapsed by CPython elapsed.
 Values above 1× mean Lython takes longer. Ranges span all pairings of
-medians from two workers per engine. All six workload goldens and
-224 timed batches verify. [B1921](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md).
+medians from two workers per engine. All five workload goldens and
+168 timed batches verify. [B1926](../benchmarks/results/2026-11-28-current-cpython-compiler-checkpoint/README.md).
 
 Warm execution uses compiled code in a running process. Elapsed includes
 applicable RAM-backed I/O, output and file verification, and previous-result
 disposal. Process CPU also includes fixture reset and framing. Lython uses
 a mediated host and shared admission. CPython uses its native file APIs
 with `-I -S -X utf8`. The historical regex rows use the optional PythonRe
-0.5.0 adapter. [CPU and workload details](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md).
+0.5.0 adapter. [CPU and workload details](../benchmarks/results/2026-11-28-current-cpython-compiler-checkpoint/README.md).
 
 ## Compilation and compile-to-result
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Generated ordinary definitions, compile only | 96 definitions / 8,641 B source | 0.51016–0.51341 ms | 1.09577–1.10337 ms | 0.462–0.469× | Quiet diagnostic |
-| Configuration edit, compile to result | 357 B source / 181 B input | 0.09619–0.09630 ms | 0.12406–0.12461 ms | 0.772–0.776× | Quiet diagnostic |
+| Generated ordinary definitions, compile only | 96 definitions / 8,641 B source | 0.49597–0.50051 ms | 1.09063–1.09859 ms | 0.451–0.459× | Quiet diagnostic |
+| Configuration edit, compile to result | 357 B source / 181 B input | 0.09525–0.09653 ms | 0.12228–0.12304 ms | 0.774–0.789× | Quiet diagnostic |
 
 Compile-only times resident source and retiring previous compiled storage.
 Compile-to-result also runs the script and includes applicable I/O and result
-cleanup. Both use an already-running process. [B1921](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md).
+cleanup. Both use an already-running process. [B1926](../benchmarks/results/2026-11-28-current-cpython-compiler-checkpoint/README.md).
 
 ## Fresh process
 
