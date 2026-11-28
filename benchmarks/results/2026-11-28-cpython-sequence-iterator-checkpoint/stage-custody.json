@@ -1,0 +1,12 @@
+{
+  "before": 57274368,
+  "afterReclaim": 57274368,
+  "afterStaging": 51150848,
+  "requiredBeforeStage": 23210320,
+  "deduplicated": [],
+  "expandedBytes": 6033104,
+  "reused": {
+    "donor": 30
+  },
+  "streamed": true
+}

@@ -2,24 +2,25 @@
 
 | Workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Iterable-row shipment | 2,048 records / 27,350 B | 2.01506–2.07370 ms | 1.97285–1.97362 ms | 1.021–1.051× | Quiet diagnostic, B1937 |
-| Iterable-row shipment, Lython `RunAsync` | 2,048 records / 27,350 B | 2.20086–2.20510 ms | 1.93885–1.94706 ms | 1.130–1.137× | Quiet diagnostic, B1937 |
-| Ordinary helper and generator reduction, Lython `RunAsync` | 2,048 records / 27,350 B | 3.13237–3.19689 ms | 1.97443–1.97768 ms | 1.584–1.619× | Quiet diagnostic, B1937 |
+| Iterable-row shipment | 2,048 records / 27,350 B | 2.02553–2.04452 ms | 1.93197–1.97349 ms | 1.026–1.058× | Quiet diagnostic, B1943 |
+| Iterable-row shipment, Lython `RunAsync` | 2,048 records / 27,350 B | 2.16532–2.22912 ms | 1.93969–1.95271 ms | 1.109–1.149× | Quiet diagnostic, B1943 |
+| Ordinary helper and generator reduction | 2,048 records / 27,350 B | 2.56967–2.60110 ms | 1.97599–1.98347 ms | 1.296–1.316× | Quiet diagnostic, B1943 |
+| Ordinary helper and generator reduction, Lython `RunAsync` | 2,048 records / 27,350 B | 2.94731–2.99740 ms | 1.96750–1.97411 ms | 1.493–1.523× | Quiet diagnostic, B1943 |
 | Nested JSON document summary | 2,048 records / 103,331 B | 0.64000–0.65729 ms | 0.67334–0.68318 ms | 0.937–0.976× | Quiet historical, `bfde55b6b`. [B1921](../benchmarks/results/2026-11-28-current-cpython-reader-checkpoint/README.md). |
 | Nested JSON document summary, Lython `RunAsync` | 2,048 records / 103,331 B | 0.65308–0.66108 ms | 0.67361–0.67902 ms | 0.962–0.981× | Quiet diagnostic, B1932 |
-| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.42560–0.43160 ms | 1.35824–1.36216 ms | 0.312–0.318× | Quiet diagnostic, B1937 |
+| File-fed CSV quantity map, Lython `RunAsync` | 2,048 records / 27,350 B | 0.43536–0.44757 ms | 1.36214–1.37161 ms | 0.317–0.329× | Quiet diagnostic, B1943 |
 | File search, match at line 1 | 42,010 B | 0.06676–0.06690 ms | 0.05110–0.05118 ms | 1.304–1.309× | Quiet diagnostic, B1932 |
-| File search, match at line 1, Lython `RunAsync` | 42,010 B | 0.06913–0.06951 ms | 0.04994–0.05086 ms | 1.359–1.392× | Quiet diagnostic, B1937 |
+| File search, match at line 1, Lython `RunAsync` | 42,010 B | 0.06913–0.06951 ms | 0.04994–0.05086 ms | 1.359–1.392× | Quiet historical, `e036d6597`. [B1937](../benchmarks/results/2026-11-28-current-cpython-shipment/README.md). |
 | Compiled-pattern regex log search | 3,072 lines / 86,954 B | 2.67783–2.71755 ms | 0.96541–0.97195 ms | 2.755–2.815× | Quiet diagnostic, B1932 |
 | Module-level regex log search | 3,072 lines / 86,954 B | 3.04883–3.09664 ms | 1.54657–1.56180 ms | 1.952–2.002× | Quiet diagnostic, B1932 |
 
-B1937 measures Lython `e036d6597` against stock CPython 3.13.16 on
+B1943 measures Lython `bf10eeaea` against stock CPython 3.13.16 on
 November 28, 2026 UTC. The four-vCPU Azure F4as_v7 ran Ubuntu 24.04.4
-and .NET 11 RC3 for both checkpoints. B1937 verifies four goldens and
-140 timed batches. B1932 measures `2ef73bd71` and verifies seven goldens
+and .NET 11 RC3. B1943 verifies four goldens and
+168 timed batches. B1932 measures `2ef73bd71` and verifies seven goldens
 and 224 batches. Ratios divide Lython elapsed by CPython elapsed.
 Values above 1× mean Lython takes longer. Ranges span all pairings of
-medians from two workers per engine. [B1937](../benchmarks/results/2026-11-28-current-cpython-shipment/README.md) ·
+medians from two workers per engine. [B1943](../benchmarks/results/2026-11-28-cpython-sequence-iterator-checkpoint/README.md) ·
 [B1932](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md).
 
 Warm execution uses compiled code in a running process. Elapsed includes
@@ -27,7 +28,7 @@ applicable RAM-backed I/O, output and file verification, and previous-result
 disposal. Process CPU also includes fixture reset and framing. Lython uses
 a mediated host and shared admission. CPython uses its native file APIs
 with `-I -S -X utf8`. The regex rows use the optional PythonRe 0.5.0
-adapter. [Shipment CPU and workload details](../benchmarks/results/2026-11-28-current-cpython-shipment/README.md) ·
+adapter. [Shipment CPU and workload details](../benchmarks/results/2026-11-28-cpython-sequence-iterator-checkpoint/README.md) ·
 [JSON and regex CPU](../benchmarks/results/2026-11-28-current-cpython-regex-checkpoint/README.md).
 
 ## Compilation and compile-to-result

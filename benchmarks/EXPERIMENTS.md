@@ -6,6 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1943 quiet iterator checkpoint](results/2026-11-28-cpython-sequence-iterator-checkpoint/README.md)
+measures `bf10eeaea`. Ordinary async reduction takes 1.493–1.523× CPython
+elapsed, and iterable async shipment takes 1.109–1.149×. All 168 timed
+batches and 202 local sampled batches verify. The newer capture puts
+ordinary async loop advancement at 1.7% nearest and iterable frame setup
+at 2.1% inclusive.
+
+[B1944 matched file-fed control](results/2026-11-28-cpython-sequence-iterator-checkpoint/matched-control/README.md)
+compares the exact `e036d6597` and `bf10eeaea` images. Ordinary async CPU
+falls 3.06–8.96%, while the file-fed map uses 0.73–4.08% more. Identical
+file-map operand layouts rule out a changed compiler cleanup bound for
+that script. The iterable module's bound grows from slot 8 to slot 11.
+
 [B1941 initial direct sequence iterator](results/2026-11-28-direct-sequence-iterator/README.md)
 removes the cursor for list and tuple iterators. Ordinary reduction saves
 147,400 B and uses 6.17–7.92% less local async CPU. The range control
