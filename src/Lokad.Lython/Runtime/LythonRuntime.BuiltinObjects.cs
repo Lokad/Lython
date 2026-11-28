@@ -988,7 +988,7 @@ internal sealed partial class LythonRuntime
                 scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
         foreach (var pair in context.IncludeCallerLocals ? context.Variables : [])
         {
-            if (!ExecutionState.BuiltinNames.Contains(pair.Key) &&
+            if (!ExecutionState.IsBuiltinName(pair.Key) &&
                 (frame is null || !frame.TryResolveLocalOrClosure(pair.Key, out _)))
             {
                 scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);

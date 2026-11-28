@@ -27,8 +27,7 @@ internal sealed partial class LythonRuntime
             CompiledRegexPrograms? regexPrograms = null, bool ownsModuleNamespace = false)
         {
             OwnsModuleNamespace = ownsModuleNamespace;
-            var builtinVariables = CreateBuiltinVariables();
-            State = new ExecutionState(host, options, builtinVariables, regexProvider, regexPrograms);
+            State = new ExecutionState(host, options, regexProvider, regexPrograms);
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
             InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));

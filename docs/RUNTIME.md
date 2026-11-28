@@ -1330,13 +1330,14 @@ default evaluation or annotation setup fails. Once a decorator can observe the
 function, the defaults stay funded even if decoration raises.
 
 Plain builtin functions, constructor parameter layouts and the immutable `object`
-and `type` definitions are shared fixed metadata. Every execution keeps its mutable
-builtin dictionaries, callable hierarchy caches and exception objects. Builtin
-namespace views admit their wrappers under the actual caller; shared types retain
-no earlier caller's view or owner. Repeated introspection can retain more minor
-wrapper storage until execution cleanup. Internal decorators cannot mutate these
-immutable definitions. A function's `__self__` resolves through the current caller;
-shared definitions retain no execution, host or caller token.
+and `type` definitions are shared fixed metadata. The frontend and runtime share
+one builtin name index. Each execution constructs its mutable callable metadata and
+exception types on first lookup and retains them for that execution. Builtin
+namespace views admit their wrappers under the current caller. Repeated
+introspection can retain minor wrapper storage until execution cleanup. Internal
+decorators cannot mutate shared definitions. A function's `__self__` resolves
+through the current caller. Shared definitions retain no execution, host, owner
+or caller token.
 
 Ordinary calls to executable functions with slot-local storage advance one explicit
 caller/callee chain, including keyword and variadic signatures. The shared binder

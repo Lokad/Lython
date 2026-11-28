@@ -1,0 +1,98 @@
+[
+  {
+    "case": "diagnostic.file-search-first-line",
+    "mode": "sync",
+    "clr": [
+      39616,
+      31960
+    ],
+    "admittedPeak": [
+      19556,
+      19556
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "sync",
+    "clr": [
+      33640,
+      25984
+    ],
+    "admittedPeak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "sync",
+    "clr": [
+      2578302,
+      2571694
+    ],
+    "admittedPeak": [
+      3517191,
+      3517191
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  },
+  {
+    "case": "diagnostic.file-search-first-line",
+    "mode": "async",
+    "clr": [
+      39864,
+      32208
+    ],
+    "admittedPeak": [
+      19556,
+      19556
+    ],
+    "compiled": [
+      63536,
+      63536
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "mode": "async",
+    "clr": [
+      33856,
+      26200
+    ],
+    "admittedPeak": [
+      15472,
+      15472
+    ],
+    "compiled": [
+      67328,
+      67328
+    ]
+  },
+  {
+    "case": "diagnostic.shipment-row-generator-reduction",
+    "mode": "async",
+    "clr": [
+      2578518,
+      2571910
+    ],
+    "admittedPeak": [
+      3517191,
+      3517191
+    ],
+    "compiled": [
+      59748,
+      59748
+    ]
+  }
+]

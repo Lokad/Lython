@@ -110,7 +110,7 @@ internal sealed class AbstractState
 
     public void BindUnknown(string name)
     {
-        if (ExecutionState.BuiltinNames.Contains(name))
+        if (ExecutionState.IsBuiltinName(name))
             Set(name, AbstractValue.Unknown());
         else
             Remove(name);
@@ -118,7 +118,7 @@ internal sealed class AbstractState
 
     public void ForgetValue(string name)
     {
-        if (ExecutionState.BuiltinNames.Contains(name) && _values.ContainsKey(name))
+        if (ExecutionState.IsBuiltinName(name) && _values.ContainsKey(name))
             Set(name, AbstractValue.Unknown());
         else
             Remove(name);
@@ -129,7 +129,7 @@ internal sealed class AbstractState
         foreach (var name in scope.LocalNames)
         {
             AnalysisContext?.CheckExecution();
-            if (ExecutionState.BuiltinNames.Contains(name))
+            if (ExecutionState.IsBuiltinName(name))
                 Set(name, AbstractValue.Unknown());
         }
     }
@@ -202,7 +202,7 @@ internal sealed class AbstractState
                 AnalysisContext?.CheckExecution();
                 if (dictionaries && (value.Facts & AbstractValueFacts.Dictionary) != 0)
                 {
-                    if (ExecutionState.BuiltinNames.Contains(name))
+                    if (ExecutionState.IsBuiltinName(name))
                     {
                         (rewrites ??= []).Add((name, AbstractValue.Unknown()));
                     }
@@ -411,7 +411,7 @@ internal sealed class AbstractState
                 joinedFacts |= joined.Facts;
                 kept++;
             }
-            else if (ExecutionState.BuiltinNames.Contains(name))
+            else if (ExecutionState.IsBuiltinName(name))
             {
                 WritableValues()[name] = AbstractValue.Unknown();
                 kept++;
@@ -424,7 +424,7 @@ internal sealed class AbstractState
             {
                 AnalysisContext?.CheckExecution();
                 if (right._values.ContainsKey(name)) continue;
-                if (ExecutionState.BuiltinNames.Contains(name))
+                if (ExecutionState.IsBuiltinName(name))
                     WritableValues()[name] = AbstractValue.Unknown();
                 else
                     WritableValues().Remove(name);

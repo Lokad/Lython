@@ -6,31 +6,26 @@ internal sealed partial class LythonRuntime
 {
     private sealed class BuiltinsModule : PyModule
     {
-        private readonly Dictionary<string, object> _builtins;
-        private readonly string[] _exportedNames;
-        private readonly string[] _memberNames;
+        private readonly ExecutionContext.BuiltinBindings _builtins;
+        private static readonly string[] PublicNames = ExecutionState.BuiltinNames
+            .Append("False")
+            .Append("None")
+            .Append("True")
+            .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        private static readonly string[] AllNames = PublicNames
+            .Append("__debug__")
+            .Append("__name__")
+            .Order(StringComparer.Ordinal)
+            .ToArray();
 
         public BuiltinsModule(ExecutionContext context) : base("builtins")
-        {
-            _builtins = context.State.BuiltinVariables;
-            _exportedNames = _builtins.Keys
-                .Append("False")
-                .Append("None")
-                .Append("True")
-                .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
-                .Distinct(StringComparer.Ordinal)
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-            _memberNames = _exportedNames
-                .Append("__debug__")
-                .Append("__name__")
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-        }
+            => _builtins = context.State.BuiltinVariables;
 
-        public override IReadOnlyList<string> ExportedNames => _exportedNames;
+        public override IReadOnlyList<string> ExportedNames => PublicNames;
 
-        public override IReadOnlyList<string> MemberNames => _memberNames;
+        public override IReadOnlyList<string> MemberNames => AllNames;
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {

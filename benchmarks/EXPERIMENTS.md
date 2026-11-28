@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1964 create run-local builtin bindings on lookup](results/2026-11-28-lazy-builtin-bindings/README.md)
+removes 7,656 CLR bytes per short search or configuration edit. File-search
+CPU falls in both local collections. The shipment control's initial elapsed
+increase spans zero on repeat. Keep both runs and all admitted peaks.
+
 [B1963 refresh the quiet CPython comparison](results/2026-11-28-ownership-cpython/README.md)
 measures `0b50e6fda` after generator ownership changes. Ordinary tuple
 reduction takes 1.156–1.181× sync and 1.219–1.236× async elapsed.

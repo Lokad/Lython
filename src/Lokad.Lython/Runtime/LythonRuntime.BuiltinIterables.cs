@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
     {
         foreach (var name in context.Variables.Keys)
         {
-            if (!ExecutionState.BuiltinNames.Contains(name))
+            if (!ExecutionState.IsBuiltinName(name))
             {
                 yield return name;
             }

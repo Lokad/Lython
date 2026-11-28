@@ -10,47 +10,6 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, AbsAsync, ["x"]);
         private static readonly BuiltinCallable SharedSum = BuiltinCallable.CreateBorrowed(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync);
 
-        private static readonly (string Name, object Value)[] SharedFunctions =
-        [
-            ("open", new OpenCallable()),
-            ("print", new PrintCallable()),
-            ("input", BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0)),
-            ("repr", BuiltinCallable.Create("repr", Repr, ReprAsync, ["value"])),
-            ("ascii", BuiltinCallable.Create("ascii", Ascii, AsciiAsync, ["value"])),
-            ("format", BuiltinCallable.Create("format", Format, FormatAsync, ["value", "format_spec"], requiredCount: 1)),
-            ("len", SharedLen),
-            ("sorted", BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync)),
-            ("any", BuiltinCallable.Create("any", Any, AnyAsync)),
-            ("all", BuiltinCallable.Create("all", All, AllAsync)),
-            ("min", new MinMaxCallable(ExtremumOperation.Minimum)),
-            ("max", new MinMaxCallable(ExtremumOperation.Maximum)),
-            ("sum", SharedSum),
-            ("abs", SharedAbs),
-            ("pow", BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2)),
-            ("round", BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1)),
-            ("divmod", BuiltinCallable.Create("divmod", DivMod, DivModAsync, ["a", "b"])),
-            ("bin", BuiltinCallable.Create("bin", Bin, ["number"])),
-            ("oct", BuiltinCallable.Create("oct", Oct, ["number"])),
-            ("hex", BuiltinCallable.Create("hex", Hex, ["number"])),
-            ("chr", BuiltinCallable.Create("chr", Chr, ["i"])),
-            ("ord", BuiltinCallable.Create("ord", Ord, ["c"])),
-            ("iter", BuiltinCallable.Create("iter", Iter, IterAsync)),
-            ("next", BuiltinCallable.Create(LythonCallableSignature.Create("next", ["iterator", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2), Next, NextAsync)),
-            ("isinstance", BuiltinCallable.Create("isinstance", IsInstance, ["value", "type"], requiredCount: 2)),
-            ("issubclass", BuiltinCallable.Create("issubclass", IsSubclass, ["type", "base"], requiredCount: 2)),
-            ("getattr", BuiltinCallable.Create("getattr", GetAttr, GetAttrAsync, ["object", "name", "default"], requiredCount: 2)),
-            ("hasattr", BuiltinCallable.Create("hasattr", HasAttr, HasAttrAsync, ["object", "name"], requiredCount: 2)),
-            ("setattr", BuiltinCallable.Create("setattr", SetAttr, ["object", "name", "value"], requiredCount: 3)),
-            ("delattr", BuiltinCallable.Create("delattr", DelAttr, ["object", "name"], requiredCount: 2)),
-            ("dir", BuiltinCallable.Create("dir", Dir, ["object"], requiredCount: 0)),
-            ("vars", BuiltinCallable.Create("vars", Vars, VarsAsync, ["object"], requiredCount: 0)),
-            ("globals", BuiltinCallable.Create("globals", Globals)),
-            ("locals", BuiltinCallable.Create("locals", Locals)),
-            ("callable", BuiltinCallable.Create("callable", Callable, ["object"])),
-            ("hash", BuiltinCallable.Create("hash", Hash, HashAsync, ["object"])),
-            ("id", BuiltinCallable.Create("id", Id)),
-        ];
-
         // Signature interning may lock and package parameter arrays. Do it once
         // for immutable constructor metadata, independently of each fresh type.
         private static class BuiltinTypeSignatures
@@ -121,84 +80,114 @@ internal sealed partial class LythonRuntime
             return (objectType, typeType);
         }
 
-        private static Dictionary<string, object> CreateBuiltinVariables()
+        internal sealed class BuiltinBindings
         {
-            var (objectType, typeType) = SharedCoreTypes;
-            var osErrorType = new ExceptionTypeValue("OSError");
+            private static readonly object?[] SharedValues = CreateSharedValues();
+            private object?[]? _runValues;
 
-            var builtins = new Dictionary<string, object>(128, StringComparer.Ordinal)
+            public IEnumerable<string> Keys => ExecutionState.BuiltinNames;
+
+            public object this[string name] => TryGetValue(name, out var value)
+                ? value : throw new KeyNotFoundException(name);
+
+            public bool TryGetValue(string name, [MaybeNullWhen(false)] out object value)
             {
-                ["object"] = objectType,
-                ["type"] = typeType,
-                ["str"] = new StrCallable(),
-                ["range"] = BuiltinCallable.Create(BuiltinTypeSignatures.Range, Range),
-                ["enumerate"] = BuiltinCallable.Create(BuiltinTypeSignatures.Enumerate, Enumerate),
-                ["zip"] = new ZipCallable(),
-                ["reversed"] = BuiltinCallable.Create(BuiltinTypeSignatures.Reversed, Reversed),
-                ["map"] = BuiltinCallable.Create(BuiltinTypeSignatures.Map, Map, MapAsync),
-                ["filter"] = BuiltinCallable.Create(BuiltinTypeSignatures.Filter, Filter, FilterAsync),
-                ["slice"] = BuiltinCallable.Create(BuiltinTypeSignatures.Slice, Slice),
-                ["BaseException"] = new ExceptionTypeValue("BaseException"),
-                ["Exception"] = new ExceptionTypeValue("Exception"),
-                ["ArithmeticError"] = new ExceptionTypeValue("ArithmeticError"),
-                ["LookupError"] = new ExceptionTypeValue("LookupError"),
-                ["UnicodeError"] = new ExceptionTypeValue("UnicodeError"),
-                ["Warning"] = new ExceptionTypeValue("Warning"),
-                ["FutureWarning"] = new ExceptionTypeValue("FutureWarning"),
-                ["TypeError"] = new ExceptionTypeValue("TypeError"),
-                ["ValueError"] = new ExceptionTypeValue("ValueError"),
-                ["KeyError"] = new ExceptionTypeValue("KeyError"),
-                ["IndexError"] = new ExceptionTypeValue("IndexError"),
-                ["RuntimeError"] = new ExceptionTypeValue("RuntimeError"),
-                ["EOFError"] = new ExceptionTypeValue("EOFError"),
-                ["AssertionError"] = new ExceptionTypeValue("AssertionError"),
-                ["ImportError"] = new ExceptionTypeValue("ImportError"),
-                ["ModuleNotFoundError"] = new ExceptionTypeValue("ModuleNotFoundError"),
-                ["NameError"] = new ExceptionTypeValue("NameError"),
-                ["UnboundLocalError"] = new ExceptionTypeValue("UnboundLocalError"),
-                ["AttributeError"] = new ExceptionTypeValue("AttributeError"),
-                ["SyntaxError"] = new ExceptionTypeValue("SyntaxError"),
-                ["FileNotFoundError"] = new ExceptionTypeValue("FileNotFoundError"),
-                ["FileExistsError"] = new ExceptionTypeValue("FileExistsError"),
-                ["IsADirectoryError"] = new ExceptionTypeValue("IsADirectoryError"),
-                ["NotADirectoryError"] = new ExceptionTypeValue("NotADirectoryError"),
-                ["PermissionError"] = new ExceptionTypeValue("PermissionError"),
-                ["BrokenPipeError"] = new ExceptionTypeValue("BrokenPipeError"),
-                ["TimeoutError"] = new ExceptionTypeValue("TimeoutError"),
-                ["IOError"] = osErrorType,
-                ["EnvironmentError"] = osErrorType,
-                ["OSError"] = osErrorType,
-                ["StopIteration"] = new ExceptionTypeValue("StopIteration"),
-                ["ZeroDivisionError"] = new ExceptionTypeValue("ZeroDivisionError"),
-                ["NotImplementedError"] = new ExceptionTypeValue("NotImplementedError"),
-                ["RecursionError"] = new ExceptionTypeValue("RecursionError"),
-                ["MemoryError"] = new ExceptionTypeValue("MemoryError"),
-                ["UnicodeEncodeError"] = new ExceptionTypeValue("UnicodeEncodeError"),
-                ["UnicodeDecodeError"] = new ExceptionTypeValue("UnicodeDecodeError"),
-                ["UnicodeTranslateError"] = new ExceptionTypeValue("UnicodeTranslateError"),
-                ["OverflowError"] = new ExceptionTypeValue("OverflowError"),
-                ["SystemExit"] = new ExceptionTypeValue("SystemExit"),
-                ["GeneratorExit"] = new ExceptionTypeValue("GeneratorExit"),
-                ["KeyboardInterrupt"] = new ExceptionTypeValue("KeyboardInterrupt"),
-                ["bool"] = BuiltinCallable.Create(BuiltinTypeSignatures.Bool, Bool, BoolAsync),
-                ["int"] = BuiltinCallable.Create(BuiltinTypeSignatures.Int, Int, IntAsync),
-                ["complex"] = new PyBuiltinRuntimeType("complex", ConstructComplex, null, ConstructComplexAsync),
-                ["float"] = BuiltinCallable.Create(BuiltinTypeSignatures.Float, Float, FloatAsync),
-                ["bytes"] = BuiltinCallable.Create(BuiltinTypeSignatures.Bytes, Bytes, BytesAsync),
-                ["staticmethod"] = BuiltinCallable.Create(BuiltinTypeSignatures.Staticmethod, StaticMethod),
-                ["classmethod"] = BuiltinCallable.Create(BuiltinTypeSignatures.Classmethod, ClassMethod),
-                ["property"] = BuiltinCallable.Create(BuiltinTypeSignatures.Property, Property, PropertyAsync),
-                ["super"] = BuiltinCallable.Create(BuiltinTypeSignatures.Super, Super),
-                ["list"] = BuiltinCallable.Create(BuiltinTypeSignatures.List, List, ListAsync),
-                ["tuple"] = BuiltinCallable.Create(BuiltinTypeSignatures.Tuple, Tuple, TupleAsync),
-                ["dict"] = new DictCallable(),
-                ["set"] = BuiltinCallable.Create(BuiltinTypeSignatures.Set, Set, SetAsync),
-                ["Ellipsis"] = PyEllipsis.Instance,
-                ["NotImplemented"] = PyNotImplemented.Instance,
-            };
+                if (!ExecutionState.TryGetBuiltinSlot(name, out var index))
+                {
+                    value = null;
+                    return false;
+                }
 
-            foreach (var (name, value) in SharedFunctions) builtins.Add(name, value);
-            return builtins;
+                value = SharedValues[index] ?? GetRunValue(index, name);
+                return true;
+            }
+
+            private object GetRunValue(int index, string name)
+                => (_runValues ??= new object?[SharedValues.Length])[index] ??= CreateRunValue(name);
+
+            private static object?[] CreateSharedValues()
+            {
+                var entries = new object?[ExecutionState.BuiltinNames.Count];
+                entries[ExecutionState.GetBuiltinSlot("object")] = SharedCoreTypes.Object;
+                entries[ExecutionState.GetBuiltinSlot("type")] = SharedCoreTypes.Type;
+                entries[ExecutionState.GetBuiltinSlot("Ellipsis")] = PyEllipsis.Instance;
+                entries[ExecutionState.GetBuiltinSlot("NotImplemented")] = PyNotImplemented.Instance;
+                entries[ExecutionState.GetBuiltinSlot("open")] = new OpenCallable();
+                entries[ExecutionState.GetBuiltinSlot("print")] = new PrintCallable();
+                entries[ExecutionState.GetBuiltinSlot("input")] = BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0);
+                entries[ExecutionState.GetBuiltinSlot("repr")] = BuiltinCallable.Create("repr", Repr, ReprAsync, ["value"]);
+                entries[ExecutionState.GetBuiltinSlot("ascii")] = BuiltinCallable.Create("ascii", Ascii, AsciiAsync, ["value"]);
+                entries[ExecutionState.GetBuiltinSlot("format")] = BuiltinCallable.Create("format", Format, FormatAsync, ["value", "format_spec"], requiredCount: 1);
+                entries[ExecutionState.GetBuiltinSlot("len")] = SharedLen;
+                entries[ExecutionState.GetBuiltinSlot("sorted")] = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync);
+                entries[ExecutionState.GetBuiltinSlot("any")] = BuiltinCallable.Create("any", Any, AnyAsync);
+                entries[ExecutionState.GetBuiltinSlot("all")] = BuiltinCallable.Create("all", All, AllAsync);
+                entries[ExecutionState.GetBuiltinSlot("min")] = new MinMaxCallable(ExtremumOperation.Minimum);
+                entries[ExecutionState.GetBuiltinSlot("max")] = new MinMaxCallable(ExtremumOperation.Maximum);
+                entries[ExecutionState.GetBuiltinSlot("sum")] = SharedSum;
+                entries[ExecutionState.GetBuiltinSlot("abs")] = SharedAbs;
+                entries[ExecutionState.GetBuiltinSlot("pow")] = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2);
+                entries[ExecutionState.GetBuiltinSlot("round")] = BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1);
+                entries[ExecutionState.GetBuiltinSlot("divmod")] = BuiltinCallable.Create("divmod", DivMod, DivModAsync, ["a", "b"]);
+                entries[ExecutionState.GetBuiltinSlot("bin")] = BuiltinCallable.Create("bin", Bin, ["number"]);
+                entries[ExecutionState.GetBuiltinSlot("oct")] = BuiltinCallable.Create("oct", Oct, ["number"]);
+                entries[ExecutionState.GetBuiltinSlot("hex")] = BuiltinCallable.Create("hex", Hex, ["number"]);
+                entries[ExecutionState.GetBuiltinSlot("chr")] = BuiltinCallable.Create("chr", Chr, ["i"]);
+                entries[ExecutionState.GetBuiltinSlot("ord")] = BuiltinCallable.Create("ord", Ord, ["c"]);
+                entries[ExecutionState.GetBuiltinSlot("iter")] = BuiltinCallable.Create("iter", Iter, IterAsync);
+                entries[ExecutionState.GetBuiltinSlot("next")] = BuiltinCallable.Create(LythonCallableSignature.Create("next", ["iterator", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2), Next, NextAsync);
+                entries[ExecutionState.GetBuiltinSlot("isinstance")] = BuiltinCallable.Create("isinstance", IsInstance, ["value", "type"], requiredCount: 2);
+                entries[ExecutionState.GetBuiltinSlot("issubclass")] = BuiltinCallable.Create("issubclass", IsSubclass, ["type", "base"], requiredCount: 2);
+                entries[ExecutionState.GetBuiltinSlot("getattr")] = BuiltinCallable.Create("getattr", GetAttr, GetAttrAsync, ["object", "name", "default"], requiredCount: 2);
+                entries[ExecutionState.GetBuiltinSlot("hasattr")] = BuiltinCallable.Create("hasattr", HasAttr, HasAttrAsync, ["object", "name"], requiredCount: 2);
+                entries[ExecutionState.GetBuiltinSlot("setattr")] = BuiltinCallable.Create("setattr", SetAttr, ["object", "name", "value"], requiredCount: 3);
+                entries[ExecutionState.GetBuiltinSlot("delattr")] = BuiltinCallable.Create("delattr", DelAttr, ["object", "name"], requiredCount: 2);
+                entries[ExecutionState.GetBuiltinSlot("dir")] = BuiltinCallable.Create("dir", Dir, ["object"], requiredCount: 0);
+                entries[ExecutionState.GetBuiltinSlot("vars")] = BuiltinCallable.Create("vars", Vars, VarsAsync, ["object"], requiredCount: 0);
+                entries[ExecutionState.GetBuiltinSlot("globals")] = BuiltinCallable.Create("globals", Globals);
+                entries[ExecutionState.GetBuiltinSlot("locals")] = BuiltinCallable.Create("locals", Locals);
+                entries[ExecutionState.GetBuiltinSlot("callable")] = BuiltinCallable.Create("callable", Callable, ["object"]);
+                entries[ExecutionState.GetBuiltinSlot("hash")] = BuiltinCallable.Create("hash", Hash, HashAsync, ["object"]);
+                entries[ExecutionState.GetBuiltinSlot("id")] = BuiltinCallable.Create("id", Id);
+                return entries;
+            }
+
+            private static object CreateRunValue(string name) => name switch
+            {
+                "str" => new StrCallable(),
+                "range" => BuiltinCallable.Create(BuiltinTypeSignatures.Range, Range),
+                "enumerate" => BuiltinCallable.Create(BuiltinTypeSignatures.Enumerate, Enumerate),
+                "zip" => new ZipCallable(),
+                "reversed" => BuiltinCallable.Create(BuiltinTypeSignatures.Reversed, Reversed),
+                "map" => BuiltinCallable.Create(BuiltinTypeSignatures.Map, Map, MapAsync),
+                "filter" => BuiltinCallable.Create(BuiltinTypeSignatures.Filter, Filter, FilterAsync),
+                "slice" => BuiltinCallable.Create(BuiltinTypeSignatures.Slice, Slice),
+                "bool" => BuiltinCallable.Create(BuiltinTypeSignatures.Bool, Bool, BoolAsync),
+                "int" => BuiltinCallable.Create(BuiltinTypeSignatures.Int, Int, IntAsync),
+                "complex" => new PyBuiltinRuntimeType("complex", ConstructComplex, null, ConstructComplexAsync),
+                "float" => BuiltinCallable.Create(BuiltinTypeSignatures.Float, Float, FloatAsync),
+                "bytes" => BuiltinCallable.Create(BuiltinTypeSignatures.Bytes, Bytes, BytesAsync),
+                "staticmethod" => BuiltinCallable.Create(BuiltinTypeSignatures.Staticmethod, StaticMethod),
+                "classmethod" => BuiltinCallable.Create(BuiltinTypeSignatures.Classmethod, ClassMethod),
+                "property" => BuiltinCallable.Create(BuiltinTypeSignatures.Property, Property, PropertyAsync),
+                "super" => BuiltinCallable.Create(BuiltinTypeSignatures.Super, Super),
+                "list" => BuiltinCallable.Create(BuiltinTypeSignatures.List, List, ListAsync),
+                "tuple" => BuiltinCallable.Create(BuiltinTypeSignatures.Tuple, Tuple, TupleAsync),
+                "dict" => new DictCallable(),
+                "set" => BuiltinCallable.Create(BuiltinTypeSignatures.Set, Set, SetAsync),
+                "IOError" or "EnvironmentError" or "OSError" => new ExceptionTypeValue("OSError"),
+                "BaseException" or "Exception" or "ArithmeticError" or "LookupError"
+                    or "UnicodeError" or "Warning" or "FutureWarning" or "TypeError"
+                    or "ValueError" or "KeyError" or "IndexError" or "RuntimeError"
+                    or "EOFError" or "AssertionError" or "ImportError" or "ModuleNotFoundError"
+                    or "NameError" or "UnboundLocalError" or "AttributeError" or "SyntaxError"
+                    or "FileNotFoundError" or "FileExistsError" or "IsADirectoryError" or "NotADirectoryError"
+                    or "PermissionError" or "BrokenPipeError" or "TimeoutError" or "StopIteration"
+                    or "ZeroDivisionError" or "NotImplementedError" or "RecursionError" or "MemoryError"
+                    or "UnicodeEncodeError" or "UnicodeDecodeError" or "UnicodeTranslateError" or "OverflowError"
+                    or "SystemExit" or "GeneratorExit" or "KeyboardInterrupt" => new ExceptionTypeValue(name),
+                _ => throw new InvalidOperationException("Missing builtin value for " + name),
+            };
         }
     }
 }

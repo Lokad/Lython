@@ -48,35 +48,43 @@ internal sealed partial class ExecutionState
             throw;
         }
     }
-    public static readonly HashSet<string> BuiltinNames =
-    [
-        "object", "type", "open", "print", "input", "str", "repr", "ascii", "format",
-        "len", "sorted", "any", "all", "min", "max", "sum", "abs", "pow", "round", "divmod",
-        "bin", "oct", "hex", "chr", "ord", "callable", "hash", "id",
-        "range", "enumerate", "zip", "iter", "next", "reversed", "map", "filter", "slice",
-        "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning", "FutureWarning",
-        "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError", "EOFError",
-        "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "UnboundLocalError", "AttributeError", "SyntaxError",
-        "FileNotFoundError", "FileExistsError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
-        "BrokenPipeError", "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
-        "ZeroDivisionError", "NotImplementedError", "RecursionError", "MemoryError",
-        "UnicodeEncodeError", "UnicodeDecodeError", "UnicodeTranslateError", "OverflowError", "SystemExit",
-        "GeneratorExit", "KeyboardInterrupt",
-        "bool", "int", "float", "complex", "bytes",
-        "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass",
-        "getattr", "hasattr", "setattr", "delattr", "dir", "vars", "globals", "locals",
-        "list", "tuple", "dict", "set", "Ellipsis", "NotImplemented"
-    ];
+    private static readonly Dictionary<string, int> BuiltinSlots = CreateBuiltinSlots();
+    public static IReadOnlyCollection<string> BuiltinNames => BuiltinSlots.Keys;
 
-    public ExecutionState(ILythonHost host, LythonRunOptions? options)
-        : this(host, options, new Dictionary<string, object>(StringComparer.Ordinal))
+    internal static bool IsBuiltinName(string name) => BuiltinSlots.ContainsKey(name);
+    internal static int GetBuiltinSlot(string name) => BuiltinSlots[name];
+    internal static bool TryGetBuiltinSlot(string name, out int index) => BuiltinSlots.TryGetValue(name, out index);
+
+    private static Dictionary<string, int> CreateBuiltinSlots()
     {
+        string[] names =
+        [
+            "object", "type", "open", "print", "input", "str", "repr", "ascii", "format",
+            "len", "sorted", "any", "all", "min", "max", "sum", "abs", "pow", "round", "divmod",
+            "bin", "oct", "hex", "chr", "ord", "callable", "hash", "id",
+            "range", "enumerate", "zip", "iter", "next", "reversed", "map", "filter", "slice",
+            "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning", "FutureWarning",
+            "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError", "EOFError",
+            "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "UnboundLocalError", "AttributeError", "SyntaxError",
+            "FileNotFoundError", "FileExistsError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
+            "BrokenPipeError", "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
+            "ZeroDivisionError", "NotImplementedError", "RecursionError", "MemoryError",
+            "UnicodeEncodeError", "UnicodeDecodeError", "UnicodeTranslateError", "OverflowError", "SystemExit",
+            "GeneratorExit", "KeyboardInterrupt",
+            "bool", "int", "float", "complex", "bytes",
+            "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass",
+            "getattr", "hasattr", "setattr", "delattr", "dir", "vars", "globals", "locals",
+            "list", "tuple", "dict", "set", "Ellipsis", "NotImplemented"
+        ];
+        var slots = new Dictionary<string, int>(names.Length, StringComparer.Ordinal);
+        for (var i = 0; i < names.Length; i++) slots.Add(names[i], i);
+        slots["IOError"] = slots["EnvironmentError"] = slots["OSError"];
+        return slots;
     }
 
     public ExecutionState(
         ILythonHost host,
         LythonRunOptions? options,
-        Dictionary<string, object> builtinVariables,
         ILythonRegexProvider? regexProvider = null,
         CompiledRegexPrograms? regexPrograms = null)
     {
@@ -135,7 +143,6 @@ internal sealed partial class ExecutionState
         Stdin = new HostTextInputHandle(host.StandardInput, this);
         Stdout = new HostTextOutputHandle(host.StandardOutput, StandardOutput, "<stdout>", this);
         Stderr = new HostTextOutputHandle(host.StandardError, StandardError, "<stderr>", this);
-        BuiltinVariables = builtinVariables;
     }
 
     public ILythonHost Host { get; }
@@ -197,7 +204,7 @@ internal sealed partial class ExecutionState
     internal ref (PyDict.RecordKeys? Keys, bool PlainNames) JsonRecordLayoutAtDepth(int depth)
         => ref _jsonLayouts[Math.Min(depth, JsonLayoutSlots - 1)];
 
-    public Dictionary<string, object> BuiltinVariables { get; }
+    public LythonRuntime.ExecutionContext.BuiltinBindings BuiltinVariables { get; } = new();
 
 
     public Text.GovernedByteBuilder StandardOutput { get; }

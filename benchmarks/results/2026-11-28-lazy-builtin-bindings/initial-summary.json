@@ -1,0 +1,108 @@
+{
+  "sourceRevision": "e29f83126f933b401a843111562b4ea60084121c",
+  "candidatePatchSHA256": "e8414aff9281e96d35c016085a59c3199d35766380f73428b2a1fd8cb51e1d4b",
+  "quietMachine": false,
+  "collectionSeconds": 115.33825419099999,
+  "rows": [
+    {
+      "case": "diagnostic.file-search-first-line",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.051986675510683256,
+        "candidate-control": 0.05377148321493244,
+        "reference": 0.053640823992527356,
+        "candidate": 0.05271964517278233
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.07983094623150974,
+        "candidate-control": 0.07939824488090264,
+        "reference": 0.08006405124099279,
+        "candidate": 0.07837548984681154
+      },
+      "elapsedChangePercent": [
+        -1.7173092267809942,
+        3.4332022325266998
+      ],
+      "cpuChangePercent": [
+        -2.1090131813323754,
+        -0.5420220741869652
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 3.1818700957405355,
+        "candidate": 1.9951538723427253
+      },
+      "cpuSpreadsPercent": {
+        "reference": 0.2919983045259755,
+        "candidate": 1.3049424457698633
+      },
+      "maximumElapsedIqrPercent": 27.968816607488243
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.07039771396354068,
+        "reference": 0.0753374503583956,
+        "candidate-control": 0.07033426485325699,
+        "reference-control": 0.0764295055540504
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.08457056944183425,
+        "reference": 0.08845508616745462,
+        "candidate-control": 0.08589835361488905,
+        "reference-control": 0.09211595773503116
+      },
+      "elapsedChangePercent": [
+        -7.974983818890335,
+        -6.55681387059901
+      ],
+      "cpuChangePercent": [
+        -8.191184761820525,
+        -2.890430232271113
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 1.4495515715751806,
+        "candidate": 0.09021081035831546
+      },
+      "cpuSpreadsPercent": {
+        "reference": 4.13867842562059,
+        "candidate": 1.5700310188499156
+      },
+      "maximumElapsedIqrPercent": 8.170404769664783
+    },
+    {
+      "case": "diagnostic.shipment-row-generator-reduction",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "reference-control": 2.245997937759336,
+        "candidate-control": 2.337681740425532,
+        "reference": 2.254843134782609,
+        "candidate": 2.2783803829787237
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.2821576763485476,
+        "candidate-control": 2.382978723404255,
+        "reference": 2.3043478260869565,
+        "candidate": 2.297872340425532
+      },
+      "elapsedChangePercent": [
+        1.0438530216597242,
+        4.082096475906027
+      ],
+      "cpuChangePercent": [
+        -0.2810116419108666,
+        4.417794970986466
+      ],
+      "elapsedSpreadsPercent": {
+        "reference": 0.3938203537309226,
+        "candidate": 2.6027856406171557
+      },
+      "cpuSpreadsPercent": {
+        "reference": 0.9723320158102844,
+        "candidate": 3.703703703703698
+      },
+      "maximumElapsedIqrPercent": 2.037922152477497
+    }
+  ],
+  "verifiedTimedBatches": 84
+}
