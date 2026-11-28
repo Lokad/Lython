@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1995 read frontend member-return facts directly](results/2026-11-28-direct-member-return-lookup/README.md)
+removes a 406-entry dictionary and saves 22,192 B during first compilation
+of configuration and XML. Fresh timing and quiet timing for the affected
+scripts span zero. The unchanged constructor control remains inconclusive.
+
 [B1994 refresh the external comparison on the landed runtime](results/2026-11-28-landed-runtime-cpython/README.md)
 verifies 112 quiet batches at `8633debf8`. Iterable-row shipment takes
 1.041–1.072× CPython elapsed, configuration compile-to-result takes

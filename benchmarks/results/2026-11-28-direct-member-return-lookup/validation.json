@@ -1,0 +1,36 @@
+{
+  "lookup": {
+    "total": 52608,
+    "foundCount": 450,
+    "unknownCount": 46
+  },
+  "lookupHashes": {
+    "reference": "caffeaad503c560f6c91c6f571f6be5cbaa67dd0162f80d498b62f1d45cd133d",
+    "candidate": "caffeaad503c560f6c91c6f571f6be5cbaa67dd0162f80d498b62f1d45cd133d"
+  },
+  "focusedChecksPerTarget": 304,
+  "targets": [
+    "Windows net10.0",
+    "Windows net11.0",
+    "Ubuntu WSL net11.0"
+  ],
+  "independentGoldensPerImage": 4,
+  "collector": {
+    "complete": true,
+    "warmJobs": 5,
+    "allWorkersJoined": true,
+    "guestFixturesRemoved": true,
+    "quietBeforeAndAfter": null,
+    "archivedAndVerifiedUnderLease": true,
+    "archiveSHA256": "52c56b3347e8b4c97a53140eebe0f30033d3a993135a1accfe2df3b05116e3d9"
+  },
+  "quietCollector": {
+    "complete": true,
+    "warmJobs": 4,
+    "allWorkersJoined": true,
+    "guestFixturesRemoved": true,
+    "quietBeforeAndAfter": true,
+    "archivedAndVerifiedUnderLease": true,
+    "archiveSHA256": "808602e6823158215f6cd018724597b61659534a62f067909d58ac81bce2a1b0"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "candidatePatchSHA256": "162510a3bbe7f0e943da5397111431b07cb1499b6bbe9ad4bab554101179b957",
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "elapsed": {
+        "median": {
+          "reference": 260.298096,
+          "candidate": 257.2126315
+        },
+        "iqr": {
+          "reference": [
+            250.62632075,
+            269.03923325
+          ],
+          "candidate": [
+            246.735295,
+            277.99744875
+          ]
+        },
+        "medianChange": -1.1853580749972115,
+        "pairedRange": [
+          -15.758208809056207,
+          20.205544940778687
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 224.85800000000017,
+          "candidate": 221.31100000000026
+        },
+        "iqr": {
+          "reference": [
+            217.49849999999958,
+            228.4765000000001
+          ],
+          "candidate": [
+            216.06625000000008,
+            224.41299999999967
+          ]
+        },
+        "medianChange": -1.57743998434563,
+        "pairedRange": [
+          -7.183182813475741,
+          3.8379599593240776
+        ]
+      }
+    },
+    {
+      "case": "xml.parse-select.small",
+      "elapsed": {
+        "median": {
+          "reference": 233.03993200000002,
+          "candidate": 229.28587249999998
+        },
+        "iqr": {
+          "reference": [
+            229.52966825,
+            237.75963725
+          ],
+          "candidate": [
+            217.86651175,
+            241.35037525
+          ]
+        },
+        "medianChange": -1.6109082541270414,
+        "pairedRange": [
+          -18.327470934704525,
+          8.50318764687572
+        ]
+      },
+      "cpu": {
+        "median": {
+          "reference": 193.56550000000027,
+          "candidate": 191.14699999999948
+        },
+        "iqr": {
+          "reference": [
+            191.45949999999948,
+            198.40525000000002
+          ],
+          "candidate": [
+            188.74399999999991,
+            196.01824999999985
+          ]
+        },
+        "medianChange": -1.2494478613186644,
+        "pairedRange": [
+          -6.0127927553858544,
+          7.911964680803085
+        ]
+      }
+    }
+  ],
+  "verifiedInvocations": 48,
+  "nativePersistentStage": "/home/vermorel/lython-bench-work/member-return-lookup-b1995-20261128",
+  "cpuAffinity": [
+    27
+  ]
+}

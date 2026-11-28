@@ -100,11 +100,6 @@ internal enum StaticMutationKind
     MutatesReceiver,
 }
 
-internal readonly record struct StaticMemberReturnContract(
-    AbstractValueKind ReceiverKind,
-    string MemberName,
-    StaticReturnShape ReturnShape);
-
 internal readonly record struct StaticMemberValueContract(
     AbstractValueKind ReceiverKind,
     string MemberName,

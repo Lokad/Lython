@@ -2,11 +2,6 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static class MemberReturnCatalog
-    {
-        internal static readonly Dictionary<StaticMemberContractKey, StaticReturnShape> ByMember = CreateMemberReturnShapes();
-    }
-
     public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span,
         StaticAnalysisContext? context, out AbstractValue value)
     {
@@ -34,20 +29,8 @@ internal static partial class StaticContracts
             return false;
         }
 
-        return MemberReturnCatalog.ByMember.TryGetValue(new(receiverKind, memberName), out shape);
-    }
-
-    private static Dictionary<StaticMemberContractKey, StaticReturnShape> CreateMemberReturnShapes()
-    {
-        var core = CreateCoreMemberReturnContracts();
-        var extended = CreateExtendedMemberReturnContracts();
-        var shapes = new Dictionary<StaticMemberContractKey, StaticReturnShape>(core.Length + extended.Length);
-
-        foreach (var contract in core)
-            shapes.Add(new(contract.ReceiverKind, contract.MemberName), contract.ReturnShape);
-        foreach (var contract in extended)
-            shapes.Add(new(contract.ReceiverKind, contract.MemberName), contract.ReturnShape);
-
-        return shapes;
+        var fallback = LookupFallbackMemberReturn(receiverKind, memberName);
+        shape = fallback.GetValueOrDefault();
+        return fallback.HasValue;
     }
 }

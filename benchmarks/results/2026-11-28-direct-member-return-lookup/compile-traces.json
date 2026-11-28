@@ -1,0 +1,152 @@
+{
+  "reference": {
+    "sha256": "cd7733700c7f6ed88334f0658d841c5d0f3b3a3149e847ef78c50c730f421643",
+    "total": 1255,
+    "memberReturnMethods": [
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "TryGetMemberReturn",
+        "Signature": "bool  (value class Lokad.Lython.Frontend.AbstractValue,class System.String,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Frontend.StaticAnalysisContext,value class Lokad.Lython.Frontend.AbstractValue&)",
+        "IlBytes": 45,
+        "Start": 1875.719811,
+        "End": 1875.755983
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "TryGetMemberReturnShape",
+        "Signature": "bool  (value class Lokad.Lython.Frontend.AbstractValueKind,class System.String,value class Lokad.Lython.Frontend.StaticReturnShape&)",
+        "IlBytes": 74,
+        "Start": 1875.763341,
+        "End": 1875.991327
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts+MemberReturnCatalog",
+        "Method": ".cctor",
+        "Signature": "void  ()",
+        "IlBytes": 11,
+        "Start": 1876.002319,
+        "End": 1876.024731
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateMemberReturnShapes",
+        "Signature": "class System.Collections.Generic.Dictionary`2<value class Lokad.Lython.Frontend.StaticMemberContractKey,value class Lokad.Lython.Frontend.StaticReturnShape>  ()",
+        "IlBytes": 139,
+        "Start": 1876.030372,
+        "End": 1876.176137
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateCoreMemberReturnContracts",
+        "Signature": "value class Lokad.Lython.Frontend.StaticMemberReturnContract[]  ()",
+        "IlBytes": 5112,
+        "Start": 1876.185205,
+        "End": 1877.104881
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticMemberReturnContract",
+        "Method": ".ctor",
+        "Signature": "instance void  (value class Lokad.Lython.Frontend.AbstractValueKind,class System.String,value class Lokad.Lython.Frontend.StaticReturnShape)",
+        "IlBytes": 22,
+        "Start": 1877.11686,
+        "End": 1877.158557
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "CreateExtendedMemberReturnContracts",
+        "Signature": "value class Lokad.Lython.Frontend.StaticMemberReturnContract[]  ()",
+        "IlBytes": 4056,
+        "Start": 1877.169966,
+        "End": 1877.901779
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticMemberReturnContract",
+        "Method": "get_ReceiverKind",
+        "Signature": "instance value class Lokad.Lython.Frontend.AbstractValueKind  ()",
+        "IlBytes": 7,
+        "Start": 1878.098185,
+        "End": 1878.115652
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticMemberReturnContract",
+        "Method": "get_MemberName",
+        "Signature": "instance class System.String  ()",
+        "IlBytes": 7,
+        "Start": 1878.11996,
+        "End": 1878.128705
+      },
+      {
+        "Thread": 895,
+        "Namespace": "Lokad.Lython.Frontend.StaticMemberReturnContract",
+        "Method": "get_ReturnShape",
+        "Signature": "instance value class Lokad.Lython.Frontend.StaticReturnShape  ()",
+        "IlBytes": 7,
+        "Start": 1878.132376,
+        "End": 1878.140336
+      }
+    ],
+    "allocationAndAdmission": {
+      "allocated": 353912,
+      "admitted": 67328,
+      "after": 0,
+      "elapsedMilliseconds": 942.0247
+    }
+  },
+  "candidate": {
+    "sha256": "fea20f8d979d9c147b20081d6dad45f7aa38155cb1cc085b62a0d57f29e5a236",
+    "total": 1241,
+    "memberReturnMethods": [
+      {
+        "Thread": 929,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "TryGetMemberReturn",
+        "Signature": "bool  (value class Lokad.Lython.Frontend.AbstractValue,class System.String,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Frontend.StaticAnalysisContext,value class Lokad.Lython.Frontend.AbstractValue&)",
+        "IlBytes": 45,
+        "Start": 210.392411,
+        "End": 210.41719
+      },
+      {
+        "Thread": 929,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "TryGetMemberReturnShape",
+        "Signature": "bool  (value class Lokad.Lython.Frontend.AbstractValueKind,class System.String,value class Lokad.Lython.Frontend.StaticReturnShape&)",
+        "IlBytes": 81,
+        "Start": 210.420719,
+        "End": 210.463204
+      },
+      {
+        "Thread": 929,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "LookupFallbackMemberReturn",
+        "Signature": "value class System.Nullable`1<value class Lokad.Lython.Frontend.StaticReturnShape>  (value class Lokad.Lython.Frontend.AbstractValueKind,class System.String)",
+        "IlBytes": 920,
+        "Start": 210.467024,
+        "End": 210.582023
+      },
+      {
+        "Thread": 929,
+        "Namespace": "Lokad.Lython.Frontend.StaticContracts",
+        "Method": "GetTextFileHandleMemberReturn",
+        "Signature": "value class System.Nullable`1<value class Lokad.Lython.Frontend.StaticReturnShape>  (class System.String)",
+        "IlBytes": 414,
+        "Start": 218.56272,
+        "End": 218.662206
+      }
+    ],
+    "allocationAndAdmission": {
+      "allocated": 332568,
+      "admitted": 67328,
+      "after": 0,
+      "elapsedMilliseconds": 128.2793
+    }
+  }
+}
