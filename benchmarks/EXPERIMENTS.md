@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1922 profile shipment and JSON at the reader checkpoint](results/2026-11-28-reader-checkpoint-profile/README.md)
+locates generator advancement and outer row handoff in async shipment.
+Over 98% of the initially assigned async result-relay samples end in
+unclassified native time. Keep both attribution views and the raw traces.
+
+[B1921 compare the reader checkpoint with CPython](results/2026-11-28-current-cpython-reader-checkpoint/README.md)
+measures `bfde55b6b` on the quiet VM. Dense JSON is 0.937–0.976× CPython
+elapsed sync and 0.943–0.969× async. Iterable shipment still takes
+1.154–1.209× elapsed async. All 224 batches and both quiet gates pass.
+
 [B1920 call owned byte-file reads directly](results/2026-11-28-direct-byte-file-read/README.md)
 removes captured call delegates and one async layer while preserving host
 ambient state. The affected scripts save 96–824 CLR bytes at equal peaks.
