@@ -206,16 +206,16 @@ public sealed class OwnedFunctionLocalsTests
         if (asynchronous) return entry switch
         {
             0 => await f.InvokeAsync(arguments, Span, context),
-            1 => await f.InvokeFromOperandsAsync(operands, Span, context),
+            1 => (await f.InvokeFromOperandsAsync(operands, Span, context)).Object!,
             2 => await f.InvokeAsync(arguments, Span, context, value),
-            _ => await f.InvokeFromOperandsAsync(operands, Span, context, value)
+            _ => (await f.InvokeFromOperandsAsync(operands, Span, context, value)).Object!
         };
         return entry switch
         {
             0 => f.Invoke(arguments, Span, context),
-            1 => f.InvokeFromOperands(operands, Span, context),
+            1 => f.InvokeFromOperands(operands, Span, context).Object!,
             2 => f.Invoke(arguments, Span, context, value),
-            _ => f.InvokeFromOperands(operands, Span, context, value)
+            _ => f.InvokeFromOperands(operands, Span, context, value).Object!
         };
     }
 

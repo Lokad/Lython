@@ -664,9 +664,9 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         return driver switch
         {
             Driver.General => function.Invoke(arguments, CallSpan, context),
-            Driver.Direct => function.InvokeFromOperands(values, CallSpan, context),
+            Driver.Direct => function.InvokeFromOperands(values, CallSpan, context).Object!,
             Driver.GeneralAsync => function.InvokeAsync(arguments, CallSpan, context).GetAwaiter().GetResult(),
-            _ => function.InvokeFromOperandsAsync(values, CallSpan, context).GetAwaiter().GetResult(),
+            _ => function.InvokeFromOperandsAsync(values, CallSpan, context).GetAwaiter().GetResult().Object!,
         };
     }
 
