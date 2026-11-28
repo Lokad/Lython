@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1968 compare short scripts with CPython](results/2026-11-28-short-frontend-cpython/README.md)
+verifies 112 quiet batches on `83042273c`. First-line warm elapsed is
+1.264–1.283× CPython, with CPU near parity. File and configuration compile
+to result take 0.789–0.801× and 0.754–0.765× CPython elapsed.
+
 [B1967 resolve a single receiver during return inference](results/2026-11-28-one-member-return-receiver/README.md)
 cuts local process CPU by 4.66–5.23% on a generated 48-helper compile.
 Configuration compile to result spans zero. The 90 scope and diagnostic
