@@ -168,6 +168,7 @@ internal static class ZipMemberReader
             PyDict => "dict",
             PyNone => "NoneType",
             null => "NoneType",
+            PyEnumerableIterator => nameof(PyEnumerableIterator),
             _ => value.GetType().Name,
         };
 }

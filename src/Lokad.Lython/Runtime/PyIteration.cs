@@ -10,7 +10,7 @@ internal static partial class PyIteration
             return PyUserIterator.Acquire(value, context, span);
         if (value is IPyIteratorValue iterator) return iterator;
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        try { return new PyEnumerableIterator(value, span, context); }
+        try { return PyEnumerableIterator.Create(value, span, context); }
         catch
         {
             context.MemoryGovernor.Release(PyIteratorBase.IteratorValueBytes);

@@ -79,6 +79,7 @@ The previous checkpoint records absolute timing and CPU at `486b6bb60`. [B1926](
 
 | Change | Measured effect |
 | --- | --- |
+| Remove the cursor inside exact list and tuple iterator values | Ordinary helper and generator reduction allocates about 164 KB less in both APIs at matching admission. Local warm CPU falls 3.80–5.45% async and 2.09–3.81% sync. File-fed map elapsed rises and its CPU spans zero. [B1942](../benchmarks/results/2026-11-28-direct-sequence-iterator/refined/README.md). |
 | Pass the private generator frame to builtin `sum` | Ordinary helper and generator reduction allocates 7.28% less in both APIs at matching admission. Local warm async CPU falls 1.67–3.86%. Sync reduction is inconclusive, and the file-fed map control takes longer elapsed. [B1940](../benchmarks/results/2026-11-28-private-generator-sum/README.md). |
 | Remove the private regex allowance monitor | The compiled log scan allocates 73,728 B less in each API. Local warm CPU falls 6.04–7.51% for the compiled log and 2.27–6.06% for the module log at matching admission. [B1938](../benchmarks/results/2026-11-28-private-regex-match-allowance/README.md). |
 | Transfer the private generator frame to starmap | Iterable shipment allocates 6.2% less in both APIs at matching admission. Local warm CPU falls 2.68–9.27% async and rises 0.81–1.47% sync. The first-line control is inconclusive. [B1936](../benchmarks/results/2026-11-28-staged-generator-activation/README.md). |

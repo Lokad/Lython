@@ -244,7 +244,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var dequeIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var dequeIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return dequeIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(deque, "deque.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -650,7 +650,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var setIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var setIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return setIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(set, "set.__len__", static (receiver, span, context) => Len([receiver], span, context)),

@@ -2,53 +2,71 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyEnumerableIterator : PyIteratorBase, IPyAsyncIteratorValue
+internal abstract class PyEnumerableIterator : PyIteratorBase
 {
-    private readonly PyIteration.Cursor _source;
     private readonly string _displayName;
-    private readonly object _hintSource;
-    private int _position;
-    private bool _exhausted;
+    protected readonly object Source;
+    protected int Position;
+    protected bool Exhausted;
 
-    // Position is solely the Python length-hint state. Saturating at the maximum
-    // possible container length neither limits nor changes iteration.
-    internal int? RemainingHint => _hintSource switch
+    internal int? RemainingHint => Source switch
     {
-        IPySizedValue sized => _exhausted ? 0 : Math.Max(0, sized.Length - _position),
-        IReadOnlyCollection<object> sized => _exhausted ? 0 : Math.Max(0, sized.Count - _position),
+        IPySizedValue sized => Exhausted ? 0 : Math.Max(0, sized.Length - Position),
+        IReadOnlyCollection<object> sized => Exhausted ? 0 : Math.Max(0, sized.Count - Position),
         _ => null,
     };
 
-    public PyEnumerableIterator(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext context) : this(source, span, context, "iterator") { }
+    internal static PyEnumerableIterator Create(object source, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, string displayName = "iterator")
+        => source is PyList or PyTuple
+            ? new SequenceIterator(source, span, context, displayName)
+            : new CursorIterator(source, span, context, displayName);
 
-    public PyEnumerableIterator(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext context, string displayName)
+    private PyEnumerableIterator(object source, string displayName)
     {
-        _source = PyIteration.Cursor.Create(source, span, context);
         _displayName = displayName;
-        _hintSource = source;
-        // Construction sites own the shell charge; this wrapper does not charge it twice.
-    }
-
-    public override PyIterationResult TryMoveNext()
-    {
-        var next = _source.TryMoveNext();
-        if (!next.HasValue) { _exhausted = true; return next; }
-        if (_position < int.MaxValue) _position++;
-        return next;
-    }
-
-    public async ValueTask<PyIterationResult> TryMoveNextAsync()
-    {
-        var next = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!next.HasValue) { _exhausted = true; return next; }
-        if (_position < int.MaxValue) _position++;
-        return next;
+        Source = source;
+        // Construction sites fund the complete iterator before the factory runs.
     }
 
     public override PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
         return PyString.FromString("<" + _displayName + " object>");
+    }
+
+    private sealed class SequenceIterator(object source, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, string displayName) : PyEnumerableIterator(source, displayName)
+    {
+        public override PyIterationResult TryMoveNext()
+        {
+            // The live position also supplies the Python length hint. Repeated
+            // pulls after exhaustion must still observe cancellation.
+            if ((Position & 63) == 0 || Exhausted) context.CheckExecution(span);
+            if (Exhausted) return PyIterationResult.End;
+            var next = PyIteration.AdvanceBuiltinSequence(Source, ref Position);
+            Exhausted = !next.HasValue;
+            return next;
+        }
+    }
+
+    private sealed class CursorIterator(object source, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, string displayName) : PyEnumerableIterator(source, displayName), IPyAsyncIteratorValue
+    {
+        private readonly PyIteration.Cursor _cursor = PyIteration.Cursor.Create(source, span, context);
+
+        public override PyIterationResult TryMoveNext() => RecordAdvance(_cursor.TryMoveNext());
+
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
+            => RecordAdvance(await _cursor.TryMoveNextAsync().ConfigureAwait(false));
+
+        private PyIterationResult RecordAdvance(PyIterationResult next)
+        {
+            if (!next.HasValue) Exhausted = true;
+            // Position only supplies the hint here. The cursor can keep pulling.
+            else if (Position < int.MaxValue) Position++;
+            return next;
+        }
     }
 }
 

@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(bytes, "bytes.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var bytesIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var bytesIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return bytesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(bytes, "bytes.__len__", static (receiver, span, context) => Len([receiver], span, context)),

@@ -1548,8 +1548,11 @@ its version at acquisition. Count hints admit capacity without consuming input;
 partly consumed cursors resume their position, and direct list self-extension
 snapshots its source before mutation. Exact list/tuple cursors keep their position
 directly, sharing live indexed advancement with executable operand storage without
-a separate CLR enumerator. List replacement and growth remain visible until
-exhaustion; appending after exhaustion cannot revive the cursor.
+a separate CLR enumerator. Python iterator values over exact lists and tuples
+use the same reader. Their position supplies the length hint and the generator's
+outer iterator remains the same object through introspection. List replacement
+and growth remain visible until exhaustion. Appending after exhaustion cannot
+revive the iterator.
 Private cursor disposal is terminal, keeps
 the original subject through actual asynchronous cleanup, then clears its roots.
 Breaking a loop does not close a retained Python iterator. The core has no runtime NuGet dependencies;

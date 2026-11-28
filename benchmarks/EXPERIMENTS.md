@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1941 initial direct sequence iterator](results/2026-11-28-direct-sequence-iterator/README.md)
+removes the cursor for list and tuple iterators. Ordinary reduction saves
+147,400 B and uses 6.17–7.92% less local async CPU. The range control
+allocates 32,768 B more and iterable shipment uses 1.24–2.77% more CPU.
+[B1942 refinement](results/2026-11-28-direct-sequence-iterator/refined/README.md)
+restores range allocation and saves about 164 KB on the ordinary script.
+Ordinary CPU falls in both APIs. Iterable timing spans zero, and the
+file-fed map retains adverse elapsed with inconclusive CPU.
+
 [B1940 pass the private generator frame to builtin sum](results/2026-11-28-private-generator-sum/README.md)
 removes the intermediate generator and cursor on the adjacent call. Ordinary
 reduction allocates 294,912 B less in either API at matching admission. Local

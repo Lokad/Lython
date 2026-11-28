@@ -25,6 +25,29 @@ with zipfile.ZipFile("/out.zip") as archive:
     }
 
     [Fact]
+    public void ZipCommentRejectsIteratorValues()
+    {
+        using var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
+            """
+import zipfile
+errors = []
+with zipfile.ZipFile("/out.zip", "w") as archive:
+    for value in (iter([]), iter(range(0))):
+        try:
+            archive.comment = value
+        except TypeError as error:
+            errors.append(str(error))
+    assert archive.comment == b''
+return errors
+""",
+            new ZipPublicHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        const string message = "comment: expected bytes, got PyEnumerableIterator.";
+        Assert.Equal(new List<object?> { message, message }, result.ReturnValue);
+    }
+
+    [Fact]
     public void PublicReadSurfaceListsAndReadsFixtures()
     {
         var host = SeedFixture("zip-stored");

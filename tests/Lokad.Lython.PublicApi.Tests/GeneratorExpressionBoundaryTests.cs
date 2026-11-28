@@ -51,6 +51,18 @@ public sealed class GeneratorExpressionBoundaryTests
         { "suspended-owner-nonlocal-helper", "def outer():\n total=0\n def change():\n  nonlocal total\n  total=9\n yield change\n yield str(total)\nsource=outer()\nchange=next(source)\nchange()\nprint(next(source))", "9\n" },
         { "escaped-owner-observer", "def make():\n total=0\n g=(i for i in range(3) if (total:=total+1)<0)\n observe=lambda:total\n return g,observe\ng,observe=make()\nprint(list(g),observe())", "[] 3\n" },
         { "outer-identity", "outer=iter([1,2])\ng=(locals()['.0'] is outer for i in outer)\nprint(list(g))", "[True, True]\n" },
+        { "outer-list-iterator-position", """
+            import operator
+            values = [1]
+            gen = ((x, locals()['.0']) for x in values)
+            first, outer = next(gen)
+            values.extend([2, 3])
+            print(first, operator.length_hint(outer), next(outer))
+            last, again = next(gen)
+            print(last, again is outer, next(gen, 'end'))
+            values.append(4)
+            print(operator.length_hint(outer), next(outer, 'end'))
+            """, "1 2 2\n3 True end\n0 end\n" },
         { "user-outer-identity-and-live-next", """
             class Cursor:
                 def __iter__(self): return self

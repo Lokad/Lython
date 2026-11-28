@@ -54,6 +54,7 @@ internal sealed partial class LythonRuntime
                 PyNone => "NoneType",
                 null => "NoneType",
                 PyInstance instance => instance.Type.Name,
+                PyEnumerableIterator => nameof(PyEnumerableIterator),
                 _ => value.GetType().Name,
             };
 

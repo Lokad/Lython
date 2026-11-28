@@ -251,7 +251,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(list, "list.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var listIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var listIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return listIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(list, "list.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -667,7 +667,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(source, "tuple.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var tupleIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var tupleIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return tupleIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(source, "tuple.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -1820,7 +1820,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(range, "range.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var rangeIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var rangeIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return rangeIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(range, "range.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -1934,7 +1934,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var memberRangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+                    var memberRangeReversedResult = PyEnumerableIterator.Create(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
                     return memberRangeReversedResult;
                 }, RangeReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -2130,7 +2130,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "dict.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var dictIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var dictIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return dictIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "dict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2367,7 +2367,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_keys.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var dictKeysIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var dictKeysIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return dictKeysIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2475,7 +2475,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_values.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var dictValuesIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var dictValuesIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return dictValuesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2517,7 +2517,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_items.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var dictItemsIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var dictItemsIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return dictItemsIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2637,7 +2637,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var chainMapKeysIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var chainMapKeysIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return chainMapKeysIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2787,7 +2787,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var chainMapItemsIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var chainMapItemsIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return chainMapItemsIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2924,7 +2924,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.values.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var chainMapValuesIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var chainMapValuesIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return chainMapValuesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -3143,7 +3143,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var defaultDictIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var defaultDictIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return defaultDictIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -3476,7 +3476,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(counter, "Counter.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    var counterIterResult = new PyEnumerableIterator(receiver, span, context);
+                    var counterIterResult = PyEnumerableIterator.Create(receiver, span, context);
                     return counterIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(counter, "Counter.__len__", static (receiver, span, context) => Len([receiver], span, context)),

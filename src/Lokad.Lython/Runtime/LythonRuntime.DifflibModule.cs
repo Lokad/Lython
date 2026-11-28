@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
         internal static PyEnumerableIterator OutputIterator(IEnumerable<object> source, LythonSourceSpan span, ExecutionContext context)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return new PyEnumerableIterator(source, span, context);
+            return PyEnumerableIterator.Create(source, span, context);
         }
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

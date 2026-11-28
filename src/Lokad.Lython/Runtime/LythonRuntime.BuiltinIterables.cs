@@ -337,7 +337,7 @@ internal sealed partial class LythonRuntime
             }
 
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            var iterEnumerableResult = new PyEnumerableIterator(arguments[0], span, context);
+            var iterEnumerableResult = PyEnumerableIterator.Create(arguments[0], span, context);
             return iterEnumerableResult;
         }
 
@@ -398,7 +398,7 @@ internal sealed partial class LythonRuntime
         if (target is PyRange range)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            var rangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+            var rangeReversedResult = PyEnumerableIterator.Create(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
             return rangeReversedResult;
         }
 
