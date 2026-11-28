@@ -288,14 +288,38 @@ internal sealed partial class LythonRuntime
                     break;
                 }
                 case ExecutableCreateGeneratorExpression comprehension:
+                    var privateFrame = IsPrivateSumOperand(instruction);
                     var outer = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, this,
-                        outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
-                    PublishInstructionResult(instruction, generatorExpression);
+                        outer, comprehension.OuterSpan, span, asynchronous, privateFrame).ConfigureAwait(false);
+                    try { PublishInstructionResult(instruction, generatorExpression); }
+                    catch
+                    {
+                        if (generatorExpression is ExecutionContext frame) PyGenerator.CompleteFrame(frame);
+                        throw;
+                    }
                     break;
                 default: throw new InvalidOperationException("Unknown prepared suspension operation.");
             }
         }
+
+        private bool IsPrivateSumOperand(in ExecutableInstruction instruction)
+        {
+            var instructions = _execution.Code.Instructions;
+            var next = _execution.InstructionIndex + 1;
+            if (instruction.HasResultConsumer || next >= instructions.Length) return false;
+            ref readonly var consumer = ref instructions[next];
+            if (consumer.OpCode != ExecutableOpCode.Call || consumer.HasForwardedCallOperands) return false;
+            var call = _execution.Code.CallSites[consumer.CallSiteIndex];
+            return call is { IsPositionalOnly: true, HasReceiver: false, ArgumentCount: 1 } &&
+                consumer.ResultSlot + call.ArgumentOffset == instruction.ResultSlot &&
+                _execution.Stack.Values[consumer.ResultSlot + call.TargetOffset].Reference is { } target &&
+                IsSumBuiltin(target);
+        }
+
+        // The generator-producing instruction stays immediately before its
+        // only consumer. Keep its span for frame admission and failures.
+        internal LythonSourceSpan PrivateGeneratorSpan => _execution.Code.Instructions[_execution.InstructionIndex - 1].Span;
 
         private ValueTask<object> InvokeWithKeywordMapping(object target, Memory<ExecutableSlot> positional, object mapping,
             ExecutableCallWithKeywordMapping call, LythonSourceSpan span, bool asynchronous)

@@ -125,8 +125,8 @@ public sealed class ExecutableStackAdmissionTests
         { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var code = Compile("result=([" + string.Join(",", Enumerable.Range(0, 1024)) + "] for i in source)");
         var operation = Assert.Single(code.Constants.OfType<ExecutableCreateGeneratorExpression>());
-        var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
-            new PyTuple([BigInteger.Zero]), operation.OuterSpan, operation.OuterSpan, true);
+        var generator = Assert.IsType<LythonRuntime.PyGenerator>(await LythonRuntime.PyGenerator.CreateExpressionAsync(
+            operation.CodeObject, context, new PyTuple([BigInteger.Zero]), operation.OuterSpan, operation.OuterSpan, true));
         var initial = budget.ReservedBytes;
         var item = await generator.TryMoveNextAsync();
         Assert.True(item.HasValue);

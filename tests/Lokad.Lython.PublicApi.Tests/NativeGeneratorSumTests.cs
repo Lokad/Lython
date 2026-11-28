@@ -7,6 +7,29 @@ public sealed class NativeGeneratorSumTests
     public static TheoryData<string> Programs => new()
     {
         """
+        events = []
+        builtin = sum
+        def replacement(items):
+            assert type(items).__name__ == 'generator'
+            events.append('replacement')
+            return next(items)
+        class Source:
+            def __iter__(self):
+                global sum
+                events.append('iter')
+                sum = replacement
+                return iter((2, 3))
+        class Term:
+            def __radd__(self, left):
+                events.append(left)
+                return 7
+        assert sum(x for x in Source()) == 5
+        assert sum(x for x in (4, 5)) == 4
+        assert builtin(x for x in (Term(), 2)) == 9
+        assert events == ['iter', 'replacement', 0]
+        return 'ok'
+        """,
+        """
         def values():
             yield from [1e16, 1.0, -1e16]
         assert sum(values()) == 1.0

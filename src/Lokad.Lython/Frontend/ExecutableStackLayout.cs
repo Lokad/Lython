@@ -565,6 +565,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,
                     ExecutableOpCode.StartFunctionDefaults => depth - 1,
+                    ExecutableOpCode.ApplyOperation or ExecutableOpCode.ApplyDeferredDefinition
+                        when constants[instruction.ConstantIndex] is ExecutableCreateGeneratorExpression => resultSlot,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
                         ExecutableStartComprehension or ExecutableStartCall or ExecutableStartClassHeader => resultSlot,
                     _ => -1

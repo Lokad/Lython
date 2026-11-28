@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
         // A direct local return may copy an existing guest value without
         // changing either its identity or the lifetime of private storage.
         internal readonly bool HasMaterializedValue => _integer == 0
-            && _value is not (null or ExecutableTemporaryValue)
+            && _value is not (null or ExecutableTemporaryValue or ExecutionContext)
             && !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
         private readonly long PrivateDefaultKind => _value is InlineDefaultInteger scalar ? scalar.Kind :
             _integer is >= PrepaidPositionalDefault and <= PrivateDefaultContainer &&
@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
         internal readonly bool HasPrivateKeywordDefault => PrivateDefaultKind is PrivateKeywordDefault or PrepaidKeywordDefault;
         internal readonly bool HasPrepaidCallable => PrivateDefaultKind is PrepaidPositionalDefault or PrepaidKeywordDefault or PrepaidKeywordStorage;
         internal readonly bool HasPrivatePositionalDefault => PrivateDefaultKind is PrivatePositionalDefault or PrepaidPositionalDefault;
-        internal readonly bool RequiresRetirement => _value is ExecutableTemporaryValue || HasPrivateDefault;
+        internal readonly bool RequiresRetirement => _value is ExecutableTemporaryValue or ExecutionContext || HasPrivateDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefaultContainer };
 
@@ -116,6 +116,11 @@ internal sealed partial class LythonRuntime
                 // immediately have another user.
                 this = default;
                 temporary.Dispose();
+            }
+            else if (_value is ExecutionContext frame)
+            {
+                this = default;
+                PyGenerator.CompleteFrame(frame);
             }
             else
             {

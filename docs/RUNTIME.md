@@ -958,6 +958,13 @@ general iterator path, it materializes the generator with its current
 position and active exception. A pending pull keeps its frame and
 argument workspace admitted until their users and cleanup finish.
 
+A generator expression passed directly to the evaluated builtin `sum` can
+keep its admitted frame in the call's operand storage. The outer iterator
+is acquired during argument evaluation. The existing sum loop advances the
+frame and the operand owns cleanup through return, refusal or cancellation.
+Other call targets and expressions that publish a generator use the ordinary
+iterator object.
+
 An async `map` reads completed short-row sources into these same slots.
 Only an incomplete pull transfers the evaluated prefix to the resume
 path. The continuation consumes that pull once and resumes in source

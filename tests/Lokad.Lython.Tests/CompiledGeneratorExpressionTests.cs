@@ -43,8 +43,8 @@ public sealed class CompiledGeneratorExpressionTests
         { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var operation = Assert.Single(Compile("result=(i for i in source)").Constants.OfType<ExecutableCreateGeneratorExpression>());
         var outer = new OwnedOuter();
-        var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
-            outer, operation.OuterSpan, operation.OuterSpan, true);
+        var generator = Assert.IsType<LythonRuntime.PyGenerator>(await LythonRuntime.PyGenerator.CreateExpressionAsync(
+            operation.CodeObject, context, outer, operation.OuterSpan, operation.OuterSpan, true));
         Assert.Equal(1, outer.Acquisitions);
         Assert.Equal(0, outer.Moves);
         if (route == "close-started") Assert.True((await generator.TryMoveNextAsync()).HasValue);

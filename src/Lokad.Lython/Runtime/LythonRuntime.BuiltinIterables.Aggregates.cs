@@ -114,7 +114,9 @@ internal sealed partial class LythonRuntime
     {
         var total = ReadSumStart(arguments, span);
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
-        using var cursor = PyIteration.Cursor.Create(arguments[0], span, context);
+        var privateFrame = arguments[0] as ExecutionContext;
+        using var cursor = privateFrame is null ? PyIteration.Cursor.Create(arguments[0], span, context) : null;
+        var generatorSpan = privateFrame is null ? null : context.PrivateGeneratorSpan;
         ValidateSumStart(total, span);
         // The private accumulator is borrowed by this command's generator only
         // until AdvanceBuffered returns. Fund it through all pulls and cleanup.
@@ -122,11 +124,13 @@ internal sealed partial class LythonRuntime
         try
         {
             var sum = new SumState(total);
-            var generator = cursor.GetBulkGenerator(context);
+            var generator = cursor?.GetBulkGenerator(context);
             while (true)
             {
-                var next = generator is not null && sum.CanBuffer
-                    ? generator.AdvanceBuffered(sum, 0) : cursor.TryMoveNext();
+                var next = privateFrame is not null
+                    ? PyGenerator.AdvanceFrame(privateFrame, generatorSpan!, null, PyNone.Instance, null,
+                        sum.CanBuffer ? sum : null, 0, 0)
+                    : generator is not null && sum.CanBuffer ? generator.AdvanceBuffered(sum, 0) : cursor!.TryMoveNext();
                 if (!next.HasValue) break;
                 if (sum.TryAddResult(ref next)) continue;
                 var item = next.Value;
@@ -147,20 +151,26 @@ internal sealed partial class LythonRuntime
         // Reuse checked synchronous iteration; other starts may suspend in __add__.
         if (arguments[0] is PyRange && PyNumberOps.IsInteger(total)) return Sum(arguments, span, context);
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
-        var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
-        await using (((IAsyncDisposable)cursor).ConfigureAwait(false))
+        var privateFrame = arguments[0] as ExecutionContext;
+        var cursor = privateFrame is null
+            ? await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false) : null;
+        var generatorSpan = privateFrame is null ? null : context.PrivateGeneratorSpan;
+        try
         {
             ValidateSumStart(total, span);
             context.MemoryGovernor.Reserve(64, span);
             try
             {
                 var sum = new SumState(total);
-                var generator = cursor.GetBulkGenerator(context);
+                var generator = cursor?.GetBulkGenerator(context);
                 while (true)
                 {
-                    var item = generator is not null && sum.CanBuffer
+                    var item = privateFrame is not null
+                        ? await PyGenerator.AdvanceFrameAsync(privateFrame, generatorSpan!, null, PyNone.Instance, null,
+                            sum.CanBuffer ? sum : null, 0, 0).ConfigureAwait(false)
+                        : generator is not null && sum.CanBuffer
                         ? await generator.AdvanceBufferedAsync(sum, 0).ConfigureAwait(false)
-                        : await cursor.TryMoveNextAsync().ConfigureAwait(false);
+                        : await cursor!.TryMoveNextAsync().ConfigureAwait(false);
                     if (!item.HasValue) break;
                     if (sum.TryAddResult(ref item)) continue;
                     var value = item.Value;
@@ -173,6 +183,7 @@ internal sealed partial class LythonRuntime
             }
             finally { context.MemoryGovernor.ReleaseReserved(64); }
         }
+        finally { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
     }
 
     // Numeric phases are shared by the existing sync/async loops. Fixed 64-bit

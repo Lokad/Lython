@@ -36,8 +36,9 @@ internal sealed partial class LythonRuntime
         internal static long EstimateStorage(ExecutableCodeObject code)
             => checked(512L + 96L * (code.LocalNames.Count + code.LookupCacheCount + code.ExceptionRegions.Count));
 
-        internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
-            ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, bool asynchronous)
+        internal static async ValueTask<object> CreateExpressionAsync(ExecutableCodeObject code,
+            ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span,
+            bool asynchronous, bool privateFrame = false)
         {
             // Fund the retained frame and any mirrored bindings
             // before their allocation or the effectful outer __iter__ call.
@@ -45,7 +46,7 @@ internal sealed partial class LythonRuntime
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, span);
             governor.Commit(bytes);
-            PyGenerator? generator = null;
+            ExecutionContext? initialized = null;
             try
             {
                 // A class suite's new __class__ cell belongs to its function
@@ -55,7 +56,9 @@ internal sealed partial class LythonRuntime
                 var cells = CaptureExecutableClosures(code, closure, span);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
-                generator = new PyGenerator(code, frame, span, cells, default);
+                frame.InitializeGeneratorExecution(code, default, cells, null);
+                initialized = frame;
+                var generator = privateFrame ? (object)frame : new PyGenerator(frame, span);
                 var outer = asynchronous
                     ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
                     : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
@@ -68,7 +71,7 @@ internal sealed partial class LythonRuntime
             }
             catch
             {
-                try { generator?.Complete(); }
+                try { CompleteFrame(initialized); }
                 finally { governor.Release(bytes); }
                 throw;
             }

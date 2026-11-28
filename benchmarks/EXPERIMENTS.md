@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1940 pass the private generator frame to builtin sum](results/2026-11-28-private-generator-sum/README.md)
+removes the intermediate generator and cursor on the adjacent call. Ordinary
+reduction allocates 294,912 B less in either API at matching admission. Local
+async CPU falls 1.67–3.86%, while sync timing spans zero. File-fed map elapsed
+is adverse and CPU is inconclusive with moving controls. All four goldens and
+140 timed batches verify.
+
 [B1939 attribute ordinary generator reduction](results/2026-11-28-ordinary-reduction-profile/README.md)
 captures the two APIs and the file-fed control at `e036d6597`. Generator
 advancement accounts for 32.1% of resolved inclusive async time and

@@ -68,8 +68,8 @@ public sealed class GeneratorExpressionAdmissionTests
         var create = Assert.Single(code.Constants.OfType<ExecutableCreateGeneratorExpression>());
         var row = new PyList([PyNone.Instance, PyNone.Instance]);
         var outer = new PyList([row]);
-        var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(create.CodeObject, context, outer,
-            create.OuterSpan, create.OuterSpan, asynchronous);
+        var generator = Assert.IsType<LythonRuntime.PyGenerator>(await LythonRuntime.PyGenerator.CreateExpressionAsync(
+            create.CodeObject, context, outer, create.OuterSpan, create.OuterSpan, asynchronous));
         Assert.True(budget.TryReserve(capacity - budget.ReservedBytes, out var blocker));
         using (blocker)
         {
