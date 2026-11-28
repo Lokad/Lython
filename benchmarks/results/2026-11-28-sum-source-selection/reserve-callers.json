@@ -1,0 +1,90 @@
+{
+  "image": "bf10eeaea",
+  "rows": [
+    {
+      "role": "reduction-async",
+      "runtimeMilliseconds": 3769.824736454969,
+      "reserveMilliseconds": 367.9469274091417,
+      "callers": [
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage..ctor",
+          93.06321027972464
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+<SumAsync>d__31.MoveNext",
+          56.743335378937786
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.GetLookupCaches",
+          53.490494626004875
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord",
+          47.022368544318
+        ],
+        [
+          "Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuter",
+          42.507375224335874
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime.ChargeClosureRetention",
+          41.18369098886933
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+PyGenerator+<CreateExpressionAsync>d__15.MoveNext",
+          30.38426356977095
+        ],
+        [
+          "Lokad.Lython.Runtime.PyIteratorBase.ChargeIteratorValue",
+          2.372453854652406
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime.CaptureExecutableCells",
+          1.1797349425278298
+        ]
+      ]
+    },
+    {
+      "role": "iterable-async",
+      "runtimeMilliseconds": 4008.549247694595,
+      "reserveMilliseconds": 166.424685435805,
+      "callers": [
+        [
+          "Lokad.Lython.Runtime.PyGeneratorFunction.CreateBoundGenerator",
+          67.80147238519794
+        ],
+        [
+          "Lokad.Lython.Runtime.MemoryGovernor+WorkspaceCache.Rent",
+          50.23712249104216
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord",
+          43.648692239785674
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage..ctor",
+          3.5633017456136713
+        ],
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState..ctor",
+          1.17409657416556
+        ]
+      ]
+    },
+    {
+      "role": "map-async",
+      "runtimeMilliseconds": 3888.448984206221,
+      "reserveMilliseconds": 130.60561498267907,
+      "callers": [
+        [
+          "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.EmitRecord",
+          129.46060407410232
+        ],
+        [
+          "Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation.Grow",
+          1.1450109085767508
+        ]
+      ]
+    }
+  ]
+}

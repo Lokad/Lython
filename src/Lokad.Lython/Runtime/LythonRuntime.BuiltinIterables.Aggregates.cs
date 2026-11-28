@@ -124,13 +124,17 @@ internal sealed partial class LythonRuntime
         try
         {
             var sum = new SumState(total);
-            var generator = cursor?.GetBulkGenerator(context);
+            // Keep the public generator object through callbacks, which can
+            // advance it or finish it before the next pull.
+            var generator = (object?)privateFrame ?? cursor?.GetBulkGenerator(context);
             while (true)
             {
-                var next = privateFrame is not null
-                    ? PyGenerator.AdvanceFrame(privateFrame, generatorSpan!, null, PyNone.Instance, null,
-                        sum.CanBuffer ? sum : null, 0, 0)
-                    : generator is not null && sum.CanBuffer ? generator.AdvanceBuffered(sum, 0) : cursor!.TryMoveNext();
+                var next = generator is null || (privateFrame is null && !sum.CanBuffer)
+                    ? cursor!.TryMoveNext()
+                    : privateFrame is not null
+                        ? PyGenerator.AdvanceFrame(privateFrame, generatorSpan!, null, PyNone.Instance, null,
+                            sum.CanBuffer ? sum : null, 0, 0)
+                        : ((PyGenerator)generator).AdvanceBuffered(sum, 0);
                 if (!next.HasValue) break;
                 if (sum.TryAddResult(ref next)) continue;
                 var item = next.Value;
@@ -162,15 +166,16 @@ internal sealed partial class LythonRuntime
             try
             {
                 var sum = new SumState(total);
-                var generator = cursor?.GetBulkGenerator(context);
+                var generator = (object?)privateFrame ?? cursor?.GetBulkGenerator(context);
                 while (true)
                 {
-                    var item = privateFrame is not null
-                        ? await PyGenerator.AdvanceFrameAsync(privateFrame, generatorSpan!, null, PyNone.Instance, null,
-                            sum.CanBuffer ? sum : null, 0, 0).ConfigureAwait(false)
-                        : generator is not null && sum.CanBuffer
-                        ? await generator.AdvanceBufferedAsync(sum, 0).ConfigureAwait(false)
-                        : await cursor!.TryMoveNextAsync().ConfigureAwait(false);
+                    var pending = generator is null || (privateFrame is null && !sum.CanBuffer)
+                        ? cursor!.TryMoveNextAsync()
+                        : privateFrame is not null
+                            ? PyGenerator.AdvanceFrameAsync(privateFrame, generatorSpan!, null, PyNone.Instance, null,
+                                sum.CanBuffer ? sum : null, 0, 0)
+                            : ((PyGenerator)generator).AdvanceBufferedAsync(sum, 0);
+                    var item = await pending.ConfigureAwait(false);
                     if (!item.HasValue) break;
                     if (sum.TryAddResult(ref item)) continue;
                     var value = item.Value;

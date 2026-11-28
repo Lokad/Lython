@@ -1,0 +1,16 @@
+{
+  "reference": {
+    "core": "e1dc4b4da21c06198f9a296339923f5a48ff9cec26069d1a0ebd4f052efa8d4c",
+    "sumIL": 325,
+    "asyncMoveNextIL": 1553,
+    "asyncFields": 19,
+    "pullAwaitSites": 3
+  },
+  "candidate": {
+    "core": "643a023cc49e37ea3e2e3046e34dea709f9d7da909497d76a53a32b4a786436a",
+    "sumIL": 338,
+    "asyncMoveNextIL": 1333,
+    "asyncFields": 19,
+    "pullAwaitSites": 1
+  }
+}

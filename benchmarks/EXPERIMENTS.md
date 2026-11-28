@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1949 select the sum source before the loop](results/2026-11-28-sum-source-selection/README.md)
+combines the async pull awaits into one site and saves 220 IL bytes.
+Quiet file-fed async CPU falls 3.48–6.06% at matching admission.
+Ordinary and sync timings remain inconclusive. All 140 timed batches
+and the focused Release checks pass. [B1950](results/2026-11-28-sum-source-selection/baseline/README.md)
+compares the file-fed endpoint with `e036d6597` and spans zero.
+
 [B1947 share frontend module member storage](results/2026-11-28-module-surface-storage/README.md)
 saves about 167 KB of CLR allocation on first configuration and XML
 compilation at matching admission. Full inventory and diagnostics agree.
