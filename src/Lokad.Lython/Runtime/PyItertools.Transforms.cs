@@ -496,16 +496,15 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
         {
             var firstArgument = receiver is null ? 0 : 1;
             if (function.PositionalCount > firstArgument && function.SupportsPositionalBinding)
-                return InvokeGeneratorRowAsync(generator, function, receiver, firstArgument, asynchronous);
+                return StartGeneratorRow(generator, function, receiver, firstArgument, asynchronous);
         }
         return InvokeGeneralIterableRowAsync(iterable, asynchronous);
     }
 
-    private async ValueTask<PyIterationResult> InvokeGeneratorRowAsync(LythonRuntime.PyGenerator generator,
+    private ValueTask<PyIterationResult> StartGeneratorRow(LythonRuntime.PyGenerator generator,
         PyExecutableFunction function, object? receiver, int firstArgument, bool asynchronous)
     {
-        var capacity = function.CodeObject.ValueStorageCapacity;
-        var workspace = LythonRuntime.RentFunctionArgumentStorage(function, _span, _context, capacity);
+        var workspace = LythonRuntime.RentFunctionArgumentStorage(function, _span, _context, function.CodeObject.ValueStorageCapacity);
         try
         {
             var values = workspace.Values;
@@ -513,30 +512,56 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             _context.CheckExecution(_span);
             _context.State.CheckInterpreterStack(_span);
             var end = function.PositionalCount;
-            var excess = asynchronous
-                ? await generator.AdvanceBufferedAsync(values, end, firstArgument).ConfigureAwait(false)
-                : generator.AdvanceBuffered(values, end, firstArgument);
-            var count = firstArgument;
-            while (count < end && !values[count].IsUnassigned) count++;
-            if (!excess.HasValue && count == end)
+            var pull = asynchronous ? generator.AdvanceBufferedAsync(values, end, firstArgument)
+                : new ValueTask<PyIterationResult>(generator.AdvanceBuffered(values, end, firstArgument));
+            if (pull.IsCompleted)
             {
-                _context.CheckExecution(_span);
-                // The call now owns exactly the slots filled by the generator.
-                // Its ordinary completion or promotion returns the loan.
-                var bound = workspace;
-                workspace = default;
-                var result = LythonRuntime.StartBoundIterationFunction(function, bound, _span, asynchronous, out var pending);
-                return result.HasValue ? result : PyIterationResult.Yield(await pending.ConfigureAwait(false));
+                var excess = pull.GetAwaiter().GetResult();
+                if (TryStartExactGeneratorRow(function, excess, ref workspace, asynchronous, out var result, out var pending))
+                    return result.HasValue ? new(result) : CompleteCallbackAsync(pending);
+                // The original operation has been consumed. The ordinary
+                // binder needs only the outcome and the prefetched slots.
+                pull = new(excess);
             }
+            return FinishGeneratorRowAsync(generator, function, firstArgument, pull, TakeGeneratorRowWorkspace(ref workspace), asynchronous);
+        }
+        finally { ReturnGeneratorRowWorkspace(ref workspace, function); }
+    }
+
+    private bool TryStartExactGeneratorRow(PyExecutableFunction function, PyIterationResult excess, ref BoundFunctionArguments workspace,
+        bool asynchronous, out PyIterationResult result, out ValueTask<object> pending)
+    {
+        // The drain fills consecutive slots in a cleared loan. The last slot
+        // suffices to prove exact arity when there was no excess yield.
+        if (excess.HasValue || workspace.Values[function.PositionalCount - 1].IsUnassigned)
+        {
+            result = default;
+            pending = default;
+            return false;
+        }
+        _context.CheckExecution(_span);
+        result = LythonRuntime.StartBoundIterationFunction(function, TakeGeneratorRowWorkspace(ref workspace),
+            _span, asynchronous, out pending);
+        return true;
+    }
+
+    private async ValueTask<PyIterationResult> FinishGeneratorRowAsync(LythonRuntime.PyGenerator generator,
+        PyExecutableFunction function, int firstArgument, ValueTask<PyIterationResult> pull, BoundFunctionArguments workspace,
+        bool asynchronous)
+    {
+        try
+        {
+            var excess = await pull.ConfigureAwait(false);
+            if (TryStartExactGeneratorRow(function, excess, ref workspace, asynchronous, out var result, out var pending))
+                return result.HasValue ? result : PyIterationResult.Yield(await pending.ConfigureAwait(false));
 
             // Preserve the first excess yield and every prefetched value.
             // The dynamic binder still handles defaults and arity errors.
             using var arguments = new CallExpansion.CallArgumentAccumulator(0, _context, _function, span: _span);
-            for (var i = firstArgument; i < count; i++)
+            var values = workspace.Values;
+            for (var i = firstArgument; i < function.PositionalCount && !values[i].IsUnassigned; i++)
                 arguments.Add(CallArgumentValue.Positional(values[i].Object.RequireNotNull()), _span);
-            var drained = workspace;
-            workspace = default;
-            LythonRuntime.ReturnBoundArguments(drained, capacity);
+            ReturnGeneratorRowWorkspace(ref workspace, function);
             if (excess.HasValue)
             {
                 arguments.Add(CallArgumentValue.Positional(excess.Value), _span);
@@ -545,11 +570,20 @@ internal sealed class PyStarmapIterator : PyIteratorBase, IPyAsyncIteratorValue
             var value = await InvokeCollectedRow(arguments, asynchronous).ConfigureAwait(false);
             return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
         }
-        finally
-        {
-            if (workspace.Values is not null)
-                LythonRuntime.ReturnBoundArguments(workspace, capacity);
-        }
+        finally { ReturnGeneratorRowWorkspace(ref workspace, function); }
+    }
+
+    private static BoundFunctionArguments TakeGeneratorRowWorkspace(ref BoundFunctionArguments workspace)
+    {
+        var owned = workspace;
+        workspace = default;
+        return owned;
+    }
+
+    private static void ReturnGeneratorRowWorkspace(ref BoundFunctionArguments workspace, PyExecutableFunction function)
+    {
+        if (workspace.Values is not null)
+            LythonRuntime.ReturnBoundArguments(TakeGeneratorRowWorkspace(ref workspace), function.CodeObject.ValueStorageCapacity);
     }
 
     private async ValueTask<PyIterationResult> InvokeGeneralIterableRowAsync(object iterable, bool asynchronous)

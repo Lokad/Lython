@@ -53,22 +53,34 @@ public sealed class IterationWorkspaceLifetimeTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task LateBoundCallbackKeepsOperandsThroughSuspension(bool starmap, bool cancel)
+    [InlineData("map", false)]
+    [InlineData("map", true)]
+    [InlineData("starmap", false)]
+    [InlineData("starmap", true)]
+    [InlineData("generator", false)]
+    [InlineData("generator", true)]
+    public async Task LateBoundCallbackKeepsOperandsThroughSuspension(string mode, bool cancel)
     {
-        var invocation = starmap ? "starmap(quantity, [(row,)])" : "map(quantity, [row])";
+        var invocation = mode switch
+        {
+            "map" => "map(quantity, [row])",
+            "starmap" => "starmap(quantity, [(row,)])",
+            _ => "starmap(quantity, [arguments()])",
+        };
+        var generator = mode == "generator" ? "def arguments(): yield row" : "";
+        var callback = mode == "generator"
+            ? "    value = row['quantity']\n    return convert(value)"
+            : "    return convert(row['quantity'])";
         var source = $$"""
             from itertools import starmap
             convert = int
             count = 0
             kept = ['alias']
             row = {'quantity': kept}
+            {{generator}}
 
             def quantity(row):
-                return convert(row['quantity'])
+            {{callback}}
 
             def replacement(value):
                 global count

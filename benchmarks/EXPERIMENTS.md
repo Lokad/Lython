@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1916 enter a ready generator row directly](results/2026-11-28-ready-generator-row/README.md)
+removes the row driver and arity scan from the ready exact path.
+Local async iterable CPU falls 2.54–3.78% on the same-image repeat.
+The repeat reverses the first elapsed slowdown. Peaks and allocation
+match within the observed allocation variation.
+
 [B1915 attribute current shipment, JSON and regex](results/2026-11-28-current-script-profile/README.md)
 uses the B1914 image in local WSL. Generator advancement accounts for 67.8%
 of eligible shipment thread time. Converted dictionary updates account for

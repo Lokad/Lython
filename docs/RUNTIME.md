@@ -919,10 +919,12 @@ transfers its live slots into the existing admitted continuation. Other
 exact rows use an admitted argument packet. A same-command generator row
 can fill a compatible executable callback's admitted workspace directly.
 Private scalar slots stay native through the ready callback and its result,
-while observable identities stay attached to their values. A suspended
-callback keeps the workspace charged. Generator rows with missing or
-excess arguments and other iterable rows bind from the admitted call
-accumulator.
+while observable identities stay attached to their values. An exhausted
+source with the final positional slot filled enters the bound callback
+directly. A suspended pull keeps its workspace in the row continuation.
+A suspended callback owns that same workspace through cleanup. Generator
+rows with missing or excess arguments and other iterable rows bind from
+the admitted call accumulator.
 An excess yield returns to the consumer before the argument buffer grows.
 Starred calls share the buffered reader and preserve their own expansion
 order and diagnostics. A callable that requires an owned array receives it
