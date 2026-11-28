@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1994 refresh the external comparison on the landed runtime](results/2026-11-28-landed-runtime-cpython/README.md)
+verifies 112 quiet batches at `8633debf8`. Iterable-row shipment takes
+1.041–1.072× CPython elapsed, configuration compile-to-result takes
+0.767–0.783×, and the two warm log searches take 2.728–2.838× and
+1.793–1.851×. The paired B1993 shipment comparison spans zero.
+
 [B1993 keep target selection and construct generators directly](results/2026-11-28-generator-construction-transport/README.md)
 keeps allocation and admission effectively flat. Quiet warm CPU falls
 3.73–5.28% sync and 6.45–6.94% async on default-heavy generators. The
